@@ -20,7 +20,7 @@ Non-demo Workspaces use email magic links only; the Explore buttons appear when 
 
 1. A Leader opens **Planner** on a Project, writes **one sentence** (`PlannerSession#description`), and submits **Start planning**.
 2. Each turn, `Planner::ContextBuilder` is the only code that calls the model (via `Rails.configuration.x.planner_provider`). The model returns one question card (3–5 options) or `finished: true`.
-3. Answers enqueue `PlannerStepJob` (Solid Queue). New items arrive as **Suggestions** with status `proposed`—shown as ghost tiles until the Leader **Keep**, **Edit**, or **Drop** on the review screen.
+3. Answers enqueue `PlannerStepJob` (Solid Queue). New items arrive as **Suggestions** with status `proposed`—shown as ghost tiles in the live summary until the Leader taps **Keep** or **Drop** right there (or **Edit** on the review screen). Kept Suggestions turn solid.
 4. **Accept** writes kept/edited (and optionally remaining proposed) Suggestions into real Project records through `Planner::SuggestionKinds`.
 
 **Provider:** `Planner::Providers::Llm` uses RubyLLM with provider `PLANNER_LLM_PROVIDER` (default `openrouter`) and model `PLANNER_LLM_MODEL` (default `anthropic/claude-sonnet-5.5`). Set `OPENROUTER_API_KEY` in `.env.development.local` (see setup).
