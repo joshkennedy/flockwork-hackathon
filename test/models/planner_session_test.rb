@@ -46,6 +46,46 @@ class PlannerSessionTest < ActiveSupport::TestCase
     assert_predicate planner_session, :reviewing?
   end
 
+  test "apply_response drops unknown kinds and junk fields from provider suggestions" do
+    Rails.configuration.x.planner_provider = Planner::Providers::Fake.new([
+      Planner::Response.new(
+        card: nil,
+        finished: true,
+        suggestions: [
+          {
+            "id" => "77777777-7777-4777-8777-777777777777",
+            "kind" => "unknown_kind",
+            "fields" => { "title" => "Ignore me", "extra" => "junk" },
+            "status" => "proposed"
+          },
+          task_suggestion("88888888-8888-4888-8888-888888888888", "Stock the pantry")
+            .merge("fields" => {
+              "title" => "Stock the pantry",
+              "details" => "Gather supplies.",
+              "extra" => "junk",
+              "due_in_days" => nil
+            })
+        ]
+      )
+    ])
+    leader = people(:leader)
+    current_session = leader.sessions.create!(ip_address: "127.0.0.1", user_agent: "test")
+    planner_session = projects(:community_meal).planner_sessions.create!(
+      started_by: leader,
+      description: "Stock the pantry for the meal."
+    )
+
+    Current.set(session: current_session) { planner_session.start! }
+
+    assert_equal 1, planner_session.reload.suggestions.size
+    suggestion = planner_session.suggestions.sole
+    assert_equal "task", suggestion.fetch("kind")
+    assert_equal(
+      { "title" => "Stock the pantry", "details" => "Gather supplies." },
+      suggestion.fetch("fields")
+    )
+  end
+
   private
     def task_suggestion(id, title)
       {

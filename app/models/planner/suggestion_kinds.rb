@@ -192,20 +192,22 @@ module Planner
     module_function
 
     def provider_schema
+      # One flat suggestion object keeps the structured-output grammar small enough for OpenRouter.
       {
-        anyOf: KINDS.map do |kind, definition|
-          {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          id: { type: "string" },
+          kind: { type: "string", enum: KINDS.keys },
+          status: { type: "string", enum: %w[proposed kept edited dropped] },
+          fields: {
             type: "object",
             additionalProperties: false,
-            properties: {
-              id: { type: "string", format: "uuid" },
-              kind: { type: "string", enum: [ kind ] },
-              fields: fields_schema(definition),
-              status: { type: "string", enum: %w[proposed kept edited dropped] }
-            },
-            required: %w[id kind fields status]
+            properties: merged_field_properties,
+            required: []
           }
-        end
+        },
+        required: %w[id kind fields status]
       }
     end
 
@@ -222,13 +224,15 @@ module Planner
           column.to_h.stringify_keys.slice("name", "type")
         end
       end
-      sanitized
+      sanitized.reject { |_, value| value.nil? }
     end
 
     def create!(project, suggestion)
       suggestion = suggestion.stringify_keys
-      definition = KINDS.fetch(suggestion.fetch("kind"))
-      fields = sanitize_fields(suggestion.fetch("kind"), suggestion.fetch("fields"))
+      kind = suggestion.fetch("kind")
+      definition = KINDS.fetch(kind)
+      fields = sanitize_fields(kind, suggestion.fetch("fields"))
+      validate_fields!(kind, fields)
       tool = definition.fetch(:tool)
       tool = tool.call(fields) if tool.respond_to?(:call)
       project.update!(enabled_tools: (project.enabled_tools + [ tool ]).uniq)
@@ -253,15 +257,79 @@ module Planner
       project.starts_on || Date.current
     end
 
-    def fields_schema(definition)
-      fields = definition.fetch(:fields)
-      {
-        type: "object",
-        additionalProperties: false,
-        properties: fields.transform_values { |field| field.fetch(:schema) },
-        required: fields.keys
-      }
+    def validate_fields!(kind, fields)
+      missing = required_field_names(kind).reject { |name| field_present?(fields[name]) }
+      return if missing.empty?
+
+      kind_label = KINDS.fetch(kind).fetch(:label)
+      raise ArgumentError, "#{kind_label} suggestion is missing #{missing.to_sentence}"
     end
-    private_class_method :fields_schema
+
+    def required_field_names(kind)
+      KINDS.fetch(kind).fetch(:fields).filter_map do |name, field|
+        name unless nullable_field_schema?(field.fetch(:schema))
+      end
+    end
+
+    def nullable_field_schema?(schema)
+      type = schema[:type]
+      type.is_a?(Array) && type.include?("null")
+    end
+
+    def field_present?(value)
+      return false if value.nil?
+      return value.any? if value.is_a?(Array)
+
+      true
+    end
+
+    def merged_field_properties
+      @merged_field_properties ||= begin
+        merged = {}
+        KINDS.each_value do |definition|
+          definition.fetch(:fields).each do |name, field|
+            slim = slim_provider_schema(field.fetch(:schema))
+            if merged.key?(name)
+              raise ArgumentError, "Planner field #{name} has conflicting provider schemas" unless merged[name] == slim
+            else
+              merged[name] = slim
+            end
+          end
+        end
+        merged.freeze
+      end
+    end
+
+    GRAMMAR_BLOAT_KEYS = %i[pattern minimum minItems required].freeze
+
+    def slim_provider_schema(schema)
+      schema = schema.deep_dup
+      scrub_grammar_bloat!(schema)
+      make_scalars_nullable!(schema)
+      schema
+    end
+
+    def scrub_grammar_bloat!(schema)
+      return unless schema.is_a?(Hash)
+
+      GRAMMAR_BLOAT_KEYS.each { |key| schema.delete(key) }
+      schema.fetch(:properties, {}).each_value { |property| scrub_grammar_bloat!(property) }
+      scrub_grammar_bloat!(schema[:items]) if schema[:items].is_a?(Hash)
+    end
+
+    def make_scalars_nullable!(schema)
+      return unless schema.is_a?(Hash)
+
+      schema.fetch(:properties, {}).each_value { |property| make_scalars_nullable!(property) }
+      make_scalars_nullable!(schema[:items]) if schema[:items].is_a?(Hash)
+
+      type = schema[:type]
+      return if type.is_a?(Array)
+
+      schema[:type] = [ type, "null" ] if %w[string integer number boolean array].include?(type)
+    end
+
+    private_class_method :validate_fields!, :required_field_names, :nullable_field_schema?, :field_present?,
+      :merged_field_properties, :slim_provider_schema, :scrub_grammar_bloat!, :make_scalars_nullable!
   end
 end

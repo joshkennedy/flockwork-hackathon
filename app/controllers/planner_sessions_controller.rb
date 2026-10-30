@@ -72,6 +72,8 @@ class PlannerSessionsController < ApplicationController
 
     @planner_session.accept!(include_proposed: params[:mode] == "all")
     redirect_to @project
+  rescue ArgumentError => error
+    redirect_to review_project_planner_session_path(@project, @planner_session), alert: error.message
   end
 
   private

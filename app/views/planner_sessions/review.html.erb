@@ -8,6 +8,10 @@
     <p class="mt-4 text-lg leading-8 text-stone-700">Keep what fits, edit what needs work, and drop the rest. People and open roles stay unassigned.</p>
   </header>
 
+  <% if flash[:alert].present? %>
+    <p role="alert" class="mt-8 border-l-4 border-red-700 bg-red-50 px-5 py-4 font-semibold text-red-950"><%= flash[:alert] %></p>
+  <% end %>
+
   <% if @planner_session.last_error.present? %>
     <p role="alert" class="mt-8 border-l-4 border-red-700 bg-red-50 px-5 py-4 font-semibold text-red-950"><%= PlannerSession::ERROR_MESSAGE %></p>
   <% end %>
