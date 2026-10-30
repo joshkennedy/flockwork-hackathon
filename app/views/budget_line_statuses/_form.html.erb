@@ -1,0 +1,26 @@
+<%= form_with url: project_budget_line_status_path(project, budget_line), method: :patch, scope: :budget_line, class: "space-y-7" do |form| %>
+  <% if budget_line.errors.any? %>
+    <div class="border-l-4 border-red-700 bg-red-50 px-5 py-4 text-red-950">
+      <p class="font-semibold">Please fix the following:</p>
+      <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
+        <% budget_line.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <p class="text-sm text-stone-700"><%= budget_line.description %></p>
+
+  <div>
+    <%= form.label :status, class: "block text-sm font-semibold text-stone-900" %>
+    <%= form.select :status, BudgetLine.statuses.keys.map { |status| [ status.humanize, status ] }, {}, class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+  </div>
+
+  <div>
+    <%= form.label :actual, "Actual cost", class: "block text-sm font-semibold text-stone-900" %>
+    <%= form.text_field :actual, placeholder: "0.00", class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+  </div>
+
+  <%= form.submit "Save", class: "cursor-pointer bg-[#1f291f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#354235]" %>
+<% end %>

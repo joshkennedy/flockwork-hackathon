@@ -17,6 +17,27 @@ class Project < ApplicationRecord
   has_many :memberships, dependent: :destroy
   has_many :people, through: :memberships
   has_many :schedule_items, dependent: :destroy
+  has_many :budget_lines, dependent: :destroy
+
+  def budget_lines_by_kind(kind)
+    budget_lines.public_send(kind).order(:id)
+  end
+
+  def budget_kind_totals(kind)
+    lines = budget_lines_by_kind(kind).to_a
+    {
+      estimated_cents: BudgetLine.estimated_total_cents(lines),
+      actual_cents: BudgetLine.actual_total_cents(lines)
+    }
+  end
+
+  def budget_grand_totals
+    lines = budget_lines.order(:id).to_a
+    {
+      estimated_cents: BudgetLine.estimated_total_cents(lines),
+      actual_cents: BudgetLine.actual_total_cents(lines)
+    }
+  end
 
   scope :active, -> { where(done_at: nil, archived_at: nil, deleted_at: nil) }
 
