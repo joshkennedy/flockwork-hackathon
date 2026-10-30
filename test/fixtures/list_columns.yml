@@ -1,0 +1,29 @@
+room:
+  list: room_assignments
+  name: Room
+  column_type: text
+  position: 1
+
+beds:
+  list: room_assignments
+  name: Beds
+  column_type: number
+  position: 2
+
+arrival:
+  list: room_assignments
+  name: Arrival
+  column_type: date
+  position: 3
+
+ready:
+  list: room_assignments
+  name: Ready
+  column_type: checkbox
+  position: 4
+
+guest:
+  list: room_assignments
+  name: Guest
+  column_type: person
+  position: 5

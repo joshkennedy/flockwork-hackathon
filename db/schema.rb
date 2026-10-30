@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_30_191400) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_31_150001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -93,6 +93,33 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_191400) do
     t.index ["project_id", "person_id"], name: "index_invitations_on_pending_project_and_person", unique: true, where: "(status = 0)"
     t.index ["project_id"], name: "index_invitations_on_project_id"
     t.index ["workspace_id"], name: "index_invitations_on_workspace_id"
+  end
+
+  create_table "list_columns", force: :cascade do |t|
+    t.bigint "list_id", null: false
+    t.string "name", null: false
+    t.integer "column_type", null: false
+    t.integer "position", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["list_id"], name: "index_list_columns_on_list_id"
+  end
+
+  create_table "list_rows", force: :cascade do |t|
+    t.bigint "list_id", null: false
+    t.integer "position", null: false
+    t.jsonb "cells", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["list_id"], name: "index_list_rows_on_list_id"
+  end
+
+  create_table "lists", force: :cascade do |t|
+    t.bigint "project_id", null: false
+    t.string "name", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["project_id"], name: "index_lists_on_project_id"
   end
 
   create_table "memberships", force: :cascade do |t|
@@ -362,6 +389,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_191400) do
   add_foreign_key "invitations", "people", column: "inviter_id"
   add_foreign_key "invitations", "projects"
   add_foreign_key "invitations", "workspaces"
+  add_foreign_key "list_columns", "lists"
+  add_foreign_key "list_rows", "lists"
+  add_foreign_key "lists", "projects"
   add_foreign_key "memberships", "people"
   add_foreign_key "memberships", "projects"
   add_foreign_key "messages", "messages", column: "parent_id"

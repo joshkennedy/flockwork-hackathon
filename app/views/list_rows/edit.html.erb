@@ -1,0 +1,11 @@
+<% content_for :title, "Edit row - #{@list.name}" %>
+
+<div class="mx-auto w-full max-w-2xl">
+  <%= link_to "Back to #{@project.name}", @project, class: "text-sm font-semibold text-stone-600 hover:text-stone-950" %>
+
+  <h1 class="mt-8 text-3xl font-bold text-stone-950">Edit row in <%= @list.name %></h1>
+
+  <div class="mt-8">
+    <%= render "form", project: @project, list: @list, list_row: @list_row %>
+  </div>
+</div>

@@ -29,6 +29,19 @@ Rails.application.routes.draw do
         get :download
       end
     end
+    resources :lists, only: %i[ new create ] do
+      resources :list_columns, except: %i[ index show ] do
+        member do
+          patch :move_up
+          patch :move_down
+        end
+      end
+      resources :list_rows, except: %i[ index show ] do
+        member do
+          patch :toggle_checkbox
+        end
+      end
+    end
     get :team, on: :member
     resources :invitations, only: :create
     resources :memberships, only: :destroy
