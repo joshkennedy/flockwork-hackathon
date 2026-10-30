@@ -59,6 +59,23 @@ module Policy
     return can_respond_to_invitation?(person, action, record) if record.is_a?(::Invitation)
     return can_manage_membership?(person, action, record) if record.is_a?(::Membership)
 
+    if record.is_a?(::Workspace)
+      return false unless record.id == person.workspace_id
+
+      return person.admin? if action.in?([ :view_oversight, :update_oversight ])
+      return person.admin? if action == :manage_people
+
+      return false
+    end
+
+    if record.is_a?(::Person)
+      return false unless record.workspace_id == person.workspace_id
+
+      return person.admin? || record.id == person.id if action == :view_involvement
+
+      return false
+    end
+
     return false unless record.is_a?(::Project)
     return false unless record.workspace_id == person.workspace_id
 

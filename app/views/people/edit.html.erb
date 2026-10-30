@@ -6,6 +6,8 @@
 
   <%= render "form", person: @person, submit_label: "Save changes" %>
 
+  <%= render "shared/involvement_timeline", involvement: @involvement, title: "Involvement" %>
+
   <section class="mt-12 bg-[#e7ede3] p-6" aria-labelledby="person-notes-heading">
     <h2 id="person-notes-heading" class="text-xl font-bold text-stone-950">Notes</h2>
     <%= render "notes/list", notes: @person_notes %>
