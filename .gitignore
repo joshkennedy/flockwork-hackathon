@@ -32,3 +32,6 @@
 
 # Node packages used by the Playwright system tests
 /node_modules
+
+# Production credentials key; set RAILS_MASTER_KEY in the host's environment instead
+/config/master.key
