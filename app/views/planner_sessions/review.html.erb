@@ -1,11 +1,11 @@
-<% content_for :title, "Review Task Suggestions" %>
+<% content_for :title, "Review Suggestions" %>
 
 <div class="mx-auto w-full max-w-4xl">
   <%= link_to @project.name, project_path(@project), class: "text-sm font-semibold text-stone-600 hover:text-stone-950" %>
 
   <header class="mt-9 max-w-2xl">
-    <h1 class="text-4xl font-bold tracking-tight text-stone-950 sm:text-5xl">Review Task Suggestions</h1>
-    <p class="mt-4 text-lg leading-8 text-stone-700">Keep what fits, edit what needs work, and drop the rest. Tasks stay unassigned.</p>
+    <h1 class="text-4xl font-bold tracking-tight text-stone-950 sm:text-5xl">Review Suggestions</h1>
+    <p class="mt-4 text-lg leading-8 text-stone-700">Keep what fits, edit what needs work, and drop the rest. People and open roles stay unassigned.</p>
   </header>
 
   <% if @planner_session.last_error.present? %>
@@ -15,28 +15,12 @@
   <% if @planner_session.suggestions.any? %>
     <div class="mt-10 space-y-6">
       <% @planner_session.suggestions.each do |suggestion| %>
-        <% field_prefix = "suggestion_#{suggestion.fetch("id")}" %>
-        <section class="bg-[#e7ede3] p-5 sm:p-6" aria-label="Task Suggestion: <%= suggestion.dig("fields", "title") %>">
+        <section class="bg-[#e7ede3] p-5 sm:p-6" aria-label="<%= Planner::SuggestionKinds.label(suggestion.fetch("kind")) %> Suggestion: <%= Planner::SuggestionKinds.summary(suggestion) %>">
           <%= form_with url: suggestion_project_planner_session_path(@project, @planner_session), method: :patch, class: "space-y-5" do |form| %>
             <%= form.hidden_field :id, name: "suggestion[id]", value: suggestion.fetch("id"), id: nil %>
 
-            <div>
-              <%= form.label :title, "Title", for: "#{field_prefix}_title", class: "block text-sm font-semibold text-stone-900" %>
-              <%= render layout: "shared/dictation_button", locals: { wrapper_class: "mt-2 flex w-full items-center gap-2" } do %>
-                <%= form.text_field :title, name: "suggestion[title]", id: "#{field_prefix}_title", value: suggestion.dig("fields", "title"), required: true, data: { dictation_target: "field" }, class: "block min-h-12 min-w-0 flex-1 border border-stone-400 bg-white px-4 py-3 text-stone-950 focus:border-stone-950 focus:outline-none" %>
-              <% end %>
-            </div>
-
-            <div>
-              <%= form.label :details, "Details", for: "#{field_prefix}_details", class: "block text-sm font-semibold text-stone-900" %>
-              <%= render layout: "shared/dictation_button", locals: { wrapper_class: "mt-2 flex w-full items-start gap-2" } do %>
-                <%= form.text_area :details, name: "suggestion[details]", id: "#{field_prefix}_details", value: suggestion.dig("fields", "details"), rows: 3, required: true, data: { dictation_target: "field" }, class: "block min-w-0 flex-1 border border-stone-400 bg-white px-4 py-3 text-stone-950 focus:border-stone-950 focus:outline-none" %>
-              <% end %>
-            </div>
-
-            <% if suggestion.dig("fields", "role").present? %>
-              <p class="text-sm text-stone-700">Open role: <strong><%= suggestion.dig("fields", "role") %></strong></p>
-            <% end %>
+            <p class="text-sm font-semibold text-stone-600"><%= Planner::SuggestionKinds.label(suggestion.fetch("kind")).singularize %> Suggestion</p>
+            <%= render "suggestion_fields", suggestion: %>
 
             <div class="flex flex-wrap gap-x-5 gap-y-2">
               <%= form.button "Keep", name: "suggestion[decision]", value: "keep", class: "min-h-11 cursor-pointer bg-[#1f291f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#354235]" %>
@@ -49,7 +33,7 @@
       <% end %>
     </div>
   <% else %>
-    <p class="mt-10 bg-[#e7ede3] p-6 text-stone-700">There are no Task Suggestions to accept. You can return to the Project and keep building by hand.</p>
+    <p class="mt-10 bg-[#e7ede3] p-6 text-stone-700">There are no Suggestions to accept. You can return to the Project and keep building by hand.</p>
   <% end %>
 
   <div class="mt-10 flex flex-col items-start gap-4">

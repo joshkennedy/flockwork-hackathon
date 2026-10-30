@@ -9,10 +9,15 @@ class PlannerSession < ApplicationRecord
   validates :description, presence: true
 
   def start!
-    request_next_response
+    run_step!
   end
 
   def answer!(text)
+    record_answer!(text)
+    run_step!
+  end
+
+  def record_answer!(text)
     card = current_card&.stringify_keys
     raise ArgumentError, "There is no current Planner card" unless card
 
@@ -23,8 +28,13 @@ class PlannerSession < ApplicationRecord
           "options" => card.fetch("options"),
           "answer" => text
         }
-      ]
+      ],
+      current_card: nil,
+      last_error: nil
     )
+  end
+
+  def run_step!
     request_next_response
   end
 
@@ -36,7 +46,7 @@ class PlannerSession < ApplicationRecord
     update!(status: :abandoned, current_card: nil)
   end
 
-  def decide_suggestion!(id:, decision:, title: nil, details: nil)
+  def decide_suggestion!(id:, decision:, fields: nil, title: nil, details: nil)
     found = false
     updated = suggestions.map do |suggestion|
       next suggestion unless suggestion.fetch("id") == id
@@ -46,8 +56,12 @@ class PlannerSession < ApplicationRecord
       when "keep", "drop"
         suggestion.merge("status" => decision == "keep" ? "kept" : "dropped")
       when "edit"
-        fields = suggestion.fetch("fields").merge("title" => title, "details" => details)
-        suggestion.merge("fields" => fields, "status" => "edited")
+        edited_fields = fields || { "title" => title, "details" => details }.compact
+        edited_fields = Planner::SuggestionKinds.sanitize_fields(suggestion.fetch("kind"), edited_fields)
+        suggestion.merge(
+          "fields" => suggestion.fetch("fields").merge(edited_fields),
+          "status" => "edited"
+        )
       else
         raise ArgumentError, "Unknown Suggestion decision"
       end
@@ -63,7 +77,7 @@ class PlannerSession < ApplicationRecord
         %w[kept edited].include?(suggestion.fetch("status")) ||
           (include_proposed && suggestion.fetch("status") == "proposed")
       end.each do |suggestion|
-        create_task!(suggestion)
+        Planner::SuggestionKinds.create!(project, suggestion)
       end
 
       final_suggestions = if include_proposed
@@ -82,7 +96,8 @@ class PlannerSession < ApplicationRecord
       response = begin
         Planner::ContextBuilder.new(self).ask
       rescue StandardError => error
-        update!(last_error: error.message)
+        reload
+        update!(last_error: error.message) if asking?
         return false
       end
 
@@ -91,6 +106,9 @@ class PlannerSession < ApplicationRecord
     end
 
     def apply_response!(response)
+      reload
+      return unless asking?
+
       previous_statuses = suggestions.to_h { |suggestion| [ suggestion.fetch("id"), suggestion.fetch("status") ] }
       next_suggestions = response.suggestions.map do |suggestion|
         suggestion = suggestion.deep_stringify_keys
@@ -108,18 +126,5 @@ class PlannerSession < ApplicationRecord
           last_error: nil
         )
       end
-    end
-
-    def create_task!(suggestion)
-      raise ArgumentError, "Unsupported Suggestion kind" unless suggestion.fetch("kind") == "task"
-
-      fields = suggestion.fetch("fields")
-      due_in_days = fields["due_in_days"]
-      due_on = project.starts_on + due_in_days if project.starts_on && due_in_days
-      project.tasks.create!(
-        title: fields.fetch("title"),
-        details: fields.fetch("details"),
-        due_on:
-      )
     end
 end

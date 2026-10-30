@@ -70,7 +70,9 @@ class PlannerTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_select "h1", text: "What should happen before guests arrive?"
 
-    post answer_project_planner_session_path(project, session), params: { answer: "Set the room" }
+    perform_enqueued_jobs do
+      post answer_project_planner_session_path(project, session), params: { answer: "Set the room" }
+    end
     assert_redirected_to project_planner_session_path(project, session)
     assert_equal [
       {
@@ -82,7 +84,13 @@ class PlannerTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_select "h1", text: "What needs a clear owner?"
 
-    post answer_project_planner_session_path(project, session), params: { answer: "Ask two volunteers to lead setup." }
+    perform_enqueued_jobs do
+      post answer_project_planner_session_path(project, session), params: {
+        answer: "Ask two volunteers to lead setup."
+      }
+    end
+    assert_redirected_to project_planner_session_path(project, session)
+    get project_planner_session_path(project, session)
     assert_redirected_to review_project_planner_session_path(project, session)
 
     patch suggestion_project_planner_session_path(project, session), params: {
@@ -153,6 +161,11 @@ class PlannerTest < ActionDispatch::IntegrationTest
       answers
       enabled_tools
       existing_task_titles
+      existing_schedule_item_titles
+      existing_slot_labels
+      existing_booking_descriptions
+      existing_purchase_descriptions
+      existing_list_names
       past_projects
       current_suggestions
     ], fake.contexts.first.keys
@@ -190,7 +203,9 @@ class PlannerTest < ActionDispatch::IntegrationTest
     Rails.configuration.x.planner_provider = RaisingProvider.new
 
     assert_no_difference "project.tasks.count" do
-      post answer_project_planner_session_path(project, planner_session), params: { answer: "Tables" }
+      perform_enqueued_jobs do
+        post answer_project_planner_session_path(project, planner_session), params: { answer: "Tables" }
+      end
     end
 
     assert_redirected_to project_planner_session_path(project, planner_session)
@@ -210,6 +225,49 @@ class PlannerTest < ActionDispatch::IntegrationTest
 
     post skip_to_review_project_planner_session_path(project, planner_session)
     assert_redirected_to review_project_planner_session_path(project, planner_session)
+  end
+
+  test "answering shows Thinking while the Planner step job is queued" do
+    project = projects(:community_meal)
+    Rails.configuration.x.planner_provider = Planner::Providers::Fake.new([
+      planner_response(
+        card: {
+          "question" => "What should happen first?",
+          "options" => [ "Set up", "Cook", "Welcome" ]
+        },
+        suggestions: []
+      ),
+      planner_response(
+        card: {
+          "question" => "What should happen next?",
+          "options" => [ "Clean", "Serve", "Close" ]
+        },
+        suggestions: [
+          task_suggestion(
+            "45000000-0000-4000-8000-000000000001",
+            "Set up the room",
+            "Arrange the tables."
+          )
+        ]
+      )
+    ])
+    sign_in_as_leader
+    post project_planner_sessions_path(project), params: {
+      planner_session: { description: "Prepare the neighborhood meal." }
+    }
+    planner_session = project.planner_sessions.last!
+
+    assert_enqueued_with(job: PlannerStepJob) do
+      post answer_project_planner_session_path(project, planner_session), params: { answer: "Set up" }
+    end
+    assert_redirected_to project_planner_session_path(project, planner_session)
+    follow_redirect!
+    assert_select "h1", text: "Thinking…"
+    assert_select "p", text: /Suggestions will appear here/
+
+    perform_enqueued_jobs
+    assert_equal "What should happen next?", planner_session.reload.current_card.fetch("question")
+    assert_equal "Set up the room", planner_session.suggestions.first.dig("fields", "title")
   end
 
   test "a Volunteer cannot start the Planner" do
@@ -261,6 +319,247 @@ class PlannerTest < ActionDispatch::IntegrationTest
     assert_equal "kept", planner_session.reload.suggestions.first.fetch("status")
   end
 
+  test "accept creates every Suggestion kind with literal values and enables matching Tools" do
+    project = projects(:community_meal)
+    Rails.configuration.x.planner_provider = Planner::Providers::Fake.new([
+      planner_response(
+        finished: true,
+        suggestions: [
+          suggestion("70000000-0000-4000-8000-000000000001", "enable_tool", "tool" => "docs"),
+          suggestion(
+            "70000000-0000-4000-8000-000000000002",
+            "task",
+            "title" => "Confirm table captains",
+            "details" => "Write the final setup assignments.",
+            "due_in_days" => 2,
+            "role" => "1 setup lead"
+          ),
+          suggestion(
+            "70000000-0000-4000-8000-000000000003",
+            "schedule_item",
+            "title" => "Volunteer briefing",
+            "day_offset" => 1,
+            "starts_at" => "09:15",
+            "ends_at" => "10:00",
+            "location" => "Fellowship Hall"
+          ),
+          suggestion(
+            "70000000-0000-4000-8000-000000000004",
+            "slot_run",
+            "label" => "Dinner delivery",
+            "start_day_offset" => 1,
+            "end_day_offset" => 3,
+            "time" => "17:30",
+            "capacity" => 2
+          ),
+          suggestion(
+            "70000000-0000-4000-8000-000000000005",
+            "booking",
+            "description" => "Community room",
+            "estimated_dollars" => 425.50,
+            "role" => "1 booking lead"
+          ),
+          suggestion(
+            "70000000-0000-4000-8000-000000000006",
+            "purchase",
+            "description" => "Compostable plates",
+            "estimated_dollars" => 86.25,
+            "role" => "1 purchasing lead"
+          ),
+          suggestion(
+            "70000000-0000-4000-8000-000000000007",
+            "list",
+            "name" => "Serving stations",
+            "columns" => [
+              { "name" => "Station", "type" => "text" },
+              { "name" => "Ready", "type" => "checkbox" }
+            ]
+          )
+        ]
+      )
+    ])
+    sign_in_as_leader
+
+    post project_planner_sessions_path(project), params: {
+      planner_session: { description: "Add the final operating details." }
+    }
+    planner_session = project.planner_sessions.last!
+
+    assert_difference -> { project.tasks.count }, 1 do
+      assert_difference -> { project.schedule_items.count }, 1 do
+        assert_difference -> { project.slots.count }, 3 do
+          assert_difference -> { project.budget_lines.count }, 2 do
+            assert_difference -> { project.lists.count }, 1 do
+              post accept_project_planner_session_path(project, planner_session), params: { mode: "all" }
+            end
+          end
+        end
+      end
+    end
+
+    assert_redirected_to project_path(project)
+    assert_equal %w[budget docs list messages schedule signup_sheet tasks], project.reload.enabled_tools.sort
+
+    task = project.tasks.find_by!(title: "Confirm table captains")
+    assert_equal "Write the final setup assignments.", task.details.to_plain_text
+    assert_equal Date.new(2027, 2, 14), task.due_on
+    assert_nil task.assignee
+
+    schedule_item = project.schedule_items.find_by!(title: "Volunteer briefing")
+    assert_equal Date.new(2027, 2, 13), schedule_item.date
+    assert_equal "09:15", schedule_item.starts_at_time.strftime("%H:%M")
+    assert_equal "10:00", schedule_item.ends_at_time.strftime("%H:%M")
+    assert_equal "Fellowship Hall", schedule_item.location
+
+    slots = project.slots.where(label: "Dinner delivery").chronological
+    assert_equal [ Date.new(2027, 2, 13), Date.new(2027, 2, 14), Date.new(2027, 2, 15) ], slots.pluck(:date)
+    assert_equal [ "17:30", "17:30", "17:30" ], slots.map { |slot| slot.starts_at_time.strftime("%H:%M") }
+    assert_equal [ 2, 2, 2 ], slots.pluck(:capacity)
+
+    booking = project.budget_lines.booking.find_by!(description: "Community room")
+    purchase = project.budget_lines.purchase.find_by!(description: "Compostable plates")
+    assert_equal 42_550, booking.estimated_cents
+    assert_equal 8_625, purchase.estimated_cents
+    assert_nil booking.responsible_person
+    assert_nil purchase.responsible_person
+
+    list = project.lists.find_by!(name: "Serving stations")
+    assert_equal [ [ "Station", "text" ], [ "Ready", "checkbox" ] ],
+      list.columns.map { |column| [ column.name, column.column_type ] }
+  end
+
+  test "Plan more context includes existing item titles and enabled Tools" do
+    project = projects(:building_cleanup)
+    project.update!(enabled_tools: %w[tasks schedule signup_sheet budget list])
+    project.tasks.create!(title: "Patch hallway wall")
+    project.schedule_items.create!(title: "Morning walkthrough", date: Date.new(2027, 3, 20))
+    project.slots.create!(label: "Paint crew", date: Date.new(2027, 3, 20), capacity: 3)
+    project.budget_lines.create!(kind: :booking, description: "Floor buffer", estimated: "175.00")
+    project.budget_lines.create!(kind: :purchase, description: "Painter tape", estimated: "42.75")
+    project.lists.create!(name: "Room checklist")
+    fake = Planner::Providers::Fake.new([
+      planner_response(finished: true, suggestions: [])
+    ])
+    Rails.configuration.x.planner_provider = fake
+    sign_in_as(:other_leader)
+
+    get project_path(project)
+    assert_select "a", text: "Plan more"
+    post project_planner_sessions_path(project), params: {
+      planner_session: { description: "Add the final cleanup assignments." }
+    }
+
+    context = fake.contexts.first
+    assert_equal %w[tasks schedule signup_sheet budget list], context.fetch(:enabled_tools)
+    assert_equal [ "Patch hallway wall" ], context.fetch(:existing_task_titles)
+    assert_equal [ "Morning walkthrough" ], context.fetch(:existing_schedule_item_titles)
+    assert_equal [ "Paint crew" ], context.fetch(:existing_slot_labels)
+    assert_equal [ "Floor buffer" ], context.fetch(:existing_booking_descriptions)
+    assert_equal [ "Painter tape" ], context.fetch(:existing_purchase_descriptions)
+    assert_equal [ "Room checklist" ], context.fetch(:existing_list_names)
+  end
+
+  test "review edits nested List fields before accepting" do
+    project = projects(:community_meal)
+    suggestion_id = "71000000-0000-4000-8000-000000000001"
+    Rails.configuration.x.planner_provider = Planner::Providers::Fake.new([
+      planner_response(
+        finished: true,
+        suggestions: [
+          suggestion(
+            suggestion_id,
+            "list",
+            "name" => "Serving stations",
+            "columns" => [ { "name" => "Station", "type" => "text" } ]
+          )
+        ]
+      )
+    ])
+    sign_in_as_leader
+    post project_planner_sessions_path(project), params: {
+      planner_session: { description: "Create a serving station List." }
+    }
+    planner_session = project.planner_sessions.last!
+
+    get review_project_planner_session_path(project, planner_session)
+    assert_response :success
+    assert_select "input[name='suggestion[fields][name]'][value='Serving stations']"
+    assert_select "input[name='suggestion[fields][columns][0][name]'][value='Station']"
+    assert_select "select[name='suggestion[fields][columns][0][type]'] option[selected]", text: "Text"
+
+    patch suggestion_project_planner_session_path(project, planner_session), params: {
+      suggestion: {
+        id: suggestion_id,
+        decision: "edit",
+        fields: {
+          name: "Meal teams",
+          columns: [
+            { name: "Team name", type: "text" },
+            { name: "Confirmed", type: "checkbox" }
+          ]
+        }
+      }
+    }
+    post accept_project_planner_session_path(project, planner_session), params: { mode: "kept" }
+
+    list = project.lists.find_by!(name: "Meal teams")
+    assert_equal [ [ "Team name", "text" ], [ "Confirmed", "checkbox" ] ],
+      list.columns.map { |column| [ column.name, column.column_type ] }
+  end
+
+  test "past Project context excludes deleted Projects and People" do
+    current_project = projects(:community_meal)
+    workspace = current_project.workspace
+    private_person = workspace.people.create!(
+      name: "Past Project Private Person",
+      email: "past-private@example.test",
+      phone: "+1-555-300-4019"
+    )
+    past_project = workspace.projects.create!(
+      name: "Previous Community Supper",
+      description: "A prior meal.",
+      owner: private_person,
+      enabled_tools: %w[tasks budget]
+    )
+    past_project.memberships.create!(person: private_person, role: :leader)
+    past_project.tasks.create!(title: "Arrange old tables")
+    past_project.budget_lines.create!(kind: :booking, description: "Old hall", estimated: "300")
+    past_project.budget_lines.create!(kind: :purchase, description: "Old napkins", estimated: "45")
+    deleted_project = workspace.projects.create!(
+      name: "Deleted Private Project",
+      owner: private_person,
+      enabled_tools: [ "tasks" ],
+      deleted_at: Time.current
+    )
+    deleted_project.tasks.create!(title: "Deleted sentinel task")
+    fake = Planner::Providers::Fake.new([
+      planner_response(finished: true, suggestions: [])
+    ])
+    Rails.configuration.x.planner_provider = fake
+    sign_in_as_leader
+
+    post project_planner_sessions_path(current_project), params: {
+      planner_session: { description: "Use the useful shape of earlier meals." }
+    }
+
+    previous = fake.contexts.first.fetch(:past_projects).find do |project_context|
+      project_context.fetch(:task_titles) == [ "Arrange old tables" ]
+    end
+    assert_equal %w[tasks budget], previous.fetch(:tool_mix)
+    assert_equal 1, previous.fetch(:task_count)
+    assert_equal [ "Arrange old tables" ], previous.fetch(:task_titles)
+    assert_equal 1, previous.fetch(:booking_count)
+    assert_equal [ "Old hall" ], previous.fetch(:booking_descriptions)
+    assert_equal 1, previous.fetch(:purchase_count)
+    assert_equal [ "Old napkins" ], previous.fetch(:purchase_descriptions)
+
+    context_json = fake.contexts.to_json
+    assert_not_includes context_json, "Deleted sentinel task"
+    assert_not_includes context_json, private_person.name
+    assert_not_includes context_json, private_person.email
+    assert_not_includes context_json, private_person.phone
+  end
+
   private
     def planner_response(card: nil, finished: false, suggestions:)
       Planner::Response.new(card:, finished:, suggestions:)
@@ -272,6 +571,15 @@ class PlannerTest < ActionDispatch::IntegrationTest
       {
         "id" => id,
         "kind" => "task",
+        "fields" => fields,
+        "status" => "proposed"
+      }
+    end
+
+    def suggestion(id, kind, fields)
+      {
+        "id" => id,
+        "kind" => kind,
         "fields" => fields,
         "status" => "proposed"
       }
