@@ -1,0 +1,17 @@
+<% if content_for?(:breadcrumbs) %>
+  <%= yield :breadcrumbs %>
+<% else %>
+  <% if @project&.persisted? %>
+    <%= link_to "Projects", projects_path, class: "hover:text-ink" %>
+    <span aria-hidden="true" class="text-ink-3">/</span>
+    <% if controller_name == "projects" && action_name == "show" %>
+      <span class="truncate text-ink"><%= @project.name %></span>
+    <% else %>
+      <%= link_to @project.name, project_path(@project), class: "truncate hover:text-ink" %>
+      <span aria-hidden="true" class="text-ink-3">/</span>
+      <span class="shrink-0 text-ink"><%= controller_name == "planner_sessions" ? "Planner" : content_for(:title).to_s.split(/ [—-] /).first %></span>
+    <% end %>
+  <% else %>
+    <span class="truncate text-ink"><%= controller_name == "workspaces" ? "Home" : content_for(:title) %></span>
+  <% end %>
+<% end %>
