@@ -13,4 +13,11 @@
   <div class="mt-10 rounded-lg border border-dashed border-gray-300 p-8 text-center text-gray-600">
     Nothing here yet. Projects will show up here once your team starts planning.
   </div>
+
+  <nav class="mt-8 flex flex-wrap gap-4 text-sm font-medium">
+    <% if @person.admin? %>
+      <%= link_to "People", people_path(@workspace), class: "text-gray-900 hover:underline" %>
+    <% end %>
+    <%= link_to "My profile", edit_profile_path(@workspace), class: "text-gray-900 hover:underline" %>
+  </nav>
 </div>
