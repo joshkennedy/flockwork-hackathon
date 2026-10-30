@@ -3,6 +3,7 @@ class Workspace < ApplicationRecord
   RESERVED_SLUGS = %w[projects up workspaces].freeze
 
   has_many :projects, dependent: :destroy
+  has_many :tasks, through: :projects
   has_many :people, dependent: :destroy
   has_many :invitations, dependent: :restrict_with_exception
 

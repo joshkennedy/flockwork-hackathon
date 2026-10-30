@@ -34,6 +34,7 @@
   <% end %>
 
   <nav class="mt-8 flex flex-wrap gap-4 text-sm font-medium">
+    <%= link_to "My Tasks", my_tasks_path, class: "text-stone-700 hover:text-stone-950" %>
     <% if @person.admin? %>
       <%= link_to "People", people_path(@workspace), class: "text-gray-900 hover:underline" %>
     <% end %>

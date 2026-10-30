@@ -403,6 +403,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_31_150001) do
     t.index ["key"], name: "index_solid_queue_semaphores_on_key", unique: true
   end
 
+  create_table "tasks", force: :cascade do |t|
+    t.bigint "project_id", null: false
+    t.string "title", null: false
+    t.date "due_on"
+    t.bigint "assignee_id"
+    t.datetime "completed_at"
+    t.bigint "completed_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["assignee_id", "completed_at", "due_on"], name: "index_tasks_on_assignee_id_and_completed_at_and_due_on"
+    t.index ["assignee_id"], name: "index_tasks_on_assignee_id"
+    t.index ["completed_by_id"], name: "index_tasks_on_completed_by_id"
+    t.index ["project_id"], name: "index_tasks_on_project_id"
+  end
+
   create_table "workspaces", force: :cascade do |t|
     t.string "name", null: false
     t.string "slug", null: false
@@ -448,4 +463,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_31_150001) do
   add_foreign_key "solid_queue_ready_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_recurring_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
+  add_foreign_key "tasks", "people", column: "assignee_id"
+  add_foreign_key "tasks", "people", column: "completed_by_id"
+  add_foreign_key "tasks", "projects"
 end

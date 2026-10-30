@@ -17,6 +17,7 @@ class Project < ApplicationRecord
   has_many :memberships, dependent: :destroy
   has_many :people, through: :memberships
   has_many :schedule_items, dependent: :destroy
+  has_many :tasks, dependent: :destroy
   has_many :budget_lines, dependent: :destroy
   has_many :recipients, dependent: :destroy
 
