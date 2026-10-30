@@ -1,7 +1,28 @@
 <% content_for :title, "Plan #{@project.name}" %>
 
-<div class="w-full">
+<div
+  class="w-full"
+  data-controller="voice-planner"
+  data-voice-planner-voice-session-url-value="<%= voice_session_project_planner_session_path(@project, @planner_session) %>"
+  data-voice-planner-answer-url-value="<%= answer_project_planner_session_path(@project, @planner_session) %>">
   <%= turbo_stream_from @planner_session %>
+
+  <p hidden data-voice-planner-target="error" role="alert" class="mb-7 rounded-control bg-danger-soft px-4 py-3 text-danger"></p>
+
+  <section hidden data-voice-planner-target="panel" class="tile-raised mb-7 p-4" aria-label="Voice planning">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <p class="flex items-center gap-2 font-semibold text-ink">
+        <%= icon(:mic) %>
+        <span data-voice-planner-target="status" aria-live="polite">Listening…</span>
+      </p>
+      <button type="button" class="btn btn-secondary" data-action="voice-planner#end">End conversation</button>
+    </div>
+    <p class="mt-3 text-meta text-ink-2">Voice planning: talk about the work, not people.</p>
+    <div class="mt-4 space-y-2 text-meta" aria-live="polite">
+      <p><span class="font-semibold text-ink">Grok:</span> <span data-voice-planner-target="assistantCaption">Waiting to speak…</span></p>
+      <p><span class="font-semibold text-ink">You:</span> <span data-voice-planner-target="userCaption">Listening…</span></p>
+    </div>
+  </section>
 
   <div class="grid min-w-0 gap-7 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]">
     <%= render "card", project: @project, planner_session: @planner_session %>

@@ -56,6 +56,7 @@ Rails.application.routes.draw do
     resources :planner_sessions, path: "planner", only: %i[ new create show ] do
       member do
         post :answer
+        post :voice_session
         get :review
         post :skip_to_review
         post :abandon

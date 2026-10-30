@@ -20,13 +20,14 @@ class PlannerSession < ApplicationRecord
   def record_answer!(text)
     card = current_card&.stringify_keys
     raise ArgumentError, "There is no current Planner card" unless card
+    redacted_text = Planner::NameRedactor.new(Current.workspace).call(text)
 
     update!(
       steps: steps + [
         {
           "question" => card.fetch("question"),
           "options" => card.fetch("options"),
-          "answer" => text
+          "answer" => redacted_text
         }
       ],
       current_card: nil,

@@ -1,5 +1,10 @@
 <%= turbo_frame_tag dom_id(planner_session, :card) do %>
-  <section class="min-w-0" aria-labelledby="planner-question">
+  <section
+    class="min-w-0"
+    aria-labelledby="planner-question"
+    data-voice-planner-target="cardState"
+    data-voice-state="<%= planner_session.status %>"
+    data-voice-card="<%= planner_session.current_card&.fetch("question", nil) %>">
     <% if planner_session.last_error.present? %>
       <p role="alert" class="mb-7 rounded-control bg-danger-soft px-4 py-3 text-danger"><%= PlannerSession::ERROR_MESSAGE %></p>
     <% end %>
@@ -25,6 +30,14 @@
           <%= form.submit "Answer", class: "btn btn-primary", data: { turbo_submits_with: "Thinking…" } %>
         </div>
       <% end %>
+
+      <div hidden data-voice-planner-target="launcher" class="mt-5">
+        <button type="button" class="btn btn-secondary" data-action="voice-planner#start" data-voice-planner-target="startButton">
+          <%= icon(:mic) %>
+          <span>Talk it through</span>
+        </button>
+        <p class="mt-2 text-meta text-ink-2">Voice planning: talk about the work, not people.</p>
+      </div>
     <% elsif planner_session.reviewing? %>
       <h1 id="planner-question" class="text-ink">Your plan is ready to review</h1>
       <p class="mt-4 text-ink-2">Check every Suggestion before anything is added to the Project.</p>
