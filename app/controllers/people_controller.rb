@@ -1,6 +1,6 @@
 class PeopleController < ApplicationController
   include WorkspaceAccess
-  include AdminOnly
+  before_action :authorize_people_management
 
   def index
     @people = Current.workspace.people.order(:name)
@@ -23,6 +23,7 @@ class PeopleController < ApplicationController
   def edit
     @person = Current.workspace.people.find(params[:id])
     load_notes
+    load_involvement
   end
 
   def update
@@ -32,11 +33,25 @@ class PeopleController < ApplicationController
       redirect_to people_path(Current.workspace), notice: "Saved #{@person.name}."
     else
       load_notes
+      load_involvement
       render :edit, status: :unprocessable_entity
     end
   end
 
   private
+    def authorize_people_management
+      raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :manage_people, Current.workspace)
+    end
+
+    def authorize_involvement
+      raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :view_involvement, @person)
+    end
+
+    def load_involvement
+      authorize_involvement
+      @involvement = Oversight.involvement(@person)
+    end
+
     def person_params
       params.require(:person).permit(:name, :email, :phone, :admin)
     end

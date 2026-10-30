@@ -11,6 +11,9 @@ module Flockwork
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 8.1
 
+    # Parallel tickets use coordinated migration versions that can be later than a developer's local clock.
+    config.active_record.validate_migration_timestamps = false
+
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.

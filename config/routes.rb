@@ -8,6 +8,7 @@ Rails.application.routes.draw do
   resources :workspaces, only: :create
   get "get_involved", to: "get_involved#show"
   get "my_tasks", to: "my_tasks#index"
+  resource :oversight, only: %i[ show update ]
 
   resources :projects, only: %i[ index new create show edit update destroy ] do
     collection do

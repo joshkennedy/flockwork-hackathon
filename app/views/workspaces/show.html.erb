@@ -38,6 +38,9 @@
     <% if @person.admin? %>
       <%= link_to "People", people_path(@workspace), class: "text-gray-900 hover:underline" %>
     <% end %>
+    <% if Policy.can?(@person, :view_oversight, @workspace) %>
+      <%= link_to "Oversight", oversight_path, class: "text-stone-700 hover:text-stone-950" %>
+    <% end %>
     <%= link_to "My profile", edit_profile_path(@workspace), class: "text-gray-900 hover:underline" %>
   </nav>
 </div>

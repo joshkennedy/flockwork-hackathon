@@ -1,6 +1,6 @@
 class Workspace < ApplicationRecord
   # Slugs that would shadow top-level routes
-  RESERVED_SLUGS = %w[projects up workspaces].freeze
+  RESERVED_SLUGS = %w[oversight projects up workspaces].freeze
 
   has_many :projects, dependent: :destroy
   has_many :tasks, through: :projects
@@ -13,6 +13,7 @@ class Workspace < ApplicationRecord
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true, format: { with: /\A[a-z0-9]+(?:-[a-z0-9]+)*\z/ }
+  validates :overextended_limit, numericality: { only_integer: true, greater_than: 0 }
 
   def to_param
     slug
