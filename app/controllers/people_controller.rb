@@ -22,6 +22,7 @@ class PeopleController < ApplicationController
 
   def edit
     @person = Current.workspace.people.find(params[:id])
+    load_notes
   end
 
   def update
@@ -30,6 +31,7 @@ class PeopleController < ApplicationController
     if @person.update(person_params)
       redirect_to people_path(Current.workspace), notice: "Saved #{@person.name}."
     else
+      load_notes
       render :edit, status: :unprocessable_entity
     end
   end
@@ -37,5 +39,10 @@ class PeopleController < ApplicationController
   private
     def person_params
       params.require(:person).permit(:name, :email, :phone, :admin)
+    end
+
+    def load_notes
+      @person_notes = Policy.visible_notes(Current.person, @person.notes).includes(:author).order(:created_at, :id)
+      @note_visibilities = Policy.writable_note_visibilities(Current.person, @person)
     end
 end

@@ -11,11 +11,21 @@
     <% if recipients.any? %>
       <ul class="mt-6 divide-y divide-stone-300 border-y border-stone-300">
         <% recipients.each do |recipient| %>
-          <li class="flex items-center justify-between gap-4 py-3">
-            <span class="font-semibold text-stone-950"><%= recipient.person.name %></span>
-            <% if Policy.can?(Current.person, :manage_recipients, project) %>
-              <%= button_to "Remove", project_recipient_path(project, recipient), method: :delete, class: "text-sm font-semibold text-red-800 hover:text-red-950" %>
-            <% end %>
+          <li class="py-4">
+            <div class="flex items-center justify-between gap-4">
+              <span class="font-semibold text-stone-950"><%= recipient.person.name %></span>
+              <% if Policy.can?(Current.person, :manage_recipients, project) %>
+                <%= button_to "Remove", project_recipient_path(project, recipient), method: :delete, class: "text-sm font-semibold text-red-800 hover:text-red-950" %>
+              <% end %>
+            </div>
+            <div class="mt-3" aria-label="Notes for <%= recipient.person.name %>">
+              <h3 class="text-sm font-semibold text-stone-800">Notes</h3>
+              <%= render "notes/list", notes: @recipient_notes_by_id.fetch(recipient.id, []) %>
+              <%= render "notes/form",
+                notable: recipient,
+                visibilities: @note_visibilities,
+                form_url: project_notes_path(project) %>
+            </div>
           </li>
         <% end %>
       </ul>

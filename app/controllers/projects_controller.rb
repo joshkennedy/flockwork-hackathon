@@ -22,6 +22,13 @@ class ProjectsController < ApplicationController
 
   def show
     @ownership_transfer_leaders = @project.memberships.leader.where.not(person_id: @project.owner_id).includes(:person)
+    return unless Policy.can?(Current.person, :view_notes, @project)
+
+    @project_notes = Policy.visible_notes(Current.person, @project.notes).includes(:author).order(:created_at, :id)
+    recipient_scope = Current.workspace.notes.where(notable_type: "Recipient", notable_id: @project.recipient_ids)
+    @recipient_notes_by_id = Policy.visible_notes(Current.person, recipient_scope)
+      .includes(:author).order(:created_at, :id).group_by(&:notable_id)
+    @note_visibilities = Policy.writable_note_visibilities(Current.person, @project)
   end
 
   def team

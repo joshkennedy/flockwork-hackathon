@@ -5,6 +5,9 @@ class Person < ApplicationRecord
   has_many :memberships, dependent: :destroy
   has_many :recipients, dependent: :destroy
   has_many :slot_claims, dependent: :destroy
+  has_many :notes, as: :notable, dependent: :destroy
+  has_many :authored_notes, class_name: "Note", foreign_key: :author_id, inverse_of: :author,
+    dependent: :restrict_with_exception
   has_many :projects, through: :memberships
   has_many :owned_projects, class_name: "Project", foreign_key: :owner_id, inverse_of: :owner
   has_many :assigned_tasks, class_name: "Task", foreign_key: :assignee_id, inverse_of: :assignee,

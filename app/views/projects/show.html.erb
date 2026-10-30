@@ -75,4 +75,15 @@
       <% end %>
     </div>
   <% end %>
+
+  <% if Policy.can?(Current.person, :view_notes, @project) %>
+    <section class="mt-14 bg-[#e7ede3] p-6" aria-labelledby="project-notes-heading">
+      <h2 id="project-notes-heading" class="text-xl font-bold text-stone-950">Notes</h2>
+      <%= render "notes/list", notes: @project_notes %>
+      <%= render "notes/form",
+        notable: @project,
+        visibilities: @note_visibilities,
+        form_url: project_notes_path(@project) %>
+    </section>
+  <% end %>
 </div>
