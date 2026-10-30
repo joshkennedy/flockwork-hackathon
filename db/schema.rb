@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_30_180003) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_30_190001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -52,21 +52,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_180003) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
-  create_table "invitations", force: :cascade do |t|
-    t.bigint "workspace_id", null: false
+  create_table "budget_lines", force: :cascade do |t|
     t.bigint "project_id", null: false
-    t.bigint "person_id", null: false
-    t.bigint "inviter_id", null: false
-    t.integer "role", null: false
+    t.integer "kind", null: false
+    t.string "description", null: false
+    t.integer "estimated_cents", null: false
+    t.integer "actual_cents"
     t.integer "status", default: 0, null: false
-    t.datetime "responded_at"
+    t.bigint "responsible_person_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["inviter_id"], name: "index_invitations_on_inviter_id"
-    t.index ["person_id"], name: "index_invitations_on_person_id"
-    t.index ["project_id", "person_id"], name: "index_invitations_on_pending_project_and_person", unique: true, where: "(status = 0)"
-    t.index ["project_id"], name: "index_invitations_on_project_id"
-    t.index ["workspace_id"], name: "index_invitations_on_workspace_id"
+    t.index ["project_id"], name: "index_budget_lines_on_project_id"
+    t.index ["responsible_person_id"], name: "index_budget_lines_on_responsible_person_id"
   end
 
   create_table "memberships", force: :cascade do |t|
@@ -317,10 +314,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_180003) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "invitations", "people"
-  add_foreign_key "invitations", "people", column: "inviter_id"
-  add_foreign_key "invitations", "projects"
-  add_foreign_key "invitations", "workspaces"
+  add_foreign_key "budget_lines", "people", column: "responsible_person_id"
+  add_foreign_key "budget_lines", "projects"
   add_foreign_key "memberships", "people"
   add_foreign_key "memberships", "projects"
   add_foreign_key "people", "workspaces"

@@ -31,6 +31,10 @@ module Policy
       return false
     end
 
+    if record.is_a?(::BudgetLine)
+      return budget_line_can?(person, action, record)
+    end
+
     return false unless record.is_a?(::Project)
     return false unless record.workspace_id == person.workspace_id
 
@@ -47,7 +51,7 @@ module Policy
     case action
     when :show
       person.admin? || record.memberships.exists?(person: person)
-    when :update, :manage_tools, :manage_schedule
+    when :update, :manage_tools, :manage_schedule, :manage_budget
       person.admin? || record.memberships.leader.exists?(person: person)
     when :mark_done
       project_leader_or_admin?(person, record) && record.done_at.nil?
@@ -59,6 +63,22 @@ module Policy
       record.owner_id == person.id && record.archived_at.present?
     when :transfer_ownership
       record.owner_id == person.id
+    else
+      false
+    end
+  end
+
+  def budget_line_can?(person, action, budget_line)
+    project = budget_line.project
+    return false unless project.workspace_id == person.workspace_id
+    return false unless project.deleted_at.nil?
+
+    case action
+    when :manage_budget
+      project_leader_or_admin?(person, project)
+    when :update_budget_line_status
+      budget_line.responsible_person_id == person.id &&
+        (person.admin? || project.memberships.exists?(person: person))
     else
       false
     end

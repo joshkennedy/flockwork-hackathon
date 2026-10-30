@@ -20,6 +20,9 @@ Rails.application.routes.draw do
     end
 
     resources :schedule_items, except: %i[ index show ]
+    resources :budget_lines, except: %i[ index show ] do
+      resource :status, only: %i[ edit update ], controller: "budget_line_statuses"
+    end
   end
   resource :session, only: :destroy
 

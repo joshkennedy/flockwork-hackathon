@@ -1,0 +1,17 @@
+community_meal_venue:
+  project: community_meal
+  kind: booking
+  description: Venue rental
+  estimated_cents: 100000
+  actual_cents:
+  status: pending
+  responsible_person: volunteer
+
+community_meal_supplies:
+  project: community_meal
+  kind: purchase
+  description: Serving supplies
+  estimated_cents: 25000
+  actual_cents: 2499
+  status: paid
+  responsible_person: leader
