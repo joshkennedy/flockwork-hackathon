@@ -1,0 +1,19 @@
+<aside class="bg-[#e7ede3] p-6" aria-labelledby="planner-summary-heading">
+  <h2 id="planner-summary-heading" class="text-lg font-bold text-stone-950">Task Suggestions</h2>
+
+  <% if planner_session.suggestions.any? %>
+    <ul class="mt-5 space-y-4">
+      <% planner_session.suggestions.each do |suggestion| %>
+        <li>
+          <p class="font-semibold text-stone-950"><%= suggestion.dig("fields", "title") %></p>
+          <% if suggestion.dig("fields", "role").present? %>
+            <p class="mt-1 text-sm text-stone-700"><%= suggestion.dig("fields", "role") %></p>
+          <% end %>
+          <p class="mt-1 text-sm text-stone-600"><%= suggestion.fetch("status").humanize %></p>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="mt-5 text-sm leading-6 text-stone-600">Suggestions will appear here as the plan takes shape.</p>
+  <% end %>
+</aside>

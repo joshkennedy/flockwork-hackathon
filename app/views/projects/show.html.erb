@@ -4,6 +4,9 @@
   <nav class="flex flex-wrap items-center justify-between gap-4" aria-label="Project navigation">
     <%= link_to "Projects", projects_path, class: "text-sm font-semibold text-stone-600 hover:text-stone-950" %>
     <div class="flex flex-wrap items-center justify-end gap-x-5 gap-y-2">
+      <% if Policy.can?(Current.person, :plan, @project) %>
+        <%= link_to "Plan with AI", new_project_planner_session_path(@project), class: "bg-[#1f291f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#354235]" %>
+      <% end %>
       <% if Policy.can?(Current.person, :view_team, @project) %>
         <%= link_to "Team", team_project_path(@project), class: "text-sm font-semibold text-stone-700 hover:text-stone-950" %>
       <% elsif Policy.can?(Current.person, :join, @project) %>
