@@ -1,7 +1,6 @@
 module Planner
   module Providers
-    class Claude
-      MODEL = "claude-sonnet-5-5"
+    class Llm
       SYSTEM_PROMPT = <<~PROMPT.freeze
         You are the Flockwork Planner. Ask one question at a time and provide 3 to 5 short answer options.
         Build Suggestions for Tools, Tasks, Schedule items, Slot runs, Bookings, Purchases, and Lists as you learn.
@@ -36,7 +35,7 @@ module Planner
       }.freeze
 
       def call(context)
-        message = RubyLLM.chat(model: MODEL, provider: :anthropic)
+        message = RubyLLM.chat(model: llm_model, provider: llm_provider.to_sym, assume_model_exists: true)
           .with_instructions(SYSTEM_PROMPT)
           .with_schema(RESPONSE_SCHEMA)
           .ask(JSON.generate(context))
@@ -50,6 +49,14 @@ module Planner
           finished:,
           suggestions: parsed.fetch("suggestions")
         )
+      end
+
+      def llm_provider
+        ENV.fetch("PLANNER_LLM_PROVIDER", "openrouter")
+      end
+
+      def llm_model
+        ENV.fetch("PLANNER_LLM_MODEL", "anthropic/claude-sonnet-5.5")
       end
     end
   end

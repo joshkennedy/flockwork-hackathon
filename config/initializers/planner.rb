@@ -11,6 +11,6 @@ Rails.application.config.after_initialize do
       )
     ])
   else
-    Planner::Providers::Claude.new
+    Planner::Providers::Llm.new
   end
 end
