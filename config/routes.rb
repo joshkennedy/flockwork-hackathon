@@ -27,6 +27,7 @@ Rails.application.routes.draw do
       post :enable_public_link
       post :reset_public_link
       post :disable_public_link
+      get :mentionable_people, to: "mentionable_people#index"
     end
 
     resources :schedule_items, except: %i[ index show ]
@@ -38,6 +39,8 @@ Rails.application.routes.draw do
         post :reopen
       end
     end
+    resources :comments, only: :create
+    resources :follows, only: :destroy
     resources :slots, except: %i[ index show ] do
       resource :claim, only: %i[ create destroy ], controller: "slot_claims"
     end

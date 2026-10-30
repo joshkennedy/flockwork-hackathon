@@ -1,10 +1,13 @@
-<section class="min-h-44 bg-[#e7ede3] p-6" aria-labelledby="tool-messages">
+<section class="min-h-44 min-w-0 bg-[#e7ede3] p-6" aria-labelledby="tool-messages">
   <h2 id="tool-messages" class="text-xl font-bold text-stone-950"><%= Project::TOOL_LABELS.fetch("messages") %></h2>
 
   <% if Policy.can?(Current.person, :post_message, project) %>
     <%= form_with model: [ project, project.messages.build ], class: "mt-6 space-y-3" do |form| %>
-      <%= form.label :body, "New message", class: "block text-sm font-semibold text-stone-900" %>
-      <%= form.rich_text_area :body, required: true, class: "mt-2 block w-full border border-stone-400 bg-white" %>
+      <%= render "mentions/field",
+            form: form,
+            project: project,
+            label: "New message",
+            input_id: "new_message_body" %>
       <%= form.submit "Post message", class: "cursor-pointer bg-[#1f291f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#354235]" %>
     <% end %>
   <% end %>
@@ -28,8 +31,11 @@
 
           <% if Policy.can?(Current.person, :post_message, project) %>
             <%= form_with model: [ project, project.messages.build(parent: root) ], class: "ml-6 space-y-3 border-l border-stone-400 pl-6" do |form| %>
-              <%= form.label :body, "Reply", class: "block text-sm font-semibold text-stone-900" %>
-              <%= form.rich_text_area :body, required: true, class: "mt-2 block w-full border border-stone-400 bg-white" %>
+              <%= render "mentions/field",
+                    form: form,
+                    project: project,
+                    label: "Reply",
+                    input_id: "message_reply_#{root.id}_body" %>
               <%= form.submit "Post reply", class: "cursor-pointer bg-[#1f291f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#354235]" %>
             <% end %>
           <% end %>

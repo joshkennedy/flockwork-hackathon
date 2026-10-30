@@ -2,6 +2,8 @@ class Slot < ApplicationRecord
   belongs_to :project
   has_many :slot_claims, dependent: :destroy
   has_many :people, through: :slot_claims
+  has_many :comments, as: :commentable, dependent: :destroy
+  has_many :follows, as: :followable, dependent: :destroy
 
   validates :date, presence: true
   validates :label, presence: true

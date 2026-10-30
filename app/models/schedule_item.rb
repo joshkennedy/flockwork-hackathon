@@ -1,5 +1,7 @@
 class ScheduleItem < ApplicationRecord
   belongs_to :project
+  has_many :comments, as: :commentable, dependent: :destroy
+  has_many :follows, as: :followable, dependent: :destroy
 
   validates :date, presence: true
   validates :title, presence: true

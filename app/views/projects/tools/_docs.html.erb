@@ -1,4 +1,4 @@
-<section class="min-h-44 bg-[#e7ede3] p-6" aria-labelledby="tool-docs">
+<section class="min-h-44 min-w-0 bg-[#e7ede3] p-6" aria-labelledby="tool-docs">
   <% doc_items = project.doc_items.includes(:author, file_attachment: :blob).ordered %>
   <% documents = doc_items.select(&:document?) %>
   <% files = doc_items.select(&:file?) %>

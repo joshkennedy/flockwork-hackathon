@@ -44,6 +44,10 @@ module Policy
       return message_can?(person, action, record)
     end
 
+    if record.is_a?(::Follow)
+      return follow_can?(person, action, record)
+    end
+
     if record.is_a?(::DocItem)
       return doc_item_access?(person, action, record)
     end
@@ -120,6 +124,8 @@ module Policy
       person.admin? || record.memberships.leader.exists?(person: person)
     when :manage_public_link, :duplicate, :plan
       project_leader_or_admin?(person, record)
+    when :comment
+      person.admin? || record.memberships.exists?(person: person)
     else
       false
     end
@@ -209,6 +215,11 @@ module Policy
     person.admin? || record.memberships.leader.exists?(person: person)
   end
   private :project_leader_or_admin?
+
+  def follow_can?(person, action, follow)
+    action == :unfollow && follow.person_id == person.id && can?(person, :show, follow.followable.project)
+  end
+  private :follow_can?
 
   def open_team_visible?(person, project)
     project.workspace_id == person.workspace_id &&

@@ -54,6 +54,7 @@ class Project < ApplicationRecord
   has_many :doc_items, dependent: :destroy
 
   has_many :lists, dependent: :destroy
+  has_many :list_rows, through: :lists, source: :rows
 
   scope :active, -> { where(done_at: nil, archived_at: nil, deleted_at: nil) }
 
