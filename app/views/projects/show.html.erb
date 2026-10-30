@@ -1,9 +1,9 @@
 <% content_for :title, @project.name %>
 
 <div class="mx-auto w-full max-w-5xl">
-  <nav class="flex items-center justify-between gap-4" aria-label="Project navigation">
+  <nav class="flex flex-wrap items-center justify-between gap-4" aria-label="Project navigation">
     <%= link_to "Projects", projects_path, class: "text-sm font-semibold text-stone-600 hover:text-stone-950" %>
-    <div class="flex items-center gap-5">
+    <div class="flex flex-wrap items-center justify-end gap-x-5 gap-y-2">
       <% if Policy.can?(Current.person, :view_team, @project) %>
         <%= link_to "Team", team_project_path(@project), class: "text-sm font-semibold text-stone-700 hover:text-stone-950" %>
       <% elsif Policy.can?(Current.person, :join, @project) %>
@@ -11,6 +11,9 @@
       <% end %>
       <% if Policy.can?(Current.person, :update, @project) %>
         <%= link_to "Edit Project", edit_project_path(@project), class: "text-sm font-semibold text-stone-700 hover:text-stone-950" %>
+      <% end %>
+      <% if Policy.can?(Current.person, :duplicate, @project) %>
+        <%= link_to "Duplicate", new_project_duplicate_path(@project), class: "text-sm font-semibold text-stone-700 hover:text-stone-950" %>
       <% end %>
     </div>
   </nav>

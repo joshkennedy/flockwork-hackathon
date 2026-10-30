@@ -68,6 +68,7 @@ Rails.application.routes.draw do
     resources :memberships, only: :destroy
     resources :recipients, only: %i[ new create destroy ]
     resources :notes, only: :create
+    resource :duplicate, only: %i[ new create ], controller: "project_duplicates"
   end
   resources :invitations, only: :show, param: :token do
     member do
