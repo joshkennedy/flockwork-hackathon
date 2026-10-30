@@ -13,6 +13,7 @@ class Person < ApplicationRecord
   validates :email, uniqueness: { scope: :workspace_id }, allow_nil: true
   # The first Admin of a new Workspace must be able to sign in, so they need an email then.
   validates :email, presence: true, on: :workspace_creation
+  validate :cannot_remove_last_admin, if: :admin_changed?
 
   # Signing in consumes a link by stamping last_signed_in_at, which invalidates every link issued before it.
   # The conditional update means two simultaneous uses of one link cannot both succeed.
@@ -28,4 +29,12 @@ class Person < ApplicationRecord
   def can_sign_in?
     email.present?
   end
+
+  private
+    def cannot_remove_last_admin
+      return if admin?
+      return if workspace.people.where(admin: true).where.not(id:).exists?
+
+      errors.add(:admin, "cannot be removed from the last Admin in the Workspace")
+    end
 end

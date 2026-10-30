@@ -46,4 +46,11 @@ class PersonTest < ActiveSupport::TestCase
     assert Person.sign_in_with_token(second)
     assert_nil Person.sign_in_with_token(first)
   end
+
+  test "the last Admin cannot be demoted when they are the only Admin" do
+    admin = people(:admin)
+
+    assert_not admin.update(admin: false)
+    assert_includes admin.errors[:admin], "cannot be removed from the last Admin in the Workspace"
+  end
 end
