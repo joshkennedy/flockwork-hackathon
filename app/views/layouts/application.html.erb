@@ -16,7 +16,7 @@
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
-  <body class="min-h-screen <%= "bg-frame" if authenticated? %>">
+  <body class="min-h-screen <%="bg-frame" if authenticated? %>">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-panel focus:p-3">Skip to content</a>
     <% if authenticated? %>
       <div class="min-h-screen p-2 md:grid md:grid-cols-[232px_minmax(0,1fr)]">
@@ -33,7 +33,7 @@
             </div>
           </details>
         </header>
-        <div class="min-w-0 rounded-panel bg-panel">
+        <div class="panel min-h-[calc(100dvh-72px)] min-w-0 md:min-h-0">
           <nav aria-label="Breadcrumbs" class="flex h-topbar-h min-w-0 items-center gap-2 border-b border-hairline px-4 text-label text-ink-2 md:px-7">
             <%= render "layouts/breadcrumbs" %>
           </nav>
@@ -43,7 +43,7 @@
         </div>
       </div>
     <% else %>
-      <div class="mx-auto max-w-2xl px-4 py-7 sm:py-10">
+      <div class="mx-auto max-w-xl px-4 py-7 sm:py-10">
         <%= link_to "Flockwork", root_path, class: "mb-10 block font-display text-wordmark" %>
         <main id="main-content"><%= yield %></main>
       </div>

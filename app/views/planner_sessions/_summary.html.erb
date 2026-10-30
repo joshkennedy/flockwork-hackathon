@@ -1,22 +1,35 @@
 <%= turbo_frame_tag dom_id(planner_session, :summary) do %>
-  <aside class="bg-[#e7ede3] p-6" aria-labelledby="planner-summary-heading">
-    <h2 id="planner-summary-heading" class="text-lg font-bold text-stone-950">Suggestions</h2>
+  <aside class="border-t border-hairline pt-7 lg:border-t-0 lg:border-l lg:pl-7 lg:pt-0" aria-labelledby="planner-summary-heading">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <h2 id="planner-summary-heading" class="text-ink">Your plan so far</h2>
+      <% if planner_session.suggestions.any? %>
+        <p class="text-meta text-ink-2"><%= planner_session.suggestions.count { |item| %w[kept edited].include?(item.fetch("status")) } %> kept · <%= planner_session.suggestions.count { |item| item.fetch("status") == "proposed" } %> suggested</p>
+      <% end %>
+    </div>
 
     <% if planner_session.suggestions.any? %>
       <div class="mt-5 space-y-5">
         <% planner_session.suggestions.group_by { |suggestion| suggestion.fetch("kind") }.each do |kind, suggestions| %>
           <section aria-label="<%= Planner::SuggestionKinds.label(kind) %>">
-            <h3 class="font-semibold text-stone-950"><%= Planner::SuggestionKinds.label(kind) %> <span class="text-stone-600"><%= suggestions.length %></span></h3>
+            <% symbol, color = { "task" => [ :tasks, "text-tool-tasks" ], "schedule_item" => [ :schedule, "text-tool-schedule" ], "slot_run" => [ :people, "text-tool-signup" ], "booking" => [ :budget, "text-tool-budget" ], "purchase" => [ :budget, "text-tool-budget" ], "list" => [ :list, "text-tool-list" ] }.fetch(kind, [ :projects, "text-tool-docs" ]) %>
+            <h3 class="flex items-center gap-2 text-label font-medium text-ink"><%= icon(symbol, class: color) %> <span><%= Planner::SuggestionKinds.label(kind) %> <span class="text-ink-2"><%= suggestions.length %></span></span></h3>
             <ul class="mt-2 space-y-2">
               <% suggestions.each do |suggestion| %>
-                <li class="text-sm text-stone-700"><%= Planner::SuggestionKinds.summary(suggestion) %></li>
+                <li class="suggestion tile-ghost p-3 <%="kept" if %w[kept edited].include?(suggestion.fetch("status")) %>">
+                  <p class="flex items-start gap-2">
+                    <% if %w[kept edited].include?(suggestion.fetch("status")) %><%= icon(:kept, class: "kept-check text-sunlit") %><% end %>
+                    <span><%= Planner::SuggestionKinds.summary(suggestion) %></span>
+                  </p>
+                  <% if suggestion.fetch("status") == "proposed" %><p class="mt-2 text-label">Suggested</p><% end %>
+                </li>
               <% end %>
             </ul>
           </section>
         <% end %>
       </div>
     <% else %>
-      <p class="mt-5 text-sm leading-6 text-stone-600">Suggestions will appear here as the plan takes shape.</p>
+      <p class="mt-5 text-meta leading-normal text-ink-2">Suggestions will appear here as the plan takes shape.</p>
     <% end %>
+    <%= render "planner_sessions/privacy" %>
   </aside>
 <% end %>

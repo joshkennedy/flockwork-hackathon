@@ -1,10 +1,9 @@
 <% content_for :title, "Edit #{@project.name}" %>
 
-<div class="mx-auto w-full max-w-2xl">
-  <%= link_to @project.name, project_path(@project), class: "text-sm font-semibold text-stone-600 hover:text-stone-950" %>
-  <h1 class="mt-5 text-4xl font-bold tracking-tight text-stone-950">Edit Project</h1>
+<div class="w-full max-w-2xl">
+  <h1 class="mt-5 text-ink">Edit Project</h1>
 
-  <div class="mt-10">
+  <div class="mt-7">
     <%= render "form", project: @project %>
   </div>
 </div>

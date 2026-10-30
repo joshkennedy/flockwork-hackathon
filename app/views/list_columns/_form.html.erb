@@ -1,8 +1,8 @@
 <%= form_with model: [ project, list, list_column ], class: "space-y-7" do |form| %>
   <% if list_column.errors.any? %>
-    <div class="border-l-4 border-red-700 bg-red-50 px-5 py-4 text-red-950">
+    <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
       <p class="font-semibold">Please fix the following:</p>
-      <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
+      <ul class="mt-2 list-disc space-y-1 pl-5 text-meta">
         <% list_column.errors.full_messages.each do |message| %>
           <li><%= message %></li>
         <% end %>
@@ -11,14 +11,14 @@
   <% end %>
 
   <div>
-    <%= form.label :name, class: "block text-sm font-semibold text-stone-900" %>
-    <%= form.text_field :name, required: true, autofocus: true, class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+    <%= form.label :name, class: "block text-label font-medium text-ink" %>
+    <%= form.text_field :name, required: true, autofocus: true, class: "mt-2 block w-full field" %>
   </div>
 
   <div>
-    <%= form.label :column_type, "Type", class: "block text-sm font-semibold text-stone-900" %>
-    <%= form.select :column_type, ListColumn.column_types.keys.map { |type| [ type.humanize, type ] }, {}, class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+    <%= form.label :column_type, "Type", class: "block text-label font-medium text-ink" %>
+    <%= form.select :column_type, ListColumn.column_types.keys.map { |type| [ type.humanize, type ] }, {}, class: "mt-2 block w-full field" %>
   </div>
 
-  <%= form.submit list_column.persisted? ? "Save column" : "Add column", class: "cursor-pointer bg-[#1f291f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#354235]" %>
+  <%= form.submit list_column.persisted? ? "Save column" : "Add column", class: "btn btn-primary" %>
 <% end %>

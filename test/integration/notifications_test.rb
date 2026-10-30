@@ -364,7 +364,9 @@ class NotificationsTest < ActionDispatch::IntegrationTest
     get notifications_path
 
     assert_response :success
-    assert_select "a[href='#{notifications_path}'][aria-label='Notifications, 2 unread']", count: 1
+    assert_select "nav[aria-label='Main navigation']", count: 2 do
+      assert_select "a[href='#{notifications_path}'][aria-label='Notifications, 2 unread']", count: 2
+    end
     assert_equal [ newer.id.to_s, older.id.to_s ], css_select("[data-notification-id]").map { |node| node["data-notification-id"] }
     assert_select "[data-notification-id='#{newer.id}'].font-semibold", count: 1
     assert_select "a[href='#{project_path(project)}']", text: /Set out chairs/

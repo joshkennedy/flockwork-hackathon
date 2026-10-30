@@ -1,8 +1,8 @@
 <%= form_with model: [ project, budget_line ], class: "space-y-7" do |form| %>
   <% if budget_line.errors.any? %>
-    <div class="border-l-4 border-red-700 bg-red-50 px-5 py-4 text-red-950">
+    <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
       <p class="font-semibold">Please fix the following:</p>
-      <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
+      <ul class="mt-2 list-disc space-y-1 pl-5 text-meta">
         <% budget_line.errors.full_messages.each do |message| %>
           <li><%= message %></li>
         <% end %>
@@ -11,36 +11,36 @@
   <% end %>
 
   <div>
-    <%= form.label :kind, class: "block text-sm font-semibold text-stone-900" %>
-    <%= form.select :kind, BudgetLine.kinds.keys.map { |kind| [ kind.humanize, kind ] }, {}, class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+    <%= form.label :kind, class: "block text-label font-medium text-ink" %>
+    <%= form.select :kind, BudgetLine.kinds.keys.map { |kind| [ kind.humanize, kind ] }, {}, class: "mt-2 block w-full field" %>
   </div>
 
   <div>
-    <%= form.label :description, class: "block text-sm font-semibold text-stone-900" %>
-    <%= form.text_field :description, required: true, autofocus: true, class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+    <%= form.label :description, class: "block text-label font-medium text-ink" %>
+    <%= form.text_field :description, required: true, autofocus: true, class: "mt-2 block w-full field" %>
   </div>
 
   <div class="grid gap-5 sm:grid-cols-2">
     <div>
-      <%= form.label :estimated, "Estimated cost", class: "block text-sm font-semibold text-stone-900" %>
-      <%= form.text_field :estimated, required: true, placeholder: "0.00", class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+      <%= form.label :estimated, "Estimated cost", class: "block text-label font-medium text-ink" %>
+      <%= form.text_field :estimated, required: true, placeholder: "0.00", class: "mt-2 block w-full field" %>
     </div>
     <div>
-      <%= form.label :actual, "Actual cost", class: "block text-sm font-semibold text-stone-900" %>
-      <%= form.text_field :actual, placeholder: "Leave blank if unknown", class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+      <%= form.label :actual, "Actual cost", class: "block text-label font-medium text-ink" %>
+      <%= form.text_field :actual, placeholder: "Leave blank if unknown", class: "mt-2 block w-full field" %>
     </div>
   </div>
 
   <div class="grid gap-5 sm:grid-cols-2">
     <div>
-      <%= form.label :status, class: "block text-sm font-semibold text-stone-900" %>
-      <%= form.select :status, BudgetLine.statuses.keys.map { |status| [ status.humanize, status ] }, {}, class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+      <%= form.label :status, class: "block text-label font-medium text-ink" %>
+      <%= form.select :status, BudgetLine.statuses.keys.map { |status| [ status.humanize, status ] }, {}, class: "mt-2 block w-full field" %>
     </div>
     <div>
-      <%= form.label :responsible_person_id, "Responsible person", class: "block text-sm font-semibold text-stone-900" %>
-      <%= form.collection_select :responsible_person_id, team_people, :id, :name, { include_blank: "None" }, class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+      <%= form.label :responsible_person_id, "Responsible person", class: "block text-label font-medium text-ink" %>
+      <%= form.collection_select :responsible_person_id, team_people, :id, :name, { include_blank: "None" }, class: "mt-2 block w-full field" %>
     </div>
   </div>
 
-  <%= form.submit class: "cursor-pointer bg-[#1f291f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#354235]" %>
+  <%= form.submit class: "btn btn-primary" %>
 <% end %>

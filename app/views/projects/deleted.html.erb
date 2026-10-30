@@ -1,32 +1,32 @@
 <% content_for :title, "Deleted Projects" %>
 
-<div class="mx-auto w-full max-w-4xl">
+<div class="w-full max-w-4xl">
   <div>
-    <%= link_to "Projects", projects_path, class: "text-sm font-semibold text-stone-600 hover:text-stone-950" %>
-    <h1 class="mt-4 text-4xl font-bold tracking-tight text-stone-950">Deleted Projects</h1>
+    <%= link_to "Projects", projects_path, class: "text-meta font-semibold text-ink-2 hover:text-ink" %>
+    <h1 class="mt-4 text-ink">Deleted Projects</h1>
   </div>
 
-  <nav class="mt-6 flex flex-wrap gap-4 text-sm font-semibold">
-    <%= link_to "Active", projects_path, class: "text-stone-600 hover:text-stone-950" %>
-    <%= link_to "Archived", archived_projects_path, class: "text-stone-600 hover:text-stone-950" %>
-    <%= link_to "Deleted", deleted_projects_path, class: "text-stone-950" %>
+  <nav class="mt-6 flex flex-wrap gap-4 text-meta font-semibold">
+    <%= link_to "Active", projects_path, class: "text-ink-2 hover:text-ink" %>
+    <%= link_to "Archived", archived_projects_path, class: "text-ink-2 hover:text-ink" %>
+    <%= link_to "Deleted", deleted_projects_path, class: "text-ink" %>
   </nav>
 
   <% if @projects.any? %>
-    <div class="mt-10 divide-y divide-stone-300 border-y border-stone-300">
+    <div class="mt-7 divide-y divide-hairline border-y border-hairline">
       <% @projects.each do |project| %>
         <div class="flex flex-wrap items-center justify-between gap-4 py-6">
           <div>
-            <h2 class="text-xl font-bold text-stone-950"><%= project.name %></h2>
+            <h2 class="text-ink"><%= project.name %></h2>
             <% if project.description.present? %>
-              <p class="mt-2 text-stone-600"><%= project.description %></p>
+              <p class="mt-2 text-ink-2"><%= project.description %></p>
             <% end %>
           </div>
-          <%= button_to "Restore", restore_project_path(project), class: "bg-[#1f291f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#354235]" %>
+          <%= button_to "Restore", restore_project_path(project), class: "btn btn-secondary" %>
         </div>
       <% end %>
     </div>
   <% else %>
-    <p class="mt-12 text-stone-600">No deleted Projects.</p>
+    <p class="mt-7 text-ink-2">No deleted Projects.</p>
   <% end %>
 </div>

@@ -75,7 +75,7 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     }
 
     assert_response :unprocessable_entity
-    assert_select ".text-red-800", /Admin cannot be removed from the last Admin in the Workspace/
+    assert_select "[role=alert]", /Admin cannot be removed from the last Admin in the Workspace/
     assert people(:admin).reload.admin?
   end
 
@@ -129,7 +129,7 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     }
 
     assert_response :unprocessable_entity
-    assert_select ".text-red-800", /Email has already been taken/
+    assert_select "[role=alert]", /Email has already been taken/
   end
 
   test "the same email in another Workspace is allowed" do

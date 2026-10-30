@@ -1,13 +1,13 @@
 <% content_for :title, "Add budget line" %>
 
-<div class="mx-auto w-full max-w-2xl px-4 py-10">
-  <nav class="mb-8">
-    <%= link_to "Back to #{@project.name}", @project, class: "text-sm font-semibold text-stone-600 hover:text-stone-950" %>
+<div class="w-full max-w-2xl">
+  <nav class="mb-7">
+    <%= link_to "Back to #{@project.name}", @project, class: "text-meta font-semibold text-ink-2 hover:text-ink" %>
   </nav>
 
-  <h1 class="text-3xl font-bold text-stone-950">Add budget line</h1>
+  <h1 class="text-ink">Add budget line</h1>
 
-  <div class="mt-8">
+  <div class="mt-7">
     <%= render "form", project: @project, budget_line: @budget_line, team_people: @team_people %>
   </div>
 </div>

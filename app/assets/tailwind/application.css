@@ -119,7 +119,7 @@
 }
 
 @layer components {
-  .btn { @apply inline-flex min-h-control-h items-center justify-center gap-2 rounded-control px-3 py-2 text-button no-underline; border: 1px solid transparent; transition: background var(--duration-hover), border-color var(--duration-hover), box-shadow var(--duration-press), transform var(--duration-press); }
+  .btn { @apply inline-flex min-h-control-h items-center justify-center gap-2 rounded-control px-3 py-0 text-button no-underline; border: 1px solid transparent; transition: background var(--duration-hover), border-color var(--duration-hover), box-shadow var(--duration-press), transform var(--duration-press); }
   .btn-primary { @apply bg-ink text-on-ink shadow-button; }
   .btn-primary:hover { @apply bg-ink-hover; }
   .btn-secondary { @apply border-border bg-panel text-ink shadow-secondary; }
@@ -147,7 +147,7 @@
   .dictation-field:has(button:not([hidden])) :is(input, textarea) { padding-right: 44px; }
   .dictation-field > button { position: absolute; right: 4px; top: 4px; }
   .dictation-field:has([aria-pressed="true"]) :is(input, textarea) { padding-right: 124px; }
-  .answer-tile { @apply flex min-h-answer-h w-full items-center gap-3 rounded-tile border border-border bg-panel px-3.5 py-3 text-left shadow-raised; transition: border-color var(--duration-hover), transform var(--duration-press); }
+  .answer-tile { @apply flex min-h-answer-h w-full items-center gap-3 rounded-tile border border-border bg-panel px-3.5 py-3 text-body font-medium text-left shadow-raised; transition: border-color var(--duration-hover), transform var(--duration-press); }
   .answer-tile:hover { @apply border-border-strong; }
   .answer-tile:active { transform: translateY(1px); }
   .answer-tile::before { content: ""; width: 16px; height: 16px; border: 1px solid var(--color-border-strong); border-radius: 50%; flex-shrink: 0; }

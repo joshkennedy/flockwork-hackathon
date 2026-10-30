@@ -1,46 +1,50 @@
 <% content_for :title, "My profile" %>
+<% content_for :breadcrumbs do %>
+  <%= link_to "← #{Current.workspace.name}", workspace_path(Current.workspace), class: "text-meta text-ink-2 hover:text-ink-2" %>
+  <span aria-hidden="true" class="text-ink-3">/</span>
+  <span class="truncate text-ink"><%= content_for(:title) %></span>
+<% end %>
 
-<div class="w-full max-w-lg mx-auto">
-  <%= link_to "← #{Current.workspace.name}", workspace_path(Current.workspace), class: "text-sm text-gray-500 hover:text-gray-700" %>
-  <h1 class="mt-1 text-3xl font-bold text-gray-900">My profile</h1>
+<div class="w-full max-w-lg">
+  <h1 class="mt-1 text-ink">My profile</h1>
 
-  <%= form_with model: @person, url: profile_path(Current.workspace), method: :patch, class: "mt-8 space-y-4" do |form| %>
+  <%= form_with model: @person, url: profile_path(Current.workspace), method: :patch, class: "mt-7 space-y-4" do |form| %>
     <% if @person.errors.any? %>
-      <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+      <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-meta text-danger">
         <%= @person.errors.full_messages.to_sentence %>
       </div>
     <% end %>
 
     <div>
-      <%= form.label :name, class: "block text-sm font-medium text-gray-700" %>
-      <%= form.text_field :name, required: true, class: "mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" %>
+      <%= form.label :name, class: "block text-label font-medium text-ink-2" %>
+      <%= form.text_field :name, required: true, class: "mt-1 block w-full field" %>
     </div>
 
     <div>
-      <p class="block text-sm font-medium text-gray-700">Email</p>
-      <p class="mt-1 text-sm text-gray-600"><%= @person.email.presence || "Can't sign in (no email)" %></p>
+      <p class="block text-meta font-medium text-ink-2">Email</p>
+      <p class="mt-1 text-meta text-ink-2"><%= @person.email.presence || "Can't sign in (no email)" %></p>
     </div>
 
     <div>
-      <%= form.label :phone, class: "block text-sm font-medium text-gray-700" %>
-      <%= form.telephone_field :phone, class: "mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" %>
+      <%= form.label :phone, class: "block text-label font-medium text-ink-2" %>
+      <%= form.telephone_field :phone, class: "mt-1 block w-full field" %>
     </div>
 
     <fieldset class="pt-3">
-      <legend class="text-base font-semibold text-gray-900">Email notifications</legend>
-      <p class="mt-1 text-sm text-gray-600">In-app notifications are always on.</p>
+      <legend class="text-body-phone sm:text-body font-semibold text-ink">Email notifications</legend>
+      <p class="mt-1 text-meta text-ink-2">In-app notifications are always on.</p>
       <div class="mt-4 space-y-3">
         <% Notification::KINDS.each do |kind, settings| %>
           <div class="flex items-start gap-3">
             <%= hidden_field_tag "person[email_preferences][#{kind}]", "0", id: nil %>
-            <%= check_box_tag "person[email_preferences][#{kind}]", "1", @person.email_for?(kind), id: "person_email_preferences_#{kind}", class: "mt-0.5 size-4 rounded border-gray-300 text-gray-900 focus:ring-gray-700" %>
-            <%= label_tag "person_email_preferences_#{kind}", settings.fetch(:label), class: "text-sm text-gray-700" %>
+            <%= check_box_tag "person[email_preferences][#{kind}]", "1", @person.email_for?(kind), id: "person_email_preferences_#{kind}", class: "mt-0.5 size-4 rounded border-hairline text-ink focus:border-ink" %>
+            <%= label_tag "person_email_preferences_#{kind}", settings.fetch(:label), class: "text-label text-ink-2" %>
           </div>
         <% end %>
       </div>
     </fieldset>
 
-    <%= form.submit "Save changes", class: "rounded-md bg-gray-900 px-4 py-2 font-medium text-white hover:bg-gray-800 cursor-pointer" %>
+    <%= form.submit "Save changes", class: "btn btn-primary" %>
   <% end %>
 
   <%= render "shared/involvement_timeline", involvement: @involvement, title: "Your Involvement" %>

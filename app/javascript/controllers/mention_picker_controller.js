@@ -50,7 +50,7 @@ export default class extends Controller {
 
     if (people.length === 0) {
       const message = document.createElement("p")
-      message.className = "px-2 py-1 text-sm text-stone-600"
+      message.className = "px-2 py-1 text-meta text-ink-2"
       message.textContent = "No matching People"
       this.resultsTarget.append(message)
       return
@@ -59,7 +59,7 @@ export default class extends Controller {
     people.forEach((person) => {
       const button = document.createElement("button")
       button.type = "button"
-      button.className = "block w-full px-2 py-2 text-left text-sm font-medium text-stone-800 hover:bg-[#eef2e9] hover:text-stone-950"
+      button.className = "block w-full rounded-control px-2 py-2 text-left text-meta font-medium text-ink hover:bg-hairline"
       button.textContent = person.name
       button.dataset.id = person.id
       button.dataset.name = person.name

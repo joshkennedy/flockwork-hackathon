@@ -1,32 +1,32 @@
-<%= form_with model: person, url: person.persisted? ? person_path(Current.workspace, person) : people_path(Current.workspace), class: "mt-8 space-y-4" do |form| %>
+<%= form_with model: person, url: person.persisted? ? person_path(Current.workspace, person) : people_path(Current.workspace), class: "mt-7 space-y-4" do |form| %>
   <% if person.errors.any? %>
-    <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+    <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-meta text-danger">
       <%= person.errors.full_messages.to_sentence %>
     </div>
   <% end %>
 
   <div>
-    <%= form.label :name, class: "block text-sm font-medium text-gray-700" %>
-    <%= form.text_field :name, required: true, class: "mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" %>
+    <%= form.label :name, class: "block text-label font-medium text-ink-2" %>
+    <%= form.text_field :name, required: true, class: "mt-1 block w-full field" %>
   </div>
 
   <div>
-    <%= form.label :email, class: "block text-sm font-medium text-gray-700" %>
-    <%= form.email_field :email, class: "mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" %>
-    <p class="mt-1 text-xs text-gray-500">Optional. Leave blank if this person should not sign in.</p>
+    <%= form.label :email, class: "block text-label font-medium text-ink-2" %>
+    <%= form.email_field :email, class: "mt-1 block w-full field" %>
+    <p class="mt-1 text-label text-ink-2">Optional. Leave blank if this person should not sign in.</p>
   </div>
 
   <div>
-    <%= form.label :phone, class: "block text-sm font-medium text-gray-700" %>
-    <%= form.telephone_field :phone, class: "mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" %>
+    <%= form.label :phone, class: "block text-label font-medium text-ink-2" %>
+    <%= form.telephone_field :phone, class: "mt-1 block w-full field" %>
   </div>
 
   <% if person.persisted? %>
     <div class="flex items-center gap-2">
-      <%= form.check_box :admin, class: "rounded border-gray-300" %>
-      <%= form.label :admin, "Admin", class: "text-sm font-medium text-gray-700" %>
+      <%= form.check_box :admin, class: "rounded border-hairline" %>
+      <%= form.label :admin, "Admin", class: "text-label font-medium text-ink-2" %>
     </div>
   <% end %>
 
-  <%= form.submit submit_label, class: "rounded-md bg-gray-900 px-4 py-2 font-medium text-white hover:bg-gray-800 cursor-pointer" %>
+  <%= form.submit submit_label, class: "btn btn-primary" %>
 <% end %>

@@ -97,7 +97,7 @@ class PlannerSystemTest < ApplicationSystemTestCase
 
     assert_text "What should happen before guests arrive?"
     assert_text "Suggestions will appear here"
-    click_on "Set the room"
+    find("body").send_keys("1")
 
     assert_text "What final detail should the plan include?"
     assert_text "Tasks 1"

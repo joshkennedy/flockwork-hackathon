@@ -1,27 +1,27 @@
 <% content_for :title, "Plan #{@project.name}" %>
 
-<div class="mx-auto w-full max-w-2xl">
-  <%= link_to @project.name, project_path(@project), class: "text-sm font-semibold text-stone-600 hover:text-stone-950" %>
+<div class="w-full max-w-2xl">
 
-  <header class="mt-9">
-    <h1 class="text-4xl font-bold tracking-tight text-stone-950 sm:text-5xl">What are you planning?</h1>
-    <p class="mt-4 max-w-xl text-lg leading-8 text-stone-700">Give the Planner one sentence. It will ask a few focused questions and build Suggestions for you to review.</p>
+  <header>
+    <h1 class="text-ink">What are you planning?</h1>
+    <p class="mt-4 max-w-xl text-body-phone sm:text-body leading-normal text-ink-2">Give the Planner one sentence. It will ask a few focused questions and build Suggestions for you to review.</p>
   </header>
 
-  <%= form_with model: [ @project, @planner_session ], class: "mt-10 space-y-6" do |form| %>
+  <%= form_with model: [ @project, @planner_session ], class: "mt-7 space-y-6" do |form| %>
     <% if @planner_session.errors.any? %>
-      <div role="alert" class="border-l-4 border-red-700 bg-red-50 px-5 py-4 text-red-950">
+      <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
         <p class="font-semibold">Please add a description.</p>
       </div>
     <% end %>
 
     <div>
-      <%= form.label :description, "Describe this plan in one sentence", class: "block text-sm font-semibold text-stone-900" %>
+      <%= form.label :description, "Describe this plan in one sentence", class: "block text-label font-medium text-ink" %>
       <%= render layout: "shared/dictation_button", locals: { wrapper_class: "mt-2 flex w-full items-center gap-2" } do %>
-        <%= form.text_field :description, required: true, autofocus: true, data: { dictation_target: "field" }, class: "block min-h-12 min-w-0 flex-1 border border-stone-400 bg-white px-4 py-3 text-stone-950 focus:border-stone-950 focus:outline-none", placeholder: "Prepare the final week before our neighborhood meal." %>
+        <%= form.text_field :description, required: true, autofocus: true, data: { dictation_target: "field" }, class: "block min-w-0 flex-1 field", placeholder: "Prepare the final week before our neighborhood meal." %>
       <% end %>
     </div>
 
-    <%= form.submit "Start planning", class: "min-h-12 cursor-pointer bg-[#1f291f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#354235]" %>
+    <%= form.submit "Start planning", class: "btn btn-primary" %>
   <% end %>
+  <%= render "privacy" %>
 </div>

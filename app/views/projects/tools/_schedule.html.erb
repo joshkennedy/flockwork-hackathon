@@ -1,9 +1,9 @@
 <% schedule_items_by_day = project.schedule_items.grouped_by_day %>
-<section class="min-h-44 min-w-0 bg-[#e7ede3] p-6" aria-labelledby="tool-schedule">
-  <div class="flex items-start justify-between gap-4">
-    <h2 id="tool-schedule" class="text-xl font-bold text-stone-950"><%= Project::TOOL_LABELS.fetch("schedule") %></h2>
+<section class="tool-section" aria-labelledby="tool-schedule">
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <h2 id="tool-schedule" class="text-ink"><%= icon(:schedule, class: "text-tool-schedule") %> <%= Project::TOOL_LABELS.fetch("schedule") %></h2>
     <% if Policy.can?(Current.person, :manage_schedule, project) %>
-      <%= link_to "Add item", new_project_schedule_item_path(project), class: "text-sm font-semibold text-stone-700 hover:text-stone-950" %>
+      <%= link_to "Add item", new_project_schedule_item_path(project), class: "text-meta font-semibold text-ink-2 hover:text-ink" %>
     <% end %>
   </div>
 
@@ -11,14 +11,14 @@
     <div class="mt-6 space-y-6">
       <% schedule_items_by_day.each do |day, items| %>
         <div>
-          <h3 class="text-sm font-semibold uppercase tracking-wide text-stone-600"><%= day.strftime("%A, %B %-d") %></h3>
+          <h3 class="text-ink-2"><%= day.strftime("%A, %B %-d") %></h3>
           <ul class="mt-3 space-y-2">
             <% items.each do |item| %>
-              <li class="text-stone-900">
+              <li class="text-ink">
                 <div class="flex items-start justify-between gap-3">
                   <div>
                   <% if item.starts_at_time.present? %>
-                    <span class="text-sm font-medium text-stone-600">
+                    <span class="text-meta font-medium text-ink-2">
                       <%= item.starts_at_time.strftime("%-l:%M %p") %>
                       <% if item.ends_at_time.present? %>
                         – <%= item.ends_at_time.strftime("%-l:%M %p") %>
@@ -27,13 +27,13 @@
                   <% end %>
                   <span class="block font-semibold"><%= item.title %></span>
                   <% if item.location.present? %>
-                    <span class="block text-sm text-stone-600"><%= item.location %></span>
+                    <span class="block text-meta text-ink-2"><%= item.location %></span>
                   <% end %>
                   </div>
                   <% if Policy.can?(Current.person, :manage_schedule, project) %>
-                    <div class="flex shrink-0 gap-3 text-sm font-semibold">
-                      <%= link_to "Edit", edit_project_schedule_item_path(project, item), class: "text-stone-700 hover:text-stone-950" %>
-                      <%= button_to "Delete", project_schedule_item_path(project, item), method: :delete, class: "text-red-800 hover:text-red-950" %>
+                    <div class="flex flex-wrap gap-3 text-meta font-semibold">
+                      <%= link_to "Edit", edit_project_schedule_item_path(project, item), class: "text-ink-2 hover:text-ink" %>
+                      <%= button_to "Delete", project_schedule_item_path(project, item), method: :delete, class: "btn btn-danger" %>
                     </div>
                   <% end %>
                 </div>
@@ -45,6 +45,6 @@
       <% end %>
     </div>
   <% else %>
-    <p class="mt-8 text-sm text-stone-600">No items yet</p>
+    <p class="mt-7 text-meta text-ink-2">No items yet</p>
   <% end %>
 </section>

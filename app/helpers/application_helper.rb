@@ -23,7 +23,14 @@ module ApplicationHelper
     tag.svg(viewBox: "0 0 24 24", width: 16, height: 16, fill: "none", stroke: "currentColor",
       "stroke-width": 1.7, "stroke-linecap": "round", "stroke-linejoin": "round",
       aria: { hidden: true }, focusable: false, class: class_names("shrink-0", options[:class])) do
-      tag.path(d: ICON_PATHS.fetch(name))
+      if name == :kept
+        safe_join([
+          tag.path(d: "m12 2 3 3 4 1 1 4 2 2-2 3-1 4-4 1-3 2-3-2-4-1-1-4-2-3 2-2 1-4 4-1Z", fill: "currentColor", stroke: "none"),
+          tag.path(d: ICON_PATHS.fetch(:check), stroke: "var(--color-ink)")
+        ])
+      else
+        tag.path(d: ICON_PATHS.fetch(name))
+      end
     end
   end
 
@@ -38,6 +45,14 @@ module ApplicationHelper
     items << [ "Oversight", oversight_path, :oversight ] if Policy.can?(Current.person, :view_oversight, Current.workspace)
     items << [ "Notifications", notifications_path, :notifications ]
     items
+  end
+
+  def breadcrumb_label
+    return "Planner" if controller_name == "planner_sessions"
+    return "Team" if controller_name == "projects" && action_name == "team"
+    return "Edit Project" if controller_name == "projects" && action_name == "edit"
+
+    content_for(:title).to_s.split(/ [·—-] /).first
   end
 
   def navigation_current?(path)

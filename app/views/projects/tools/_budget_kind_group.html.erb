@@ -1,7 +1,7 @@
-<div class="mt-8">
+<div class="mt-7">
   <div class="flex flex-wrap items-baseline justify-between gap-2">
-    <h3 class="text-sm font-semibold uppercase tracking-wide text-stone-600"><%= kind_label %></h3>
-    <p class="text-sm text-stone-700">
+    <h3 class="text-ink-2"><%= kind_label %></h3>
+    <p class="text-meta text-ink-2">
       Est. <%= BudgetLine.format_cents(totals[:estimated_cents]) %>
       · Act. <%= BudgetLine.format_cents(totals[:actual_cents]) %>
     </p>
@@ -10,11 +10,11 @@
   <% if lines.any? %>
     <ul class="mt-3 space-y-3">
       <% lines.each do |line| %>
-        <li class="border-t border-stone-400/40 pt-3 text-stone-900">
+        <li class="border-t border-hairline pt-3 text-ink">
           <div class="flex items-start justify-between gap-3">
             <div>
-              <span class="block font-bold"><%= line.description %></span>
-              <span class="mt-1 block text-sm text-stone-600">
+              <span class="block font-semibold"><%= line.description %></span>
+              <span class="mt-1 block text-meta text-ink-2">
                 Est. <%= BudgetLine.format_cents(line.estimated_cents) %>
                 · Act. <%= line.actual_cents.nil? ? "" : BudgetLine.format_cents(line.actual_cents) %>
                 · <%= line.status.humanize %>
@@ -23,15 +23,15 @@
                 <% end %>
               </span>
             </div>
-            <div class="flex shrink-0 flex-col items-end gap-2 text-sm font-semibold">
+            <div class="flex shrink-0 flex-col items-end gap-2 text-meta font-semibold">
               <% if Policy.can?(Current.person, :manage_budget, project) %>
                 <div class="flex gap-3">
-                  <%= link_to "Edit", edit_project_budget_line_path(project, line), class: "text-stone-700 hover:text-stone-950" %>
-                  <%= button_to "Delete", project_budget_line_path(project, line), method: :delete, class: "text-red-800 hover:text-red-950" %>
+                  <%= link_to "Edit", edit_project_budget_line_path(project, line), class: "text-ink-2 hover:text-ink" %>
+                  <%= button_to "Delete", project_budget_line_path(project, line), method: :delete, class: "btn btn-danger" %>
                 </div>
               <% end %>
               <% if Policy.can?(Current.person, :update_budget_line_status, line) %>
-                <%= link_to "Update status", edit_project_budget_line_status_path(project, line), class: "text-stone-700 hover:text-stone-950" %>
+                <%= link_to "Update status", edit_project_budget_line_status_path(project, line), class: "text-ink-2 hover:text-ink" %>
               <% end %>
             </div>
           </div>
@@ -40,6 +40,6 @@
       <% end %>
     </ul>
   <% else %>
-    <p class="mt-3 text-sm text-stone-600">No <%= kind_label.downcase %> yet</p>
+    <p class="mt-3 text-meta text-ink-2">No <%= kind_label.downcase %> yet</p>
   <% end %>
 </div>

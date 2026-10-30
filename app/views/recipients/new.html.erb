@@ -1,54 +1,53 @@
 <% content_for :title, "Add recipient · #{@project.name}" %>
 
-<div class="mx-auto w-full max-w-4xl">
-  <%= link_to @project.name, project_path(@project), class: "text-sm font-semibold text-stone-600 hover:text-stone-950" %>
-  <h1 class="mt-4 text-4xl font-bold tracking-tight text-stone-950">Add recipient</h1>
-  <p class="mt-3 text-stone-700">Choose someone from the directory or add a new Person without an email.</p>
+<div class="w-full max-w-4xl">
+  <h1 class="mt-4 text-ink">Add recipient</h1>
+  <p class="mt-3 text-ink-2">Choose someone from the directory or add a new Person without an email.</p>
 
-  <section class="mt-10" aria-labelledby="directory-heading">
-    <h2 id="directory-heading" class="text-2xl font-bold text-stone-950">Search the directory</h2>
+  <section class="mt-7" aria-labelledby="directory-heading">
+    <h2 id="directory-heading" class="text-ink">Search the directory</h2>
     <%= form_with url: new_project_recipient_path(@project), method: :get, class: "mt-5 flex max-w-xl gap-3" do |form| %>
       <%= form.label :query, "Search by name", class: "sr-only" %>
-      <%= form.search_field :query, value: params[:query], placeholder: "Search by name", class: "min-w-0 flex-1 border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
-      <%= form.submit "Search", class: "cursor-pointer bg-[#1f291f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#354235]" %>
+      <%= form.search_field :query, value: params[:query], placeholder: "Search by name", class: "min-w-0 flex-1 field" %>
+      <%= form.submit "Search", class: "btn btn-secondary" %>
     <% end %>
 
     <% if @directory_people %>
-      <ul class="mt-5 divide-y divide-stone-300 border-y border-stone-300">
+      <ul class="mt-5 divide-y divide-hairline border-y border-hairline">
         <% @directory_people.each do |person| %>
           <li class="flex items-center justify-between gap-4 py-4">
-            <span class="font-semibold text-stone-950"><%= person.name %></span>
-            <%= button_to "Add", project_recipients_path(@project), params: { person_id: person.id }, class: "cursor-pointer bg-[#1f291f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#354235]" %>
+            <span class="font-semibold text-ink"><%= person.name %></span>
+            <%= button_to "Add", project_recipients_path(@project), params: { person_id: person.id }, class: "btn btn-secondary" %>
           </li>
         <% end %>
       </ul>
       <% if @directory_people.empty? %>
-        <p class="mt-5 text-stone-600">No matching People who can be added as Recipients.</p>
+        <p class="mt-5 text-ink-2">No matching People who can be added as Recipients.</p>
       <% end %>
     <% end %>
   </section>
 
-  <section class="mt-12" aria-labelledby="new-person-heading">
-    <h2 id="new-person-heading" class="text-2xl font-bold text-stone-950">Add a new Person</h2>
+  <section class="mt-7" aria-labelledby="new-person-heading">
+    <h2 id="new-person-heading" class="text-ink">Add a new Person</h2>
     <%= form_with url: project_recipients_path(@project), class: "mt-5 max-w-xl space-y-4" do |form| %>
       <div>
-        <%= form.label :name, "Name", class: "block text-sm font-semibold text-stone-800" %>
-        <%= form.text_field "person[name]", value: @person&.name, required: true, class: "mt-1 w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+        <%= form.label :name, "Name", class: "block text-label font-medium text-ink" %>
+        <%= form.text_field "person[name]", value: @person&.name, required: true, class: "mt-1 w-full field" %>
         <% if @person&.errors&.include?(:name) %>
-          <p class="mt-1 text-sm text-red-800"><%= @person.errors.full_messages_for(:name).to_sentence %></p>
+          <p role="alert" class="mt-1 text-meta text-danger"><%= @person.errors.full_messages_for(:name).to_sentence %></p>
         <% end %>
       </div>
       <div>
-        <%= form.label :phone, "Phone (optional)", class: "block text-sm font-semibold text-stone-800" %>
-        <%= form.telephone_field "person[phone]", value: @person&.phone, class: "mt-1 w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+        <%= form.label :phone, "Phone (optional)", class: "block text-label font-medium text-ink" %>
+        <%= form.telephone_field "person[phone]", value: @person&.phone, class: "mt-1 w-full field" %>
       </div>
       <% if @person&.errors&.any? && !@person.errors.include?(:name) %>
-        <p class="text-sm text-red-800"><%= @person.errors.full_messages.to_sentence %></p>
+        <p role="alert" class="text-meta text-danger"><%= @person.errors.full_messages.to_sentence %></p>
       <% end %>
       <% if @recipient&.errors&.any? %>
-        <p class="text-sm text-red-800"><%= @recipient.errors.full_messages.to_sentence %></p>
+        <p role="alert" class="text-meta text-danger"><%= @recipient.errors.full_messages.to_sentence %></p>
       <% end %>
-      <%= form.submit "Add as recipient", class: "cursor-pointer bg-[#1f291f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#354235]" %>
+      <%= form.submit "Add as recipient", class: "btn btn-primary" %>
     <% end %>
   </section>
 </div>

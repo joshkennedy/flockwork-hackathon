@@ -1,5 +1,5 @@
-<section class="min-h-44 min-w-0 bg-[#e7ede3] p-6" aria-labelledby="tool-messages">
-  <h2 id="tool-messages" class="text-xl font-bold text-stone-950"><%= Project::TOOL_LABELS.fetch("messages") %></h2>
+<section class="tool-section" aria-labelledby="tool-messages">
+  <h2 id="tool-messages" class="text-ink"><%= icon(:messages, class: "text-tool-messages") %> <%= Project::TOOL_LABELS.fetch("messages") %></h2>
 
   <% if Policy.can?(Current.person, :post_message, project) %>
     <%= form_with model: [ project, project.messages.build ], class: "mt-6 space-y-3" do |form| %>
@@ -8,19 +8,19 @@
             project: project,
             label: "New message",
             input_id: "new_message_body" %>
-      <%= form.submit "Post message", class: "cursor-pointer bg-[#1f291f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#354235]" %>
+      <%= form.submit "Post message", class: "btn btn-secondary" %>
     <% end %>
   <% end %>
 
   <% roots = project.message_board_roots %>
   <% if roots.any? %>
-    <ol class="mt-8 space-y-8">
+    <ol class="mt-7 space-y-7">
       <% roots.each do |root| %>
         <li class="space-y-4">
           <%= render "projects/tools/message", message: root, project: project %>
 
           <% if root.replies.any? %>
-            <ol class="ml-6 space-y-4 border-l border-stone-400 pl-6">
+            <ol class="ml-6 space-y-4 border-l border-hairline pl-6">
               <% root.replies.each do |reply| %>
                 <li>
                   <%= render "projects/tools/message", message: reply, project: project %>
@@ -30,19 +30,19 @@
           <% end %>
 
           <% if Policy.can?(Current.person, :post_message, project) %>
-            <%= form_with model: [ project, project.messages.build(parent: root) ], class: "ml-6 space-y-3 border-l border-stone-400 pl-6" do |form| %>
+            <%= form_with model: [ project, project.messages.build(parent: root) ], class: "ml-6 space-y-3 border-l border-hairline pl-6" do |form| %>
               <%= render "mentions/field",
                     form: form,
                     project: project,
                     label: "Reply",
                     input_id: "message_reply_#{root.id}_body" %>
-              <%= form.submit "Post reply", class: "cursor-pointer bg-[#1f291f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#354235]" %>
+              <%= form.submit "Post reply", class: "btn btn-secondary" %>
             <% end %>
           <% end %>
         </li>
       <% end %>
     </ol>
   <% else %>
-    <p class="mt-8 text-sm text-stone-600">No messages yet</p>
+    <p class="mt-7 text-meta text-ink-2">No messages yet</p>
   <% end %>
 </section>
