@@ -22,6 +22,10 @@ Rails.application.configure do
   config.consider_all_requests_local = true
   config.cache_store = :null_store
 
+  config.active_record.encryption.primary_key = "flockwork-test-primary-key"
+  config.active_record.encryption.deterministic_key = "flockwork-test-deterministic-key"
+  config.active_record.encryption.key_derivation_salt = "flockwork-test-key-derivation-salt"
+
   # Render exception templates for rescuable exceptions and raise for other exceptions.
   config.action_dispatch.show_exceptions = :rescuable
 

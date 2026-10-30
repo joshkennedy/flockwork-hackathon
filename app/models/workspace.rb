@@ -9,6 +9,8 @@ class Workspace < ApplicationRecord
   has_many :notifications, through: :people
   has_many :invitations, dependent: :restrict_with_exception
 
+  encrypts :pco_app_id, :pco_secret
+
   normalizes :name, with: ->(name) { name.strip }
   before_validation :assign_slug, on: :create, if: -> { slug.blank? }
 
@@ -18,6 +20,10 @@ class Workspace < ApplicationRecord
 
   def to_param
     slug
+  end
+
+  def planning_center_connected?
+    pco_app_id.present? && pco_secret.present?
   end
 
   private

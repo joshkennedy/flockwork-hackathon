@@ -76,6 +76,7 @@ module Policy
 
       return person.admin? if action.in?([ :view_oversight, :update_oversight ])
       return person.admin? if action == :manage_people
+      return person.admin? if action == :manage_directory_source
 
       return false
     end

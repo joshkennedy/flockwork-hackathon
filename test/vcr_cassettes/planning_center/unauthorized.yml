@@ -1,0 +1,65 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://api.planningcenteronline.com/people/v2/people?include=emails,phone_numbers&per_page=100
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+      User-Agent:
+      - Ruby
+      Authorization:
+      - "<PCO_AUTHORIZATION>"
+  response:
+    status:
+      code: 401
+      message: Unauthorized
+    headers:
+      Content-Type:
+      - text/html
+      Content-Length:
+      - '0'
+      Connection:
+      - keep-alive
+      Date:
+      - Fri, 30 Oct 2026 19:50:43 GMT
+      Strict-Transport-Security:
+      - max-age=63072000; includeSubDomains
+      Server:
+      - openresty
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Xss-Protection:
+      - '0'
+      X-Content-Type-Options:
+      - nosniff
+      X-Permitted-Cross-Domain-Policies:
+      - none
+      Referrer-Policy:
+      - no-referrer-when-downgrade
+      Cache-Control:
+      - no-cache
+      X-Request-Id:
+      - 0734f0f0-4e0a-49ce-9c18-ff476308f337
+      X-Runtime:
+      - '0.011837'
+      X-Cache:
+      - Error from cloudfront
+      Via:
+      - 1.1 7030d032beca12e9fcf25b7374b1d342.cloudfront.net (CloudFront)
+      X-Amz-Cf-Pop:
+      - ATL59-P14
+      Alt-Svc:
+      - h3=":443"; ma=86400
+      X-Amz-Cf-Id:
+      - D3j4sXG8U6h7pRyqegLByjB6-VNWcC4ubRiF4lb0SDVQ0xgtNNR7fQ==
+    body:
+      encoding: UTF-8
+      string: ''
+  recorded_at: Fri, 30 Oct 2026 19:50:43 GMT
+recorded_with: VCR 6.4.1

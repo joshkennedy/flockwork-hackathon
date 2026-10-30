@@ -1,0 +1,46 @@
+<% content_for :title, "Planning Center — #{Current.workspace.name}" %>
+
+<div class="w-full max-w-xl mx-auto">
+  <%= link_to "← People", people_path(Current.workspace), class: "text-sm text-gray-500 hover:text-gray-700" %>
+  <h1 class="mt-1 text-3xl font-bold text-gray-900">Planning Center</h1>
+  <p class="mt-2 text-sm text-gray-600">Connect a personal access token to pull names and contact details into this directory.</p>
+
+  <% if flash[:notice].present? %>
+    <p class="mt-5 text-sm font-medium text-green-800"><%= flash[:notice] %></p>
+  <% end %>
+  <% if flash[:alert].present? %>
+    <p class="mt-5 text-sm font-medium text-red-800" role="alert"><%= flash[:alert] %></p>
+  <% end %>
+
+  <% if Current.workspace.planning_center_connected? %>
+    <div class="mt-7 rounded-lg bg-[#eef3e8] p-4">
+      <p class="font-medium text-gray-900">Connected</p>
+      <% if Current.workspace.pco_last_synced_at.present? %>
+        <p class="mt-1 text-sm text-gray-600">Last synced <%= time_ago_in_words(Current.workspace.pco_last_synced_at) %> ago.</p>
+      <% else %>
+        <p class="mt-1 text-sm text-gray-600">Not synced yet.</p>
+      <% end %>
+    </div>
+
+    <% if Current.workspace.pco_last_sync_error.present? %>
+      <p class="mt-5 text-sm font-medium text-red-800" role="alert"><%= Current.workspace.pco_last_sync_error %></p>
+    <% elsif Current.workspace.pco_last_sync_result.present? %>
+      <% result = Current.workspace.pco_last_sync_result %>
+      <p class="mt-5 text-sm text-gray-700"><%= result.fetch("created") %> created, <%= result.fetch("updated") %> updated, <%= result.fetch("unchanged") %> unchanged.</p>
+    <% end %>
+
+    <%= button_to "Sync now", sync_planning_center_directory_path(Current.workspace), class: "mt-5 rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-gray-800" %>
+  <% end %>
+
+  <%= form_with model: Current.workspace, url: planning_center_directory_path(Current.workspace), method: :patch, class: "mt-8 space-y-4" do |form| %>
+    <div>
+      <%= form.label :pco_app_id, "App ID", class: "block text-sm font-medium text-gray-900" %>
+      <%= form.password_field :pco_app_id, value: nil, required: true, autocomplete: "off", class: "mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900" %>
+    </div>
+    <div>
+      <%= form.label :pco_secret, "Secret", class: "block text-sm font-medium text-gray-900" %>
+      <%= form.password_field :pco_secret, value: nil, required: true, autocomplete: "off", class: "mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900" %>
+    </div>
+    <%= form.submit Current.workspace.planning_center_connected? ? "Replace connection" : "Connect", class: "rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-gray-800" %>
+  <% end %>
+</div>
