@@ -12,4 +12,17 @@
 
     <%= f.submit "Email me a sign-in link", class: "w-full rounded-md bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-500 cursor-pointer" %>
   <% end %>
+
+  <% if @workspace.demo? %>
+    <div class="mt-10 border-t border-gray-200 pt-6">
+      <h2 class="text-lg font-semibold text-gray-900">Explore the demo</h2>
+      <p class="mt-1 text-sm text-gray-600">No email needed. Pick a role to look around.</p>
+
+      <div class="mt-4 grid gap-3">
+        <%= button_to "Explore as Admin", demo_session_path(@workspace, role: "admin"), class: "w-full rounded-md border border-gray-300 px-4 py-2 font-medium text-gray-900 hover:bg-gray-50 cursor-pointer" %>
+        <%= button_to "Explore as Leader", demo_session_path(@workspace, role: "leader"), class: "w-full rounded-md border border-gray-300 px-4 py-2 font-medium text-gray-900 hover:bg-gray-50 cursor-pointer" %>
+        <%= button_to "Explore as Volunteer", demo_session_path(@workspace, role: "volunteer"), class: "w-full rounded-md border border-gray-300 px-4 py-2 font-medium text-gray-900 hover:bg-gray-50 cursor-pointer" %>
+      </div>
+    </div>
+  <% end %>
 </div>

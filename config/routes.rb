@@ -13,5 +13,6 @@ Rails.application.routes.draw do
     get ":workspace_slug", to: "workspaces#show", as: :workspace
     get ":workspace_slug/sign_in", to: "sign_in_requests#new", as: :new_sign_in_request
     post ":workspace_slug/sign_in", to: "sign_in_requests#create", as: :sign_in_requests
+    post ":workspace_slug/demo/:role", to: "demo_sessions#create", as: :demo_session
   end
 end
