@@ -1,0 +1,23 @@
+community_meal_arrival:
+  project: community_meal
+  date: 2027-02-12
+  title: Arrival
+
+community_meal_opening:
+  project: community_meal
+  date: 2027-02-12
+  starts_at_time: "09:00:00"
+  title: Opening Session
+
+community_meal_lunch:
+  project: community_meal
+  date: 2027-02-12
+  starts_at_time: "12:00:00"
+  ends_at_time: "13:00:00"
+  title: Lunch
+  location: Fellowship Hall
+
+community_meal_day_two:
+  project: community_meal
+  date: 2027-02-13
+  title: Day Two Kickoff

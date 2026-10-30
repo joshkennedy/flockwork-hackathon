@@ -17,7 +17,7 @@ module Policy
     case action
     when :show
       person.admin? || record.memberships.exists?(person: person)
-    when :update, :manage_tools
+    when :update, :manage_tools, :manage_schedule
       person.admin? || record.memberships.leader.exists?(person: person)
     else
       false

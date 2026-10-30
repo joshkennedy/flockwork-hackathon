@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_30_160001) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_30_180001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -58,6 +58,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_160001) do
     t.index ["owner_id"], name: "index_projects_on_owner_id"
     t.index ["public_token"], name: "index_projects_on_public_token", unique: true
     t.index ["workspace_id"], name: "index_projects_on_workspace_id"
+  end
+
+  create_table "schedule_items", force: :cascade do |t|
+    t.bigint "project_id", null: false
+    t.date "date", null: false
+    t.time "starts_at_time"
+    t.time "ends_at_time"
+    t.string "title", null: false
+    t.string "location"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["project_id"], name: "index_schedule_items_on_project_id"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -253,6 +265,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_160001) do
   add_foreign_key "people", "workspaces"
   add_foreign_key "projects", "people", column: "owner_id"
   add_foreign_key "projects", "workspaces"
+  add_foreign_key "schedule_items", "projects"
   add_foreign_key "sessions", "people"
   add_foreign_key "solid_queue_batch_executions", "solid_queue_batches", column: "batch_id", on_delete: :cascade
   add_foreign_key "solid_queue_batch_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

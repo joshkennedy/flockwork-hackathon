@@ -16,6 +16,7 @@ class Project < ApplicationRecord
   belongs_to :owner, class_name: "Person"
   has_many :memberships, dependent: :destroy
   has_many :people, through: :memberships
+  has_many :schedule_items, dependent: :destroy
 
   validates :name, presence: true
   validate :ends_on_is_not_before_starts_on

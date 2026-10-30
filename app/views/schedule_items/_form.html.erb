@@ -1,0 +1,40 @@
+<%= form_with model: [ project, schedule_item ], class: "space-y-7" do |form| %>
+  <% if schedule_item.errors.any? %>
+    <div class="border-l-4 border-red-700 bg-red-50 px-5 py-4 text-red-950">
+      <p class="font-semibold">Please fix the following:</p>
+      <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
+        <% schedule_item.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :date, class: "block text-sm font-semibold text-stone-900" %>
+    <%= form.date_field :date, required: true, autofocus: true, class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+  </div>
+
+  <div class="grid gap-5 sm:grid-cols-2">
+    <div>
+      <%= form.label :starts_at_time, "Start time", class: "block text-sm font-semibold text-stone-900" %>
+      <%= form.time_field :starts_at_time, class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+    </div>
+    <div>
+      <%= form.label :ends_at_time, "End time", class: "block text-sm font-semibold text-stone-900" %>
+      <%= form.time_field :ends_at_time, class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+    </div>
+  </div>
+
+  <div>
+    <%= form.label :title, class: "block text-sm font-semibold text-stone-900" %>
+    <%= form.text_field :title, required: true, class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+  </div>
+
+  <div>
+    <%= form.label :location, class: "block text-sm font-semibold text-stone-900" %>
+    <%= form.text_field :location, class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+  </div>
+
+  <%= form.submit class: "cursor-pointer bg-[#1f291f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#354235]" %>
+<% end %>
