@@ -14,6 +14,8 @@ Rails.application.routes.draw do
     get "sign_in", to: "sign_in_requests#new", as: :new_sign_in_request
     post "sign_in", to: "sign_in_requests#create", as: :sign_in_requests
     post "demo/:role", to: "demo_sessions#create", as: :demo_session
+    get "people/import", to: "people/csv_imports#new", as: :new_people_csv_import
+    post "people/import", to: "people/csv_imports#create", as: :people_csv_import
     resources :people, only: %i[index new create edit update]
     resource :profile, only: %i[edit update]
   end

@@ -1,0 +1,31 @@
+<% content_for :title, "Import results — #{Current.workspace.name}" %>
+
+<div class="w-full max-w-2xl mx-auto">
+  <%= link_to "← People", people_path(Current.workspace), class: "text-sm text-gray-500 hover:text-gray-700" %>
+  <h1 class="mt-1 text-3xl font-bold text-gray-900">Import results</h1>
+
+  <p class="mt-4 text-gray-900">
+    <%= @result.created_count %> created,
+    <%= @result.updated_count %> updated,
+    <%= @result.rejected_rows.size %> rejected
+  </p>
+
+  <% if @result.rejected_rows.any? %>
+    <table class="mt-6 w-full text-left text-sm border border-gray-200 rounded-lg overflow-hidden">
+      <thead class="bg-gray-50 text-gray-700">
+        <tr>
+          <th class="px-4 py-2 font-medium">Line</th>
+          <th class="px-4 py-2 font-medium">Reason</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <% @result.rejected_rows.each do |line_number, reason| %>
+          <tr>
+            <td class="px-4 py-2 text-gray-900"><%= line_number %></td>
+            <td class="px-4 py-2 text-gray-700"><%= reason %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</div>

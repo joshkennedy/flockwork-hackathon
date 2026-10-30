@@ -68,3 +68,4 @@ gem "testcontainers-postgres", group: :test
 gem "capybara-playwright-driver", group: :test
 
 gem "postmark-rails"
+gem "csv"
