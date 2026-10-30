@@ -305,7 +305,7 @@ module Planner
     def slim_provider_schema(schema)
       schema = schema.deep_dup
       scrub_grammar_bloat!(schema)
-      make_scalars_nullable!(schema)
+      make_scalars_non_null!(schema)
       schema
     end
 
@@ -317,19 +317,17 @@ module Planner
       scrub_grammar_bloat!(schema[:items]) if schema[:items].is_a?(Hash)
     end
 
-    def make_scalars_nullable!(schema)
+    def make_scalars_non_null!(schema)
       return unless schema.is_a?(Hash)
 
-      schema.fetch(:properties, {}).each_value { |property| make_scalars_nullable!(property) }
-      make_scalars_nullable!(schema[:items]) if schema[:items].is_a?(Hash)
+      schema.fetch(:properties, {}).each_value { |property| make_scalars_non_null!(property) }
+      make_scalars_non_null!(schema[:items]) if schema[:items].is_a?(Hash)
 
-      type = schema[:type]
-      return if type.is_a?(Array)
-
-      schema[:type] = [ type, "null" ] if %w[string integer number boolean array].include?(type)
+      # Merged fields are optional, so omission already means "none"; Anthropic caps union-typed params at 16.
+      schema[:type] = (schema[:type] - [ "null" ]).sole if schema[:type].is_a?(Array)
     end
 
     private_class_method :validate_fields!, :required_field_names, :nullable_field_schema?, :field_present?,
-      :merged_field_properties, :slim_provider_schema, :scrub_grammar_bloat!, :make_scalars_nullable!
+      :merged_field_properties, :slim_provider_schema, :scrub_grammar_bloat!, :make_scalars_non_null!
   end
 end
