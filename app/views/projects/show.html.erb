@@ -4,7 +4,11 @@
   <nav class="flex items-center justify-between gap-4" aria-label="Project navigation">
     <%= link_to "Projects", projects_path, class: "text-sm font-semibold text-stone-600 hover:text-stone-950" %>
     <div class="flex items-center gap-5">
-      <%= link_to "Team", team_project_path(@project), class: "text-sm font-semibold text-stone-700 hover:text-stone-950" %>
+      <% if Policy.can?(Current.person, :view_team, @project) %>
+        <%= link_to "Team", team_project_path(@project), class: "text-sm font-semibold text-stone-700 hover:text-stone-950" %>
+      <% elsif Policy.can?(Current.person, :join, @project) %>
+        <%= button_to "Join", join_project_path(@project), class: "cursor-pointer bg-[#1f291f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#354235]" %>
+      <% end %>
       <% if Policy.can?(Current.person, :update, @project) %>
         <%= link_to "Edit Project", edit_project_path(@project), class: "text-sm font-semibold text-stone-700 hover:text-stone-950" %>
       <% end %>
@@ -27,6 +31,7 @@
   </header>
 
   <div class="mt-8 flex flex-wrap gap-3">
+    <% if Policy.member?(Current.person, @project) || Current.person.admin? %>
     <% if Policy.can?(Current.person, :mark_done, @project) %>
       <%= button_to "Mark done", mark_done_project_path(@project), class: "border border-stone-400 px-4 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100" %>
     <% end %>
@@ -42,9 +47,10 @@
     <% if Policy.can?(Current.person, :destroy, @project) %>
       <%= button_to "Delete", project_path(@project), method: :delete, class: "border border-red-300 px-4 py-2 text-sm font-semibold text-red-800 hover:bg-red-50" %>
     <% end %>
+    <% end %>
   </div>
 
-  <% if Policy.can?(Current.person, :transfer_ownership, @project) && @ownership_transfer_leaders.any? %>
+  <% if (Policy.member?(Current.person, @project) || Current.person.admin?) && Policy.can?(Current.person, :transfer_ownership, @project) && @ownership_transfer_leaders.any? %>
     <%= form_with url: transfer_ownership_project_path(@project), method: :patch, class: "mt-6 flex flex-wrap items-end gap-3" do |form| %>
       <%= form.label :new_owner_id, "Transfer ownership to", class: "block text-sm font-semibold text-stone-800" %>
       <%= form.collection_select :new_owner_id, @ownership_transfer_leaders, :person_id, ->(membership) { membership.person.name }, { prompt: "Choose a Leader" }, class: "border border-stone-400 px-3 py-2 text-sm" %>
@@ -55,6 +61,7 @@
   <% if @project.enabled_tools.any? %>
     <div class="mt-14 grid gap-5 md:grid-cols-2">
       <% @project.enabled_tools.each do |tool| %>
+        <% next if tool == "recipients" && !Policy.can?(Current.person, :view_recipients, @project) %>
         <% if lookup_context.exists?(tool, ["projects/tools"], true) %>
           <%= render "projects/tools/#{tool}", project: @project %>
         <% else %>

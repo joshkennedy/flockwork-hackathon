@@ -32,6 +32,13 @@
     </div>
   </div>
 
+  <div>
+    <%= form.label :open_team, "Open Team", class: "flex cursor-pointer items-center gap-3 text-sm font-semibold text-stone-900" do %>
+      <%= form.check_box :open_team, class: "size-4 accent-stone-950" %>
+      Anyone in the Workspace can find this Project and join as a Volunteer
+    <% end %>
+  </div>
+
   <fieldset>
     <legend class="text-lg font-semibold text-stone-950">Tools</legend>
     <p class="mt-1 text-sm text-stone-600">Choose what this Project needs.</p>
