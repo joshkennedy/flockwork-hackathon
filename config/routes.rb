@@ -48,6 +48,7 @@ Rails.application.routes.draw do
     get :team, on: :member
     resources :invitations, only: :create
     resources :memberships, only: :destroy
+    resources :recipients, only: %i[ new create destroy ]
   end
   resources :invitations, only: :show, param: :token do
     member do

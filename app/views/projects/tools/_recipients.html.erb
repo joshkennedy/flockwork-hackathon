@@ -1,0 +1,26 @@
+<% if Policy.can?(Current.person, :view_recipients, project) %>
+  <% recipients = project.recipients.joins(:person).order("people.name") %>
+  <section class="min-h-44 bg-[#e7ede3] p-6" aria-labelledby="tool-recipients">
+    <div class="flex items-start justify-between gap-4">
+      <h2 id="tool-recipients" class="text-xl font-bold text-stone-950"><%= Project::TOOL_LABELS.fetch("recipients") %></h2>
+      <% if Policy.can?(Current.person, :manage_recipients, project) %>
+        <%= link_to "Add recipient", new_project_recipient_path(project), class: "text-sm font-semibold text-stone-700 hover:text-stone-950" %>
+      <% end %>
+    </div>
+
+    <% if recipients.any? %>
+      <ul class="mt-6 divide-y divide-stone-300 border-y border-stone-300">
+        <% recipients.each do |recipient| %>
+          <li class="flex items-center justify-between gap-4 py-3">
+            <span class="font-semibold text-stone-950"><%= recipient.person.name %></span>
+            <% if Policy.can?(Current.person, :manage_recipients, project) %>
+              <%= button_to "Remove", project_recipient_path(project, recipient), method: :delete, class: "text-sm font-semibold text-red-800 hover:text-red-950" %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="mt-8 text-sm text-stone-600">No recipients yet</p>
+    <% end %>
+  </section>
+<% end %>

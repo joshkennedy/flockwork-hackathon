@@ -179,6 +179,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_31_150001) do
     t.index ["workspace_id"], name: "index_projects_on_workspace_id"
   end
 
+  create_table "recipients", force: :cascade do |t|
+    t.bigint "project_id", null: false
+    t.bigint "person_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["person_id"], name: "index_recipients_on_person_id"
+    t.index ["project_id", "person_id"], name: "index_recipients_on_project_id_and_person_id", unique: true
+    t.index ["project_id"], name: "index_recipients_on_project_id"
+  end
+
   create_table "schedule_items", force: :cascade do |t|
     t.bigint "project_id", null: false
     t.date "date", null: false
@@ -198,6 +208,29 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_31_150001) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["person_id"], name: "index_sessions_on_person_id"
+  end
+
+  create_table "slot_claims", force: :cascade do |t|
+    t.bigint "slot_id", null: false
+    t.bigint "person_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["person_id"], name: "index_slot_claims_on_person_id"
+    t.index ["slot_id", "person_id"], name: "index_slot_claims_on_slot_id_and_person_id", unique: true
+    t.index ["slot_id"], name: "index_slot_claims_on_slot_id"
+  end
+
+  create_table "slots", force: :cascade do |t|
+    t.bigint "project_id", null: false
+    t.date "date", null: false
+    t.time "starts_at_time"
+    t.string "label", null: false
+    t.integer "capacity", default: 1, null: false
+    t.integer "claims_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["project_id"], name: "index_slots_on_project_id"
+    t.check_constraint "capacity >= 1", name: "slots_capacity_at_least_one"
   end
 
   create_table "solid_cable_messages", force: :cascade do |t|
@@ -400,8 +433,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_31_150001) do
   add_foreign_key "people", "workspaces"
   add_foreign_key "projects", "people", column: "owner_id"
   add_foreign_key "projects", "workspaces"
+  add_foreign_key "recipients", "people"
+  add_foreign_key "recipients", "projects"
   add_foreign_key "schedule_items", "projects"
   add_foreign_key "sessions", "people"
+  add_foreign_key "slot_claims", "people"
+  add_foreign_key "slot_claims", "slots"
+  add_foreign_key "slots", "projects"
   add_foreign_key "solid_queue_batch_executions", "solid_queue_batches", column: "batch_id", on_delete: :cascade
   add_foreign_key "solid_queue_batch_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
