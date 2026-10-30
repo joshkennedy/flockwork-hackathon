@@ -110,8 +110,13 @@ class PlannerSession < ApplicationRecord
       return unless asking?
 
       previous_statuses = suggestions.to_h { |suggestion| [ suggestion.fetch("id"), suggestion.fetch("status") ] }
-      next_suggestions = response.suggestions.map do |suggestion|
+      next_suggestions = response.suggestions.filter_map do |suggestion|
         suggestion = suggestion.deep_stringify_keys
+        kind = suggestion["kind"]
+        next unless Planner::SuggestionKinds::KINDS.key?(kind)
+
+        fields = Planner::SuggestionKinds.sanitize_fields(kind, suggestion.fetch("fields", {}))
+        suggestion = suggestion.merge("fields" => fields)
         previous_status = previous_statuses[suggestion.fetch("id")]
         previous_status ? suggestion.merge("status" => previous_status) : suggestion
       end

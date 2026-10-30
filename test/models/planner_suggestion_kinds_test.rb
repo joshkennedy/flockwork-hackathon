@@ -1,23 +1,20 @@
 require "test_helper"
 
 class PlannerSuggestionKindsTest < ActiveSupport::TestCase
-  test "provider schema covers every kind and its exact fields" do
-    variants = Planner::SuggestionKinds.provider_schema.fetch(:anyOf)
+  MERGED_FIELD_NAMES = %w[
+    capacity columns day_offset description details due_in_days end_day_offset ends_at
+    estimated_dollars label location name role start_day_offset starts_at time title tool
+  ].freeze
 
-    assert_equal %w[booking enable_tool list purchase schedule_item slot_run task],
-      variants.map { |variant| variant.dig(:properties, :kind, :enum).sole }.sort
-    assert_equal [ "tool" ], schema_fields(variants, "enable_tool")
-    assert_equal %w[details due_in_days role title], schema_fields(variants, "task").sort
-    assert_equal %w[day_offset ends_at location starts_at title], schema_fields(variants, "schedule_item").sort
-    assert_equal %w[capacity end_day_offset label start_day_offset time], schema_fields(variants, "slot_run").sort
-    assert_equal %w[description estimated_dollars role], schema_fields(variants, "booking").sort
-    assert_equal %w[description estimated_dollars role], schema_fields(variants, "purchase").sort
-    assert_equal %w[columns name], schema_fields(variants, "list").sort
+  test "provider schema is one flat object with merged nullable fields" do
+    schema = Planner::SuggestionKinds.provider_schema
+    json = JSON.generate(schema)
+
+    assert_equal "object", schema.fetch(:type)
+    assert_equal Planner::SuggestionKinds::KINDS.keys.sort, schema.dig(:properties, :kind, :enum).sort
+    assert_equal MERGED_FIELD_NAMES, schema.dig(:properties, :fields, :properties).keys.map(&:to_s).sort
+    assert_equal [], schema.dig(:properties, :fields, :required)
+    refute_includes json, "anyOf"
+    refute_includes json, "pattern"
   end
-
-  private
-    def schema_fields(variants, kind)
-      variant = variants.find { |candidate| candidate.dig(:properties, :kind, :enum) == [ kind ] }
-      variant.dig(:properties, :fields, :properties).keys.map(&:to_s)
-    end
 end
