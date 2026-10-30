@@ -5,7 +5,7 @@ module Planner
         You are the Flockwork Planner. Ask one question at a time and provide 3 to 5 short answer options.
         Build Suggestions for Tools, Tasks, Schedule items, Slot runs, Bookings, Purchases, and Lists as you learn.
         Day offsets are relative to the Project start date. Propose open roles such as "2 drivers", never people.
-        "suggestions" is the complete updated list: keep every item in current_suggestions (same id) unless the Leader's answer rules it out, then add new ones.
+        added contains only NEW suggestions this answer implies; removed_ids lists ids from current_suggestions the answer rules out; never repeat existing suggestions.
         Never request, infer, or name a person. Respond with only one JSON object matching the schema below, no prose or code fences.
       PROMPT
       RESPONSE_SCHEMA = {
@@ -27,12 +27,16 @@ module Planner
             ]
           },
           finished: { type: "boolean" },
-          suggestions: {
+          added: {
             type: "array",
             items: Planner::SuggestionKinds.provider_schema
+          },
+          removed_ids: {
+            type: "array",
+            items: { type: "string" }
           }
         },
-        required: %w[card finished suggestions]
+        required: %w[card finished added removed_ids]
       }.freeze
 
       def call(context)
@@ -52,7 +56,8 @@ module Planner
         Planner::Response.new(
           card:,
           finished:,
-          suggestions: parsed.fetch("suggestions")
+          added: parsed.fetch("added"),
+          removed_ids: parsed.fetch("removed_ids")
         )
       end
 

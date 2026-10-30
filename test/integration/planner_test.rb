@@ -25,30 +25,25 @@ class PlannerTest < ActionDispatch::IntegrationTest
 
   test "a Leader plans Tasks through cards and accepts only kept and edited Suggestions" do
     project = projects(:community_meal)
-    setup_id = "11111111-1111-4111-8111-111111111111"
-    welcome_id = "22222222-2222-4222-8222-222222222222"
-    dropped_id = "33333333-3333-4333-8333-333333333333"
     fake = Planner::Providers::Fake.new([
       planner_response(
         card: {
           "question" => "What should happen before guests arrive?",
           "options" => [ "Set the room", "Prepare food", "Welcome volunteers" ]
-        },
-        suggestions: []
+        }
       ),
       planner_response(
         card: {
           "question" => "What needs a clear owner?",
           "options" => [ "Room setup", "Kitchen prep", "Guest welcome" ]
         },
-        suggestions: [ task_suggestion(setup_id, "Set up tables", "Arrange the dining room.") ]
+        added: [ task_suggestion("Set up tables", "Arrange the dining room.", due_in_days: -1) ]
       ),
       planner_response(
         finished: true,
-        suggestions: [
-          task_suggestion(setup_id, "Set up tables", "Arrange the dining room.", due_in_days: -1),
-          task_suggestion(welcome_id, "Prepare welcome table", "Set out name tags."),
-          task_suggestion(dropped_id, "Print decorative menus", "Use the color printer.")
+        added: [
+          task_suggestion("Prepare welcome table", "Set out name tags."),
+          task_suggestion("Print decorative menus", "Use the color printer.")
         ]
       )
     ])
@@ -92,6 +87,12 @@ class PlannerTest < ActionDispatch::IntegrationTest
     assert_redirected_to project_planner_session_path(project, session)
     get project_planner_session_path(project, session)
     assert_redirected_to review_project_planner_session_path(project, session)
+
+    suggestions_by_title = session.reload.suggestions.index_by { |suggestion| suggestion.dig("fields", "title") }
+    setup_id = suggestions_by_title.fetch("Set up tables").fetch("id")
+    welcome_id = suggestions_by_title.fetch("Prepare welcome table").fetch("id")
+    dropped_id = suggestions_by_title.fetch("Print decorative menus").fetch("id")
+    assert_equal setup_id, fake.contexts.third.fetch(:current_suggestions).sole.fetch(:id)
 
     patch suggestion_project_planner_session_path(project, session), params: {
       suggestion: { id: setup_id, decision: "keep" }
@@ -142,8 +143,7 @@ class PlannerTest < ActionDispatch::IntegrationTest
         card: {
           "question" => "What work comes first?",
           "options" => [ "Setup", "Food", "Welcome" ]
-        },
-        suggestions: []
+        }
       )
     ])
     Rails.configuration.x.planner_provider = fake
@@ -186,9 +186,8 @@ class PlannerTest < ActionDispatch::IntegrationTest
           "question" => "What should volunteers prepare?",
           "options" => [ "Tables", "Food", "Welcome signs" ]
         },
-        suggestions: [
+        added: [
           task_suggestion(
-            "44444444-4444-4444-8444-444444444444",
             "Set up tables",
             "Arrange twelve tables."
           )
@@ -234,17 +233,15 @@ class PlannerTest < ActionDispatch::IntegrationTest
         card: {
           "question" => "What should happen first?",
           "options" => [ "Set up", "Cook", "Welcome" ]
-        },
-        suggestions: []
+        }
       ),
       planner_response(
         card: {
           "question" => "What should happen next?",
           "options" => [ "Clean", "Serve", "Close" ]
         },
-        suggestions: [
+        added: [
           task_suggestion(
-            "45000000-0000-4000-8000-000000000001",
             "Set up the room",
             "Arrange the tables."
           )
@@ -294,9 +291,8 @@ class PlannerTest < ActionDispatch::IntegrationTest
     Rails.configuration.x.planner_provider = Planner::Providers::Fake.new([
       planner_response(
         finished: true,
-        suggestions: [
+        added: [
           task_suggestion(
-            "55555555-5555-4555-8555-555555555555",
             "Confirm the serving plan",
             "Review the order of service with the Team."
           )
@@ -324,10 +320,9 @@ class PlannerTest < ActionDispatch::IntegrationTest
     Rails.configuration.x.planner_provider = Planner::Providers::Fake.new([
       planner_response(
         finished: true,
-        suggestions: [
-          suggestion("70000000-0000-4000-8000-000000000001", "enable_tool", "tool" => "docs"),
+        added: [
+          suggestion("enable_tool", "tool" => "docs"),
           suggestion(
-            "70000000-0000-4000-8000-000000000002",
             "task",
             "title" => "Confirm table captains",
             "details" => "Write the final setup assignments.",
@@ -335,7 +330,6 @@ class PlannerTest < ActionDispatch::IntegrationTest
             "role" => "1 setup lead"
           ),
           suggestion(
-            "70000000-0000-4000-8000-000000000003",
             "schedule_item",
             "title" => "Volunteer briefing",
             "day_offset" => 1,
@@ -344,7 +338,6 @@ class PlannerTest < ActionDispatch::IntegrationTest
             "location" => "Fellowship Hall"
           ),
           suggestion(
-            "70000000-0000-4000-8000-000000000004",
             "slot_run",
             "label" => "Dinner delivery",
             "start_day_offset" => 1,
@@ -353,21 +346,18 @@ class PlannerTest < ActionDispatch::IntegrationTest
             "capacity" => 2
           ),
           suggestion(
-            "70000000-0000-4000-8000-000000000005",
             "booking",
             "description" => "Community room",
             "estimated_dollars" => 425.50,
             "role" => "1 booking lead"
           ),
           suggestion(
-            "70000000-0000-4000-8000-000000000006",
             "purchase",
             "description" => "Compostable plates",
             "estimated_dollars" => 86.25,
             "role" => "1 purchasing lead"
           ),
           suggestion(
-            "70000000-0000-4000-8000-000000000007",
             "list",
             "name" => "Serving stations",
             "columns" => [
@@ -438,7 +428,7 @@ class PlannerTest < ActionDispatch::IntegrationTest
     project.budget_lines.create!(kind: :purchase, description: "Painter tape", estimated: "42.75")
     project.lists.create!(name: "Room checklist")
     fake = Planner::Providers::Fake.new([
-      planner_response(finished: true, suggestions: [])
+      planner_response(finished: true)
     ])
     Rails.configuration.x.planner_provider = fake
     sign_in_as(:other_leader)
@@ -461,13 +451,11 @@ class PlannerTest < ActionDispatch::IntegrationTest
 
   test "review edits nested List fields before accepting" do
     project = projects(:community_meal)
-    suggestion_id = "71000000-0000-4000-8000-000000000001"
     Rails.configuration.x.planner_provider = Planner::Providers::Fake.new([
       planner_response(
         finished: true,
-        suggestions: [
+        added: [
           suggestion(
-            suggestion_id,
             "list",
             "name" => "Serving stations",
             "columns" => [ { "name" => "Station", "type" => "text" } ]
@@ -480,6 +468,7 @@ class PlannerTest < ActionDispatch::IntegrationTest
       planner_session: { description: "Create a serving station List." }
     }
     planner_session = project.planner_sessions.last!
+    suggestion_id = planner_session.suggestions.sole.fetch("id")
 
     get review_project_planner_session_path(project, planner_session)
     assert_response :success
@@ -533,7 +522,7 @@ class PlannerTest < ActionDispatch::IntegrationTest
     )
     deleted_project.tasks.create!(title: "Deleted sentinel task")
     fake = Planner::Providers::Fake.new([
-      planner_response(finished: true, suggestions: [])
+      planner_response(finished: true)
     ])
     Rails.configuration.x.planner_provider = fake
     sign_in_as_leader
@@ -561,27 +550,23 @@ class PlannerTest < ActionDispatch::IntegrationTest
   end
 
   private
-    def planner_response(card: nil, finished: false, suggestions:)
-      Planner::Response.new(card:, finished:, suggestions:)
+    def planner_response(card: nil, finished: false, added: [], removed_ids: [])
+      Planner::Response.new(card:, finished:, added:, removed_ids:)
     end
 
-    def task_suggestion(id, title, details, due_in_days: nil)
+    def task_suggestion(title, details, due_in_days: nil)
       fields = { "title" => title, "details" => details }
       fields["due_in_days"] = due_in_days unless due_in_days.nil?
       {
-        "id" => id,
         "kind" => "task",
-        "fields" => fields,
-        "status" => "proposed"
+        "fields" => fields
       }
     end
 
-    def suggestion(id, kind, fields)
+    def suggestion(kind, fields)
       {
-        "id" => id,
         "kind" => kind,
-        "fields" => fields,
-        "status" => "proposed"
+        "fields" => fields
       }
     end
 end

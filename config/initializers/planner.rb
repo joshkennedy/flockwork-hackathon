@@ -7,7 +7,8 @@ Rails.application.config.after_initialize do
           "options" => [ "Prepare the space", "Gather supplies", "Welcome the Team" ]
         },
         finished: false,
-        suggestions: []
+        added: [],
+        removed_ids: []
       )
     ])
   else

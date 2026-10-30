@@ -197,9 +197,7 @@ module Planner
         type: "object",
         additionalProperties: false,
         properties: {
-          id: { type: "string" },
           kind: { type: "string", enum: KINDS.keys },
-          status: { type: "string", enum: %w[proposed kept edited dropped] },
           fields: {
             type: "object",
             additionalProperties: false,
@@ -207,7 +205,7 @@ module Planner
             required: []
           }
         },
-        required: %w[id kind fields status]
+        required: %w[kind fields]
       }
     end
 
