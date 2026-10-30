@@ -85,7 +85,8 @@ class DocItemsTest < ActionDispatch::IntegrationTest
     assert_select "span", text: "PCO", count: 1
     assert_match "https://grace.planningcenteronline.com/registrations/events/123", response.body
     assert_match "https://example.com", response.body
-    assert_no_match "/rails/active_storage", response.body
+    # Trix embeds URL templates (":signed_id"); only a real signed blob URL would leak a file.
+    assert_no_match %r{/rails/active_storage/(blobs|disk|representations)/(redirect/|proxy/)?(?!:signed_id)[A-Za-z0-9=_-]{20,}}, response.body
   end
 
   test "a non-member gets 404 on the file download route" do
