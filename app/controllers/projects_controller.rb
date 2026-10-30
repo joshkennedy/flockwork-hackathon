@@ -20,9 +20,6 @@ class ProjectsController < ApplicationController
 
   def show
     @ownership_transfer_leaders = @project.memberships.leader.where.not(person_id: @project.owner_id).includes(:person)
-    return unless @project.enabled_tools.include?("schedule")
-
-    @schedule_items_by_day = @project.schedule_items.grouped_by_day
   end
 
   def new

@@ -10,9 +10,64 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_30_180001) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_30_180003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "action_text_rich_texts", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "body"
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["record_type", "record_id", "name"], name: "index_action_text_rich_texts_uniqueness", unique: true
+  end
+
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "filename", null: false
+    t.string "content_type"
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.datetime "created_at", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "invitations", force: :cascade do |t|
+    t.bigint "workspace_id", null: false
+    t.bigint "project_id", null: false
+    t.bigint "person_id", null: false
+    t.bigint "inviter_id", null: false
+    t.integer "role", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "responded_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["inviter_id"], name: "index_invitations_on_inviter_id"
+    t.index ["person_id"], name: "index_invitations_on_person_id"
+    t.index ["project_id", "person_id"], name: "index_invitations_on_pending_project_and_person", unique: true, where: "(status = 0)"
+    t.index ["project_id"], name: "index_invitations_on_project_id"
+    t.index ["workspace_id"], name: "index_invitations_on_workspace_id"
+  end
 
   create_table "memberships", force: :cascade do |t|
     t.bigint "project_id", null: false
@@ -260,6 +315,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_180001) do
     t.index ["slug"], name: "index_workspaces_on_slug", unique: true
   end
 
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "invitations", "people"
+  add_foreign_key "invitations", "people", column: "inviter_id"
+  add_foreign_key "invitations", "projects"
+  add_foreign_key "invitations", "workspaces"
   add_foreign_key "memberships", "people"
   add_foreign_key "memberships", "projects"
   add_foreign_key "people", "workspaces"
