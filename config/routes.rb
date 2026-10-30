@@ -3,6 +3,8 @@ Rails.application.routes.draw do
 
   root "landing#show"
 
+  get "p/:token", to: "public_projects#show", as: :public_project
+
   resources :workspaces, only: :create
   get "get_involved", to: "get_involved#show"
   get "my_tasks", to: "my_tasks#index"
@@ -21,6 +23,9 @@ Rails.application.routes.draw do
       post :unarchive
       patch :transfer_ownership
       post :restore
+      post :enable_public_link
+      post :reset_public_link
+      post :disable_public_link
     end
 
     resources :schedule_items, except: %i[ index show ]

@@ -65,6 +65,18 @@ class Project < ApplicationRecord
     done_at.nil? && archived_at.nil? && deleted_at.nil?
   end
 
+  def enable_public_link!
+    update!(public_token: generate_public_token)
+  end
+
+  def reset_public_link!
+    update!(public_token: generate_public_token)
+  end
+
+  def disable_public_link!
+    update!(public_token: nil)
+  end
+
   def self.create_for(creator:, attributes:)
     project = creator.workspace.projects.build(attributes.merge(owner: creator))
 
@@ -80,6 +92,13 @@ class Project < ApplicationRecord
   end
 
   private
+    def generate_public_token
+      loop do
+        token = SecureRandom.urlsafe_base64(24)
+        break token unless self.class.exists?(public_token: token)
+      end
+    end
+
     def ends_on_is_not_before_starts_on
       return if starts_on.blank? || ends_on.blank? || ends_on >= starts_on
 

@@ -30,6 +30,8 @@
     <% end %>
   </header>
 
+  <%= render "public_link", project: @project %>
+
   <div class="mt-8 flex flex-wrap gap-3">
     <% if Policy.member?(Current.person, @project) || Current.person.admin? %>
     <% if Policy.can?(Current.person, :mark_done, @project) %>

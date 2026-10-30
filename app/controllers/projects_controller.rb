@@ -1,6 +1,7 @@
 class ProjectsController < ApplicationController
   before_action :set_project, only: %i[
     show edit update join mark_done reopen archive unarchive transfer_ownership destroy team
+    enable_public_link reset_public_link disable_public_link
   ]
   before_action :set_deleted_project, only: :restore
   before_action :authorize_project_write, only: %i[ edit update ]
@@ -119,6 +120,24 @@ class ProjectsController < ApplicationController
     redirect_to @project
   end
 
+  def enable_public_link
+    authorize_public_link
+    @project.enable_public_link!
+    redirect_to @project
+  end
+
+  def reset_public_link
+    authorize_public_link
+    @project.reset_public_link!
+    redirect_to @project
+  end
+
+  def disable_public_link
+    authorize_public_link
+    @project.disable_public_link!
+    redirect_to @project
+  end
+
   private
     def set_project
       @project = Policy.visible_projects(Current.person).find(params[:id])
@@ -149,6 +168,10 @@ class ProjectsController < ApplicationController
 
     def authorize_project_team
       raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :view_team, @project)
+    end
+
+    def authorize_public_link
+      raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :manage_public_link, @project)
     end
 
     def project_params
