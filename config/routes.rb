@@ -4,7 +4,21 @@ Rails.application.routes.draw do
   root "landing#show"
 
   resources :workspaces, only: :create
-  resources :projects, only: %i[ index new create show edit update ] do
+  resources :projects, only: %i[ index new create show edit update destroy ] do
+    collection do
+      get :archived
+      get :deleted
+    end
+
+    member do
+      post :mark_done
+      post :reopen
+      post :archive
+      post :unarchive
+      patch :transfer_ownership
+      post :restore
+    end
+
     resources :schedule_items, except: %i[ index show ]
   end
   resource :session, only: :destroy

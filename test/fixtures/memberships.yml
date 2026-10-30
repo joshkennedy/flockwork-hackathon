@@ -8,6 +8,11 @@ community_meal_volunteer:
   person: volunteer
   role: volunteer
 
+community_meal_other_leader:
+  project: community_meal
+  person: other_leader
+  role: leader
+
 building_cleanup_leader:
   project: building_cleanup
   person: other_leader

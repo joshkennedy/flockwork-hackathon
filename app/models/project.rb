@@ -18,9 +18,15 @@ class Project < ApplicationRecord
   has_many :people, through: :memberships
   has_many :schedule_items, dependent: :destroy
 
+  scope :active, -> { where(done_at: nil, archived_at: nil, deleted_at: nil) }
+
   validates :name, presence: true
   validate :ends_on_is_not_before_starts_on
   validate :enabled_tools_are_known
+
+  def active?
+    done_at.nil? && archived_at.nil? && deleted_at.nil?
+  end
 
   def self.create_for(creator:, attributes:)
     project = creator.workspace.projects.build(attributes.merge(owner: creator))
