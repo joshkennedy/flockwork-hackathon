@@ -1,0 +1,79 @@
+import { Controller } from "@hotwired/stimulus"
+
+export default class extends Controller {
+  static targets = [ "field", "button", "listeningLabel" ]
+
+  connect() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SpeechRecognition) return
+
+    this.SpeechRecognition = SpeechRecognition
+    this.buttonTarget.hidden = false
+    this.committedText = this.fieldTarget.value
+  }
+
+  toggle(event) {
+    event.preventDefault()
+    if (this.recognition) {
+      this.recognition.stop()
+      return
+    }
+
+    this.startRecognition()
+  }
+
+  startRecognition() {
+    this.committedText = this.fieldTarget.value
+    this.recognition = new this.SpeechRecognition()
+    this.recognition.lang = document.documentElement.lang || "en-US"
+    this.recognition.interimResults = true
+
+    this.recognition.onresult = (event) => {
+      let interimTranscript = ""
+      for (let index = event.resultIndex; index < event.results.length; index += 1) {
+        const result = event.results[index]
+        const transcript = result[0].transcript
+        if (result.isFinal) {
+          this.committedText = this.appendTranscript(this.committedText, transcript)
+        } else {
+          interimTranscript += transcript
+        }
+      }
+      this.fieldTarget.value = this.displayValue(this.committedText, interimTranscript)
+    }
+
+    this.recognition.onend = () => this.finishListening()
+    this.recognition.onerror = () => this.finishListening()
+
+    this.setListening(true)
+    this.recognition.start()
+  }
+
+  finishListening() {
+    this.recognition = null
+    this.committedText = this.fieldTarget.value
+    this.setListening(false)
+  }
+
+  setListening(listening) {
+    this.buttonTarget.setAttribute("aria-pressed", listening ? "true" : "false")
+    this.buttonTarget.setAttribute("aria-label", listening ? "Stop dictating" : "Dictate")
+    this.buttonTarget.classList.toggle("ring-2", listening)
+    this.buttonTarget.classList.toggle("ring-red-600", listening)
+    this.listeningLabelTarget.hidden = !listening
+  }
+
+  appendTranscript(existing, transcript) {
+    const chunk = transcript.trim()
+    if (chunk.length === 0) return existing
+    if (existing.length === 0) return chunk
+    return `${existing} ${chunk}`
+  }
+
+  displayValue(committed, interim) {
+    const chunk = interim.trim()
+    if (chunk.length === 0) return committed
+    if (committed.length === 0) return chunk
+    return `${committed} ${chunk}`
+  }
+}

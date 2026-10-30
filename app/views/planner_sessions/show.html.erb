@@ -21,7 +21,9 @@
         <%= form_with url: answer_project_planner_session_path(@project, @planner_session), class: "mt-8" do |form| %>
           <%= form.label :answer, "Or answer in your own words", class: "block text-sm font-semibold text-stone-900" %>
           <div class="mt-2 flex min-w-0 flex-col gap-3 sm:flex-row">
-            <%= form.text_field :answer, required: true, class: "block min-h-12 min-w-0 flex-1 border border-stone-400 bg-white px-4 py-3 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+            <%= render layout: "shared/dictation_button", locals: { wrapper_class: "flex min-w-0 flex-1 items-center gap-2" } do %>
+              <%= form.text_field :answer, required: true, data: { dictation_target: "field" }, class: "block min-h-12 min-w-0 flex-1 border border-stone-400 bg-white px-4 py-3 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+            <% end %>
             <%= form.submit "Answer", class: "min-h-12 cursor-pointer bg-[#1f291f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#354235]" %>
           </div>
         <% end %>

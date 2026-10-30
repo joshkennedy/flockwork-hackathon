@@ -17,7 +17,9 @@
 
     <div>
       <%= form.label :description, "Describe this plan in one sentence", class: "block text-sm font-semibold text-stone-900" %>
-      <%= form.text_field :description, required: true, autofocus: true, class: "mt-2 block min-h-12 w-full border border-stone-400 bg-white px-4 py-3 text-stone-950 focus:border-stone-950 focus:outline-none", placeholder: "Prepare the final week before our neighborhood meal." %>
+      <%= render layout: "shared/dictation_button", locals: { wrapper_class: "mt-2 flex w-full items-center gap-2" } do %>
+        <%= form.text_field :description, required: true, autofocus: true, data: { dictation_target: "field" }, class: "block min-h-12 min-w-0 flex-1 border border-stone-400 bg-white px-4 py-3 text-stone-950 focus:border-stone-950 focus:outline-none", placeholder: "Prepare the final week before our neighborhood meal." %>
+      <% end %>
     </div>
 
     <%= form.submit "Start planning", class: "min-h-12 cursor-pointer bg-[#1f291f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#354235]" %>
