@@ -42,6 +42,16 @@ Rails.application.routes.draw do
       resource :claim, only: %i[ create destroy ], controller: "slot_claims"
     end
     resource :slot_run, only: %i[ new create ]
+    resources :planner_sessions, path: "planner", only: %i[ new create show ] do
+      member do
+        post :answer
+        get :review
+        post :skip_to_review
+        post :abandon
+        patch :suggestion
+        post :accept
+      end
+    end
     resources :budget_lines, except: %i[ index show ] do
       resource :status, only: %i[ edit update ], controller: "budget_line_statuses"
     end

@@ -19,6 +19,7 @@ class Project < ApplicationRecord
   has_many :schedule_items, dependent: :destroy
   has_many :tasks, dependent: :destroy
   has_many :slots, dependent: :destroy
+  has_many :planner_sessions, dependent: :destroy
   has_many :budget_lines, dependent: :destroy
   has_many :recipients, dependent: :destroy
   has_many :notes, as: :notable, dependent: :destroy

@@ -1,0 +1,41 @@
+<% content_for :title, "Plan #{@project.name}" %>
+
+<div class="mx-auto w-full max-w-5xl">
+  <%= link_to @project.name, project_path(@project), class: "text-sm font-semibold text-stone-600 hover:text-stone-950" %>
+
+  <% if @planner_session.last_error.present? %>
+    <p role="alert" class="mt-8 border-l-4 border-red-700 bg-red-50 px-5 py-4 font-semibold text-red-950"><%= PlannerSession::ERROR_MESSAGE %></p>
+  <% end %>
+
+  <div class="mt-9 grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
+    <section class="min-w-0" aria-labelledby="planner-question">
+      <% if @planner_session.current_card.present? %>
+        <h1 id="planner-question" class="max-w-3xl text-3xl font-bold leading-tight tracking-tight text-stone-950 sm:text-4xl"><%= @planner_session.current_card.fetch("question") %></h1>
+
+        <div class="mt-8 grid gap-3 sm:grid-cols-2">
+          <% @planner_session.current_card.fetch("options").each do |option| %>
+            <%= button_to option, answer_project_planner_session_path(@project, @planner_session), params: { answer: option }, class: "min-h-16 w-full cursor-pointer border border-stone-400 bg-white px-5 py-4 text-left text-base font-semibold text-stone-900 hover:border-stone-950 hover:bg-[#f2f5ed]" %>
+          <% end %>
+        </div>
+
+        <%= form_with url: answer_project_planner_session_path(@project, @planner_session), class: "mt-8" do |form| %>
+          <%= form.label :answer, "Or answer in your own words", class: "block text-sm font-semibold text-stone-900" %>
+          <div class="mt-2 flex min-w-0 flex-col gap-3 sm:flex-row">
+            <%= form.text_field :answer, required: true, class: "block min-h-12 min-w-0 flex-1 border border-stone-400 bg-white px-4 py-3 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+            <%= form.submit "Answer", class: "min-h-12 cursor-pointer bg-[#1f291f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#354235]" %>
+          </div>
+        <% end %>
+      <% else %>
+        <h1 id="planner-question" class="text-3xl font-bold tracking-tight text-stone-950">The Planner is paused</h1>
+        <p class="mt-4 text-stone-700">Review any Suggestions already created, or return to the Project and keep building by hand.</p>
+      <% end %>
+
+      <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-semibold">
+        <%= link_to "Skip to review", skip_to_review_project_planner_session_path(@project, @planner_session), data: { turbo_method: :post }, class: "text-stone-700 hover:text-stone-950" %>
+        <%= link_to "Leave Planner", abandon_project_planner_session_path(@project, @planner_session), data: { turbo_method: :post }, class: "text-stone-600 hover:text-stone-950" %>
+      </div>
+    </section>
+
+    <%= render "summary", planner_session: @planner_session %>
+  </div>
+</div>

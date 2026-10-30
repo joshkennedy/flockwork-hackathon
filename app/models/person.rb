@@ -14,6 +14,8 @@ class Person < ApplicationRecord
     dependent: :nullify
   has_many :completed_tasks, class_name: "Task", foreign_key: :completed_by_id, inverse_of: :completed_by,
     dependent: :nullify
+  has_many :started_planner_sessions, class_name: "PlannerSession", foreign_key: :started_by_id,
+    inverse_of: :started_by, dependent: :restrict_with_exception
   has_many :invitations, dependent: :restrict_with_exception
   has_many :sent_invitations, class_name: "Invitation", foreign_key: :inviter_id, inverse_of: :inviter,
     dependent: :restrict_with_exception

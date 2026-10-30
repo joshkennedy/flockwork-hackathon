@@ -19,6 +19,9 @@ module Flockwork
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
+    # Parallel tickets use preassigned migration versions that can be ahead of wall-clock time.
+    config.active_record.validate_migration_timestamps = false
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
