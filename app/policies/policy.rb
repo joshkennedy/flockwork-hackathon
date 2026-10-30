@@ -43,6 +43,9 @@ module Policy
       return doc_item_access?(person, action, record)
     end
 
+    return can_respond_to_invitation?(person, action, record) if record.is_a?(::Invitation)
+    return can_manage_membership?(person, action, record) if record.is_a?(::Membership)
+
     return false unless record.is_a?(::Project)
     return false unless record.workspace_id == person.workspace_id
 
@@ -57,9 +60,9 @@ module Policy
     return false unless record.deleted_at.nil?
 
     case action
-    when :show
+    when :show, :view_team
       person.admin? || record.memberships.exists?(person: person)
-    when :update, :manage_tools, :manage_schedule, :manage_budget
+    when :update, :manage_tools, :manage_schedule, :manage_budget, :manage_team
       person.admin? || record.memberships.leader.exists?(person: person)
     when :manage_docs
       person.admin? || record.memberships.exists?(person: person)
@@ -91,6 +94,30 @@ module Policy
     when :update_budget_line_status
       budget_line.responsible_person_id == person.id &&
         (person.admin? || project.memberships.exists?(person: person))
+    else
+      false
+    end
+  end
+
+  def can_respond_to_invitation?(person, action, invitation)
+    action == :respond && invitation.pending? && invitation.person_id == person.id &&
+      invitation.workspace_id == person.workspace_id
+  end
+
+  def visible_invitations(person)
+    person.workspace.invitations.pending.where(person: person)
+  end
+
+  def can_manage_membership?(person, action, membership)
+    project = membership.project
+    return false unless project.workspace_id == person.workspace_id && project.deleted_at.nil?
+    return false if membership.person_id == project.owner_id
+
+    case action
+    when :leave_team
+      membership.person_id == person.id
+    when :remove_member
+      person.admin? || project.memberships.leader.exists?(person: person)
     else
       false
     end

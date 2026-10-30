@@ -16,6 +16,22 @@
     <%= link_to "Projects", projects_path, class: "mt-8 inline-block bg-white px-5 py-3 text-sm font-bold text-[#1f291f] hover:bg-[#e7ede3]" %>
   </section>
 
+  <% if @pending_invitations.any? %>
+    <section class="mt-10" aria-labelledby="pending-invitations-heading">
+      <h2 id="pending-invitations-heading" class="text-2xl font-bold text-stone-950">Pending Invitations</h2>
+      <ul class="mt-5 divide-y divide-stone-300 border-y border-stone-300">
+        <% @pending_invitations.each do |invitation| %>
+          <li>
+            <%= link_to invitation_path(invitation.generate_token_for(:access)), class: "flex items-center justify-between gap-4 py-4 font-semibold text-stone-800 hover:text-stone-950" do %>
+              <span><%= invitation.project.name %></span>
+              <span class="text-sm font-medium text-stone-600"><%= invitation.role.humanize %></span>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    </section>
+  <% end %>
+
   <nav class="mt-8 flex flex-wrap gap-4 text-sm font-medium">
     <% if @person.admin? %>
       <%= link_to "People", people_path(@workspace), class: "text-gray-900 hover:underline" %>

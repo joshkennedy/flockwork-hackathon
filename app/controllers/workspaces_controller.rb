@@ -6,6 +6,7 @@ class WorkspacesController < ApplicationController
 
     @workspace = Current.workspace
     @person = Current.person
+    @pending_invitations = Policy.visible_invitations(Current.person).includes(:project).order(created_at: :desc)
   end
 
   def create

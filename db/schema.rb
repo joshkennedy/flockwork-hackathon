@@ -78,6 +78,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_191400) do
     t.index ["project_id"], name: "index_doc_items_on_project_id"
   end
 
+  create_table "invitations", force: :cascade do |t|
+    t.bigint "workspace_id", null: false
+    t.bigint "project_id", null: false
+    t.bigint "person_id", null: false
+    t.bigint "inviter_id", null: false
+    t.integer "role", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "responded_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["inviter_id"], name: "index_invitations_on_inviter_id"
+    t.index ["person_id"], name: "index_invitations_on_person_id"
+    t.index ["project_id", "person_id"], name: "index_invitations_on_pending_project_and_person", unique: true, where: "(status = 0)"
+    t.index ["project_id"], name: "index_invitations_on_project_id"
+    t.index ["workspace_id"], name: "index_invitations_on_workspace_id"
+  end
+
   create_table "memberships", force: :cascade do |t|
     t.bigint "project_id", null: false
     t.bigint "person_id", null: false
@@ -341,6 +358,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_191400) do
   add_foreign_key "budget_lines", "projects"
   add_foreign_key "doc_items", "people", column: "author_id"
   add_foreign_key "doc_items", "projects"
+  add_foreign_key "invitations", "people"
+  add_foreign_key "invitations", "people", column: "inviter_id"
+  add_foreign_key "invitations", "projects"
+  add_foreign_key "invitations", "workspaces"
   add_foreign_key "memberships", "people"
   add_foreign_key "memberships", "projects"
   add_foreign_key "messages", "messages", column: "parent_id"

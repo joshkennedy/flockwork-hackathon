@@ -1,10 +1,11 @@
 class ProjectsController < ApplicationController
   before_action :set_project, only: %i[
-    show edit update mark_done reopen archive unarchive transfer_ownership destroy
+    show edit update mark_done reopen archive unarchive transfer_ownership destroy team
   ]
   before_action :set_deleted_project, only: :restore
   before_action :authorize_project_write, only: %i[ edit update ]
   before_action :authorize_deleted_list, only: :deleted
+  before_action :authorize_project_team, only: :team
 
   def index
     @projects = Policy.listed_projects(Current.person).order(:name)
@@ -20,6 +21,21 @@ class ProjectsController < ApplicationController
 
   def show
     @ownership_transfer_leaders = @project.memberships.leader.where.not(person_id: @project.owner_id).includes(:person)
+  end
+
+  def team
+    @memberships = @project.memberships.includes(:person).order(:role, :created_at)
+    @can_manage_team = Policy.can?(Current.person, :manage_team, @project)
+    return unless @can_manage_team
+
+    @invitations = Current.workspace.invitations.where(project: @project).includes(:person).order(created_at: :desc)
+    return unless params[:query].present?
+
+    member_ids = @project.memberships.select(:person_id)
+    @directory_people = Current.workspace.people
+      .where("name ILIKE ?", "%#{ActiveRecord::Base.sanitize_sql_like(params[:query])}%")
+      .where.not(id: member_ids)
+      .order(:name)
   end
 
   def new
@@ -120,6 +136,10 @@ class ProjectsController < ApplicationController
 
     def authorize_deleted_list
       raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :view_deleted, ::Project)
+    end
+
+    def authorize_project_team
+      raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :view_team, @project)
     end
 
     def project_params

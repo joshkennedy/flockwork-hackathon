@@ -29,6 +29,15 @@ Rails.application.routes.draw do
         get :download
       end
     end
+    get :team, on: :member
+    resources :invitations, only: :create
+    resources :memberships, only: :destroy
+  end
+  resources :invitations, only: :show, param: :token do
+    member do
+      patch :accept
+      patch :decline
+    end
   end
   resource :session, only: :destroy
 

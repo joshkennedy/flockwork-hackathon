@@ -3,9 +3,12 @@
 <div class="mx-auto w-full max-w-5xl">
   <nav class="flex items-center justify-between gap-4" aria-label="Project navigation">
     <%= link_to "Projects", projects_path, class: "text-sm font-semibold text-stone-600 hover:text-stone-950" %>
-    <% if Policy.can?(Current.person, :update, @project) %>
-      <%= link_to "Edit Project", edit_project_path(@project), class: "text-sm font-semibold text-stone-700 hover:text-stone-950" %>
-    <% end %>
+    <div class="flex items-center gap-5">
+      <%= link_to "Team", team_project_path(@project), class: "text-sm font-semibold text-stone-700 hover:text-stone-950" %>
+      <% if Policy.can?(Current.person, :update, @project) %>
+        <%= link_to "Edit Project", edit_project_path(@project), class: "text-sm font-semibold text-stone-700 hover:text-stone-950" %>
+      <% end %>
+    </div>
   </nav>
 
   <header class="mt-10 max-w-3xl">

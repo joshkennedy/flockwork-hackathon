@@ -50,6 +50,8 @@ class Project < ApplicationRecord
 
   scope :active, -> { where(done_at: nil, archived_at: nil, deleted_at: nil) }
 
+  has_many :invitations, dependent: :restrict_with_exception
+
   validates :name, presence: true
   validate :ends_on_is_not_before_starts_on
   validate :enabled_tools_are_known
