@@ -2,6 +2,9 @@ class Person < ApplicationRecord
   include WorkspaceScoped
 
   has_many :sessions, dependent: :destroy
+  has_many :memberships, dependent: :destroy
+  has_many :projects, through: :memberships
+  has_many :owned_projects, class_name: "Project", foreign_key: :owner_id, inverse_of: :owner
 
   generates_token_for :sign_in, expires_in: 15.minutes do
     last_signed_in_at

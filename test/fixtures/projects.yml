@@ -1,0 +1,32 @@
+community_meal:
+  workspace: st_example
+  name: Community Meal
+  description: Prepare and serve a neighborhood dinner.
+  starts_on: 2027-02-12
+  ends_on: 2027-02-12
+  owner: leader
+  open_team: false
+  enabled_tools:
+    - tasks
+    - schedule
+
+building_cleanup:
+  workspace: st_example
+  name: Building Cleanup
+  description: Freshen the building before Easter.
+  starts_on: 2027-03-20
+  ends_on: 2027-03-20
+  owner: other_leader
+  open_team: false
+  enabled_tools: []
+
+outsider_project:
+  workspace: outsider_church
+  name: Outsider Church Picnic
+  description: Gather for a spring picnic.
+  starts_on: 2027-04-10
+  ends_on: 2027-04-10
+  owner: outsider
+  open_team: false
+  enabled_tools:
+    - signup_sheet

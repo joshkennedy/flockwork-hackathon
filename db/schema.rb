@@ -10,9 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_30_150012) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_30_160001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "memberships", force: :cascade do |t|
+    t.bigint "project_id", null: false
+    t.bigint "person_id", null: false
+    t.integer "role", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["person_id"], name: "index_memberships_on_person_id"
+    t.index ["project_id", "person_id"], name: "index_memberships_on_project_id_and_person_id", unique: true
+    t.index ["project_id"], name: "index_memberships_on_project_id"
+  end
 
   create_table "people", force: :cascade do |t|
     t.bigint "workspace_id", null: false
@@ -27,6 +38,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_150012) do
     t.datetime "updated_at", null: false
     t.index ["workspace_id", "email"], name: "index_people_on_workspace_id_and_email", unique: true, where: "(email IS NOT NULL)"
     t.index ["workspace_id"], name: "index_people_on_workspace_id"
+  end
+
+  create_table "projects", force: :cascade do |t|
+    t.bigint "workspace_id", null: false
+    t.string "name", null: false
+    t.text "description"
+    t.date "starts_on"
+    t.date "ends_on"
+    t.bigint "owner_id", null: false
+    t.boolean "open_team", default: false, null: false
+    t.string "public_token"
+    t.string "enabled_tools", default: [], null: false, array: true
+    t.datetime "done_at"
+    t.datetime "archived_at"
+    t.datetime "deleted_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["owner_id"], name: "index_projects_on_owner_id"
+    t.index ["public_token"], name: "index_projects_on_public_token", unique: true
+    t.index ["workspace_id"], name: "index_projects_on_workspace_id"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -217,7 +248,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_150012) do
     t.index ["slug"], name: "index_workspaces_on_slug", unique: true
   end
 
+  add_foreign_key "memberships", "people"
+  add_foreign_key "memberships", "projects"
   add_foreign_key "people", "workspaces"
+  add_foreign_key "projects", "people", column: "owner_id"
+  add_foreign_key "projects", "workspaces"
   add_foreign_key "sessions", "people"
   add_foreign_key "solid_queue_batch_executions", "solid_queue_batches", column: "batch_id", on_delete: :cascade
   add_foreign_key "solid_queue_batch_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
