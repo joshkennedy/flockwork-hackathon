@@ -11,6 +11,7 @@ at_exit { (postgres.stop; postgres.remove) if Process.pid == main_pid }
 
 require_relative "../config/environment"
 require "rails/test_help"
+require_relative "support/vcr"
 require_relative "support/sign_in_helpers"
 
 module ActiveSupport

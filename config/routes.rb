@@ -110,6 +110,9 @@ Rails.application.routes.draw do
     post "demo/:role", to: "demo_sessions#create", as: :demo_session
     get "people/import", to: "people/csv_imports#new", as: :new_people_csv_import
     post "people/import", to: "people/csv_imports#create", as: :people_csv_import
+    get "directory/planning_center", to: "directory/planning_center#show", as: :planning_center_directory
+    patch "directory/planning_center", to: "directory/planning_center#update"
+    post "directory/planning_center/sync", to: "directory/planning_center#sync", as: :sync_planning_center_directory
     resources :people, only: %i[index new create edit update] do
       resources :notes, only: :create
     end

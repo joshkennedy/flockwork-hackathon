@@ -40,6 +40,8 @@ gem "thruster", require: false
 gem "image_processing"
 
 group :development, :test do
+  gem "dotenv", "3.2.0"
+
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
 
@@ -61,6 +63,8 @@ end
 group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
+  gem "vcr", "6.4.1"
+  gem "webmock", "3.34.0"
 end
 
 gem "testcontainers-postgres", group: :test
