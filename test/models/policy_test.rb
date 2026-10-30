@@ -15,4 +15,15 @@ class PolicyTest < ActiveSupport::TestCase
     assert Policy.can?(people(:leader), :manage_recipients, project)
     assert_not Policy.can?(people(:volunteer), :manage_recipients, project)
   end
+
+  test "only Project Leaders and Admins may duplicate" do
+    project = projects(:community_meal)
+
+    assert Policy.can?(people(:leader), :duplicate, project)
+    assert Policy.can?(people(:other_leader), :duplicate, project)
+    assert Policy.can?(people(:admin), :duplicate, project)
+    assert_not Policy.can?(people(:volunteer), :duplicate, project)
+    assert_not Policy.can?(people(:other_volunteer), :duplicate, project)
+    assert_not Policy.can?(people(:outsider), :duplicate, project)
+  end
 end
