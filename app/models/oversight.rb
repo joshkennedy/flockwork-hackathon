@@ -17,7 +17,8 @@ module Oversight
 
   def never_asked(workspace)
     # Invitations and ownership preserve Team history after Membership deletion; soft-deleted Projects retain Memberships.
-    workspace.people.where.missing(:invitations, :memberships, :owned_projects).order(:name)
+    # Recipients are being cared for by a Project, even on deleted Projects and without Team history.
+    workspace.people.where.missing(:invitations, :memberships, :owned_projects, :recipients).order(:name)
   end
 
   def involvement(person)

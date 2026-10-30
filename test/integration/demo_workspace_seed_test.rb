@@ -93,9 +93,9 @@ class DemoWorkspaceSeedTest < ActionDispatch::IntegrationTest
         "Jonathan Moore",
         "Malcolm Bell",
         "Nina Bailey",
+        "Pamela Underwood",
         "Peter Sanchez",
         "Rachel Hernandez",
-        "The Alvarez Family",
         "Victor Ramirez"
       ], Oversight.never_asked(workspace).pluck(:name)
 

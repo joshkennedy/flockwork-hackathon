@@ -65,15 +65,36 @@ class OversightTest < ActionDispatch::IntegrationTest
     former_owner = workspace.people.create!(name: "Olivia Former Owner")
     workspace.projects.create!(name: "Owner History", owner: former_owner, deleted_at: Time.current)
     workspace.people.create!(name: "Nora Never Asked")
+    projects(:community_meal).recipients.create!(person: people(:recipient))
 
     get oversight_path
 
     assert_response :success
     names = css_select("[data-never-asked-person]").map { |row| row["data-never-asked-person"] }
-    assert_equal [ "Nora Never Asked", "Rowan Recipient" ], names
+    assert_equal [ "Nora Never Asked" ], names
     assert_not_includes names, "Vera Volunteer"
     assert_not_includes names, "Frank Former Member"
     assert_not_includes names, "Olivia Former Owner"
+    assert_not_includes names, "Rowan Recipient"
+  end
+
+  test "Recipient with no Invitation or Membership is not in never asked" do
+    sign_in_as_admin
+    workspace = workspaces(:st_example)
+    cared_for = workspace.people.create!(name: "Cara Cared For")
+    deleted_project = workspace.projects.create!(
+      name: "Past Meal Train",
+      owner: people(:admin),
+      deleted_at: Time.current
+    )
+    deleted_project.recipients.create!(person: cared_for)
+
+    assert_not_includes Oversight.never_asked(workspace).pluck(:name), cared_for.name
+
+    get oversight_path
+
+    assert_response :success
+    assert_not_includes css_select("[data-never-asked-person]").map { |row| row["data-never-asked-person"] }, cared_for.name
   end
 
   test "Admin sees literal current-year Involvement counts for every Person" do
