@@ -52,6 +52,10 @@ module Policy
       return task_can?(person, action, record)
     end
 
+    if record.is_a?(::Note)
+      return note_can?(person, action, record)
+    end
+
     return can_respond_to_invitation?(person, action, record) if record.is_a?(::Invitation)
     return can_manage_membership?(person, action, record) if record.is_a?(::Membership)
 
@@ -72,6 +76,8 @@ module Policy
     when :show
       person.admin? || member?(person, record) || open_team_visible?(person, record)
     when :view_team, :view_recipients
+      person.admin? || member?(person, record)
+    when :view_notes
       person.admin? || member?(person, record)
     when :join
       open_team_visible?(person, record)
@@ -210,4 +216,47 @@ module Policy
     end
   end
   private :doc_item_access?
+
+  def visible_notes(person, scope)
+    notes = scope.where(workspace_id: person.workspace_id)
+    return notes if person.admin?
+
+    member_project_ids = person.memberships.select(:project_id)
+    leader_project_ids = person.memberships.leader.select(:project_id)
+    member_recipient_ids = Recipient.where(project_id: member_project_ids).select(:id)
+    leader_recipient_ids = Recipient.where(project_id: leader_project_ids).select(:id)
+
+    team_notes = notes.team.where(notable_type: "Project", notable_id: member_project_ids)
+      .or(notes.team.where(notable_type: "Recipient", notable_id: member_recipient_ids))
+    leader_notes = notes.leaders.where(notable_type: "Project", notable_id: leader_project_ids)
+      .or(notes.leaders.where(notable_type: "Recipient", notable_id: leader_recipient_ids))
+    authored_notes = notes.where(author_id: person.id).where.not(notable_type: "Person")
+
+    team_notes.or(leader_notes).or(authored_notes)
+  end
+
+  def writable_note_visibilities(person, notable)
+    return person.admin? ? [ "admins" ] : [] if notable.is_a?(Person)
+
+    Note.visibilities.keys.select do |visibility|
+      note = Note.new(workspace: person.workspace, notable: notable, author: person, visibility: visibility)
+      can?(person, :write_note, note)
+    end
+  end
+
+  def note_can?(person, action, note)
+    return false unless action == :write_note
+    return false unless note.workspace_id == person.workspace_id
+    return person.admin? if note.notable.is_a?(Person)
+
+    project = note.project
+    return false unless project&.workspace_id == person.workspace_id
+    return false if project.deleted_at.present?
+    return true if person.admin?
+    return false unless project.memberships.exists?(person: person)
+    return true if note.team? || note.leaders?
+
+    note.admins? && project.memberships.leader.exists?(person: person)
+  end
+  private :note_can?
 end

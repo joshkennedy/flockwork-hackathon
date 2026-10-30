@@ -144,6 +144,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_31_150001) do
     t.index ["project_id"], name: "index_messages_on_project_id"
   end
 
+  create_table "notes", force: :cascade do |t|
+    t.bigint "workspace_id", null: false
+    t.string "notable_type", null: false
+    t.bigint "notable_id", null: false
+    t.bigint "author_id", null: false
+    t.integer "visibility", default: 0, null: false
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_notes_on_author_id"
+    t.index ["notable_type", "notable_id"], name: "index_notes_on_notable"
+    t.index ["workspace_id"], name: "index_notes_on_workspace_id"
+  end
+
   create_table "people", force: :cascade do |t|
     t.bigint "workspace_id", null: false
     t.string "name", null: false
@@ -445,6 +459,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_31_150001) do
   add_foreign_key "messages", "messages", column: "parent_id"
   add_foreign_key "messages", "people", column: "author_id"
   add_foreign_key "messages", "projects"
+  add_foreign_key "notes", "people", column: "author_id"
+  add_foreign_key "notes", "workspaces"
   add_foreign_key "people", "workspaces"
   add_foreign_key "projects", "people", column: "owner_id"
   add_foreign_key "projects", "workspaces"

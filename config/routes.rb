@@ -67,6 +67,7 @@ Rails.application.routes.draw do
     resources :invitations, only: :create
     resources :memberships, only: :destroy
     resources :recipients, only: %i[ new create destroy ]
+    resources :notes, only: :create
   end
   resources :invitations, only: :show, param: :token do
     member do
@@ -86,7 +87,9 @@ Rails.application.routes.draw do
     post "demo/:role", to: "demo_sessions#create", as: :demo_session
     get "people/import", to: "people/csv_imports#new", as: :new_people_csv_import
     post "people/import", to: "people/csv_imports#create", as: :people_csv_import
-    resources :people, only: %i[index new create edit update]
+    resources :people, only: %i[index new create edit update] do
+      resources :notes, only: :create
+    end
     resource :profile, only: %i[edit update]
   end
 end

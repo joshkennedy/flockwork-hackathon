@@ -5,4 +5,13 @@
   <h1 class="mt-1 text-3xl font-bold text-gray-900">Edit <%= @person.name %></h1>
 
   <%= render "form", person: @person, submit_label: "Save changes" %>
+
+  <section class="mt-12 bg-[#e7ede3] p-6" aria-labelledby="person-notes-heading">
+    <h2 id="person-notes-heading" class="text-xl font-bold text-stone-950">Notes</h2>
+    <%= render "notes/list", notes: @person_notes %>
+    <%= render "notes/form",
+      notable: @person,
+      visibilities: @note_visibilities,
+      form_url: person_notes_path(Current.workspace, @person) %>
+  </section>
 </div>

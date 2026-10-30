@@ -21,6 +21,7 @@ class Project < ApplicationRecord
   has_many :slots, dependent: :destroy
   has_many :budget_lines, dependent: :destroy
   has_many :recipients, dependent: :destroy
+  has_many :notes, as: :notable, dependent: :destroy
 
   def budget_lines_by_kind(kind)
     budget_lines.public_send(kind).order(:id)

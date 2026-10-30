@@ -1,0 +1,9 @@
+<% if notes.any? %>
+  <ul class="mt-3 space-y-3">
+    <% notes.each do |note| %>
+      <li class="text-sm leading-6 text-stone-800" data-note-body><%= note.body %></li>
+    <% end %>
+  </ul>
+<% else %>
+  <p class="mt-3 text-sm text-stone-600">No notes yet</p>
+<% end %>
