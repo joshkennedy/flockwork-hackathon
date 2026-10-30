@@ -3,6 +3,9 @@ class Person < ApplicationRecord
 
   has_many :sessions, dependent: :destroy
   has_many :memberships, dependent: :destroy
+  has_many :comments, foreign_key: :author_id, inverse_of: :author, dependent: :destroy
+  has_many :follows, dependent: :destroy
+  has_many :mentions, dependent: :destroy
   has_many :recipients, dependent: :destroy
   has_many :slot_claims, dependent: :destroy
   has_many :notes, as: :notable, dependent: :destroy

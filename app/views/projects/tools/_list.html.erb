@@ -1,5 +1,5 @@
 <% lists = project.lists.includes(:columns, :rows) %>
-<section class="min-h-44 min-w-0 bg-[#e7ede3] p-6 md:col-span-2" aria-labelledby="tool-list">
+<section class="min-h-44 min-w-0 bg-[#e7ede3] p-6 [contain:paint] md:col-span-2" aria-labelledby="tool-list">
   <div class="flex items-start justify-between gap-4">
     <h2 id="tool-list" class="text-xl font-bold text-stone-950"><%= Project::TOOL_LABELS.fetch("list") %></h2>
     <% if Policy.can?(Current.person, :manage_lists, project) %>
@@ -67,6 +67,11 @@
                           <%= button_to "Delete", project_list_list_row_path(project, list, row), method: :delete, class: "min-h-6 text-red-800 hover:text-red-950" %>
                         </div>
                       <% end %>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="<%= list.columns.length + 1 %>" class="px-3 pb-4">
+                      <%= render "comments/thread", commentable: row %>
                     </td>
                   </tr>
                 <% end %>

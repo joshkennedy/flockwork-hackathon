@@ -1,5 +1,5 @@
 <% slots_by_date = project.slots.includes(slot_claims: :person).chronological.group_by(&:date) %>
-<section class="min-h-44 bg-[#e7ede3] p-6" aria-labelledby="tool-signup-sheet">
+<section class="min-h-44 min-w-0 bg-[#e7ede3] p-6" aria-labelledby="tool-signup-sheet">
   <div class="flex items-start justify-between gap-4">
     <h2 id="tool-signup-sheet" class="text-xl font-bold text-stone-950"><%= Project::TOOL_LABELS.fetch("signup_sheet") %></h2>
     <% if Policy.can?(Current.person, :manage_slots, project) %>
@@ -47,6 +47,7 @@
                     <% end %>
                   </div>
                 </div>
+                <%= render "comments/thread", commentable: slot %>
               </li>
             <% end %>
           </ul>

@@ -16,4 +16,13 @@
       <% end %>
     </div>
   <% end %>
+  <% if message.parent_id.nil? && (follow = message.follows.find_by(person: Current.person)) %>
+    <div class="mt-3 flex items-center justify-between gap-3 text-sm text-stone-600">
+      <span>Following this thread</span>
+      <%= button_to "Unfollow",
+            project_follow_path(project, follow),
+            method: :delete,
+            class: "font-semibold text-stone-700 hover:text-stone-950" %>
+    </div>
+  <% end %>
 </article>

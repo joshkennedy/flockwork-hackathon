@@ -66,6 +66,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_31_210001) do
     t.index ["responsible_person_id"], name: "index_budget_lines_on_responsible_person_id"
   end
 
+  create_table "comments", force: :cascade do |t|
+    t.string "commentable_type", null: false
+    t.bigint "commentable_id", null: false
+    t.bigint "author_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_comments_on_author_id"
+    t.index ["commentable_type", "commentable_id"], name: "index_comments_on_commentable"
+  end
+
   create_table "doc_items", force: :cascade do |t|
     t.bigint "project_id", null: false
     t.bigint "author_id", null: false
@@ -76,6 +86,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_31_210001) do
     t.datetime "updated_at", null: false
     t.index ["author_id"], name: "index_doc_items_on_author_id"
     t.index ["project_id"], name: "index_doc_items_on_project_id"
+  end
+
+  create_table "follows", force: :cascade do |t|
+    t.string "followable_type", null: false
+    t.bigint "followable_id", null: false
+    t.bigint "person_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["followable_type", "followable_id", "person_id"], name: "index_follows_on_followable_and_person", unique: true
+    t.index ["followable_type", "followable_id"], name: "index_follows_on_followable"
+    t.index ["person_id"], name: "index_follows_on_person_id"
   end
 
   create_table "invitations", force: :cascade do |t|
@@ -131,6 +152,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_31_210001) do
     t.index ["person_id"], name: "index_memberships_on_person_id"
     t.index ["project_id", "person_id"], name: "index_memberships_on_project_id_and_person_id", unique: true
     t.index ["project_id"], name: "index_memberships_on_project_id"
+  end
+
+  create_table "mentions", force: :cascade do |t|
+    t.string "mentionable_type", null: false
+    t.bigint "mentionable_id", null: false
+    t.bigint "person_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["mentionable_type", "mentionable_id", "person_id"], name: "index_mentions_on_mentionable_and_person", unique: true
+    t.index ["mentionable_type", "mentionable_id"], name: "index_mentions_on_mentionable"
+    t.index ["person_id"], name: "index_mentions_on_person_id"
   end
 
   create_table "messages", force: :cascade do |t|
@@ -461,8 +493,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_31_210001) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "budget_lines", "people", column: "responsible_person_id"
   add_foreign_key "budget_lines", "projects"
+  add_foreign_key "comments", "people", column: "author_id"
   add_foreign_key "doc_items", "people", column: "author_id"
   add_foreign_key "doc_items", "projects"
+  add_foreign_key "follows", "people"
   add_foreign_key "invitations", "people"
   add_foreign_key "invitations", "people", column: "inviter_id"
   add_foreign_key "invitations", "projects"
@@ -472,6 +506,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_31_210001) do
   add_foreign_key "lists", "projects"
   add_foreign_key "memberships", "people"
   add_foreign_key "memberships", "projects"
+  add_foreign_key "mentions", "people"
   add_foreign_key "messages", "messages", column: "parent_id"
   add_foreign_key "messages", "people", column: "author_id"
   add_foreign_key "messages", "projects"

@@ -1,5 +1,5 @@
 <% schedule_items_by_day = project.schedule_items.grouped_by_day %>
-<section class="min-h-44 bg-[#e7ede3] p-6" aria-labelledby="tool-schedule">
+<section class="min-h-44 min-w-0 bg-[#e7ede3] p-6" aria-labelledby="tool-schedule">
   <div class="flex items-start justify-between gap-4">
     <h2 id="tool-schedule" class="text-xl font-bold text-stone-950"><%= Project::TOOL_LABELS.fetch("schedule") %></h2>
     <% if Policy.can?(Current.person, :manage_schedule, project) %>
@@ -14,8 +14,9 @@
           <h3 class="text-sm font-semibold uppercase tracking-wide text-stone-600"><%= day.strftime("%A, %B %-d") %></h3>
           <ul class="mt-3 space-y-2">
             <% items.each do |item| %>
-              <li class="flex items-start justify-between gap-3 text-stone-900">
-                <div>
+              <li class="text-stone-900">
+                <div class="flex items-start justify-between gap-3">
+                  <div>
                   <% if item.starts_at_time.present? %>
                     <span class="text-sm font-medium text-stone-600">
                       <%= item.starts_at_time.strftime("%-l:%M %p") %>
@@ -28,13 +29,15 @@
                   <% if item.location.present? %>
                     <span class="block text-sm text-stone-600"><%= item.location %></span>
                   <% end %>
-                </div>
-                <% if Policy.can?(Current.person, :manage_schedule, project) %>
-                  <div class="flex shrink-0 gap-3 text-sm font-semibold">
-                    <%= link_to "Edit", edit_project_schedule_item_path(project, item), class: "text-stone-700 hover:text-stone-950" %>
-                    <%= button_to "Delete", project_schedule_item_path(project, item), method: :delete, class: "text-red-800 hover:text-red-950" %>
                   </div>
-                <% end %>
+                  <% if Policy.can?(Current.person, :manage_schedule, project) %>
+                    <div class="flex shrink-0 gap-3 text-sm font-semibold">
+                      <%= link_to "Edit", edit_project_schedule_item_path(project, item), class: "text-stone-700 hover:text-stone-950" %>
+                      <%= button_to "Delete", project_schedule_item_path(project, item), method: :delete, class: "text-red-800 hover:text-red-950" %>
+                    </div>
+                  <% end %>
+                </div>
+                <%= render "comments/thread", commentable: item %>
               </li>
             <% end %>
           </ul>

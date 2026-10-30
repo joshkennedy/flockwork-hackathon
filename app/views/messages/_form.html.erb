@@ -11,8 +11,12 @@
   <% end %>
 
   <div>
-    <%= form.label :body, class: "block text-sm font-semibold text-stone-900" %>
-    <%= form.rich_text_area :body, required: true, autofocus: true, class: "mt-2 block w-full border border-stone-400 bg-white" %>
+    <%= render "mentions/field",
+          form: form,
+          project: project,
+          label: "Body",
+          input_id: "message_#{message.id}_body",
+          autofocus: true %>
   </div>
 
   <%= form.submit "Save message", class: "cursor-pointer bg-[#1f291f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#354235]" %>

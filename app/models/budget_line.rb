@@ -1,6 +1,8 @@
 class BudgetLine < ApplicationRecord
   belongs_to :project
   belongs_to :responsible_person, class_name: "Person", optional: true
+  has_many :comments, as: :commentable, dependent: :destroy
+  has_many :follows, as: :followable, dependent: :destroy
 
   enum :kind, { booking: 0, purchase: 1 }
   enum :status, { pending: 0, reserved: 1, paid: 2, cancelled: 3 }, default: :pending

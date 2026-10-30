@@ -1,9 +1,13 @@
 class ListRow < ApplicationRecord
   belongs_to :list
+  has_many :comments, as: :commentable, dependent: :destroy
+  has_many :follows, as: :followable, dependent: :destroy
 
   validates :position, presence: true
 
   before_validation :assign_position, on: :create
+
+  delegate :project, to: :list
 
   def assign_cast_cells(raw_cells)
     values = cells.dup

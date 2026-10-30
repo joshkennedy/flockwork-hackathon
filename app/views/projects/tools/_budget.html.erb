@@ -3,7 +3,7 @@
 <% purchase_lines = project.budget_lines_by_kind(:purchase) %>
 <% booking_totals = project.budget_kind_totals(:booking) %>
 <% purchase_totals = project.budget_kind_totals(:purchase) %>
-<section class="min-h-44 bg-[#e7ede3] p-6" aria-labelledby="tool-budget">
+<section class="min-h-44 min-w-0 bg-[#e7ede3] p-6" aria-labelledby="tool-budget">
   <div class="flex items-start justify-between gap-4">
     <h2 id="tool-budget" class="text-xl font-bold text-stone-950"><%= Project::TOOL_LABELS.fetch("budget") %></h2>
     <% if Policy.can?(Current.person, :manage_budget, project) %>
