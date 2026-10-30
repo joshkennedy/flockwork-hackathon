@@ -1,0 +1,26 @@
+<% content_for :title, "Projects" %>
+
+<div class="mx-auto w-full max-w-4xl">
+  <div class="flex items-end justify-between gap-5">
+    <div>
+      <%= link_to Current.workspace.name, workspace_path(Current.workspace), class: "text-sm font-semibold text-stone-600 hover:text-stone-950" %>
+      <h1 class="mt-4 text-4xl font-bold tracking-tight text-stone-950">Projects</h1>
+    </div>
+    <%= link_to "Start a Project", new_project_path, class: "bg-[#1f291f] px-4 py-3 text-sm font-semibold text-white hover:bg-[#354235]" %>
+  </div>
+
+  <% if @projects.any? %>
+    <div class="mt-10 divide-y divide-stone-300 border-y border-stone-300">
+      <% @projects.each do |project| %>
+        <%= link_to project_path(project), class: "group block py-6" do %>
+          <h2 class="text-xl font-bold text-stone-950 group-hover:text-stone-600"><%= project.name %></h2>
+          <% if project.description.present? %>
+            <p class="mt-2 text-stone-600"><%= project.description %></p>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="mt-12 text-stone-600">No Projects yet.</p>
+  <% end %>
+</div>

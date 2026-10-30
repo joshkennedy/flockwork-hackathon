@@ -1,0 +1,19 @@
+community_meal_leader:
+  project: community_meal
+  person: leader
+  role: leader
+
+community_meal_volunteer:
+  project: community_meal
+  person: volunteer
+  role: volunteer
+
+building_cleanup_leader:
+  project: building_cleanup
+  person: other_leader
+  role: leader
+
+outsider_project_leader:
+  project: outsider_project
+  person: outsider
+  role: leader

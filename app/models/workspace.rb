@@ -1,7 +1,8 @@
 class Workspace < ApplicationRecord
   # Slugs that would shadow top-level routes
-  RESERVED_SLUGS = %w[up workspaces].freeze
+  RESERVED_SLUGS = %w[projects up workspaces].freeze
 
+  has_many :projects, dependent: :destroy
   has_many :people, dependent: :destroy
 
   normalizes :name, with: ->(name) { name.strip }

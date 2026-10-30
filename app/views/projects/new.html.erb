@@ -1,0 +1,11 @@
+<% content_for :title, "Start a Project" %>
+
+<div class="mx-auto w-full max-w-2xl">
+  <%= link_to "Projects", projects_path, class: "text-sm font-semibold text-stone-600 hover:text-stone-950" %>
+  <h1 class="mt-5 text-4xl font-bold tracking-tight text-stone-950">Start a Project</h1>
+  <p class="mt-3 text-stone-600">Give the Team a clear place to plan the work.</p>
+
+  <div class="mt-10">
+    <%= render "form", project: @project %>
+  </div>
+</div>
