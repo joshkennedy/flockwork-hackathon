@@ -64,6 +64,7 @@ class OversightTest < ActionDispatch::IntegrationTest
 
     former_owner = workspace.people.create!(name: "Olivia Former Owner")
     workspace.projects.create!(name: "Owner History", owner: former_owner, deleted_at: Time.current)
+    unasked_admin = workspace.people.create!(name: "Amara Admin", admin: true)
     workspace.people.create!(name: "Nora Never Asked")
     projects(:community_meal).recipients.create!(person: people(:recipient))
 
@@ -76,6 +77,7 @@ class OversightTest < ActionDispatch::IntegrationTest
     assert_not_includes names, "Frank Former Member"
     assert_not_includes names, "Olivia Former Owner"
     assert_not_includes names, "Rowan Recipient"
+    assert_not_includes names, unasked_admin.name
   end
 
   test "Recipient with no Invitation or Membership is not in never asked" do

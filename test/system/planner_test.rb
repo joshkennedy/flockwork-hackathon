@@ -102,6 +102,12 @@ class PlannerSystemTest < ApplicationSystemTestCase
     assert_text "What final detail should the plan include?"
     assert_text "Tasks 1"
     assert_text "Set welcome tables"
+    card_path = page.current_path
+    within "li.suggestion", text: "Set welcome tables" do
+      click_on "Keep"
+    end
+    assert_current_path card_path
+    assert_selector "li.suggestion.kept", text: "Set welcome tables"
     fill_in "Or answer in your own words", with: "Include a cleanup checklist."
     click_on "Answer"
 
@@ -111,12 +117,13 @@ class PlannerSystemTest < ApplicationSystemTestCase
     assert_text "Bookings 1"
     assert_text "Purchases 1"
     assert_text "Lists 1"
-    click_on "Review Suggestions"
-    assert_selector "h1", text: "Review Suggestions"
-
-    within "section[aria-label^='Tools Suggestion']" do
+    within "li.suggestion", text: "Docs & Files" do
       click_on "Drop"
     end
+    assert_no_selector "li.suggestion", text: "Docs & Files"
+    click_on "Review Suggestions"
+    assert_selector "h1", text: "Review Suggestions"
+    assert_text "Currently dropped"
     click_button "Accept all", exact: true
 
     assert_current_path project_path(project)

@@ -1,15 +1,17 @@
 <%= turbo_frame_tag dom_id(planner_session, :summary) do %>
+  <% visible_suggestions = planner_session.suggestions.reject { |suggestion| suggestion.fetch("status") == "dropped" } %>
+  <% can_plan = Policy.can?(Current.person, :plan, planner_session.project) %>
   <aside class="border-t border-hairline pt-7 lg:border-t-0 lg:border-l lg:pl-7 lg:pt-0" aria-labelledby="planner-summary-heading">
     <div class="flex flex-wrap items-center justify-between gap-2">
       <h2 id="planner-summary-heading" class="text-ink">Your plan so far</h2>
-      <% if planner_session.suggestions.any? %>
-        <p class="text-meta text-ink-2"><%= planner_session.suggestions.count { |item| %w[kept edited].include?(item.fetch("status")) } %> kept · <%= planner_session.suggestions.count { |item| item.fetch("status") == "proposed" } %> suggested</p>
+      <% if visible_suggestions.any? %>
+        <p class="text-meta text-ink-2"><%= visible_suggestions.count { |item| %w[kept edited].include?(item.fetch("status")) } %> kept · <%= visible_suggestions.count { |item| item.fetch("status") == "proposed" } %> suggested</p>
       <% end %>
     </div>
 
-    <% if planner_session.suggestions.any? %>
+    <% if visible_suggestions.any? %>
       <div class="mt-5 space-y-5">
-        <% planner_session.suggestions.group_by { |suggestion| suggestion.fetch("kind") }.each do |kind, suggestions| %>
+        <% visible_suggestions.group_by { |suggestion| suggestion.fetch("kind") }.each do |kind, suggestions| %>
           <section aria-label="<%= Planner::SuggestionKinds.label(kind) %>">
             <% symbol, color = { "task" => [ :tasks, "text-tool-tasks" ], "schedule_item" => [ :schedule, "text-tool-schedule" ], "slot_run" => [ :people, "text-tool-signup" ], "booking" => [ :budget, "text-tool-budget" ], "purchase" => [ :budget, "text-tool-budget" ], "list" => [ :list, "text-tool-list" ] }.fetch(kind, [ :projects, "text-tool-docs" ]) %>
             <h3 class="flex items-center gap-2 text-label font-medium text-ink"><%= icon(symbol, class: color) %> <span><%= Planner::SuggestionKinds.label(kind) %> <span class="text-ink-2"><%= suggestions.length %></span></span></h3>
@@ -20,7 +22,23 @@
                     <% if %w[kept edited].include?(suggestion.fetch("status")) %><%= icon(:kept, class: "kept-check text-sunlit") %><% end %>
                     <span><%= Planner::SuggestionKinds.summary(suggestion) %></span>
                   </p>
-                  <% if suggestion.fetch("status") == "proposed" %><p class="mt-2 text-label">Suggested</p><% end %>
+                  <% if suggestion.fetch("status") == "proposed" %>
+                    <p class="mt-2 text-label">Suggested</p>
+                    <% if can_plan %>
+                      <%= form_with url: suggestion_project_planner_session_path(planner_session.project, planner_session), method: :patch, class: "mt-2 flex flex-wrap items-center gap-2 text-label font-medium" do |form| %>
+                        <%= form.hidden_field :id, name: "suggestion[id]", value: suggestion.fetch("id"), id: nil %>
+                        <%= form.button "Keep", name: "suggestion[decision]", value: "keep", class: "rounded-badge px-1 py-0.5 text-ink-2 hover:bg-hairline hover:text-ink" %>
+                        <span aria-hidden="true" class="text-ink-3">·</span>
+                        <% if planner_session.asking? %>
+                          <%= link_to "Edit", skip_to_review_project_planner_session_path(planner_session.project, planner_session), data: { turbo_method: :post, turbo_frame: "_top" }, class: "rounded-badge px-1 py-0.5 text-ink-2 hover:bg-hairline hover:text-ink" %>
+                        <% else %>
+                          <%= link_to "Edit", review_project_planner_session_path(planner_session.project, planner_session, anchor: "suggestion-#{suggestion.fetch("id")}"), data: { turbo_frame: "_top" }, class: "rounded-badge px-1 py-0.5 text-ink-2 hover:bg-hairline hover:text-ink" %>
+                        <% end %>
+                        <span aria-hidden="true" class="text-ink-3">·</span>
+                        <%= form.button "Drop", name: "suggestion[decision]", value: "drop", class: "rounded-badge px-1 py-0.5 text-danger hover:bg-danger-soft" %>
+                      <% end %>
+                    <% end %>
+                  <% end %>
                 </li>
               <% end %>
             </ul>

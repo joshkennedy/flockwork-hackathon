@@ -52,7 +52,7 @@ class DemoWorkspace
     "Jasmine Mitchell",
     "Samuel Roberts",
     "Pamela Underwood",
-    "Christopher Lewis",
+    "Monica Grant",
     "Danielle Walker",
     "Thomas Allen",
     "The Alvarez Family",
@@ -254,7 +254,6 @@ class DemoWorkspace
         invite!(workspace, vbs, people.fetch("Jasmine Mitchell"), maria, :leader, :pending)
         invite!(workspace, vbs, people.fetch("Samuel Roberts"), maria, :volunteer, :declined)
         invite!(workspace, vbs, people.fetch("Luke Harris"), maria, :volunteer, :declined)
-        invite!(workspace, vbs, people.fetch("Christopher Lewis"), maria, :volunteer, :pending)
         invite!(workspace, vbs, people.fetch("Danielle Walker"), maria, :volunteer, :declined)
         invite!(workspace, vbs, people.fetch("Thomas Allen"), maria, :volunteer, :pending)
 
