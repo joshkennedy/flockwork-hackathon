@@ -32,6 +32,13 @@ class PlannerSessionsController < ApplicationController
     redirect_to project_planner_session_path(@project, @planner_session)
   end
 
+  def voice_session
+    render json: Planner::VoiceSession.new(@planner_session).payload
+  rescue Planner::VoiceClientSecretMinter::Error => error
+    Rails.error.report(error, handled: true, severity: :warning)
+    render json: { error: "Voice planning is unavailable right now. You can keep typing." }, status: :bad_gateway
+  end
+
   def review
     raise ActiveRecord::RecordNotFound unless @planner_session.reviewing?
   end

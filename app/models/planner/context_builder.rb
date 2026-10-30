@@ -1,11 +1,37 @@
 module Planner
   class ContextBuilder
+    VOICE_GUIDANCE = <<~TEXT.strip.freeze
+      You are Flockwork's planning helper. Ask the current question naturally in one or two short sentences, listen, and when the Leader has answered call answer_card with their answer in their words. Never ask for or repeat people's names; plan open roles. Keep it warm and brief.
+    TEXT
+
     def initialize(session)
       @session = session
     end
 
     def ask
       Rails.configuration.x.planner_provider.call(context)
+    end
+
+    def voice_instructions
+      card = session.current_card&.stringify_keys
+      current_card = if card
+        {
+          question: card.fetch("question"),
+          options: card.fetch("options")
+        }
+      else
+        { state: "The plan is ready for review. Say one warm, short closing line and do not call a tool." }
+      end
+
+      <<~INSTRUCTIONS
+        #{VOICE_GUIDANCE}
+
+        Planner context:
+        #{JSON.generate(context)}
+
+        Current card:
+        #{JSON.generate(current_card)}
+      INSTRUCTIONS
     end
 
     private

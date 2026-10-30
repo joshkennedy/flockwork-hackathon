@@ -2,6 +2,20 @@ require "test_helper"
 require "timeout"
 
 class PlannerTest < ActionDispatch::IntegrationTest
+  class FakeVoiceClientSecretMinter
+    attr_reader :calls
+
+    def initialize(secret = "voice-test-secret")
+      @secret = secret
+      @calls = 0
+    end
+
+    def call
+      @calls += 1
+      @secret
+    end
+  end
+
   class RaisingProvider
     attr_reader :contexts
 
@@ -17,10 +31,12 @@ class PlannerTest < ActionDispatch::IntegrationTest
 
   setup do
     @original_provider = Rails.configuration.x.planner_provider
+    @original_voice_client_secret_minter = Rails.configuration.x.voice_client_secret_minter
   end
 
   teardown do
     Rails.configuration.x.planner_provider = @original_provider
+    Rails.configuration.x.voice_client_secret_minter = @original_voice_client_secret_minter
   end
 
   test "a Leader plans Tasks through cards and accepts only kept and edited Suggestions" do
@@ -313,6 +329,104 @@ class PlannerTest < ActionDispatch::IntegrationTest
     perform_enqueued_jobs
     assert_equal "What should happen next?", planner_session.reload.current_card.fetch("question")
     assert_equal "Set up the room", planner_session.suggestions.first.dig("fields", "title")
+  end
+
+  test "a Leader mints a voice session from safe Planner context and the current card" do
+    project = projects(:community_meal)
+    project.workspace.people.create!(
+      name: "Xavier Voice Sentinel",
+      email: "xavier.voice@example.test",
+      phone: "+1-555-700-2800"
+    )
+    question = "How should the Team prepare the meal?"
+    Rails.configuration.x.planner_provider = Planner::Providers::Fake.new([
+      planner_response(
+        card: {
+          "question" => question,
+          "options" => [ "Cook together", "Order food", "Ask for donations" ]
+        }
+      )
+    ])
+    minter = FakeVoiceClientSecretMinter.new
+    Rails.configuration.x.voice_client_secret_minter = minter
+    sign_in_as_leader
+    post project_planner_sessions_path(project), params: {
+      planner_session: { description: "Prepare the neighborhood meal." }
+    }
+    planner_session = project.planner_sessions.last!
+
+    post voice_session_project_planner_session_path(project, planner_session), as: :json
+
+    assert_response :success
+    payload = response.parsed_body
+    assert_equal "voice-test-secret", payload.fetch("client_secret")
+    assert_equal "grok-voice-latest", payload.fetch("model")
+    assert_equal 1, minter.calls
+    assert_includes payload.fetch("instructions"), question
+    assert_includes payload.fetch("instructions"), "Cook together"
+    assert_includes payload.fetch("instructions"), "Never ask for or repeat people's names"
+    assert_equal "answer_card", payload.fetch("tools").sole.fetch("name")
+    project.workspace.people.find_each do |person|
+      [ person.name, person.email, person.phone ].compact.each do |private_value|
+        assert_not_includes payload.fetch("instructions"), private_value
+      end
+    end
+  end
+
+  test "a Volunteer cannot mint a voice session" do
+    project = projects(:community_meal)
+    planner_session = project.planner_sessions.create!(
+      started_by: people(:leader),
+      description: "Prepare the neighborhood meal.",
+      current_card: {
+        "question" => "What should happen first?",
+        "options" => [ "Cook", "Set up", "Welcome" ]
+      }
+    )
+    Rails.configuration.x.voice_client_secret_minter = FakeVoiceClientSecretMinter.new
+    sign_in_as_volunteer
+
+    post voice_session_project_planner_session_path(project, planner_session), as: :json
+
+    assert_response :not_found
+  end
+
+  test "typed and voice answers store directory names redacted" do
+    project = projects(:community_meal)
+    Rails.configuration.x.planner_provider = Planner::Providers::Fake.new([
+      planner_response(
+        card: {
+          "question" => "What should happen first?",
+          "options" => [ "Cook", "Set up", "Welcome" ]
+        }
+      ),
+      planner_response(
+        card: {
+          "question" => "What should happen next?",
+          "options" => [ "Serve", "Clean", "Close" ]
+        }
+      )
+    ])
+    sign_in_as_leader
+
+    post project_planner_sessions_path(project), params: {
+      planner_session: { description: "Prepare the neighborhood meal." }
+    }
+    typed_session = project.planner_sessions.last!
+    post answer_project_planner_session_path(project, typed_session), params: {
+      answer: "Leo Leader will cook."
+    }
+
+    post project_planner_sessions_path(project), params: {
+      planner_session: { description: "Finish the neighborhood meal." }
+    }
+    voice_session = project.planner_sessions.last!
+    post answer_project_planner_session_path(project, voice_session), params: {
+      answer: "Ask LEO to clean.", source: "voice"
+    }
+
+    assert_equal "[name] will cook.", typed_session.reload.steps.sole.fetch("answer")
+    assert_equal "Ask [name] to clean.", voice_session.reload.steps.sole.fetch("answer")
   end
 
   test "a Volunteer cannot start the Planner" do
