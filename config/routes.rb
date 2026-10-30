@@ -5,6 +5,7 @@ Rails.application.routes.draw do
 
   resources :workspaces, only: :create
   get "get_involved", to: "get_involved#show"
+  get "my_tasks", to: "my_tasks#index"
 
   resources :projects, only: %i[ index new create show edit update destroy ] do
     collection do
@@ -23,6 +24,14 @@ Rails.application.routes.draw do
     end
 
     resources :schedule_items, except: %i[ index show ]
+    resources :tasks, except: %i[ index show ] do
+      member do
+        post :claim
+        post :unclaim
+        post :mark_done
+        post :reopen
+      end
+    end
     resources :budget_lines, except: %i[ index show ] do
       resource :status, only: %i[ edit update ], controller: "budget_line_statuses"
     end

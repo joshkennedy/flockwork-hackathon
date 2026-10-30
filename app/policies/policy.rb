@@ -48,6 +48,10 @@ module Policy
       return doc_item_access?(person, action, record)
     end
 
+    if record.is_a?(::Task)
+      return task_can?(person, action, record)
+    end
+
     return can_respond_to_invitation?(person, action, record) if record.is_a?(::Invitation)
     return can_manage_membership?(person, action, record) if record.is_a?(::Membership)
 
@@ -71,7 +75,7 @@ module Policy
       person.admin? || member?(person, record)
     when :join
       open_team_visible?(person, record)
-    when :update, :manage_tools, :manage_schedule, :manage_budget, :manage_team
+    when :update, :manage_tools, :manage_schedule, :manage_budget, :manage_tasks, :manage_team
       person.admin? || record.memberships.leader.exists?(person: person)
     when :manage_lists
       person.admin? || record.memberships.leader.exists?(person: person)
@@ -111,6 +115,29 @@ module Policy
       false
     end
   end
+
+  def task_can?(person, action, task)
+    project = task.project
+    return false unless project.workspace_id == person.workspace_id
+    return false unless project.deleted_at.nil?
+
+    team_member = project.memberships.exists?(person: person)
+    responsible = task.assignee_id == person.id || project_leader_or_admin?(person, project)
+
+    case action
+    when :claim_task
+      team_member && task.completed_at.nil?
+    when :unclaim_task
+      team_member && task.completed_at.nil? && task.assignee_id == person.id
+    when :mark_task_done
+      responsible && task.completed_at.nil?
+    when :reopen_task
+      responsible && task.completed_at.present?
+    else
+      false
+    end
+  end
+  private :task_can?
 
   def can_respond_to_invitation?(person, action, invitation)
     action == :respond && invitation.pending? && invitation.person_id == person.id &&
