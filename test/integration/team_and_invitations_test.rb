@@ -96,6 +96,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
 
 
   test "accepting an Invitation adds the invitee with the invited role and preserves the Invitation" do
+    memberships(:community_meal_other_leader).destroy!
     sign_in_as_leader
     project = projects(:community_meal)
     invitee = people(:other_leader)
@@ -155,6 +156,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
 
 
   test "a Leader sees Invitation statuses with copy and text links for pending Invitations" do
+    memberships(:community_meal_other_leader).destroy!
     leader = sign_in_as_leader
     project = projects(:community_meal)
 
