@@ -48,6 +48,8 @@ class Project < ApplicationRecord
 
   has_many :doc_items, dependent: :destroy
 
+  has_many :lists, dependent: :destroy
+
   scope :active, -> { where(done_at: nil, archived_at: nil, deleted_at: nil) }
 
   has_many :invitations, dependent: :restrict_with_exception

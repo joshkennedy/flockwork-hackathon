@@ -64,7 +64,9 @@ module Policy
       person.admin? || record.memberships.exists?(person: person)
     when :update, :manage_tools, :manage_schedule, :manage_budget, :manage_team
       person.admin? || record.memberships.leader.exists?(person: person)
-    when :manage_docs
+    when :manage_lists
+      person.admin? || record.memberships.leader.exists?(person: person)
+    when :manage_docs, :manage_list_rows
       person.admin? || record.memberships.exists?(person: person)
     when :mark_done
       project_leader_or_admin?(person, record) && record.done_at.nil?
