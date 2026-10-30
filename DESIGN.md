@@ -1,0 +1,235 @@
+---
+# gstack: design-md-format=spec
+name: Flockwork
+description: Warm Studio. Premium but approachable, respectable yet casual; Basecamp's warmth with the polish of Linear and ElevenLabs. Calm flat panels, tangible controls with real depth.
+colors:
+  frame: "#F3F2EF"
+  page: "#FAFAF8"
+  panel: "#FFFFFF"
+  border: "#E6E4E0"
+  border-strong: "#B0ADA7"
+  hairline: "#EFEEEB"
+  ink: "#141413"
+  on-ink: "#FFFFFF"
+  ink-hover: "#30302D"
+  ink-2: "#5F5E5A"
+  ink-3: "#9A9893"
+  sunlit: "#F5B000"
+  sunlit-soft: "#FFF4D6"
+  success: "#1F9D55"
+  danger: "#D93D2B"
+  danger-soft: "#FFF3F0"
+  ghost-fill: "#FAF9F7"
+  ghost-border: "#D6D3CE"
+  nav-active: "#E6E4DF"
+  tool-tasks: "#3B82F6"
+  tool-schedule: "#0EA5A4"
+  tool-signup: "#F5B000"
+  tool-budget: "#1F9D55"
+  tool-messages: "#E8590C"
+  tool-docs: "#64748B"
+  tool-list: "#A16207"
+typography:
+  wordmark:
+    fontFamily: Mattone
+    fontWeight: 700
+    fontSize: 18px
+    lineHeight: 24px
+    letterSpacing: -0.01em
+  display:
+    fontFamily: Mattone
+    fontWeight: 400
+    fontSize: 30px
+    lineHeight: 36px
+    letterSpacing: -0.01em
+  display-phone:
+    fontFamily: Mattone
+    fontWeight: 400
+    fontSize: 24px
+    lineHeight: 30px
+    letterSpacing: -0.01em
+  heading:
+    fontFamily: Mona Sans
+    fontWeight: 600
+    fontSize: 15px
+    lineHeight: 20px
+  body:
+    fontFamily: Mona Sans
+    fontWeight: 450
+    fontSize: 14px
+    lineHeight: 21px
+  body-phone:
+    fontFamily: Mona Sans
+    fontWeight: 450
+    fontSize: 16px
+    lineHeight: 24px
+  meta:
+    fontFamily: Mona Sans
+    fontWeight: 450
+    fontSize: 13px
+    lineHeight: 18px
+  label:
+    fontFamily: Mona Sans
+    fontWeight: 500
+    fontSize: 12px
+    lineHeight: 16px
+  button:
+    fontFamily: Mona Sans
+    fontWeight: 500
+    fontSize: 13px
+    lineHeight: 16px
+rounded:
+  badge: 4px
+  control: 6px
+  nav: 8px
+  tile: 10px
+  panel: 12px
+  device: 28px
+spacing:
+  1: 4px
+  2: 8px
+  3: 12px
+  4: 16px
+  5: 20px
+  6: 24px
+  7: 28px
+  10: 40px
+  control-h: 32px
+  control-h-sm: 28px
+  input-h: 36px
+  input-h-phone: 44px
+  answer-h: 48px
+  phone-action-h: 48px
+  sidebar-w: 232px
+  topbar-h: 48px
+components:
+  button-primary:
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.on-ink}"
+    rounded: "{rounded.control}"
+    height: "{spacing.control-h}"
+    shadow: "inset 0 1px 0 rgba(255,255,255,.14), 0 1px 1px rgba(20,20,19,.12), 0 2px 6px rgba(20,20,19,.12)"
+  button-primary-hover:
+    backgroundColor: "{colors.ink-hover}"
+  button-primary-active:
+    transform: translateY(1px)
+    shadow: "inset 0 2px 3px rgba(0,0,0,.3), 0 1px 1px rgba(20,20,19,.08)"
+  button-secondary:
+    backgroundColor: "{colors.panel}"
+    borderColor: "{colors.border}"
+    rounded: "{rounded.control}"
+    shadow: "0 1px 2px rgba(20,20,19,.06), inset 0 -1px 0 rgba(20,20,19,.04)"
+  button-text-danger:
+    textColor: "{colors.danger}"
+  input:
+    backgroundColor: "{colors.panel}"
+    borderColor: "{colors.border}"
+    rounded: "{rounded.control}"
+    height: "{spacing.input-h}"
+  tile-raised:
+    backgroundColor: "{colors.panel}"
+    borderColor: "{colors.border}"
+    rounded: "{rounded.tile}"
+    shadow: "0 1px 2px rgba(20,20,19,.05), 0 4px 12px rgba(20,20,19,.04)"
+  tile-ghost:
+    backgroundColor: "{colors.ghost-fill}"
+    borderColor: "{colors.ghost-border}"
+    borderStyle: dashed
+    textColor: "{colors.ink-2}"
+    rounded: "{rounded.tile}"
+  panel:
+    backgroundColor: "{colors.panel}"
+    borderColor: "{colors.border}"
+    rounded: "{rounded.panel}"
+  popover:
+    backgroundColor: "{colors.panel}"
+    rounded: "{rounded.panel}"
+    shadow: "0 8px 24px rgba(20,20,19,.12), 0 2px 6px rgba(20,20,19,.06)"
+  badge-need:
+    backgroundColor: "{colors.sunlit-soft}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.badge}"
+  nav-item-active:
+    backgroundColor: "{colors.nav-active}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.nav}"
+---
+
+# Flockwork
+
+## Overview
+
+**Creative North Star:** "Care, not software," expressed as premium but approachable. Flockwork should feel as considered as Linear or ElevenLabs and as warm and plain-spoken as Basecamp: respectable enough for church leadership, casual enough for a volunteer opening a text link.
+**Product context:** "Basecamp for churches." Leaders and Admins plan and oversee on desktop; Volunteers claim and check off work on phones. References studied on Mobbin: Linear project overview, ElevenLabs home, Basecamp project home, plus AI question-card flows, slot pickers and workload views (as patterns to avoid for people).
+**Mode per surface:** Planner, Project page, Team: Operate (desktop-first). My Tasks, sign-up, Invitations: Operate (phone-first). Oversight: Read. Public link: Persuade, lightly.
+**Reference preview:** `~/.gstack/projects/joshkennedy-flockwork/designs/design-system-20261030/preview-warm-studio-v2.html` (approved 2026-10-30).
+**Key characteristics:**
+- A warm-gray app frame with a left sidebar holding one white content panel (12px radius, 8px inset), like Linear and ElevenLabs.
+- Near-monochrome ink; a single gold accent (sunlit) reserved for open needs, the kept check and celebration.
+- Mattone, a heavy wide display face, only for the wordmark and page-level headlines; Mona Sans for everything else.
+- Interactive things are tangible: raised tiles and buttons with layered soft shadows that press in. Panels and lists stay flat.
+- AI Suggestions are ghost tiles (dashed, muted). A Leader's Keep turns them solid with a gold check. People are always shown by name, never scored.
+
+## Colors
+
+**Strategy:** Restrained. Ink carries text and the one primary action per view. Sunlit appears only as a fill (`sunlit-soft` behind "1 spot left" and team notes) or as an icon (the kept check), never as text on white. Danger is for destructive text actions only. Tool colors appear only on 14–16px Tool icons, the way Linear colors status icons.
+**Light or dark:** Light. Church offices by day and phones in the evening both read best on light; no dark mode is planned for the hackathon.
+Contrast (measured in the preview): `ink-2` on `panel` 6.49:1, `ink-2` on `frame` 5.80:1. `ink-3` is only for non-essential hints (keyboard numbers, breadcrumb separators), never body text.
+
+## Typography
+
+**Mattone** (Collletttivo, designed by Nunzio Mazzaferro, SIL OFL 1.1, self-hosted from `github.com/collletttivo/mattone` woff2, Regular/Bold/Black) is the signature: the "Flockwork" wordmark (Bold 18px) and page-level headlines (Regular 30/36 desktop, 24/30 phone): Project names on their page, the Planner question, the Oversight headline. It is wide and heavy, so it never sets body, buttons, labels, numbers, or anything below page level.
+**Mona Sans** (GitHub, Google Fonts, variable weight and width) sets all UI and body at normal width: headings 600 15/20, body 450 14/21 (16/24 on phones), meta 13/18 in `ink-2`, labels 500 12/16, buttons 500 13/16 (phone primary 600 15).
+Numbers: Mona Sans's tabular figures carry a dotted zero, so use `tabular-nums` only in aligned numeric columns (Budget totals, tables). Times, dates and counts in running text use default proportional figures with a plain zero.
+Sentence case everywhere. No tracked all-caps, no monospace decoration, no italic display.
+
+## Layout
+
+App shell: `frame` background, 232px sidebar (wordmark, church switcher, nav items 32px tall with 2px gaps), content in one `panel` inset 8px. Topbar 48px with a breadcrumb in 12px `ink-2`. Panel padding 28px desktop, 16px phone. Major blocks separated by 28px; groups by 20px; tiles by 8px (12px on phones). The Planner is a 1.45fr / 1fr split: question and answer tiles left, "Your plan so far" right with a hairline divider. Oversight is two flat name lists side by side. Phones: the sidebar collapses to a top bar with the wordmark and a menu button; 16px gutters; one full-width primary action per card.
+
+## Elevation & Depth
+
+Three levels only. Flat: panels, lists, team notes (border or tint, no shadow). Raised: answer tiles, open Slots, kept Suggestions, highlight tiles (`0 1px 2px rgba(20,20,19,.05), 0 4px 12px rgba(20,20,19,.04)`). Floating: popovers, menus, dialogs, toasts (`0 8px 24px rgba(20,20,19,.12), 0 2px 6px rgba(20,20,19,.06)`). Buttons carry their own inner highlight and press shadow (see components). Never a zero-offset glow, never a card inside a card.
+
+## Shapes
+
+Badges 4px, buttons and inputs 6px, nav items 8px, tiles 10px, panels and popovers 12px, phone device frame 28px. Only status dots are fully round. No pills.
+
+## Components
+
+- **Primary button:** ink fill, white 13/500 label, 32px tall (28px small, 48px full-width on phones), inner top highlight plus two soft shadows. Hover lightens to `ink-hover`; active presses 1px with an inset shadow; focus-visible is a 2px ink outline offset 3px with a panel-colored gap; disabled is `frame` fill with `ink-2` text and no shadow. One per view.
+- **Secondary button:** white with border and a hairline bottom inset; same press behavior.
+- **Text button:** no chrome, `ink-2`, hover tints with `hairline`; danger variant in `danger` with `danger-soft` hover.
+- **Planner answer tile:** raised tile 48px tall, 14px padding, radio on the left, keyboard number 1–4 in `ink-3` on the right; hover darkens the border to `border-strong`; selected shows an ink border and filled radio; pressed sinks 1px.
+- **Suggestion:** ghost tile (dashed `ghost-border`, `ghost-fill`, `ink-2` text, "Suggested" label, Keep · Edit · Drop text actions 12/500). Keep turns it into a solid panel tile with ink text and a sunlit check (180ms color/border transition, check scales in). Kept tiles hide their actions.
+- **Slot (phone):** claimed Slots are flat rows (date 14/600, "✓ Ruth Bennett" in `ink-2`); open Slots are raised tiles with date, a `badge-need` ("1 spot left") and a full-width primary "I can bring dinner"; after claiming the tile flattens and shows "You're bringing dinner" with the sunlit check.
+- **Inputs:** 36px tall (44px phone), 6px radius, `border`, placeholder in `ink-2`; the dictation mic is an icon button inside the field.
+- **Privacy line:** on every Planner screen, a lock icon and "The planner sees project details. It never sees your people." in 13/18 `ink-2`.
+- **States:** empty ("Nothing here yet"), loading ("Thinking…" on the Planner), and error ("The Planner couldn't reach the AI just now. You can keep building by hand.") are designed text in the panel, not blank space.
+
+## Do's and Don'ts
+
+- Do keep AI output as ghost tiles until a human keeps it.
+- Do show people by name with plain counts ("4 active Projects", "14 meals this year"); never bars, percentages, red flags or scores.
+- Do reserve Mattone for the wordmark and page-level headlines, and depth for things you can click.
+- Do keep exactly one primary (ink) button per view.
+- Don't use gradients, purple or indigo, glows, emoji, icon tiles above headings, kicker labels, pills, avatar walls, chat bubbles for the Planner, or cards inside cards.
+- Don't set Mattone below 24px or on anything interactive.
+
+## Motion
+
+- **Approach:** minimal-functional.
+- **Easing:** enter ease-out, exit ease-in, move ease-in-out.
+- **Duration:** press 100ms, hover/border/background 150ms, Suggestion keep 180ms. Nothing longer than 300ms.
+- **The one authored moment:** a ghost Suggestion turning solid with the sunlit check scaling in when a Leader taps Keep. `prefers-reduced-motion` removes transforms and keeps color changes instant.
+
+## Decisions Log
+
+| Date | Decision | Rationale |
+|------|----------|-----------|
+| 2026-10-30 | First direction "Fellowship Ledger" (paper, Sentient, Atkinson) rejected | Josh: felt "AI", especially the fonts and colors |
+| 2026-10-30 | Direction "Warm Studio" adopted | Josh: premium but approachable, Basecamp meets Linear/ElevenLabs, respectable yet casual, tangible interactive elements with depth |
+| 2026-10-30 | Mattone for wordmark and page headlines | Josh asked for it; limited to display so it reads as a signature, not noise |
+| 2026-10-30 | Refined radii, padding, spacing and type sizes (v2 scale) | Josh: "refine the border radii, padding, spacing, and font sizes" |
+| 2026-10-30 | Tabular figures only in aligned columns | Mona Sans tabular figures render a dotted zero |
+| 2026-10-30 | Preview built as HTML by Codex gpt-6-astra (no OpenAI key for image mockups) | Exact fonts and values; the approved v2 preview is the reference for the Tailwind theme |
