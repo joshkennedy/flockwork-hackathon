@@ -38,6 +38,8 @@ module Planner
         message = RubyLLM.chat(model: llm_model, provider: llm_provider.to_sym, assume_model_exists: true)
           .with_instructions(SYSTEM_PROMPT)
           .with_schema(RESPONSE_SCHEMA)
+          # Providers default to the model's full output window, which is slow and can exceed account credit.
+          .with_max_output_tokens(4_000)
           .ask(JSON.generate(context))
         parsed = message.parsed
         card = parsed.fetch("card")
