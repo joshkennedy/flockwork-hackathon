@@ -22,12 +22,16 @@
 
             <div>
               <%= form.label :title, "Title", for: "#{field_prefix}_title", class: "block text-sm font-semibold text-stone-900" %>
-              <%= form.text_field :title, name: "suggestion[title]", id: "#{field_prefix}_title", value: suggestion.dig("fields", "title"), required: true, class: "mt-2 block min-h-12 w-full border border-stone-400 bg-white px-4 py-3 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+              <%= render layout: "shared/dictation_button", locals: { wrapper_class: "mt-2 flex w-full items-center gap-2" } do %>
+                <%= form.text_field :title, name: "suggestion[title]", id: "#{field_prefix}_title", value: suggestion.dig("fields", "title"), required: true, data: { dictation_target: "field" }, class: "block min-h-12 min-w-0 flex-1 border border-stone-400 bg-white px-4 py-3 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+              <% end %>
             </div>
 
             <div>
               <%= form.label :details, "Details", for: "#{field_prefix}_details", class: "block text-sm font-semibold text-stone-900" %>
-              <%= form.text_area :details, name: "suggestion[details]", id: "#{field_prefix}_details", value: suggestion.dig("fields", "details"), rows: 3, required: true, class: "mt-2 block w-full border border-stone-400 bg-white px-4 py-3 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+              <%= render layout: "shared/dictation_button", locals: { wrapper_class: "mt-2 flex w-full items-start gap-2" } do %>
+                <%= form.text_area :details, name: "suggestion[details]", id: "#{field_prefix}_details", value: suggestion.dig("fields", "details"), rows: 3, required: true, data: { dictation_target: "field" }, class: "block min-w-0 flex-1 border border-stone-400 bg-white px-4 py-3 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+              <% end %>
             </div>
 
             <% if suggestion.dig("fields", "role").present? %>
