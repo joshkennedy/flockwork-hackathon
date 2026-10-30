@@ -95,6 +95,8 @@ module Policy
       person.admin? || record.memberships.exists?(person: person)
     when :manage_recipients
       person.admin? || record.memberships.leader.exists?(person: person)
+    when :manage_public_link
+      project_leader_or_admin?(person, record)
     else
       false
     end

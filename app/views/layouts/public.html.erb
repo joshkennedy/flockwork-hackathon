@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= content_for(:title) || "Project" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="robots" content="noindex">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+  </head>
+
+  <body class="min-h-screen bg-[#fafbf7] text-[#182018]">
+    <main class="mx-auto w-full max-w-3xl px-5 py-12 sm:py-16">
+      <%= yield %>
+    </main>
+  </body>
+</html>
