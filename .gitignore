@@ -35,3 +35,10 @@
 
 # Production credentials key; set RAILS_MASTER_KEY in the host's environment instead
 /config/master.key
+
+# Ignore key files for decrypting credentials and more.
+/config/*.key
+
+
+/app/assets/builds/*
+!/app/assets/builds/.keep
