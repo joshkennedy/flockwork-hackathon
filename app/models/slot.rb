@@ -4,6 +4,7 @@ class Slot < ApplicationRecord
   has_many :people, through: :slot_claims
   has_many :comments, as: :commentable, dependent: :destroy
   has_many :follows, as: :followable, dependent: :destroy
+  has_many :notifications, as: :notifiable, dependent: :destroy
 
   validates :date, presence: true
   validates :label, presence: true

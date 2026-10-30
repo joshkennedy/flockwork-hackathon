@@ -29,6 +29,14 @@ module Policy
   end
 
   def can?(person, action, record)
+    if record == ::Notification
+      return action.in?([ :index, :mark_all_read ])
+    end
+
+    if record.is_a?(::Notification)
+      return notification_can?(person, action, record)
+    end
+
     if record == ::Project
       return true if action == :create
       return person.admin? if action == :view_deleted
@@ -287,4 +295,14 @@ module Policy
     note.admins? && project.memberships.leader.exists?(person: person)
   end
   private :note_can?
+
+  def visible_notifications(person)
+    person.workspace.notifications.where(recipient_id: person.id)
+  end
+
+  def notification_can?(person, action, notification)
+    action == :mark_read && notification.recipient_id == person.id &&
+      notification.recipient.workspace_id == person.workspace_id
+  end
+  private :notification_can?
 end

@@ -190,6 +190,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_31_210001) do
     t.index ["workspace_id"], name: "index_notes_on_workspace_id"
   end
 
+  create_table "notifications", force: :cascade do |t|
+    t.bigint "recipient_id", null: false
+    t.integer "kind", null: false
+    t.string "notifiable_type", null: false
+    t.bigint "notifiable_id", null: false
+    t.bigint "actor_id"
+    t.datetime "read_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["actor_id"], name: "index_notifications_on_actor_id"
+    t.index ["notifiable_type", "notifiable_id"], name: "index_notifications_on_notifiable"
+    t.index ["recipient_id", "read_at"], name: "index_notifications_on_recipient_id_and_read_at"
+    t.index ["recipient_id"], name: "index_notifications_on_recipient_id"
+  end
+
   create_table "people", force: :cascade do |t|
     t.bigint "workspace_id", null: false
     t.string "name", null: false
@@ -201,6 +216,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_31_210001) do
     t.string "external_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "email_preferences", default: {}, null: false
     t.index ["workspace_id", "email"], name: "index_people_on_workspace_id_and_email", unique: true, where: "(email IS NOT NULL)"
     t.index ["workspace_id"], name: "index_people_on_workspace_id"
   end
@@ -512,6 +528,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_31_210001) do
   add_foreign_key "messages", "projects"
   add_foreign_key "notes", "people", column: "author_id"
   add_foreign_key "notes", "workspaces"
+  add_foreign_key "notifications", "people", column: "actor_id"
+  add_foreign_key "notifications", "people", column: "recipient_id"
   add_foreign_key "people", "workspaces"
   add_foreign_key "planner_sessions", "people", column: "started_by_id"
   add_foreign_key "planner_sessions", "projects"

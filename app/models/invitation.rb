@@ -4,6 +4,7 @@ class Invitation < ApplicationRecord
   belongs_to :project
   belongs_to :person
   belongs_to :inviter, class_name: "Person"
+  has_many :notifications, as: :notifiable, dependent: :destroy
 
   enum :role, { leader: 0, volunteer: 1 }
   enum :status, { pending: 0, accepted: 1, declined: 2 }

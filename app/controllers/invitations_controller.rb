@@ -24,7 +24,14 @@ class InvitationsController < ApplicationController
     )
 
     if invitation.save
-      InvitationMailer.invitation(invitation).deliver_later
+      Notifier.notify(
+        recipient: person,
+        kind: "invitation",
+        notifiable: invitation,
+        actor: Current.person,
+        email: false
+      )
+      InvitationMailer.invitation(invitation).deliver_later if person.email_for?("invitation")
       redirect_to team_project_path(project), notice: "Invited #{person.name}."
     else
       redirect_to team_project_path(project, query: person.name), alert: invitation.errors.full_messages.to_sentence

@@ -6,6 +6,7 @@ class Workspace < ApplicationRecord
   has_many :tasks, through: :projects
   has_many :notes, dependent: :destroy
   has_many :people, dependent: :destroy
+  has_many :notifications, through: :people
   has_many :invitations, dependent: :restrict_with_exception
 
   normalizes :name, with: ->(name) { name.strip }

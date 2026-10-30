@@ -23,6 +23,7 @@ class Project < ApplicationRecord
   has_many :budget_lines, dependent: :destroy
   has_many :recipients, dependent: :destroy
   has_many :notes, as: :notable, dependent: :destroy
+  has_many :notifications, as: :notifiable, dependent: :destroy
 
   def budget_lines_by_kind(kind)
     budget_lines.public_send(kind).order(:id)

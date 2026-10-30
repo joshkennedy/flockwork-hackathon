@@ -24,7 +24,23 @@
   </head>
 
   <body class="min-h-screen bg-[#fafbf7] text-[#182018]">
-    <main class="container mx-auto mt-14 flex px-5 pb-16 sm:mt-24">
+    <% if authenticated? %>
+      <header class="px-5 pt-5">
+        <nav aria-label="Account" class="mx-auto flex max-w-4xl items-center justify-between gap-5">
+          <%= link_to Current.workspace.name, workspace_path(Current.workspace), class: "font-semibold text-[#182018] hover:text-black" %>
+          <div class="flex items-center gap-5 text-sm">
+            <%= link_to notifications_path, aria: { label: "Notifications, #{unread_notification_count} unread" }, class: "flex items-center gap-2 text-gray-700 hover:text-gray-950" do %>
+              <span aria-hidden="true">🔔</span>
+              <% if unread_notification_count.positive? %>
+                <span class="font-semibold"><%= unread_notification_count %></span>
+              <% end %>
+            <% end %>
+            <%= link_to "Profile", edit_profile_path(Current.workspace), class: "text-gray-700 hover:text-gray-950" %>
+          </div>
+        </nav>
+      </header>
+    <% end %>
+    <main class="container mx-auto mt-12 flex px-5 pb-16 sm:mt-20">
       <%= yield %>
     </main>
   </body>
