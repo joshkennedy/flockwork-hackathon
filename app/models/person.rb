@@ -3,7 +3,11 @@ class Person < ApplicationRecord
 
   has_many :sessions, dependent: :destroy
   has_many :memberships, dependent: :destroy
+<<<<<<< HEAD
   has_many :recipients, dependent: :destroy
+=======
+  has_many :slot_claims, dependent: :destroy
+>>>>>>> fa146af (Add sign-up sheet slots and claims)
   has_many :projects, through: :memberships
   has_many :owned_projects, class_name: "Project", foreign_key: :owner_id, inverse_of: :owner
   has_many :assigned_tasks, class_name: "Task", foreign_key: :assignee_id, inverse_of: :assignee,
