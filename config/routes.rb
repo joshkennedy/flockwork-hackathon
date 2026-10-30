@@ -24,6 +24,11 @@ Rails.application.routes.draw do
       resource :status, only: %i[ edit update ], controller: "budget_line_statuses"
     end
     resources :messages, except: %i[ index show ]
+    resources :doc_items, except: %i[ index show ] do
+      member do
+        get :download
+      end
+    end
   end
   resource :session, only: :destroy
 

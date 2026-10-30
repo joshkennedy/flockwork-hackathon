@@ -39,6 +39,10 @@ module Policy
       return message_can?(person, action, record)
     end
 
+    if record.is_a?(::DocItem)
+      return doc_item_access?(person, action, record)
+    end
+
     return false unless record.is_a?(::Project)
     return false unless record.workspace_id == person.workspace_id
 
@@ -57,6 +61,8 @@ module Policy
       person.admin? || record.memberships.exists?(person: person)
     when :update, :manage_tools, :manage_schedule, :manage_budget
       person.admin? || record.memberships.leader.exists?(person: person)
+    when :manage_docs
+      person.admin? || record.memberships.exists?(person: person)
     when :mark_done
       project_leader_or_admin?(person, record) && record.done_at.nil?
     when :reopen
@@ -111,4 +117,20 @@ module Policy
     person.admin? || record.memberships.leader.exists?(person: person)
   end
   private :project_leader_or_admin?
+
+  def doc_item_access?(person, action, record)
+    project = record.project
+    return false unless project.workspace_id == person.workspace_id
+    return false unless project.deleted_at.nil?
+
+    case action
+    when :download
+      person.admin? || project.memberships.exists?(person: person)
+    when :destroy
+      person.admin? || record.author_id == person.id || project.memberships.leader.exists?(person: person)
+    else
+      false
+    end
+  end
+  private :doc_item_access?
 end

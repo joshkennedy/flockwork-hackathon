@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_30_190001) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_30_191400) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -64,6 +64,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_190001) do
     t.datetime "updated_at", null: false
     t.index ["project_id"], name: "index_budget_lines_on_project_id"
     t.index ["responsible_person_id"], name: "index_budget_lines_on_responsible_person_id"
+  end
+
+  create_table "doc_items", force: :cascade do |t|
+    t.bigint "project_id", null: false
+    t.bigint "author_id", null: false
+    t.integer "kind", null: false
+    t.string "title", null: false
+    t.string "url"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_doc_items_on_author_id"
+    t.index ["project_id"], name: "index_doc_items_on_project_id"
   end
 
   create_table "memberships", force: :cascade do |t|
@@ -327,6 +339,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_190001) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "budget_lines", "people", column: "responsible_person_id"
   add_foreign_key "budget_lines", "projects"
+  add_foreign_key "doc_items", "people", column: "author_id"
+  add_foreign_key "doc_items", "projects"
   add_foreign_key "memberships", "people"
   add_foreign_key "memberships", "projects"
   add_foreign_key "messages", "messages", column: "parent_id"

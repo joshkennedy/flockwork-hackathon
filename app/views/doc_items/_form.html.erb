@@ -1,0 +1,38 @@
+<%= form_with model: [ project, doc_item ], class: "space-y-7" do |form| %>
+  <% if doc_item.errors.any? %>
+    <div class="border-l-4 border-red-700 bg-red-50 px-5 py-4 text-red-950">
+      <p class="font-semibold">Please fix the following:</p>
+      <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
+        <% doc_item.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= form.hidden_field :kind %>
+
+  <div>
+    <%= form.label :title, class: "block text-sm font-semibold text-stone-900" %>
+    <%= form.text_field :title, required: true, autofocus: true, class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+  </div>
+
+  <% if doc_item.document? %>
+    <div>
+      <%= form.label :body, class: "block text-sm font-semibold text-stone-900" %>
+      <%= form.rich_text_area :body, class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+    </div>
+  <% elsif doc_item.file? %>
+    <div>
+      <%= form.label :file, class: "block text-sm font-semibold text-stone-900" %>
+      <%= form.file_field :file, required: !doc_item.file.attached?, class: "mt-2 block w-full text-sm text-stone-900" %>
+    </div>
+  <% elsif doc_item.link? %>
+    <div>
+      <%= form.label :url, "URL", class: "block text-sm font-semibold text-stone-900" %>
+      <%= form.url_field :url, required: true, placeholder: "https://", class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+    </div>
+  <% end %>
+
+  <%= form.submit class: "cursor-pointer bg-[#1f291f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#354235]" %>
+<% end %>

@@ -46,6 +46,8 @@ class Project < ApplicationRecord
       .order(created_at: :desc, id: :desc)
   end
 
+  has_many :doc_items, dependent: :destroy
+
   scope :active, -> { where(done_at: nil, archived_at: nil, deleted_at: nil) }
 
   validates :name, presence: true

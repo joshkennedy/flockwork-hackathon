@@ -63,7 +63,8 @@ class ProjectsTest < ActionDispatch::IntegrationTest
     assert_select "h2", text: "Recipients", count: 0
     assert_select "h2", text: "Messages", count: 0
     assert_select "h2", text: "List", count: 0
-    assert_select "p", text: "Nothing here yet", count: 2
+    assert_select "p", text: "Nothing here yet", count: 1
+    assert_select "section[aria-labelledby='tool-docs'] p", text: "No items yet", count: 1
 
     patch project_path(project), params: {
       project: { enabled_tools: [ "schedule" ] }
