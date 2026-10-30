@@ -1,0 +1,10 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "Mass Assignment",
+      "fingerprint": "fc7b79ef3d0ae6b7d531f43af5020faed1c41f15c533bf88e57350785b71455f",
+      "note": "PeopleController is Admin-only (AdminOnly concern); granting Admin is the feature."
+    }
+  ],
+  "brakeman_version": "8.1.0"
+}
