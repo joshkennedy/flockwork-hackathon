@@ -1,0 +1,7 @@
+Hi <%= @invitation.person.name %>,
+
+<%= @invitation.inviter.name %> invited you to help with <%= @invitation.project.name %> on Flockwork as a <%= @invitation.role.humanize.downcase %>.
+
+View and respond to the Invitation:
+
+<%= @url %>

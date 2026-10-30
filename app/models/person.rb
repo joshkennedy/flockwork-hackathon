@@ -5,6 +5,9 @@ class Person < ApplicationRecord
   has_many :memberships, dependent: :destroy
   has_many :projects, through: :memberships
   has_many :owned_projects, class_name: "Project", foreign_key: :owner_id, inverse_of: :owner
+  has_many :invitations, dependent: :restrict_with_exception
+  has_many :sent_invitations, class_name: "Invitation", foreign_key: :inviter_id, inverse_of: :inviter,
+    dependent: :restrict_with_exception
 
   generates_token_for :sign_in, expires_in: 15.minutes do
     last_signed_in_at

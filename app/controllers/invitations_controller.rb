@@ -1,0 +1,54 @@
+class InvitationsController < ApplicationController
+  allow_unauthenticated_access only: :show
+  before_action :set_response_invitation, only: %i[ accept decline ]
+
+  def show
+    @invitation = Invitation.find_by_token_for(:access, params[:token])
+    return render :invalid, status: :unprocessable_content unless @invitation&.pending?
+
+    terminate_session if Current.session && Current.person != @invitation.person
+    start_new_session_for @invitation.person unless Current.person == @invitation.person
+    raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :respond, @invitation)
+  end
+
+  def create
+    project = Policy.visible_projects(Current.person).find(params[:project_id])
+    raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :manage_team, project)
+
+    person = Current.workspace.people.find(invitation_params[:person_id])
+    invitation = Current.workspace.invitations.build(
+      project: project,
+      person: person,
+      inviter: Current.person,
+      role: invitation_params[:role]
+    )
+
+    if invitation.save
+      InvitationMailer.invitation(invitation).deliver_later
+      redirect_to team_project_path(project), notice: "Invited #{person.name}."
+    else
+      redirect_to team_project_path(project, query: person.name), alert: invitation.errors.full_messages.to_sentence
+    end
+  end
+
+  def accept
+    @invitation.accept!
+    redirect_to team_project_path(@invitation.project), notice: "You joined the Team."
+  end
+
+  def decline
+    @invitation.decline!
+    redirect_to workspace_path(Current.workspace), notice: "You declined the Invitation."
+  end
+
+  private
+    def set_response_invitation
+      @invitation = Current.workspace.invitations.find_by_token_for(:access, params[:token])
+      raise ActiveRecord::RecordNotFound unless @invitation
+      raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :respond, @invitation)
+    end
+
+    def invitation_params
+      params.expect(invitation: [ :person_id, :role ])
+    end
+end

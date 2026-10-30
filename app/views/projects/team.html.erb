@@ -1,0 +1,93 @@
+<% content_for :title, "#{@project.name} Team" %>
+
+<div class="mx-auto w-full max-w-4xl">
+  <%= link_to @project.name, project_path(@project), class: "text-sm font-semibold text-stone-600 hover:text-stone-950" %>
+  <h1 class="mt-4 text-4xl font-bold tracking-tight text-stone-950"><%= @project.name %> Team</h1>
+
+  <section class="mt-10" aria-labelledby="members-heading">
+    <h2 id="members-heading" class="text-2xl font-bold text-stone-950">Members</h2>
+    <ul class="mt-5 divide-y divide-stone-300 border-y border-stone-300">
+      <% @memberships.each do |membership| %>
+        <li class="flex items-center justify-between gap-4 py-4">
+          <div class="min-w-0">
+            <span class="font-semibold text-stone-950"><%= membership.person.name %></span>
+            <span class="ml-3 text-sm text-stone-600"><%= membership.role.humanize %></span>
+          </div>
+          <% if Policy.can?(Current.person, :leave_team, membership) %>
+            <%= button_to "Leave Team", project_membership_path(@project, membership), method: :delete, class: "cursor-pointer text-sm font-semibold text-stone-600 hover:text-stone-950" %>
+          <% elsif Policy.can?(Current.person, :remove_member, membership) %>
+            <%= button_to "Remove", project_membership_path(@project, membership), method: :delete, class: "cursor-pointer text-sm font-semibold text-red-800 hover:text-red-950" %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+
+  <% if @invitations %>
+    <section class="mt-12" aria-labelledby="invitations-heading">
+      <h2 id="invitations-heading" class="text-2xl font-bold text-stone-950">Invitations</h2>
+      <% if @invitations.any? %>
+        <ul class="mt-5 divide-y divide-stone-300 border-y border-stone-300">
+          <% @invitations.each do |invitation| %>
+            <li class="grid gap-3 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+              <div class="min-w-0">
+                <p class="font-semibold text-stone-950"><%= invitation.person.name %></p>
+                <p class="mt-1 text-sm text-stone-600"><%= invitation.role.humanize %> · <%= invitation.status.humanize %></p>
+              </div>
+              <% if invitation.pending? %>
+                <% invitation_token = invitation.generate_token_for(:access) %>
+                <% invitation_link = invitation_url(invitation_token) %>
+                <% sms_body = ERB::Util.url_encode("You're invited to help with #{@project.name} on Flockwork: #{invitation_link}") %>
+                <div class="flex flex-wrap items-center gap-4 text-sm font-semibold">
+                  <button type="button" data-controller="clipboard" data-clipboard-text-value="<%= invitation_link %>" data-action="clipboard#copy" class="cursor-pointer text-stone-700 hover:text-stone-950">Copy link</button>
+                  <%= link_to "Send by text", "sms:?&body=#{sms_body}", class: "text-stone-700 hover:text-stone-950" %>
+                </div>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="mt-5 text-stone-600">No Invitations yet.</p>
+      <% end %>
+    </section>
+  <% end %>
+
+  <% if @can_manage_team %>
+    <section class="mt-12" aria-labelledby="directory-heading">
+      <h2 id="directory-heading" class="text-2xl font-bold text-stone-950">Invite from the directory</h2>
+      <%= form_with url: team_project_path(@project), method: :get, class: "mt-5 flex max-w-xl gap-3" do |form| %>
+        <%= form.label :query, "Search by name", class: "sr-only" %>
+        <%= form.search_field :query, value: params[:query], placeholder: "Search by name", class: "min-w-0 flex-1 border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+        <%= form.submit "Search", class: "cursor-pointer bg-[#1f291f] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#354235]" %>
+      <% end %>
+
+      <% if @directory_people %>
+        <ul class="mt-5 divide-y divide-stone-300 border-y border-stone-300">
+          <% @directory_people.each do |person| %>
+            <li class="grid gap-3 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+              <div class="min-w-0">
+                <p class="font-semibold text-stone-950"><%= person.name %></p>
+                <% if person.email.blank? %>
+                  <p class="mt-1 text-sm text-stone-600">No email, can't be invited</p>
+                <% end %>
+              </div>
+              <% if person.email.blank? %>
+                <button type="button" disabled class="w-fit cursor-not-allowed bg-stone-200 px-4 py-2 text-sm font-semibold text-stone-500">Invite</button>
+              <% else %>
+                <%= form_with model: [ @project, Invitation.new ], class: "flex flex-wrap items-center gap-2" do |form| %>
+                  <%= form.hidden_field :person_id, value: person.id %>
+                  <%= form.label :role, "Role", class: "sr-only" %>
+                  <%= form.select :role, Invitation.roles.keys.map { |role| [ role.humanize, role ] }, {}, class: "border border-stone-400 bg-white px-3 py-2 text-sm text-stone-950 focus:border-stone-950 focus:outline-none" %>
+                  <%= form.submit "Invite", class: "cursor-pointer bg-[#1f291f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#354235]" %>
+                <% end %>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+        <% if @directory_people.empty? %>
+          <p class="mt-5 text-stone-600">No matching People who can be added to this Team.</p>
+        <% end %>
+      <% end %>
+    </section>
+  <% end %>
+</div>

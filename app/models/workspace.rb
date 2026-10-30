@@ -4,6 +4,7 @@ class Workspace < ApplicationRecord
 
   has_many :projects, dependent: :destroy
   has_many :people, dependent: :destroy
+  has_many :invitations, dependent: :restrict_with_exception
 
   normalizes :name, with: ->(name) { name.strip }
   before_validation :assign_slug, on: :create, if: -> { slug.blank? }

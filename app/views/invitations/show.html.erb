@@ -1,0 +1,13 @@
+<% content_for :title, "Invitation to #{@invitation.project.name}" %>
+
+<div class="mx-auto w-full max-w-xl">
+  <h1 class="text-4xl font-bold tracking-tight text-stone-950"><%= @invitation.project.name %></h1>
+
+  <div class="mt-8 border-y border-stone-300 py-6 sm:grid sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-8">
+    <p class="text-lg leading-8 text-stone-700"><%= @invitation.inviter.name %> invited you to join this Team as a <%= @invitation.role.humanize %>.</p>
+    <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-4 sm:mt-0">
+      <%= button_to "Accept", accept_invitation_path(params[:token]), method: :patch, class: "cursor-pointer bg-[#1f291f] px-6 py-3 font-semibold text-white hover:bg-[#354235]" %>
+      <%= button_to "Decline", decline_invitation_path(params[:token]), method: :patch, class: "cursor-pointer px-2 py-3 font-semibold text-stone-600 hover:text-stone-950" %>
+    </div>
+  </div>
+</div>
