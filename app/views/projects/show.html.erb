@@ -23,10 +23,14 @@
   <% if @project.enabled_tools.any? %>
     <div class="mt-14 grid gap-5 md:grid-cols-2">
       <% @project.enabled_tools.each do |tool| %>
+        <% if tool == "schedule" %>
+          <%= render "tool_schedule", project: @project, schedule_items_by_day: @schedule_items_by_day %>
+        <% else %>
         <section class="min-h-44 bg-[#e7ede3] p-6" aria-labelledby="tool-<%= tool %>">
           <h2 id="tool-<%= tool %>" class="text-xl font-bold text-stone-950"><%= Project::TOOL_LABELS.fetch(tool) %></h2>
           <p class="mt-8 text-sm text-stone-600">Nothing here yet</p>
         </section>
+        <% end %>
       <% end %>
     </div>
   <% end %>

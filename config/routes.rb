@@ -4,7 +4,9 @@ Rails.application.routes.draw do
   root "landing#show"
 
   resources :workspaces, only: :create
-  resources :projects, only: %i[ index new create show edit update ]
+  resources :projects, only: %i[ index new create show edit update ] do
+    resources :schedule_items, except: %i[ index show ]
+  end
   resource :session, only: :destroy
 
   get "sign_in/:token", to: "sign_in_links#show", as: :sign_in_link, format: false

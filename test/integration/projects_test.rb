@@ -73,7 +73,7 @@ class ProjectsTest < ActionDispatch::IntegrationTest
     assert_select "h2", text: "Schedule", count: 1
     assert_select "h2", text: "Tasks", count: 0
     assert_select "h2", text: "Docs & Files", count: 0
-    assert_select "p", text: "Nothing here yet", count: 1
+    assert_select "section[aria-labelledby='tool-schedule'] span.font-semibold", text: "Arrival"
     assert_equal [ "schedule" ], project.reload.enabled_tools
   end
 

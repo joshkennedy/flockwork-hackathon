@@ -7,6 +7,9 @@ class ProjectsController < ApplicationController
   end
 
   def show
+    return unless @project.enabled_tools.include?("schedule")
+
+    @schedule_items_by_day = @project.schedule_items.grouped_by_day
   end
 
   def new
