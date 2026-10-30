@@ -21,14 +21,15 @@ class PlannerSessionsController < ApplicationController
   end
 
   def show
-    redirect_to planner_destination unless @planner_session.asking?
+    redirect_to planner_destination unless @planner_session.asking? || request.headers["Turbo-Frame"].present?
   end
 
   def answer
     raise ActiveRecord::RecordNotFound unless @planner_session.asking?
 
-    @planner_session.answer!(params.expect(:answer))
-    redirect_to planner_destination
+    @planner_session.record_answer!(params.expect(:answer))
+    PlannerStepJob.perform_later(@project.id, @planner_session.id, Current.session.id)
+    redirect_to project_planner_session_path(@project, @planner_session)
   end
 
   def review
@@ -52,8 +53,17 @@ class PlannerSessionsController < ApplicationController
   def suggestion
     raise ActiveRecord::RecordNotFound unless @planner_session.reviewing?
 
-    values = params.expect(suggestion: [ :id, :decision, :title, :details ])
-    @planner_session.decide_suggestion!(**values.to_h.symbolize_keys)
+    values = params.expect(
+      suggestion: [
+        :id,
+        :decision,
+        :title,
+        :details,
+        { fields: Planner::SuggestionKinds.permitted_fields }
+      ]
+    ).to_h.symbolize_keys
+    values[:fields] = values[:fields].to_h.deep_stringify_keys if values[:fields]
+    @planner_session.decide_suggestion!(**values)
     redirect_to review_project_planner_session_path(@project, @planner_session)
   end
 

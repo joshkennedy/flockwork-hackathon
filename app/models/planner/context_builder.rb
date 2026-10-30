@@ -21,14 +21,18 @@ module Planner
           answers: session.steps.map { |step| answer_from(step) },
           enabled_tools:,
           existing_task_titles: current_task_titles,
+          existing_schedule_item_titles: current_schedule_item_titles,
+          existing_slot_labels: current_slot_labels,
+          existing_booking_descriptions: current_budget_descriptions(:booking),
+          existing_purchase_descriptions: current_budget_descriptions(:purchase),
+          existing_list_names: current_list_names,
           past_projects: past_projects,
           current_suggestions: safe_suggestions
         }
       end
 
       def current_project_values
-        Current.workspace.projects.where(id: session.project_id).pick(:name, :description, :enabled_tools) ||
-          raise(ActiveRecord::RecordNotFound)
+        current_project.attributes.values_at("name", "description", "enabled_tools")
       end
 
       def answer_from(step)
@@ -37,28 +41,60 @@ module Planner
       end
 
       def current_task_titles
-        Current.workspace.tasks.where(project_id: session.project_id).order(:id).pluck(:title)
+        current_project.tasks.order(:id).pluck(:title)
+      end
+
+      def current_schedule_item_titles
+        current_project.schedule_items.order(:id).pluck(:title)
+      end
+
+      def current_slot_labels
+        current_project.slots.order(:id).pluck(:label)
+      end
+
+      def current_budget_descriptions(kind)
+        current_project.budget_lines.public_send(kind).order(:id).pluck(:description)
+      end
+
+      def current_list_names
+        current_project.lists.order(:id).pluck(:name)
       end
 
       def past_projects
-        Current.workspace.projects.where.not(id: session.project_id)
+        Current.workspace.projects.where(deleted_at: nil).where.not(id: session.project_id)
+          .includes(:tasks, :budget_lines)
           .order(created_at: :desc, id: :desc)
           .limit(5)
-          .pluck(:id, :enabled_tools)
-          .map do |project_id, tool_mix|
-            task_titles = Current.workspace.tasks.where(project_id:).order(:id).pluck(:title)
-            { tool_mix:, task_count: task_titles.length, task_titles: }
+          .map do |project|
+            task_titles = project.tasks.sort_by(&:id).map(&:title)
+            booking_descriptions = project.budget_lines.select(&:booking?).sort_by(&:id).map(&:description)
+            purchase_descriptions = project.budget_lines.select(&:purchase?).sort_by(&:id).map(&:description)
+            {
+              tool_mix: project.enabled_tools,
+              task_count: task_titles.length,
+              task_titles:,
+              booking_count: booking_descriptions.length,
+              booking_descriptions:,
+              purchase_count: purchase_descriptions.length,
+              purchase_descriptions:
+            }
           end
+      end
+
+      def current_project
+        @current_project ||= Current.workspace.projects.find(session.project_id)
       end
 
       def safe_suggestions
         session.suggestions.map do |suggestion|
           suggestion = suggestion.stringify_keys
-          fields = suggestion.fetch("fields", {}).stringify_keys.slice("title", "details", "due_in_days", "role")
           {
             id: suggestion.fetch("id"),
             kind: suggestion.fetch("kind"),
-            fields:,
+            fields: Planner::SuggestionKinds.sanitize_fields(
+              suggestion.fetch("kind"),
+              suggestion.fetch("fields", {})
+            ),
             status: suggestion.fetch("status")
           }
         end

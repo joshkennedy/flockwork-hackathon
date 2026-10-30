@@ -39,10 +39,13 @@ class PlannerDictationIntegrationTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_dictation_button
 
-    post answer_project_planner_session_path(@project, @project.planner_sessions.last!), params: { answer: "Set the room" }
-    follow_redirect!
+    planner_session = @project.planner_sessions.last!
+    perform_enqueued_jobs do
+      post answer_project_planner_session_path(@project, planner_session), params: { answer: "Set the room" }
+    end
+    get review_project_planner_session_path(@project, planner_session)
     assert_response :success
-    assert_select "[data-controller=?] button[hidden][aria-label=?]", "dictation", "Dictate", count: 2
+    assert_select "[data-controller=?] button[hidden][aria-label=?]", "dictation", "Dictate", minimum: 1
   end
 
   private

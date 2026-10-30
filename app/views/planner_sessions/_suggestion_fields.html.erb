@@ -1,0 +1,41 @@
+<% Planner::SuggestionKinds.fields_for(suggestion.fetch("kind")).each do |field_name, definition| %>
+  <% value = suggestion.fetch("fields")[field_name] %>
+  <% field_id = "suggestion_#{suggestion.fetch("id")}_#{field_name}" %>
+  <% field_input_name = "suggestion[fields][#{field_name}]" %>
+  <% required = !Array(definition.fetch(:schema).fetch(:type)).include?("null") %>
+
+  <% if definition.fetch(:input) == :columns %>
+    <fieldset>
+      <legend class="text-sm font-semibold text-stone-900"><%= definition.fetch(:label) %></legend>
+      <div class="mt-3 space-y-3">
+        <% Array(value).each_with_index do |column, index| %>
+          <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_12rem]">
+            <div>
+              <%= label_tag "#{field_id}_#{index}_name", "Column #{index + 1} name", class: "block text-sm font-medium text-stone-700" %>
+              <%= text_field_tag "suggestion[fields][columns][#{index}][name]", column.fetch("name"), id: "#{field_id}_#{index}_name", required: true, class: "mt-1 block min-h-12 w-full border border-stone-400 bg-white px-4 py-3 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+            </div>
+            <div>
+              <%= label_tag "#{field_id}_#{index}_type", "Column #{index + 1} type", class: "block text-sm font-medium text-stone-700" %>
+              <%= select_tag "suggestion[fields][columns][#{index}][type]", options_for_select(ListColumn.column_types.keys.map { |type| [ type.humanize, type ] }, column.fetch("type")), id: "#{field_id}_#{index}_type", class: "mt-1 block min-h-12 w-full border border-stone-400 bg-white px-4 py-3 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </fieldset>
+  <% else %>
+    <div>
+      <%= label_tag field_id, definition.fetch(:label), class: "block text-sm font-semibold text-stone-900" %>
+      <% case definition.fetch(:input) %>
+      <% when :textarea %>
+        <%= render layout: "shared/dictation_button", locals: { wrapper_class: "mt-2 flex w-full items-start gap-2" } do %>
+          <%= text_area_tag field_input_name, value, id: field_id, rows: 3, required:, data: { dictation_target: "field" }, class: "block w-full border border-stone-400 bg-white px-4 py-3 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+        <% end %>
+      <% when :select %>
+        <% options = definition.fetch(:options).map { |option_value, label| [ label, option_value ] } %>
+        <%= select_tag field_input_name, options_for_select(options, value), id: field_id, required:, class: "mt-2 block min-h-12 w-full border border-stone-400 bg-white px-4 py-3 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+      <% else %>
+        <%= tag.input type: definition.fetch(:input), name: field_input_name, id: field_id, value:, required:, min: definition[:min], step: definition[:step], class: "mt-2 block min-h-12 w-full border border-stone-400 bg-white px-4 py-3 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>
