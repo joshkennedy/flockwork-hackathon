@@ -1,0 +1,27 @@
+<% content_for :title, "Flockwork" %>
+
+<div class="w-full max-w-md mx-auto">
+  <h1 class="text-3xl font-bold text-gray-900">Flockwork</h1>
+  <p class="mt-2 text-gray-600">A shared space where church teams plan and run ministry together.</p>
+
+  <h2 class="mt-10 text-xl font-semibold text-gray-900">Create a Workspace</h2>
+
+  <%= form_with url: workspaces_path, class: "mt-4 space-y-4" do |f| %>
+    <div>
+      <%= f.label :church_name, "Church name", class: "block text-sm font-medium text-gray-700" %>
+      <%= f.text_field :church_name, required: true, class: "mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" %>
+    </div>
+
+    <div>
+      <%= f.label :your_name, "Your name", class: "block text-sm font-medium text-gray-700" %>
+      <%= f.text_field :your_name, required: true, autocomplete: "name", class: "mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" %>
+    </div>
+
+    <div>
+      <%= f.label :email, "Your email", class: "block text-sm font-medium text-gray-700" %>
+      <%= f.email_field :email, required: true, autocomplete: "email", class: "mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" %>
+    </div>
+
+    <%= f.submit "Create a Workspace", class: "w-full rounded-md bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-500 cursor-pointer" %>
+  <% end %>
+</div>

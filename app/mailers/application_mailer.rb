@@ -1,4 +1,4 @@
 class ApplicationMailer < ActionMailer::Base
-  default from: "from@example.com"
+  default from: "Flockwork <hello@getflockwork.com>", "MESSAGE-STREAM" => "outbound"
   layout "mailer"
 end

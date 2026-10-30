@@ -1,0 +1,14 @@
+st_example:
+  name: St. Example
+  slug: st-example
+  demo: false
+
+outsider_church:
+  name: Outsider Church
+  slug: outsider-church
+  demo: false
+
+grace_fellowship:
+  name: Grace Fellowship
+  slug: grace-fellowship
+  demo: true

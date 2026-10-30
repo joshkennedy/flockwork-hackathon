@@ -1,0 +1,51 @@
+admin:
+  workspace: st_example
+  name: Ada Admin
+  email: ada@st-example.test
+  admin: true
+
+leader:
+  workspace: st_example
+  name: Leo Leader
+  email: leo@st-example.test
+
+other_leader:
+  workspace: st_example
+  name: Lucy Leader
+  email: lucy@st-example.test
+
+volunteer:
+  workspace: st_example
+  name: Vic Volunteer
+  email: vic@st-example.test
+
+other_volunteer:
+  workspace: st_example
+  name: Vera Volunteer
+  email: vera@st-example.test
+
+recipient:
+  workspace: st_example
+  name: Rowan Recipient
+
+outsider:
+  workspace: outsider_church
+  name: Olive Outsider
+  email: olive@outsider-church.test
+  admin: true
+
+grace_admin:
+  workspace: grace_fellowship
+  name: Daniel Okafor
+  email: admin@grace.example
+  admin: true
+
+grace_leader:
+  workspace: grace_fellowship
+  name: Maria Lopez
+  email: leader@grace.example
+
+grace_volunteer:
+  workspace: grace_fellowship
+  name: Sam Chen
+  email: volunteer@grace.example
