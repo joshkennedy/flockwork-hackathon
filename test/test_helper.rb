@@ -15,8 +15,9 @@ require_relative "support/sign_in_helpers"
 
 module ActiveSupport
   class TestCase
-    # Rails only parallelizes suites above its test-count threshold; each worker gets its own database.
-    parallelize(workers: :number_of_processors)
+    # Serial on purpose: with pg 1.7.0 on macOS arm64, forked test workers segfault even against a plain local
+    # Postgres. Raise the worker count again once the suite is verified in parallel on Linux CI.
+    parallelize(workers: 1)
 
     fixtures :all
   end
