@@ -121,6 +121,54 @@ class PlannerTest < ActionDispatch::IntegrationTest
     assert_predicate session.reload, :accepted?
   end
 
+  test "a Leader keeps and drops Suggestions from the card page without leaving it" do
+    project = projects(:community_meal)
+    Rails.configuration.x.planner_provider = Planner::Providers::Fake.new([
+      planner_response(
+        card: {
+          "question" => "Which details should the plan include?",
+          "options" => [ "Room setup", "Kitchen prep", "Guest welcome" ]
+        },
+        added: [
+          task_suggestion("Keep tables ready", "Set every table before guests arrive."),
+          task_suggestion("Drop paper menus", "Print one menu for every place setting.")
+        ]
+      )
+    ])
+    sign_in_as_leader
+    post project_planner_sessions_path(project), params: {
+      planner_session: { description: "Plan the final room setup." }
+    }
+    planner_session = project.planner_sessions.last!
+    suggestions = planner_session.suggestions.index_by { |suggestion| suggestion.dig("fields", "title") }
+    kept_id = suggestions.fetch("Keep tables ready").fetch("id")
+    dropped_id = suggestions.fetch("Drop paper menus").fetch("id")
+    frame_id = ActionView::RecordIdentifier.dom_id(planner_session, :summary)
+    turbo_headers = {
+      "Accept" => "text/vnd.turbo-stream.html",
+      "Turbo-Frame" => frame_id
+    }
+
+    patch suggestion_project_planner_session_path(project, planner_session),
+      params: { suggestion: { id: kept_id, decision: "keep" } },
+      headers: turbo_headers
+
+    assert_response :success
+    assert_equal "text/vnd.turbo-stream.html", response.media_type
+    assert_equal "kept", planner_session.reload.suggestions.find { |item| item.fetch("id") == kept_id }.fetch("status")
+    assert_select "turbo-stream[action='replace'][target='#{frame_id}']"
+    assert_includes response.body, "Keep tables ready"
+
+    patch suggestion_project_planner_session_path(project, planner_session),
+      params: { suggestion: { id: dropped_id, decision: "drop" } },
+      headers: turbo_headers
+
+    assert_response :success
+    assert_equal "text/vnd.turbo-stream.html", response.media_type
+    assert_equal "dropped", planner_session.reload.suggestions.find { |item| item.fetch("id") == dropped_id }.fetch("status")
+    assert_not_includes response.body, "Drop paper menus"
+  end
+
   test "Planner contexts exclude People, Team, Recipients, and Messages" do
     project = projects(:community_meal)
     workspace = project.workspace

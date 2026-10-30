@@ -51,7 +51,7 @@ class PlannerSessionsController < ApplicationController
   end
 
   def suggestion
-    raise ActiveRecord::RecordNotFound unless @planner_session.reviewing?
+    raise ActiveRecord::RecordNotFound unless @planner_session.asking? || @planner_session.reviewing?
 
     values = params.expect(
       suggestion: [
@@ -64,7 +64,16 @@ class PlannerSessionsController < ApplicationController
     ).to_h.symbolize_keys
     values[:fields] = values[:fields].to_h.deep_stringify_keys if values[:fields]
     @planner_session.decide_suggestion!(**values)
-    redirect_to review_project_planner_session_path(@project, @planner_session)
+
+    if request.headers["Turbo-Frame"] == helpers.dom_id(@planner_session, :summary)
+      render turbo_stream: turbo_stream.replace(
+        helpers.dom_id(@planner_session, :summary),
+        partial: "planner_sessions/summary",
+        locals: { planner_session: @planner_session }
+      )
+    else
+      redirect_to planner_destination
+    end
   end
 
   def accept

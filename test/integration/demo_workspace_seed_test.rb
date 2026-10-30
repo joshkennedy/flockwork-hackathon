@@ -86,12 +86,12 @@ class DemoWorkspaceSeedTest < ActionDispatch::IntegrationTest
       assert workspace.people.all? { |person| person.phone.match?(/\A202-555-01\d\d\z/) }
       assert_equal [
         "Claire Robinson",
-        "Daniel Okafor",
         "Felicia Cox",
         "George Ward",
         "Ingrid Mason",
         "Jonathan Moore",
         "Malcolm Bell",
+        "Monica Grant",
         "Nina Bailey",
         "Pamela Underwood",
         "Peter Sanchez",
