@@ -51,7 +51,7 @@ class DemoWorkspace
     "Nathan Hill",
     "Jasmine Mitchell",
     "Samuel Roberts",
-    "Evelyn Phillips",
+    "Pamela Underwood",
     "Christopher Lewis",
     "Danielle Walker",
     "Thomas Allen",
@@ -253,7 +253,7 @@ class DemoWorkspace
         invite!(workspace, vbs, people.fetch("Nathan Hill"), maria, :volunteer, :pending)
         invite!(workspace, vbs, people.fetch("Jasmine Mitchell"), maria, :leader, :pending)
         invite!(workspace, vbs, people.fetch("Samuel Roberts"), maria, :volunteer, :declined)
-        invite!(workspace, vbs, people.fetch("Evelyn Phillips"), maria, :volunteer, :declined)
+        invite!(workspace, vbs, people.fetch("Luke Harris"), maria, :volunteer, :declined)
         invite!(workspace, vbs, people.fetch("Christopher Lewis"), maria, :volunteer, :pending)
         invite!(workspace, vbs, people.fetch("Danielle Walker"), maria, :volunteer, :declined)
         invite!(workspace, vbs, people.fetch("Thomas Allen"), maria, :volunteer, :pending)
