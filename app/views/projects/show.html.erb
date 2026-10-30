@@ -1,81 +1,81 @@
 <% content_for :title, @project.name %>
 
-<div class="mx-auto w-full max-w-5xl">
-  <nav class="flex flex-wrap items-center justify-between gap-4" aria-label="Project navigation">
-    <%= link_to "Projects", projects_path, class: "text-sm font-semibold text-stone-600 hover:text-stone-950" %>
-    <div class="flex flex-wrap items-center justify-end gap-x-5 gap-y-2">
-      <% if Policy.can?(Current.person, :plan, @project) %>
-        <%= link_to "Plan more", new_project_planner_session_path(@project), class: "bg-[#1f291f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#354235]" %>
-      <% end %>
-      <% if Policy.can?(Current.person, :view_team, @project) %>
-        <%= link_to "Team", team_project_path(@project), class: "text-sm font-semibold text-stone-700 hover:text-stone-950" %>
-      <% elsif Policy.can?(Current.person, :join, @project) %>
-        <%= button_to "Join", join_project_path(@project), class: "cursor-pointer bg-[#1f291f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#354235]" %>
-      <% end %>
-      <% if Policy.can?(Current.person, :update, @project) %>
-        <%= link_to "Edit Project", edit_project_path(@project), class: "text-sm font-semibold text-stone-700 hover:text-stone-950" %>
-      <% end %>
-      <% if Policy.can?(Current.person, :duplicate, @project) %>
-        <%= link_to "Duplicate", new_project_duplicate_path(@project), class: "text-sm font-semibold text-stone-700 hover:text-stone-950" %>
-      <% end %>
-    </div>
-  </nav>
+<div class="w-full max-w-5xl">
 
-  <header class="mt-10 max-w-3xl">
-    <h1 class="text-4xl font-bold tracking-tight text-stone-950 sm:text-5xl"><%= @project.name %></h1>
+  <header class="max-w-4xl">
+    <h1 class="text-ink"><%= @project.name %></h1>
     <% if @project.description.present? %>
-      <p class="mt-5 text-lg leading-8 text-stone-700"><%= @project.description %></p>
+      <p class="mt-5 text-body-phone sm:text-body leading-normal text-ink-2"><%= @project.description %></p>
     <% end %>
     <% if @project.starts_on.present? || @project.ends_on.present? %>
-      <p class="mt-5 text-sm font-medium text-stone-600">
+      <p class="mt-5 text-meta font-medium text-ink-2">
         <%= [ @project.starts_on&.to_fs(:long), @project.ends_on&.to_fs(:long) ].compact.join(" to ") %>
       </p>
     <% end %>
     <% if @project.done_at.present? %>
-      <p class="mt-3 text-sm font-semibold uppercase tracking-wide text-stone-600">Done</p>
+      <p class="mt-3 text-meta font-semibold text-ink-2">Done</p>
     <% end %>
   </header>
 
+  <nav class="mt-5 flex flex-wrap items-center gap-4" aria-label="Project navigation">
+    <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
+      <% if Policy.can?(Current.person, :plan, @project) %>
+        <%= link_to "Plan more", new_project_planner_session_path(@project), class: "btn btn-primary" %>
+      <% end %>
+      <% if Policy.can?(Current.person, :view_team, @project) %>
+        <%= link_to "Team", team_project_path(@project), class: "text-meta font-semibold text-ink-2 hover:text-ink" %>
+      <% elsif Policy.can?(Current.person, :join, @project) %>
+        <%= button_to "Join", join_project_path(@project), class: "btn btn-primary" %>
+      <% end %>
+      <% if Policy.can?(Current.person, :update, @project) %>
+        <%= link_to "Edit Project", edit_project_path(@project), class: "text-meta font-semibold text-ink-2 hover:text-ink" %>
+      <% end %>
+      <% if Policy.can?(Current.person, :duplicate, @project) %>
+        <%= link_to "Duplicate", new_project_duplicate_path(@project), class: "text-meta font-semibold text-ink-2 hover:text-ink" %>
+      <% end %>
+    </div>
+  </nav>
+
   <%= render "public_link", project: @project %>
 
-  <div class="mt-8 flex flex-wrap gap-3">
+  <div class="mt-7 flex flex-wrap gap-3">
     <% if Policy.member?(Current.person, @project) || Current.person.admin? %>
     <% if Policy.can?(Current.person, :mark_done, @project) %>
-      <%= button_to "Mark done", mark_done_project_path(@project), class: "border border-stone-400 px-4 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100" %>
+      <%= button_to "Mark done", mark_done_project_path(@project), class: "btn btn-secondary" %>
     <% end %>
     <% if Policy.can?(Current.person, :reopen, @project) %>
-      <%= button_to "Reopen", reopen_project_path(@project), class: "border border-stone-400 px-4 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100" %>
+      <%= button_to "Reopen", reopen_project_path(@project), class: "btn btn-secondary" %>
     <% end %>
     <% if Policy.can?(Current.person, :archive, @project) %>
-      <%= button_to "Archive", archive_project_path(@project), class: "border border-stone-400 px-4 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100" %>
+      <%= button_to "Archive", archive_project_path(@project), class: "btn btn-secondary" %>
     <% end %>
     <% if Policy.can?(Current.person, :unarchive, @project) %>
-      <%= button_to "Unarchive", unarchive_project_path(@project), class: "border border-stone-400 px-4 py-2 text-sm font-semibold text-stone-800 hover:bg-stone-100" %>
+      <%= button_to "Unarchive", unarchive_project_path(@project), class: "btn btn-secondary" %>
     <% end %>
     <% if Policy.can?(Current.person, :destroy, @project) %>
-      <%= button_to "Delete", project_path(@project), method: :delete, class: "border border-red-300 px-4 py-2 text-sm font-semibold text-red-800 hover:bg-red-50" %>
+      <%= button_to "Delete", project_path(@project), method: :delete, class: "btn btn-danger" %>
     <% end %>
     <% end %>
   </div>
 
   <% if (Policy.member?(Current.person, @project) || Current.person.admin?) && Policy.can?(Current.person, :transfer_ownership, @project) && @ownership_transfer_leaders.any? %>
     <%= form_with url: transfer_ownership_project_path(@project), method: :patch, class: "mt-6 flex flex-wrap items-end gap-3" do |form| %>
-      <%= form.label :new_owner_id, "Transfer ownership to", class: "block text-sm font-semibold text-stone-800" %>
-      <%= form.collection_select :new_owner_id, @ownership_transfer_leaders, :person_id, ->(membership) { membership.person.name }, { prompt: "Choose a Leader" }, class: "border border-stone-400 px-3 py-2 text-sm" %>
-      <%= form.submit "Transfer", class: "bg-[#1f291f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#354235]" %>
+      <%= form.label :new_owner_id, "Transfer ownership to", class: "block text-label font-medium text-ink" %>
+      <%= form.collection_select :new_owner_id, @ownership_transfer_leaders, :person_id, ->(membership) { membership.person.name }, { prompt: "Choose a Leader" }, class: "field" %>
+      <%= form.submit "Transfer", class: "btn btn-secondary" %>
     <% end %>
   <% end %>
 
   <% if @project.enabled_tools.any? %>
-    <div class="mt-14 grid gap-5 md:grid-cols-2">
+    <div class="mt-7 space-y-7">
       <% @project.enabled_tools.each do |tool| %>
         <% next if tool == "recipients" && !Policy.can?(Current.person, :view_recipients, @project) %>
         <% if lookup_context.exists?(tool, ["projects/tools"], true) %>
           <%= render "projects/tools/#{tool}", project: @project %>
         <% else %>
-          <section class="min-h-44 bg-[#e7ede3] p-6" aria-labelledby="tool-<%= tool %>">
-            <h2 id="tool-<%= tool %>" class="text-xl font-bold text-stone-950"><%= Project::TOOL_LABELS.fetch(tool) %></h2>
-            <p class="mt-8 text-sm text-stone-600">Nothing here yet</p>
+          <section class="tool-section" aria-labelledby="tool-<%= tool %>">
+            <h2 id="tool-<%= tool %>" class="text-xl font-semibold text-ink"><%= Project::TOOL_LABELS.fetch(tool) %></h2>
+            <p class="mt-7 text-meta text-ink-2">Nothing here yet</p>
           </section>
         <% end %>
       <% end %>
@@ -83,8 +83,8 @@
   <% end %>
 
   <% if Policy.can?(Current.person, :view_notes, @project) %>
-    <section class="mt-14 bg-[#e7ede3] p-6" aria-labelledby="project-notes-heading">
-      <h2 id="project-notes-heading" class="text-xl font-bold text-stone-950">Notes</h2>
+    <section class="tool-section mt-7" aria-labelledby="project-notes-heading">
+      <h2 id="project-notes-heading" class="text-ink">Notes</h2>
       <%= render "notes/list", notes: @project_notes %>
       <%= render "notes/form",
         notable: @project,

@@ -1,28 +1,28 @@
-<article class="text-stone-900" data-message-id="<%= message.id %>">
+<article class="text-ink" data-message-id="<%= message.id %>">
   <header class="flex flex-wrap items-baseline justify-between gap-2">
-    <p class="text-sm font-semibold text-stone-950"><%= message.author.name %></p>
-    <p class="text-sm text-stone-600"><%= time_ago_in_words(message.created_at) %> ago</p>
+    <p class="text-meta font-semibold text-ink"><%= message.author.name %></p>
+    <p class="text-meta text-ink-2"><%= time_ago_in_words(message.created_at) %> ago</p>
   </header>
-  <div class="prose prose-stone mt-2 max-w-none text-stone-900" data-message-body>
+  <div class="rich-content mt-2 max-w-none text-ink" data-message-body>
     <%= message.body %>
   </div>
   <% if Policy.can?(Current.person, :edit_message, message) || Policy.can?(Current.person, :delete_message, message) %>
-    <div class="mt-3 flex gap-3 text-sm font-semibold">
+    <div class="mt-3 flex gap-3 text-meta font-semibold">
       <% if Policy.can?(Current.person, :edit_message, message) %>
-        <%= link_to "Edit", edit_project_message_path(project, message), class: "text-stone-700 hover:text-stone-950" %>
+        <%= link_to "Edit", edit_project_message_path(project, message), class: "text-ink-2 hover:text-ink" %>
       <% end %>
       <% if Policy.can?(Current.person, :delete_message, message) %>
-        <%= button_to "Delete", project_message_path(project, message), method: :delete, class: "text-red-800 hover:text-red-950" %>
+        <%= button_to "Delete", project_message_path(project, message), method: :delete, class: "btn btn-danger" %>
       <% end %>
     </div>
   <% end %>
   <% if message.parent_id.nil? && (follow = message.follows.find_by(person: Current.person)) %>
-    <div class="mt-3 flex items-center justify-between gap-3 text-sm text-stone-600">
+    <div class="mt-3 flex items-center justify-between gap-3 text-meta text-ink-2">
       <span>Following this thread</span>
       <%= button_to "Unfollow",
             project_follow_path(project, follow),
             method: :delete,
-            class: "font-semibold text-stone-700 hover:text-stone-950" %>
+            class: "btn btn-text" %>
     </div>
   <% end %>
 </article>

@@ -1,8 +1,8 @@
 <%= form_with model: [ project, slot ], class: "space-y-7" do |form| %>
   <% if slot.errors.any? %>
-    <div class="border-l-4 border-red-700 bg-red-50 px-5 py-4 text-red-950">
+    <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
       <p class="font-semibold">Please fix the following:</p>
-      <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
+      <ul class="mt-2 list-disc space-y-1 pl-5 text-meta">
         <% slot.errors.full_messages.each do |message| %>
           <li><%= message %></li>
         <% end %>
@@ -11,24 +11,24 @@
   <% end %>
 
   <div>
-    <%= form.label :date, class: "block text-sm font-semibold text-stone-900" %>
-    <%= form.date_field :date, required: true, autofocus: true, class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+    <%= form.label :date, class: "block text-label font-medium text-ink" %>
+    <%= form.date_field :date, required: true, autofocus: true, class: "mt-2 block w-full field" %>
   </div>
 
   <div>
-    <%= form.label :starts_at_time, "Start time", class: "block text-sm font-semibold text-stone-900" %>
-    <%= form.time_field :starts_at_time, class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+    <%= form.label :starts_at_time, "Start time", class: "block text-label font-medium text-ink" %>
+    <%= form.time_field :starts_at_time, class: "mt-2 block w-full field" %>
   </div>
 
   <div>
-    <%= form.label :label, class: "block text-sm font-semibold text-stone-900" %>
-    <%= form.text_field :label, required: true, class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+    <%= form.label :label, class: "block text-label font-medium text-ink" %>
+    <%= form.text_field :label, required: true, class: "mt-2 block w-full field" %>
   </div>
 
   <div>
-    <%= form.label :capacity, class: "block text-sm font-semibold text-stone-900" %>
-    <%= form.number_field :capacity, min: 1, required: true, class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+    <%= form.label :capacity, class: "block text-label font-medium text-ink" %>
+    <%= form.number_field :capacity, min: 1, required: true, class: "mt-2 block w-full field" %>
   </div>
 
-  <%= form.submit class: "cursor-pointer bg-[#1f291f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#354235]" %>
+  <%= form.submit class: "btn btn-primary" %>
 <% end %>

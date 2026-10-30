@@ -1,30 +1,30 @@
-<li class="text-stone-900">
+<li class="text-ink">
   <div class="flex items-start justify-between gap-3">
     <div class="min-w-0">
     <% if item.file? %>
-      <%= link_to item.title, download_project_doc_item_path(project, item), class: "font-semibold text-stone-900 hover:text-stone-700" %>
+      <%= link_to item.title, download_project_doc_item_path(project, item), class: "font-semibold text-ink hover:text-ink-2" %>
     <% elsif item.link? %>
       <div class="flex flex-wrap items-center gap-2">
-        <%= link_to item.title, item.url, class: "font-semibold text-stone-900 hover:text-stone-700", target: "_blank", rel: "noopener noreferrer" %>
+        <%= link_to item.title, item.url, class: "font-semibold text-ink hover:text-ink-2", target: "_blank", rel: "noopener noreferrer" %>
         <% if item.pco? %>
-          <span class="rounded bg-stone-800 px-1.5 py-0.5 text-xs font-bold uppercase tracking-wide text-white">PCO</span>
+          <span class="rounded bg-ink px-1.5 py-0.5 text-label font-semibold text-on-ink">PCO</span>
         <% end %>
       </div>
     <% else %>
       <span class="block font-semibold"><%= item.title %></span>
       <% if item.body.present? %>
-        <div class="prose prose-sm mt-1 max-w-none text-stone-700"><%= item.body %></div>
+        <div class="rich-content mt-1 max-w-none text-ink-2"><%= item.body %></div>
       <% end %>
     <% end %>
-    <span class="mt-1 block text-sm text-stone-600"><%= item.author.name %></span>
+    <span class="mt-1 block text-meta text-ink-2"><%= item.author.name %></span>
     </div>
     <% if Policy.can?(Current.person, :manage_docs, project) || Policy.can?(Current.person, :destroy, item) %>
-      <div class="flex shrink-0 gap-3 text-sm font-semibold">
+      <div class="flex flex-wrap gap-3 text-meta font-semibold">
         <% if Policy.can?(Current.person, :manage_docs, project) %>
-          <%= link_to "Edit", edit_project_doc_item_path(project, item), class: "text-stone-700 hover:text-stone-950" %>
+          <%= link_to "Edit", edit_project_doc_item_path(project, item), class: "text-ink-2 hover:text-ink" %>
         <% end %>
         <% if Policy.can?(Current.person, :destroy, item) %>
-          <%= button_to "Delete", project_doc_item_path(project, item), method: :delete, class: "text-red-800 hover:text-red-950" %>
+          <%= button_to "Delete", project_doc_item_path(project, item), method: :delete, class: "btn btn-danger" %>
         <% end %>
       </div>
     <% end %>

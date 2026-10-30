@@ -1,0 +1,4 @@
+<li class="flex items-center justify-between gap-4 py-3" data-never-asked-person="<%= person.name %>">
+  <%= link_to person.name, edit_person_path(Current.workspace, person), class: "font-semibold" %>
+  <%= link_to "View person", edit_person_path(Current.workspace, person), class: "btn btn-secondary shrink-0" %>
+</li>

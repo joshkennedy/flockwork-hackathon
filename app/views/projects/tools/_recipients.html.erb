@@ -1,25 +1,25 @@
 <% if Policy.can?(Current.person, :view_recipients, project) %>
   <% recipients = project.recipients.joins(:person).order("people.name") %>
-  <section class="min-h-44 bg-[#e7ede3] p-6" aria-labelledby="tool-recipients">
-    <div class="flex items-start justify-between gap-4">
-      <h2 id="tool-recipients" class="text-xl font-bold text-stone-950"><%= Project::TOOL_LABELS.fetch("recipients") %></h2>
+  <section class="tool-section" aria-labelledby="tool-recipients">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <h2 id="tool-recipients" class="text-ink"><%= icon(:heart, class: "text-tool-messages") %> <%= Project::TOOL_LABELS.fetch("recipients") %></h2>
       <% if Policy.can?(Current.person, :manage_recipients, project) %>
-        <%= link_to "Add recipient", new_project_recipient_path(project), class: "text-sm font-semibold text-stone-700 hover:text-stone-950" %>
+        <%= link_to "Add recipient", new_project_recipient_path(project), class: "text-meta font-semibold text-ink-2 hover:text-ink" %>
       <% end %>
     </div>
 
     <% if recipients.any? %>
-      <ul class="mt-6 divide-y divide-stone-300 border-y border-stone-300">
+      <ul class="mt-6 divide-y divide-hairline border-y border-hairline">
         <% recipients.each do |recipient| %>
           <li class="py-4">
             <div class="flex items-center justify-between gap-4">
-              <span class="font-semibold text-stone-950"><%= recipient.person.name %></span>
+              <span class="font-semibold text-ink"><%= recipient.person.name %></span>
               <% if Policy.can?(Current.person, :manage_recipients, project) %>
-                <%= button_to "Remove", project_recipient_path(project, recipient), method: :delete, class: "text-sm font-semibold text-red-800 hover:text-red-950" %>
+                <%= button_to "Remove", project_recipient_path(project, recipient), method: :delete, class: "btn btn-danger" %>
               <% end %>
             </div>
             <div class="mt-3" aria-label="Notes for <%= recipient.person.name %>">
-              <h3 class="text-sm font-semibold text-stone-800">Notes</h3>
+              <h3 class="text-ink">Notes</h3>
               <%= render "notes/list", notes: @recipient_notes_by_id.fetch(recipient.id, []) %>
               <%= render "notes/form",
                 notable: recipient,
@@ -30,7 +30,7 @@
         <% end %>
       </ul>
     <% else %>
-      <p class="mt-8 text-sm text-stone-600">No recipients yet</p>
+      <p class="mt-7 text-meta text-ink-2">No recipients yet</p>
     <% end %>
   </section>
 <% end %>

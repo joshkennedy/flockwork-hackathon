@@ -53,14 +53,14 @@ class CsvImportTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_entity
-    assert_select "p.text-red-800", text: "That file isn't a CSV with a name column."
+    assert_select "p[role=alert]", text: "That file isn't a CSV with a name column."
 
     assert_no_difference -> { workspace.people.count } do
       upload_csv "people_import_no_name_column.csv"
     end
 
     assert_response :unprocessable_entity
-    assert_select "p.text-red-800", text: "That file isn't a CSV with a name column."
+    assert_select "p[role=alert]", text: "That file isn't a CSV with a name column."
   end
 
   test "non-Admin gets 404 on CSV import" do

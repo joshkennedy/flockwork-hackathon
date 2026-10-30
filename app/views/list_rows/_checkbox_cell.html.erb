@@ -4,7 +4,7 @@
     method: :patch,
     params: { column_id: column.id },
     aria: { label: checked ? "Mark #{column.name} incomplete" : "Mark #{column.name} complete" },
-    class: "inline-flex size-7 items-center justify-center border border-stone-500 bg-white text-base font-bold leading-none text-stone-900 hover:bg-stone-100" do %>
+    class: "btn btn-secondary size-7 min-h-7 p-0" do %>
     <span aria-hidden="true"><%= checked ? "✓" : "" %></span>
   <% end %>
 <% end %>

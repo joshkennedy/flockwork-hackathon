@@ -1,8 +1,8 @@
 <%= form_with model: [ project, list ], class: "space-y-7" do |form| %>
   <% if list.errors.any? %>
-    <div class="border-l-4 border-red-700 bg-red-50 px-5 py-4 text-red-950">
+    <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
       <p class="font-semibold">Please fix the following:</p>
-      <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
+      <ul class="mt-2 list-disc space-y-1 pl-5 text-meta">
         <% list.errors.full_messages.each do |message| %>
           <li><%= message %></li>
         <% end %>
@@ -11,9 +11,9 @@
   <% end %>
 
   <div>
-    <%= form.label :name, class: "block text-sm font-semibold text-stone-900" %>
-    <%= form.text_field :name, required: true, autofocus: true, class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+    <%= form.label :name, class: "block text-label font-medium text-ink" %>
+    <%= form.text_field :name, required: true, autofocus: true, class: "mt-2 block w-full field" %>
   </div>
 
-  <%= form.submit "Create List", class: "cursor-pointer bg-[#1f291f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#354235]" %>
+  <%= form.submit "Create List", class: "btn btn-primary" %>
 <% end %>

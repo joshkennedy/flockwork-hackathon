@@ -1,85 +1,106 @@
 <% content_for :title, "Oversight" %>
 
-<div class="mx-auto w-full max-w-4xl">
-  <%= link_to "← #{Current.workspace.name}", workspace_path(Current.workspace), class: "text-sm font-medium text-stone-600 hover:text-stone-950" %>
-  <h1 class="mt-3 text-4xl font-bold tracking-tight text-stone-950">Oversight</h1>
+<div class="w-full max-w-5xl">
+  <h1><%= pluralize(@overextended_people.length, "person", plural: "people") %> may need a check-in</h1>
+  <p class="mt-2 text-ink-2"><%= pluralize(@never_asked_people.length, "person", plural: "people") %> haven't been invited yet.</p>
 
-  <section class="mt-12" aria-labelledby="overextended-heading">
-    <div class="flex flex-col gap-6 border-b border-stone-300 pb-6 sm:flex-row sm:items-end sm:justify-between">
+  <div class="mt-7 grid gap-7 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+    <section aria-labelledby="overextended-heading">
+      <h2 id="overextended-heading">May need a check-in</h2>
+      <p class="mt-2 text-meta text-ink-2">Overextended: serving on <%= Current.workspace.overextended_limit %> or more Active Projects.</p>
+      <% if @overextended_people.any? %>
+        <ul class="mt-2 divide-y divide-hairline">
+          <% @overextended_people.each do |person| %>
+            <li class="flex items-start justify-between gap-4 py-3" data-overextended-person="<%= person.name %>" data-serving-load="<%= person.serving_load %>">
+              <div class="min-w-0">
+                <%= link_to person.name, edit_person_path(Current.workspace, person), class: "font-semibold" %>
+                <p class="mt-1 text-meta text-ink-2"><%= pluralize(person.serving_load, "Active Project") %></p>
+                <ul class="mt-1 text-meta text-ink-2">
+                  <% Current.workspace.projects.active.joins(:memberships).where(memberships: { person_id: person.id }).distinct.order(:name).each do |project| %>
+                    <li><%= link_to project.name, project_path(project), class: "hover:text-ink" %></li>
+                  <% end %>
+                </ul>
+              </div>
+              <%= link_to "View person", edit_person_path(Current.workspace, person), class: "btn btn-secondary shrink-0" %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="mt-5 text-ink-2">Nobody is at the current limit.</p>
+      <% end %>
+    </section>
+
+    <section aria-labelledby="never-asked-heading">
+      <h2 id="never-asked-heading">Not yet invited</h2>
+      <p class="mt-2 text-meta text-ink-2">Never asked: People with no Invitation or Team history.</p>
+      <% if @never_asked_people.any? %>
+        <ul class="mt-2 divide-y divide-hairline">
+          <%= render partial: "not_invited", collection: @never_asked_people.first(3), as: :person %>
+        </ul>
+        <% if @never_asked_people.length > 3 %>
+          <details class="mt-2">
+            <summary class="cursor-pointer text-label text-ink-2">+ <%= @never_asked_people.length - 3 %> more</summary>
+            <ul class="mt-2 divide-y divide-hairline">
+              <%= render partial: "not_invited", collection: @never_asked_people.drop(3), as: :person %>
+            </ul>
+          </details>
+        <% end %>
+      <% else %>
+        <p class="mt-5 text-ink-2">Everyone has been invited or joined a Team.</p>
+      <% end %>
+    </section>
+  </div>
+
+  <% highlight = @involvement.max_by { |entry| entry[:slots] } %>
+  <% if highlight && highlight[:slots].positive? %>
+    <div class="tile-raised mt-7 flex items-start gap-3 px-6 py-5">
+      <%= icon(:kept, class: "mt-0.5 text-sunlit") %>
       <div>
-        <h2 id="overextended-heading" class="text-2xl font-bold text-stone-950">Overextended</h2>
-        <p class="mt-2 max-w-2xl leading-7 text-stone-700">People serving on <%= Current.workspace.overextended_limit %> or more Active Projects.</p>
+        <h2><%= highlight[:person].name %> has claimed <%= pluralize(highlight[:slots], "Slot") %> this year</h2>
+        <p class="mt-2 text-meta text-ink-2"><%= @involvement_year %>: <%= pluralize(highlight[:projects], "Project") %> joined · <%= pluralize(highlight[:tasks], "Task") %> completed</p>
       </div>
+    </div>
+  <% end %>
 
+  <section class="mt-7 border-t border-hairline pt-5" aria-label="Oversight settings">
       <%= form_with model: Current.workspace, url: oversight_path, method: :patch, class: "flex items-end gap-3" do |form| %>
         <div>
-          <%= form.label :overextended_limit, "Serving load limit", class: "block text-sm font-semibold text-stone-700" %>
-          <%= form.number_field :overextended_limit, min: 1, required: true, class: "mt-1 w-24 border border-stone-400 bg-white px-3 py-2 text-stone-950" %>
+          <%= form.label :overextended_limit, "Serving load limit", class: "block text-label font-medium text-ink-2" %>
+          <%= form.number_field :overextended_limit, min: 1, required: true, class: "mt-1 w-24 field" %>
           <% if Current.workspace.errors[:overextended_limit].any? %>
-            <p class="mt-1 text-sm font-medium text-red-800" role="alert"><%= Current.workspace.errors.full_messages_for(:overextended_limit).to_sentence %></p>
+            <p class="mt-1 text-meta font-medium text-danger" role="alert"><%= Current.workspace.errors.full_messages_for(:overextended_limit).to_sentence %></p>
           <% end %>
         </div>
-        <%= form.submit "Save", class: "cursor-pointer bg-[#1f291f] px-4 py-2 font-bold text-white hover:bg-[#354235]" %>
+        <%= form.submit "Save", class: "btn btn-primary" %>
       <% end %>
-    </div>
-
-    <% if @overextended_people.any? %>
-      <ul class="divide-y divide-stone-300">
-        <% @overextended_people.each do |person| %>
-          <li class="flex items-center justify-between gap-6 py-4" data-overextended-person="<%= person.name %>" data-serving-load="<%= person.serving_load %>">
-            <%= link_to person.name, edit_person_path(Current.workspace, person), class: "font-semibold text-stone-950 hover:text-[#52634d]" %>
-            <span class="text-sm text-stone-700"><%= pluralize(person.serving_load, "Active Project") %></span>
-          </li>
-        <% end %>
-      </ul>
-    <% else %>
-      <p class="py-6 text-stone-600">Nobody is at the current limit.</p>
-    <% end %>
   </section>
 
-  <section class="mt-16" aria-labelledby="never-asked-heading">
-    <h2 id="never-asked-heading" class="text-2xl font-bold text-stone-950">Never asked</h2>
-    <p class="mt-2 max-w-2xl leading-7 text-stone-700">People with no Invitation or Team history.</p>
-
-    <% if @never_asked_people.any? %>
-      <ul class="mt-6 divide-y divide-stone-300 border-y border-stone-300">
-        <% @never_asked_people.each do |person| %>
-          <li class="py-4" data-never-asked-person="<%= person.name %>">
-            <%= link_to person.name, edit_person_path(Current.workspace, person), class: "font-semibold text-stone-950 hover:text-[#52634d]" %>
-          </li>
-        <% end %>
-      </ul>
-    <% else %>
-      <p class="mt-6 text-stone-600">Everyone has been invited or joined a Team.</p>
-    <% end %>
-  </section>
-
-  <section class="mt-16" aria-labelledby="involvement-heading">
-    <h2 id="involvement-heading" class="text-2xl font-bold text-stone-950">Involvement in <%= @involvement_year %></h2>
-    <p class="mt-2 max-w-2xl leading-7 text-stone-700">Projects joined, Tasks completed, and Slots claimed this year.</p>
+  <section class="mt-7" aria-labelledby="involvement-heading">
+    <h2 id="involvement-heading" class="text-ink">Involvement in <%= @involvement_year %></h2>
+    <p class="mt-2 max-w-2xl leading-normal text-ink-2">Projects joined, Tasks completed, and Slots claimed this year.</p>
 
     <div class="mt-6 overflow-x-auto">
-      <table class="w-full min-w-[36rem] border-collapse text-left">
+      <table class="w-full text-meta border-collapse text-left">
         <thead>
-          <tr class="border-b-2 border-stone-800 text-sm text-stone-700">
+          <tr class="border-b border-hairline text-meta text-ink-2">
             <th scope="col" class="py-3 pr-4 font-semibold">Person</th>
-            <th scope="col" class="px-4 py-3 text-right font-semibold">Projects</th>
-            <th scope="col" class="px-4 py-3 text-right font-semibold">Tasks</th>
-            <th scope="col" class="py-3 pl-4 text-right font-semibold">Slots</th>
+            <th scope="col" class="px-2 py-3 text-right tabular-nums font-semibold">Projects</th>
+            <th scope="col" class="px-2 py-3 text-right tabular-nums font-semibold">Tasks</th>
+            <th scope="col" class="py-3 pl-4 text-right tabular-nums font-semibold">Slots</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-stone-300">
+        <tbody class="divide-y divide-hairline">
           <% @involvement.each do |entry| %>
             <tr data-involvement-person="<%= entry[:person].name %>"
                 data-projects="<%= entry[:projects] %>"
                 data-tasks="<%= entry[:tasks] %>"
                 data-slots="<%= entry[:slots] %>">
-              <th scope="row" class="py-4 pr-4 font-semibold text-stone-950">
-                <%= link_to entry[:person].name, edit_person_path(Current.workspace, entry[:person]), class: "hover:text-[#52634d]" %>
+              <th scope="row" class="py-4 pr-4 font-semibold text-ink">
+                <%= link_to entry[:person].name, edit_person_path(Current.workspace, entry[:person]), class: "hover:text-ink" %>
               </th>
-              <td class="px-4 py-4 text-right text-stone-700"><%= entry[:projects] %></td>
-              <td class="px-4 py-4 text-right text-stone-700"><%= entry[:tasks] %></td>
-              <td class="py-4 pl-4 text-right text-stone-700"><%= entry[:slots] %></td>
+              <td class="px-2 py-4 text-right tabular-nums text-ink-2"><%= entry[:projects] %></td>
+              <td class="px-2 py-4 text-right tabular-nums text-ink-2"><%= entry[:tasks] %></td>
+              <td class="py-4 pl-4 text-right tabular-nums text-ink-2"><%= entry[:slots] %></td>
             </tr>
           <% end %>
         </tbody>

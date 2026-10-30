@@ -3,7 +3,7 @@
 <% follow = commentable.follows.find_by(person: Current.person) %>
 
 <details class="mt-4 min-w-0 text-left" data-commentable-type="<%= commentable.class.name %>" data-commentable-id="<%= commentable.id %>">
-  <summary class="cursor-pointer py-2 text-sm font-semibold text-stone-700 hover:text-stone-950">
+  <summary class="cursor-pointer py-2 text-meta font-semibold text-ink-2 hover:text-ink">
     Comments (<%= comments.length %>)
   </summary>
 
@@ -13,24 +13,24 @@
         <% comments.each do |comment| %>
           <li>
             <div class="flex flex-wrap items-baseline justify-between gap-2">
-              <span class="text-sm font-semibold text-stone-950"><%= comment.author.name %></span>
-              <span class="text-xs text-stone-600"><%= time_ago_in_words(comment.created_at) %> ago</span>
+              <span class="text-meta font-semibold text-ink"><%= comment.author.name %></span>
+              <span class="text-label text-ink-2"><%= time_ago_in_words(comment.created_at) %> ago</span>
             </div>
-            <div class="mt-1 text-sm leading-6 text-stone-800"><%= comment.body %></div>
+            <div class="mt-1 text-meta leading-normal text-ink"><%= comment.body %></div>
           </li>
         <% end %>
       </ol>
     <% else %>
-      <p class="text-sm text-stone-600">No comments yet</p>
+      <p class="text-meta text-ink-2">No comments yet</p>
     <% end %>
 
-    <div class="flex min-h-8 items-center justify-between gap-3 text-sm text-stone-600">
+    <div class="flex min-h-8 items-center justify-between gap-3 text-meta text-ink-2">
       <% if follow %>
         <span>Following this item</span>
         <%= button_to "Unfollow",
               project_follow_path(project, follow),
               method: :delete,
-              class: "font-semibold text-stone-700 hover:text-stone-950" %>
+              class: "btn btn-text" %>
       <% elsif Policy.can?(Current.person, :comment, project) %>
         <span>Comment or get mentioned to follow</span>
       <% else %>
@@ -39,7 +39,7 @@
     </div>
 
     <% if Policy.can?(Current.person, :comment, project) %>
-      <%= form_with model: [ project, Comment.new ], class: "min-w-0 space-y-3 bg-[#f5f7f1] p-3" do |form| %>
+      <%= form_with model: [ project, Comment.new ], class: "min-w-0 space-y-3" do |form| %>
         <%= form.hidden_field :commentable_type, value: commentable.class.name, id: nil %>
         <%= form.hidden_field :commentable_id, value: commentable.id, id: nil %>
         <%= render "mentions/field",
@@ -47,7 +47,7 @@
               project: project,
               label: "Add a comment",
               input_id: "comment_#{commentable.model_name.singular}_#{commentable.id}_body" %>
-        <%= form.submit "Post comment", class: "cursor-pointer bg-[#1f291f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#354235]" %>
+        <%= form.submit "Post comment", class: "btn btn-secondary" %>
       <% end %>
     <% end %>
   </div>

@@ -1,15 +1,15 @@
-<section class="min-h-44 min-w-0 bg-[#e7ede3] p-6" aria-labelledby="tool-docs">
+<section class="tool-section" aria-labelledby="tool-docs">
   <% doc_items = project.doc_items.includes(:author, file_attachment: :blob).ordered %>
   <% documents = doc_items.select(&:document?) %>
   <% files = doc_items.select(&:file?) %>
   <% links = doc_items.select(&:link?) %>
-  <div class="flex items-start justify-between gap-4">
-    <h2 id="tool-docs" class="text-xl font-bold text-stone-950"><%= Project::TOOL_LABELS.fetch("docs") %></h2>
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <h2 id="tool-docs" class="text-ink"><%= icon(:docs, class: "text-tool-docs") %> <%= Project::TOOL_LABELS.fetch("docs") %></h2>
     <% if Policy.can?(Current.person, :manage_docs, project) %>
-      <div class="flex flex-wrap justify-end gap-3 text-sm font-semibold text-stone-700">
-        <%= link_to "Add document", new_project_doc_item_path(project, kind: "document"), class: "hover:text-stone-950" %>
-        <%= link_to "Add file", new_project_doc_item_path(project, kind: "file"), class: "hover:text-stone-950" %>
-        <%= link_to "Add link", new_project_doc_item_path(project, kind: "link"), class: "hover:text-stone-950" %>
+      <div class="flex flex-wrap justify-end gap-3 text-meta font-semibold text-ink-2">
+        <%= link_to "Add document", new_project_doc_item_path(project, kind: "document"), class: "hover:text-ink" %>
+        <%= link_to "Add file", new_project_doc_item_path(project, kind: "file"), class: "hover:text-ink" %>
+        <%= link_to "Add link", new_project_doc_item_path(project, kind: "link"), class: "hover:text-ink" %>
       </div>
     <% end %>
   </div>
@@ -18,7 +18,7 @@
     <div class="mt-6 space-y-6">
       <% if documents.any? %>
         <div>
-          <h3 class="text-sm font-semibold uppercase tracking-wide text-stone-600">Documents</h3>
+          <h3 class="text-ink-2">Documents</h3>
           <ul class="mt-3 space-y-3">
             <% documents.each do |item| %>
               <%= render "projects/tools/doc_item", project: project, item: item %>
@@ -29,7 +29,7 @@
 
       <% if files.any? %>
         <div>
-          <h3 class="text-sm font-semibold uppercase tracking-wide text-stone-600">Files</h3>
+          <h3 class="text-ink-2">Files</h3>
           <ul class="mt-3 space-y-3">
             <% files.each do |item| %>
               <%= render "projects/tools/doc_item", project: project, item: item %>
@@ -40,7 +40,7 @@
 
       <% if links.any? %>
         <div>
-          <h3 class="text-sm font-semibold uppercase tracking-wide text-stone-600">Links</h3>
+          <h3 class="text-ink-2">Links</h3>
           <ul class="mt-3 space-y-3">
             <% links.each do |item| %>
               <%= render "projects/tools/doc_item", project: project, item: item %>
@@ -50,6 +50,6 @@
       <% end %>
     </div>
   <% else %>
-    <p class="mt-8 text-sm text-stone-600">No items yet</p>
+    <p class="mt-7 text-meta text-ink-2">No items yet</p>
   <% end %>
 </section>

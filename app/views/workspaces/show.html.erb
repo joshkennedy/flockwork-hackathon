@@ -1,31 +1,30 @@
 <% content_for :title, @workspace.name %>
 
-<div class="mx-auto w-full max-w-3xl">
+<div class="w-full max-w-3xl">
   <div class="flex items-start justify-between gap-4">
     <div>
-      <p class="text-sm text-stone-600">Signed in as <%= @person.name %></p>
-      <h1 class="mt-2 text-4xl font-bold tracking-tight text-stone-950"><%= @workspace.name %></h1>
+      <p class="text-meta text-ink-2">Signed in as <%= @person.name %></p>
+      <h1 class="mt-2 text-ink"><%= @workspace.name %></h1>
     </div>
 
-    <%= button_to "Sign out", session_path, method: :delete, class: "cursor-pointer px-2 py-2 text-sm font-semibold text-stone-600 hover:text-stone-950" %>
   </div>
 
-  <section class="mt-14 bg-[#1f291f] p-8 text-white sm:p-10">
-    <h2 class="text-2xl font-bold">Plan the work together</h2>
-    <p class="mt-3 max-w-lg leading-7 text-[#d6dfd1]">Projects give each Team one clear place for the Tools, dates, and details their work needs.</p>
-    <%= link_to "Projects", projects_path, class: "mt-8 inline-block bg-white px-5 py-3 text-sm font-bold text-[#1f291f] hover:bg-[#e7ede3]" %>
-    <%= link_to "Get involved", get_involved_path, class: "mt-4 inline-block border border-white px-5 py-3 text-sm font-bold text-white hover:bg-[#354235]" %>
+  <section class="mt-7 border-t border-hairline pt-7">
+    <h2 >Plan the work together</h2>
+    <p class="mt-3 max-w-lg leading-normal text-ink-2">Projects give each Team one clear place for the Tools, dates, and details their work needs.</p>
+    <%= link_to "Projects", projects_path, class: "mt-5 btn btn-primary" %>
+    <%= link_to "Get involved", get_involved_path, class: "mt-5 btn btn-text" %>
   </section>
 
   <% if @pending_invitations.any? %>
-    <section class="mt-10" aria-labelledby="pending-invitations-heading">
-      <h2 id="pending-invitations-heading" class="text-2xl font-bold text-stone-950">Pending Invitations</h2>
-      <ul class="mt-5 divide-y divide-stone-300 border-y border-stone-300">
+    <section class="mt-7" aria-labelledby="pending-invitations-heading">
+      <h2 id="pending-invitations-heading" class="text-ink">Pending Invitations</h2>
+      <ul class="mt-5 divide-y divide-hairline border-y border-hairline">
         <% @pending_invitations.each do |invitation| %>
           <li>
-            <%= link_to invitation_path(invitation.generate_token_for(:access)), class: "flex items-center justify-between gap-4 py-4 font-semibold text-stone-800 hover:text-stone-950" do %>
+            <%= link_to invitation_path(invitation.generate_token_for(:access)), class: "flex items-center justify-between gap-4 py-4 font-semibold text-ink hover:text-ink" do %>
               <span><%= invitation.project.name %></span>
-              <span class="text-sm font-medium text-stone-600"><%= invitation.role.humanize %></span>
+              <span class="text-meta font-medium text-ink-2"><%= invitation.role.humanize %></span>
             <% end %>
           </li>
         <% end %>
@@ -33,14 +32,14 @@
     </section>
   <% end %>
 
-  <nav class="mt-8 flex flex-wrap gap-4 text-sm font-medium">
-    <%= link_to "My Tasks", my_tasks_path, class: "text-stone-700 hover:text-stone-950" %>
+  <nav class="mt-7 flex flex-wrap gap-4 text-meta font-medium">
+    <%= link_to "My Tasks", my_tasks_path, class: "text-ink-2 hover:text-ink" %>
     <% if @person.admin? %>
-      <%= link_to "People", people_path(@workspace), class: "text-gray-900 hover:underline" %>
+      <%= link_to "People", people_path(@workspace), class: "text-ink hover:text-ink" %>
     <% end %>
     <% if Policy.can?(@person, :view_oversight, @workspace) %>
-      <%= link_to "Oversight", oversight_path, class: "text-stone-700 hover:text-stone-950" %>
+      <%= link_to "Oversight", oversight_path, class: "text-ink-2 hover:text-ink" %>
     <% end %>
-    <%= link_to "My profile", edit_profile_path(@workspace), class: "text-gray-900 hover:underline" %>
+    <%= link_to "My profile", edit_profile_path(@workspace), class: "text-ink hover:text-ink" %>
   </nav>
 </div>

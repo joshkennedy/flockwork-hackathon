@@ -1,8 +1,8 @@
 <%= form_with model: [ project, list, list_row ], class: "space-y-7" do |form| %>
   <% if list_row.errors.any? %>
-    <div class="border-l-4 border-red-700 bg-red-50 px-5 py-4 text-red-950">
+    <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
       <p class="font-semibold">Please fix the following:</p>
-      <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
+      <ul class="mt-2 list-disc space-y-1 pl-5 text-meta">
         <% list_row.errors.full_messages.each do |message| %>
           <li><%= message %></li>
         <% end %>
@@ -14,22 +14,22 @@
     <% field_name = "list_row[cells][#{column.id}]" %>
     <% field_id = "list_row_cells_#{column.id}" %>
     <div>
-      <%= label_tag field_id, column.name, class: "block text-sm font-semibold text-stone-900" %>
+      <%= label_tag field_id, column.name, class: "block text-label font-medium text-ink" %>
       <% case column.column_type %>
       <% when "number" %>
-        <%= number_field_tag field_name, list_row.cells[column.id.to_s], id: field_id, step: "any", class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+        <%= number_field_tag field_name, list_row.cells[column.id.to_s], id: field_id, step: "any", class: "mt-2 block w-full field" %>
       <% when "date" %>
-        <%= date_field_tag field_name, list_row.cells[column.id.to_s], id: field_id, class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+        <%= date_field_tag field_name, list_row.cells[column.id.to_s], id: field_id, class: "mt-2 block w-full field" %>
       <% when "checkbox" %>
         <%= hidden_field_tag field_name, "0", id: nil %>
-        <%= check_box_tag field_name, "1", list_row.cells[column.id.to_s] == true, id: field_id, class: "mt-3 size-5 border-stone-400 text-[#1f291f] focus:ring-stone-700" %>
+        <%= check_box_tag field_name, "1", list_row.cells[column.id.to_s] == true, id: field_id, class: "mt-3 size-5 border-hairline text-ink focus:border-ink" %>
       <% when "person" %>
-        <%= select_tag field_name, options_from_collection_for_select(list.project.people.order(:name), :id, :name, list_row.cells[column.id.to_s]), include_blank: "Choose a Team member", id: field_id, class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+        <%= select_tag field_name, options_from_collection_for_select(list.project.people.order(:name), :id, :name, list_row.cells[column.id.to_s]), include_blank: "Choose a Team member", id: field_id, class: "mt-2 block w-full field" %>
       <% else %>
-        <%= text_field_tag field_name, list_row.cells[column.id.to_s], id: field_id, class: "mt-2 block w-full border border-stone-400 bg-white px-3 py-2.5 text-stone-950 focus:border-stone-950 focus:outline-none" %>
+        <%= text_field_tag field_name, list_row.cells[column.id.to_s], id: field_id, class: "mt-2 block w-full field" %>
       <% end %>
     </div>
   <% end %>
 
-  <%= form.submit list_row.persisted? ? "Save row" : "Add row", class: "cursor-pointer bg-[#1f291f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#354235]" %>
+  <%= form.submit list_row.persisted? ? "Save row" : "Add row", class: "btn btn-primary" %>
 <% end %>

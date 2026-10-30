@@ -1,11 +1,15 @@
 <% content_for :title, "Add Slot" %>
+<% content_for :breadcrumbs do %>
+  <%= link_to "Back to #{@project.name}", @project, class: "text-meta font-semibold text-ink-2 hover:text-ink" %>
+  <span aria-hidden="true" class="text-ink-3">/</span>
+  <span class="truncate text-ink"><%= content_for(:title) %></span>
+<% end %>
 
-<div class="mx-auto w-full max-w-2xl">
-  <%= link_to "Back to #{@project.name}", @project, class: "text-sm font-semibold text-stone-600 hover:text-stone-950" %>
+<div class="w-full max-w-2xl">
 
-  <h1 class="mt-8 text-3xl font-bold text-stone-950">Add Slot</h1>
+  <h1 class="mt-7 text-ink">Add Slot</h1>
 
-  <div class="mt-8">
+  <div class="mt-7">
     <%= render "form", project: @project, slot: @slot %>
   </div>
 </div>

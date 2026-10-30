@@ -3,25 +3,25 @@
 <% purchase_lines = project.budget_lines_by_kind(:purchase) %>
 <% booking_totals = project.budget_kind_totals(:booking) %>
 <% purchase_totals = project.budget_kind_totals(:purchase) %>
-<section class="min-h-44 min-w-0 bg-[#e7ede3] p-6" aria-labelledby="tool-budget">
-  <div class="flex items-start justify-between gap-4">
-    <h2 id="tool-budget" class="text-xl font-bold text-stone-950"><%= Project::TOOL_LABELS.fetch("budget") %></h2>
+<section class="tool-section" aria-labelledby="tool-budget">
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <h2 id="tool-budget" class="text-ink"><%= icon(:budget, class: "text-tool-budget") %> <%= Project::TOOL_LABELS.fetch("budget") %></h2>
     <% if Policy.can?(Current.person, :manage_budget, project) %>
-      <div class="flex shrink-0 gap-3 text-sm font-semibold">
-        <%= link_to "Add booking", new_project_budget_line_path(project, kind: "booking"), class: "text-stone-700 hover:text-stone-950" %>
-        <%= link_to "Add purchase", new_project_budget_line_path(project, kind: "purchase"), class: "text-stone-700 hover:text-stone-950" %>
+      <div class="flex flex-wrap gap-3 text-meta font-semibold">
+        <%= link_to "Add booking", new_project_budget_line_path(project, kind: "booking"), class: "text-ink-2 hover:text-ink" %>
+        <%= link_to "Add purchase", new_project_budget_line_path(project, kind: "purchase"), class: "text-ink-2 hover:text-ink" %>
       </div>
     <% end %>
   </div>
 
   <dl class="mt-6 grid gap-3 sm:grid-cols-2">
     <div>
-      <dt class="text-sm font-medium text-stone-600">Estimated total</dt>
-      <dd class="text-lg font-bold text-stone-950"><%= BudgetLine.format_cents(grand_totals[:estimated_cents]) %></dd>
+      <dt class="text-meta font-medium text-ink-2">Estimated total</dt>
+      <dd class="tabular-nums text-body-phone sm:text-body font-semibold text-ink"><%= BudgetLine.format_cents(grand_totals[:estimated_cents]) %></dd>
     </div>
     <div>
-      <dt class="text-sm font-medium text-stone-600">Actual total</dt>
-      <dd class="text-lg font-bold text-stone-950"><%= BudgetLine.format_cents(grand_totals[:actual_cents]) %></dd>
+      <dt class="text-meta font-medium text-ink-2">Actual total</dt>
+      <dd class="tabular-nums text-body-phone sm:text-body font-semibold text-ink"><%= BudgetLine.format_cents(grand_totals[:actual_cents]) %></dd>
     </div>
   </dl>
 
