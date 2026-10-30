@@ -1,6 +1,6 @@
 class ProjectsController < ApplicationController
   before_action :set_project, only: %i[
-    show edit update mark_done reopen archive unarchive transfer_ownership destroy team
+    show edit update join mark_done reopen archive unarchive transfer_ownership destroy team
   ]
   before_action :set_deleted_project, only: :restore
   before_action :authorize_project_write, only: %i[ edit update ]
@@ -63,6 +63,15 @@ class ProjectsController < ApplicationController
     else
       render :edit, status: :unprocessable_content
     end
+  end
+
+  def join
+    raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :join, @project)
+
+    @project.memberships.find_or_create_by!(person: Current.person) do |membership|
+      membership.role = :volunteer
+    end
+    redirect_to @project
   end
 
   def mark_done
@@ -143,7 +152,7 @@ class ProjectsController < ApplicationController
     end
 
     def project_params
-      permitted = params.expect(project: [ :name, :description, :starts_on, :ends_on, enabled_tools: [] ])
+      permitted = params.expect(project: [ :name, :description, :starts_on, :ends_on, :open_team, enabled_tools: [] ])
       permitted[:enabled_tools] = permitted[:enabled_tools].compact_blank if permitted.key?(:enabled_tools)
       permitted
     end

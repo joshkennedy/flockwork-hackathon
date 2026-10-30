@@ -4,6 +4,8 @@ Rails.application.routes.draw do
   root "landing#show"
 
   resources :workspaces, only: :create
+  get "get_involved", to: "get_involved#show"
+
   resources :projects, only: %i[ index new create show edit update destroy ] do
     collection do
       get :archived
@@ -11,6 +13,7 @@ Rails.application.routes.draw do
     end
 
     member do
+      post :join
       post :mark_done
       post :reopen
       post :archive

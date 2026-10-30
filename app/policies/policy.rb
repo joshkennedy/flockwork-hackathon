@@ -5,8 +5,13 @@ module Policy
     projects = person.workspace.projects.where(deleted_at: nil)
     return projects if person.admin?
 
-    # Ticket 05 adds Open Team Projects to this relation.
-    projects.joins(:memberships).where(memberships: { person_id: person.id }).distinct
+    member_projects = projects.joins(:memberships).where(memberships: { person_id: person.id })
+    open_team_projects = projects.where(open_team: true, archived_at: nil)
+    member_projects.or(open_team_projects).distinct
+  end
+
+  def member?(person, project)
+    project.memberships.exists?(person: person)
   end
 
   def listed_projects(person)
@@ -60,8 +65,12 @@ module Policy
     return false unless record.deleted_at.nil?
 
     case action
-    when :show, :view_team
-      person.admin? || record.memberships.exists?(person: person)
+    when :show
+      person.admin? || member?(person, record) || open_team_visible?(person, record)
+    when :view_team, :view_recipients
+      person.admin? || member?(person, record)
+    when :join
+      open_team_visible?(person, record)
     when :update, :manage_tools, :manage_schedule, :manage_budget, :manage_team
       person.admin? || record.memberships.leader.exists?(person: person)
     when :manage_lists
@@ -146,6 +155,14 @@ module Policy
     person.admin? || record.memberships.leader.exists?(person: person)
   end
   private :project_leader_or_admin?
+
+  def open_team_visible?(person, project)
+    project.workspace_id == person.workspace_id &&
+      project.deleted_at.nil? &&
+      project.archived_at.nil? &&
+      project.open_team?
+  end
+  private :open_team_visible?
 
   def doc_item_access?(person, action, record)
     project = record.project
