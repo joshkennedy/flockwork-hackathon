@@ -28,17 +28,15 @@ class PlannerSystemTest < ApplicationSystemTestCase
         card: {
           "question" => "What should happen before guests arrive?",
           "options" => [ "Set the room", "Prepare food", "Welcome volunteers" ]
-        },
-        suggestions: []
+        }
       ),
       planner_response(
         card: {
           "question" => "What final detail should the plan include?",
           "options" => [ "A rain plan", "A cleanup plan", "A welcome plan" ]
         },
-        suggestions: [
+        added: [
           suggestion(
-            "80000000-0000-4000-8000-000000000001",
             "task",
             "title" => "Set welcome tables",
             "details" => "Place signs and name tags.",
@@ -49,18 +47,9 @@ class PlannerSystemTest < ApplicationSystemTestCase
       ),
       planner_response(
         finished: true,
-        suggestions: [
-          suggestion("80000000-0000-4000-8000-000000000000", "enable_tool", "tool" => "docs"),
+        added: [
+          suggestion("enable_tool", "tool" => "docs"),
           suggestion(
-            "80000000-0000-4000-8000-000000000001",
-            "task",
-            "title" => "Set welcome tables",
-            "details" => "Place signs and name tags.",
-            "due_in_days" => 0,
-            "role" => "2 setup volunteers"
-          ),
-          suggestion(
-            "80000000-0000-4000-8000-000000000002",
             "schedule_item",
             "title" => "Volunteer huddle",
             "day_offset" => 0,
@@ -69,7 +58,6 @@ class PlannerSystemTest < ApplicationSystemTestCase
             "location" => "Lobby"
           ),
           suggestion(
-            "80000000-0000-4000-8000-000000000003",
             "slot_run",
             "label" => "Meal delivery team",
             "start_day_offset" => 0,
@@ -78,21 +66,18 @@ class PlannerSystemTest < ApplicationSystemTestCase
             "capacity" => 2
           ),
           suggestion(
-            "80000000-0000-4000-8000-000000000004",
             "booking",
             "description" => "Overflow room",
             "estimated_dollars" => 275,
             "role" => "1 booking lead"
           ),
           suggestion(
-            "80000000-0000-4000-8000-000000000005",
             "purchase",
             "description" => "Welcome signs",
             "estimated_dollars" => 64.50,
             "role" => "1 purchasing lead"
           ),
           suggestion(
-            "80000000-0000-4000-8000-000000000006",
             "list",
             "name" => "Serving teams",
             "columns" => [
@@ -152,16 +137,14 @@ class PlannerSystemTest < ApplicationSystemTestCase
       assert_text "Signed in as Maria Lopez"
     end
 
-    def planner_response(card: nil, finished: false, suggestions:)
-      Planner::Response.new(card:, finished:, suggestions:)
+    def planner_response(card: nil, finished: false, added: [], removed_ids: [])
+      Planner::Response.new(card:, finished:, added:, removed_ids:)
     end
 
-    def suggestion(id, kind, fields)
+    def suggestion(kind, fields)
       {
-        "id" => id,
         "kind" => kind,
-        "fields" => fields,
-        "status" => "proposed"
+        "fields" => fields
       }
     end
 end

@@ -20,7 +20,8 @@ class PlannerContextBuilderTest < ActiveSupport::TestCase
           "options" => [ "Prepare", "Coordinate", "Review" ]
         },
         finished: false,
-        suggestions: []
+        added: [],
+        removed_ids: []
       )
     end
     fake = Planner::Providers::Fake.new(responses)

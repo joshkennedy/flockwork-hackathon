@@ -11,19 +11,17 @@ class PlannerDictationIntegrationTest < ActionDispatch::IntegrationTest
   end
 
   test "planner pages render hidden dictation buttons with accessible labels" do
-    suggestion_id = "11111111-1111-4111-8111-111111111111"
     Rails.configuration.x.planner_provider = Planner::Providers::Fake.new([
       planner_response(
         card: {
           "question" => "What should happen before guests arrive?",
           "options" => [ "Set the room" ]
-        },
-        suggestions: []
+        }
       ),
       planner_response(
         finished: true,
-        suggestions: [
-          task_suggestion(suggestion_id, "Set up tables", "Arrange the dining room.")
+        added: [
+          task_suggestion("Set up tables", "Arrange the dining room.")
         ]
       )
     ])
@@ -53,16 +51,14 @@ class PlannerDictationIntegrationTest < ActionDispatch::IntegrationTest
       assert_select "[data-controller=?] button[hidden][aria-label=?]", "dictation", "Dictate"
     end
 
-    def planner_response(card: nil, finished: false, suggestions:)
-      Planner::Response.new(card:, finished:, suggestions:)
+    def planner_response(card: nil, finished: false, added: [], removed_ids: [])
+      Planner::Response.new(card:, finished:, added:, removed_ids:)
     end
 
-    def task_suggestion(id, title, details)
+    def task_suggestion(title, details)
       {
-        "id" => id,
         "kind" => "task",
-        "fields" => { "title" => title, "details" => details },
-        "status" => "proposed"
+        "fields" => { "title" => title, "details" => details }
       }
     end
 end
