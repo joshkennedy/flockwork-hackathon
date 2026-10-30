@@ -10,6 +10,7 @@ class Person < ApplicationRecord
   normalizes :email, with: ->(email) { email.strip.downcase.presence }
 
   validates :name, presence: true
+  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_nil: true
   validates :email, uniqueness: { scope: :workspace_id }, allow_nil: true
   # The first Admin of a new Workspace must be able to sign in, so they need an email then.
   validates :email, presence: true, on: :workspace_creation
