@@ -4,6 +4,7 @@ class Task < ApplicationRecord
   belongs_to :completed_by, class_name: "Person", optional: true
   has_many :comments, as: :commentable, dependent: :destroy
   has_many :follows, as: :followable, dependent: :destroy
+  has_many :notifications, as: :notifiable, dependent: :destroy
 
   has_rich_text :details
 

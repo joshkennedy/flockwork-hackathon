@@ -9,6 +9,14 @@ Rails.application.routes.draw do
   get "get_involved", to: "get_involved#show"
   get "my_tasks", to: "my_tasks#index"
   resource :oversight, only: %i[ show update ]
+  resources :notifications, only: :index do
+    member do
+      patch :mark_read
+    end
+    collection do
+      patch :mark_all_read
+    end
+  end
 
   resources :projects, only: %i[ index new create show edit update destroy ] do
     collection do

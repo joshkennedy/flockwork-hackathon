@@ -22,6 +22,9 @@ class Person < ApplicationRecord
   has_many :invitations, dependent: :restrict_with_exception
   has_many :sent_invitations, class_name: "Invitation", foreign_key: :inviter_id, inverse_of: :inviter,
     dependent: :restrict_with_exception
+  has_many :notifications, foreign_key: :recipient_id, inverse_of: :recipient, dependent: :destroy
+  has_many :acted_notifications, class_name: "Notification", foreign_key: :actor_id, inverse_of: :actor,
+    dependent: :nullify
 
   generates_token_for :sign_in, expires_in: 15.minutes do
     last_signed_in_at
@@ -49,6 +52,13 @@ class Person < ApplicationRecord
 
   def can_sign_in?
     email.present?
+  end
+
+  def email_for?(kind)
+    kind = kind.to_s
+    return ActiveModel::Type::Boolean.new.cast(email_preferences[kind]) if email_preferences.key?(kind)
+
+    Notification::KINDS.fetch(kind).fetch(:email_default)
   end
 
   private

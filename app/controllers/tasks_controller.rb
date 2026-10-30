@@ -13,6 +13,7 @@ class TasksController < ApplicationController
     @team_people = team_people
 
     if @task.save
+      notify_assignee
       redirect_to @project
     else
       render :new, status: :unprocessable_content
@@ -27,6 +28,7 @@ class TasksController < ApplicationController
     @team_people = team_people
 
     if @task.update(task_params)
+      notify_assignee
       redirect_to @project
     else
       render :edit, status: :unprocessable_content
@@ -95,5 +97,16 @@ class TasksController < ApplicationController
 
     def task_redirect_path
       params[:return_to] == "my_tasks" ? my_tasks_path : @project
+    end
+
+    def notify_assignee
+      return unless @task.assignee_id.present? && @task.previous_changes.key?("assignee_id")
+
+      Notifier.notify(
+        recipient: @task.assignee,
+        kind: "task_assigned",
+        notifiable: @task,
+        actor: Current.person
+      )
     end
 end

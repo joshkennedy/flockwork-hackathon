@@ -25,6 +25,17 @@ class ProfilesController < ApplicationController
     end
 
     def profile_params
-      params.require(:person).permit(:name, :phone)
+      permitted = params.require(:person).permit(
+        :name,
+        :phone,
+        email_preferences: Notification::KINDS.keys
+      )
+      preferences = permitted.delete(:email_preferences)
+      if preferences
+        permitted[:email_preferences] = preferences.to_h.transform_values do |value|
+          ActiveModel::Type::Boolean.new.cast(value)
+        end
+      end
+      permitted
     end
 end
