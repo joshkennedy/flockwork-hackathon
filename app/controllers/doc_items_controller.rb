@@ -1,0 +1,78 @@
+class DocItemsController < ApplicationController
+  before_action :set_project
+  before_action :set_doc_item, only: %i[ edit update destroy download ]
+  before_action :authorize_manage_docs, except: :download
+  before_action :authorize_download, only: :download
+  before_action :authorize_destroy_doc_item, only: :destroy
+
+  def new
+    @doc_item = @project.doc_items.build(kind: doc_item_kind_param)
+  end
+
+  def create
+    @doc_item = @project.doc_items.build(doc_item_params)
+    @doc_item.author = Current.person
+
+    if @doc_item.save
+      redirect_to @project
+    else
+      render :new, status: :unprocessable_content
+    end
+  end
+
+  def edit
+  end
+
+  def update
+    if @doc_item.update(doc_item_params)
+      redirect_to @project
+    else
+      render :edit, status: :unprocessable_content
+    end
+  end
+
+  def destroy
+    @doc_item.destroy!
+    redirect_to @project
+  end
+
+  def download
+    send_data @doc_item.file.download,
+      filename: @doc_item.file.filename.to_s,
+      type: @doc_item.file.content_type,
+      disposition: "attachment"
+  end
+
+  private
+    def set_project
+      @project = Policy.visible_projects(Current.person).find(params[:project_id])
+    end
+
+    def set_doc_item
+      @doc_item = @project.doc_items.find(params[:id])
+    end
+
+    def authorize_manage_docs
+      raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :manage_docs, @project)
+    end
+
+    def authorize_download
+      raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :download, @doc_item)
+    end
+
+    def authorize_destroy_doc_item
+      raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :destroy, @doc_item)
+    end
+
+    def doc_item_kind_param
+      kind = params[:kind].to_s
+      return kind if DocItem.kinds.key?(kind)
+
+      "document"
+    end
+
+    def doc_item_params
+      permitted = [ :kind, :title, :url, :body, :file ]
+      params.expect(doc_item: permitted)
+    end
+end
