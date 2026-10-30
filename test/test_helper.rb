@@ -1,15 +1,22 @@
 ENV["RAILS_ENV"] ||= "test"
+
+require "testcontainers/postgres"
+
+# Starts Postgres before Rails loads so config/database.yml picks up DATABASE_URL.
+postgres = Testcontainers::PostgresContainer.new("postgres:18")
+postgres.start
+ENV["DATABASE_URL"] = postgres.database_url
+main_pid = Process.pid
+at_exit { (postgres.stop; postgres.remove) if Process.pid == main_pid }
+
 require_relative "../config/environment"
 require "rails/test_help"
 
 module ActiveSupport
   class TestCase
-    # Run tests in parallel with specified workers
+    # Rails only parallelizes suites above its test-count threshold; each worker gets its own database.
     parallelize(workers: :number_of_processors)
 
-    # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
-
-    # Add more helper methods to be used by all tests here...
   end
 end
