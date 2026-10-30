@@ -87,8 +87,10 @@ module Policy
       record.owner_id == person.id && record.archived_at.present?
     when :transfer_ownership
       record.owner_id == person.id
-    when :post_message
+    when :post_message, :view_recipients
       person.admin? || record.memberships.exists?(person: person)
+    when :manage_recipients
+      person.admin? || record.memberships.leader.exists?(person: person)
     else
       false
     end
