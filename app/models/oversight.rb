@@ -21,9 +21,9 @@ module Oversight
   end
 
   def involvement(person)
-    project_counts = counts_by_year(person.memberships, "memberships.created_at")
-    task_counts = counts_by_year(person.completed_tasks, "tasks.completed_at")
-    slot_counts = counts_by_year(person.slot_claims, "slot_claims.created_at")
+    project_counts = counts_by_year(person.memberships, :created_at)
+    task_counts = counts_by_year(person.completed_tasks, :completed_at)
+    slot_counts = counts_by_year(person.slot_claims, :created_at)
 
     (project_counts.keys | task_counts.keys | slot_counts.keys).sort.reverse.map do |year|
       {
@@ -62,8 +62,8 @@ module Oversight
   end
 
   def counts_by_year(relation, column)
-    year_sql = Arel.sql("EXTRACT(YEAR FROM #{column})::integer")
-    relation.where.not(column => nil).group(year_sql).count.transform_keys(&:to_i)
+    attribute = relation.arel_table[column]
+    relation.where(attribute.not_eq(nil)).group(attribute.extract("year")).count.transform_keys(&:to_i)
   end
   private_class_method :counts_by_year
 end
