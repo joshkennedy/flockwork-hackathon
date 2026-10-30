@@ -35,6 +35,10 @@ module Policy
       return budget_line_can?(person, action, record)
     end
 
+    if record.is_a?(::Message)
+      return message_can?(person, action, record)
+    end
+
     return false unless record.is_a?(::Project)
     return false unless record.workspace_id == person.workspace_id
 
@@ -63,6 +67,8 @@ module Policy
       record.owner_id == person.id && record.archived_at.present?
     when :transfer_ownership
       record.owner_id == person.id
+    when :post_message
+      person.admin? || record.memberships.exists?(person: person)
     else
       false
     end
@@ -83,6 +89,23 @@ module Policy
       false
     end
   end
+
+  def message_can?(person, action, message)
+    project = message.project
+    return false unless project.workspace_id == person.workspace_id
+    return false unless project.deleted_at.nil?
+    return false unless person.admin? || project.memberships.exists?(person: person)
+
+    case action
+    when :edit_message
+      message.author_id == person.id
+    when :delete_message
+      message.author_id == person.id || project_leader_or_admin?(person, project)
+    else
+      false
+    end
+  end
+  private :message_can?
 
   def project_leader_or_admin?(person, record)
     person.admin? || record.memberships.leader.exists?(person: person)

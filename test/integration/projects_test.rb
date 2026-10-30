@@ -194,6 +194,6 @@ class ProjectsTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_content
     assert_select "li", "Tools contains an unknown Tool"
-    assert_equal [ "tasks", "schedule", "budget" ], project.reload.enabled_tools
+    assert_equal [ "tasks", "schedule", "budget", "messages" ], project.reload.enabled_tools
   end
 end

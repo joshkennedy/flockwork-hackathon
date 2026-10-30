@@ -39,6 +39,13 @@ class Project < ApplicationRecord
     }
   end
 
+  has_many :messages, dependent: :destroy
+
+  def message_board_roots
+    messages.roots.includes(:author, :rich_text_body, replies: [ :author, :rich_text_body ])
+      .order(created_at: :desc, id: :desc)
+  end
+
   scope :active, -> { where(done_at: nil, archived_at: nil, deleted_at: nil) }
 
   validates :name, presence: true

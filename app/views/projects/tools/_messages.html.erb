@@ -1,0 +1,42 @@
+<section class="min-h-44 bg-[#e7ede3] p-6" aria-labelledby="tool-messages">
+  <h2 id="tool-messages" class="text-xl font-bold text-stone-950"><%= Project::TOOL_LABELS.fetch("messages") %></h2>
+
+  <% if Policy.can?(Current.person, :post_message, project) %>
+    <%= form_with model: [ project, project.messages.build ], class: "mt-6 space-y-3" do |form| %>
+      <%= form.label :body, "New message", class: "block text-sm font-semibold text-stone-900" %>
+      <%= form.rich_text_area :body, required: true, class: "mt-2 block w-full border border-stone-400 bg-white" %>
+      <%= form.submit "Post message", class: "cursor-pointer bg-[#1f291f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#354235]" %>
+    <% end %>
+  <% end %>
+
+  <% roots = project.message_board_roots %>
+  <% if roots.any? %>
+    <ol class="mt-8 space-y-8">
+      <% roots.each do |root| %>
+        <li class="space-y-4">
+          <%= render "projects/tools/message", message: root, project: project %>
+
+          <% if root.replies.any? %>
+            <ol class="ml-6 space-y-4 border-l border-stone-400 pl-6">
+              <% root.replies.each do |reply| %>
+                <li>
+                  <%= render "projects/tools/message", message: reply, project: project %>
+                </li>
+              <% end %>
+            </ol>
+          <% end %>
+
+          <% if Policy.can?(Current.person, :post_message, project) %>
+            <%= form_with model: [ project, project.messages.build(parent: root) ], class: "ml-6 space-y-3 border-l border-stone-400 pl-6" do |form| %>
+              <%= form.label :body, "Reply", class: "block text-sm font-semibold text-stone-900" %>
+              <%= form.rich_text_area :body, required: true, class: "mt-2 block w-full border border-stone-400 bg-white" %>
+              <%= form.submit "Post reply", class: "cursor-pointer bg-[#1f291f] px-4 py-2 text-sm font-semibold text-white hover:bg-[#354235]" %>
+            <% end %>
+          <% end %>
+        </li>
+      <% end %>
+    </ol>
+  <% else %>
+    <p class="mt-8 text-sm text-stone-600">No messages yet</p>
+  <% end %>
+</section>

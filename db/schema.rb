@@ -77,6 +77,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_190001) do
     t.index ["project_id"], name: "index_memberships_on_project_id"
   end
 
+  create_table "messages", force: :cascade do |t|
+    t.bigint "project_id", null: false
+    t.bigint "author_id", null: false
+    t.bigint "parent_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_messages_on_author_id"
+    t.index ["parent_id"], name: "index_messages_on_parent_id"
+    t.index ["project_id"], name: "index_messages_on_project_id"
+  end
+
   create_table "people", force: :cascade do |t|
     t.bigint "workspace_id", null: false
     t.string "name", null: false
@@ -318,6 +329,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_190001) do
   add_foreign_key "budget_lines", "projects"
   add_foreign_key "memberships", "people"
   add_foreign_key "memberships", "projects"
+  add_foreign_key "messages", "messages", column: "parent_id"
+  add_foreign_key "messages", "people", column: "author_id"
+  add_foreign_key "messages", "projects"
   add_foreign_key "people", "workspaces"
   add_foreign_key "projects", "people", column: "owner_id"
   add_foreign_key "projects", "workspaces"
