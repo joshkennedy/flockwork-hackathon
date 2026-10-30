@@ -11,6 +11,8 @@ class Person < ApplicationRecord
 
   validates :name, presence: true
   validates :email, uniqueness: { scope: :workspace_id }, allow_nil: true
+  # The first Admin of a new Workspace must be able to sign in, so they need an email then.
+  validates :email, presence: true, on: :workspace_creation
 
   # Signing in consumes a link by stamping last_signed_in_at, which invalidates every link issued before it.
   # The conditional update means two simultaneous uses of one link cannot both succeed.

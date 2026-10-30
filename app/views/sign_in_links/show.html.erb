@@ -1,0 +1,8 @@
+<% content_for :title, "Sign in to Flockwork" %>
+
+<div class="w-full max-w-md mx-auto">
+  <h1 class="text-2xl font-bold text-gray-900">Finish signing in</h1>
+  <p class="mt-2 text-gray-600">Press the button below to sign in to Flockwork.</p>
+
+  <%= button_to "Sign in", sign_in_link_path(params[:token]), class: "mt-6 w-full rounded-md bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-500 cursor-pointer" %>
+</div>

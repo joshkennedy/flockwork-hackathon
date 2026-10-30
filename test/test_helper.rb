@@ -11,6 +11,7 @@ at_exit { (postgres.stop; postgres.remove) if Process.pid == main_pid }
 
 require_relative "../config/environment"
 require "rails/test_help"
+require_relative "support/sign_in_helpers"
 
 module ActiveSupport
   class TestCase
@@ -19,4 +20,8 @@ module ActiveSupport
 
     fixtures :all
   end
+end
+
+class ActionDispatch::IntegrationTest
+  include SignInHelpers
 end
