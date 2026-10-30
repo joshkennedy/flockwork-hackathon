@@ -1,0 +1,19 @@
+<%= form_with model: [ project, message ], class: "space-y-7" do |form| %>
+  <% if message.errors.any? %>
+    <div class="border-l-4 border-red-700 bg-red-50 px-5 py-4 text-red-950">
+      <p class="font-semibold">Please fix the following:</p>
+      <ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
+        <% message.errors.full_messages.each do |error_message| %>
+          <li><%= error_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :body, class: "block text-sm font-semibold text-stone-900" %>
+    <%= form.rich_text_area :body, required: true, autofocus: true, class: "mt-2 block w-full border border-stone-400 bg-white" %>
+  </div>
+
+  <%= form.submit "Save message", class: "cursor-pointer bg-[#1f291f] px-5 py-3 text-sm font-semibold text-white hover:bg-[#354235]" %>
+<% end %>

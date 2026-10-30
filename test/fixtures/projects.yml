@@ -10,6 +10,7 @@ community_meal:
     - tasks
     - schedule
     - budget
+    - messages
 
 building_cleanup:
   workspace: st_example
