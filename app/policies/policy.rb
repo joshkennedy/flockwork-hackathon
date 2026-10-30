@@ -9,18 +9,63 @@ module Policy
     projects.joins(:memberships).where(memberships: { person_id: person.id }).distinct
   end
 
+  def listed_projects(person)
+    visible_projects(person).where(archived_at: nil)
+  end
+
+  def archived_projects(person)
+    visible_projects(person).where.not(archived_at: nil)
+  end
+
+  def deleted_projects(person)
+    return person.workspace.projects.none unless person.admin?
+
+    person.workspace.projects.where.not(deleted_at: nil)
+  end
+
   def can?(person, action, record)
-    return action == :create if record == Project
-    return false unless record.is_a?(Project)
-    return false unless record.workspace_id == person.workspace_id && record.deleted_at.nil?
+    if record == ::Project
+      return true if action == :create
+      return person.admin? if action == :view_deleted
+
+      return false
+    end
+
+    return false unless record.is_a?(::Project)
+    return false unless record.workspace_id == person.workspace_id
+
+    if action == :restore
+      return person.admin? && record.deleted_at.present?
+    end
+
+    if action == :destroy
+      return person.admin? && record.deleted_at.nil?
+    end
+
+    return false unless record.deleted_at.nil?
 
     case action
     when :show
       person.admin? || record.memberships.exists?(person: person)
     when :update, :manage_tools, :manage_schedule
       person.admin? || record.memberships.leader.exists?(person: person)
+    when :mark_done
+      project_leader_or_admin?(person, record) && record.done_at.nil?
+    when :reopen
+      project_leader_or_admin?(person, record) && record.done_at.present?
+    when :archive
+      record.owner_id == person.id && record.archived_at.nil?
+    when :unarchive
+      record.owner_id == person.id && record.archived_at.present?
+    when :transfer_ownership
+      record.owner_id == person.id
     else
       false
     end
   end
+
+  def project_leader_or_admin?(person, record)
+    person.admin? || record.memberships.leader.exists?(person: person)
+  end
+  private :project_leader_or_admin?
 end
