@@ -77,9 +77,9 @@ module Policy
       open_team_visible?(person, record)
     when :update, :manage_tools, :manage_schedule, :manage_budget, :manage_tasks, :manage_team
       person.admin? || record.memberships.leader.exists?(person: person)
-    when :manage_lists
+    when :manage_lists, :manage_slots
       person.admin? || record.memberships.leader.exists?(person: person)
-    when :manage_docs, :manage_list_rows
+    when :manage_docs, :manage_list_rows, :claim_slot
       person.admin? || record.memberships.exists?(person: person)
     when :mark_done
       project_leader_or_admin?(person, record) && record.done_at.nil?

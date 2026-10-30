@@ -32,6 +32,10 @@ Rails.application.routes.draw do
         post :reopen
       end
     end
+    resources :slots, except: %i[ index show ] do
+      resource :claim, only: %i[ create destroy ], controller: "slot_claims"
+    end
+    resource :slot_run, only: %i[ new create ]
     resources :budget_lines, except: %i[ index show ] do
       resource :status, only: %i[ edit update ], controller: "budget_line_statuses"
     end

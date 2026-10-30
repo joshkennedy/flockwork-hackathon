@@ -7,6 +7,7 @@ class Membership < ApplicationRecord
   validates :person_id, uniqueness: { scope: :project_id }
 
   after_destroy :unassign_tasks
+  after_destroy { person.slot_claims.joins(:slot).where(slots: { project_id: project_id }).destroy_all }
 
   private
     def unassign_tasks
