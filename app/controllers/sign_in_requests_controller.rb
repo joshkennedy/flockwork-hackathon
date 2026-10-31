@@ -6,7 +6,7 @@ class SignInRequestsController < ApplicationController
   end
 
   # Same response whether or not the email matches a Person, so the form cannot be used to discover who is signed up.
-  # One email can belong to a Person in several Workspaces; the link signs in as one and WorkspaceChoices offers the rest.
+  # One email can belong to a Person in several Organizations; the link signs in as one and OrganizationChoices offers the rest.
   def create
     email = params[:email].to_s
     person = Person.where(email:).order(:id).first if email.present?

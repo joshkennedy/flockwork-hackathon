@@ -1,5 +1,5 @@
 class DemoResetJob < ApplicationJob
   def perform
-    DemoWorkspace.reset!
+    DemoOrganization.reset!
   end
 end

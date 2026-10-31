@@ -123,5 +123,5 @@ jobs:
         if: failure()
         with:
           name: screenshots
-          path: ${{ github.workspace }}/tmp/screenshots
+          path: ${{ github.organization }}/tmp/screenshots
           if-no-files-found: ignore

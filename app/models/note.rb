@@ -1,5 +1,5 @@
 class Note < ApplicationRecord
-  include WorkspaceScoped
+  include OrganizationScoped
 
   VISIBILITY_LABELS = {
     "team" => "Team",
@@ -16,8 +16,8 @@ class Note < ApplicationRecord
 
   validates :body, presence: true
   validates :notable_type, inclusion: { in: %w[Project Recipient Person] }
-  validate :author_belongs_to_workspace
-  validate :notable_belongs_to_workspace
+  validate :author_belongs_to_organization
+  validate :notable_belongs_to_organization
 
   def project
     case notable
@@ -31,16 +31,16 @@ class Note < ApplicationRecord
       self.visibility = :admins if notable_type == "Person"
     end
 
-    def notable_belongs_to_workspace
-      notable_workspace_id = project&.workspace_id || (notable.workspace_id if notable.is_a?(Person))
-      return if notable_workspace_id == workspace_id
+    def notable_belongs_to_organization
+      notable_organization_id = project&.organization_id || (notable.organization_id if notable.is_a?(Person))
+      return if notable_organization_id == organization_id
 
-      errors.add(:notable, "must belong to the same Workspace")
+      errors.add(:notable, "must belong to the same Organization")
     end
 
-    def author_belongs_to_workspace
-      return if author&.workspace_id == workspace_id
+    def author_belongs_to_organization
+      return if author&.organization_id == organization_id
 
-      errors.add(:author, "must belong to the same Workspace")
+      errors.add(:author, "must belong to the same Organization")
     end
 end

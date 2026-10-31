@@ -1,7 +1,7 @@
 require "test_helper"
 
-class WorkspaceScopingTest < ActionDispatch::IntegrationTest
-  test "the home page shows only the signed-in Person's own Workspace" do
+class OrganizationScopingTest < ActionDispatch::IntegrationTest
+  test "the home page shows only the signed-in Person's own Organization" do
     sign_in_as_volunteer
 
     get home_path
@@ -11,7 +11,7 @@ class WorkspaceScopingTest < ActionDispatch::IntegrationTest
     assert_no_match "Outsider Church", response.body
   end
 
-  test "the outsider's home shows only the outsider's Workspace" do
+  test "the outsider's home shows only the outsider's Organization" do
     sign_in_as_outsider
 
     get home_path

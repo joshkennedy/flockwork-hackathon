@@ -40,7 +40,7 @@ module Planner
       def context
         if session.build_as_you_go?
           payload = session.planning_context
-          return JSON.parse(Planner::NameRedactor.new(Current.workspace).call(JSON.generate(payload)))
+          return JSON.parse(Planner::NameRedactor.new(Current.organization).call(JSON.generate(payload)))
         end
         project_name, project_description, enabled_tools = current_project_values
 
@@ -91,7 +91,7 @@ module Planner
       end
 
       def past_projects
-        Current.workspace.projects.where(deleted_at: nil).where.not(id: session.project_id)
+        Current.organization.projects.where(deleted_at: nil).where.not(id: session.project_id)
           .includes(:tasks, :budget_lines)
           .order(created_at: :desc, id: :desc)
           .limit(5)
@@ -112,7 +112,7 @@ module Planner
       end
 
       def current_project
-        @current_project ||= Current.workspace.projects.find(session.project_id)
+        @current_project ||= Current.organization.projects.find(session.project_id)
       end
 
       def safe_suggestions

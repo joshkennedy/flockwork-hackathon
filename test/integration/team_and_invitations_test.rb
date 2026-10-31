@@ -55,7 +55,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
       end
     end
 
-    invitation = inviter.workspace.invitations.find_by!(project: project, person: invitee)
+    invitation = inviter.organization.invitations.find_by!(project: project, person: invitee)
     assert_redirected_to team_project_path(project)
     assert_equal inviter, invitation.inviter
     assert_predicate invitation, :volunteer?
@@ -163,12 +163,12 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     post project_invitations_path(project), params: {
       invitation: { person_id: people(:other_volunteer).id, role: "volunteer" }
     }
-    pending_invitation = leader.workspace.invitations.find_by!(project: project, person: people(:other_volunteer))
+    pending_invitation = leader.organization.invitations.find_by!(project: project, person: people(:other_volunteer))
 
     post project_invitations_path(project), params: {
       invitation: { person_id: people(:other_leader).id, role: "leader" }
     }
-    accepted_invitation = leader.workspace.invitations.find_by!(project: project, person: people(:other_leader))
+    accepted_invitation = leader.organization.invitations.find_by!(project: project, person: people(:other_leader))
     accepted_token = accepted_invitation.generate_token_for(:access)
     delete session_path
     get invitation_path(accepted_token)
@@ -179,7 +179,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     post project_invitations_path(project), params: {
       invitation: { person_id: people(:admin).id, role: "volunteer" }
     }
-    declined_invitation = leader.workspace.invitations.find_by!(project: project, person: people(:admin))
+    declined_invitation = leader.organization.invitations.find_by!(project: project, person: people(:admin))
     declined_token = declined_invitation.generate_token_for(:access)
     delete session_path
     get invitation_path(declined_token)
@@ -240,18 +240,18 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     post project_invitations_path(project), params: {
       invitation: { person_id: people(:other_volunteer).id, role: "volunteer" }
     }
-    assert_equal 1, leader.workspace.invitations.pending.where(project: project, person: people(:other_volunteer)).count
+    assert_equal 1, leader.organization.invitations.pending.where(project: project, person: people(:other_volunteer)).count
 
     assert_no_difference "Invitation.count" do
       post project_invitations_path(project), params: {
         invitation: { person_id: people(:other_volunteer).id, role: "leader" }
       }
     end
-    assert_equal 1, leader.workspace.invitations.pending.where(project: project, person: people(:other_volunteer)).count
+    assert_equal 1, leader.organization.invitations.pending.where(project: project, person: people(:other_volunteer)).count
   end
 
 
-  test "an invitee sees pending Invitations on the Workspace home" do
+  test "an invitee sees pending Invitations on the Organization home" do
     sign_in_as_leader
     project = projects(:community_meal)
     invitee = people(:other_volunteer)

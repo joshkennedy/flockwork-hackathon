@@ -5,8 +5,8 @@ class CsvImport
 
   MalformedFile = Class.new(StandardError)
 
-  def initialize(workspace, file_content)
-    @workspace = workspace
+  def initialize(organization, file_content)
+    @organization = organization
     @file_content = file_content
   end
 
@@ -55,7 +55,7 @@ class CsvImport
       email = row["email"]
       phone = row["phone"]&.strip.presence
       normalized_email = email.to_s.strip.downcase.presence
-      person = @workspace.people.find_by(email: normalized_email) if normalized_email
+      person = @organization.people.find_by(email: normalized_email) if normalized_email
 
       if person
         person.assign_attributes(name:, phone:)
@@ -63,7 +63,7 @@ class CsvImport
 
         [ :rejected, person.errors.full_messages.to_sentence ]
       else
-        person = @workspace.people.build(name:, email:, phone:)
+        person = @organization.people.build(name:, email:, phone:)
         return [ :created ] if person.save
 
         [ :rejected, person.errors.full_messages.to_sentence ]

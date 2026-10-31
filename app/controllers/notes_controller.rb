@@ -11,7 +11,7 @@ class NotesController < ApplicationController
     def create_project_note
       project = Policy.visible_projects(Current.person).find(params[:project_id])
       notable = find_project_notable(project)
-      note = Current.workspace.notes.build(note_params.except(:notable_type, :notable_id).merge(
+      note = Current.organization.notes.build(note_params.except(:notable_type, :notable_id).merge(
         notable: notable,
         author: Current.person
       ))
@@ -20,8 +20,8 @@ class NotesController < ApplicationController
     end
 
     def create_person_note
-      person = Current.workspace.people.find(params[:person_id])
-      note = Current.workspace.notes.build(note_params.except(:notable_type, :notable_id).merge(
+      person = Current.organization.people.find(params[:person_id])
+      note = Current.organization.notes.build(note_params.except(:notable_type, :notable_id).merge(
         notable: person,
         author: Current.person
       ))

@@ -9,8 +9,8 @@ namespace :pco do
     app_id = ENV.fetch("PCO_APP_ID")
     secret = ENV.fetch("PCO_SECRET")
     existing_names = DirectorySources::PlanningCenter.new(app_id:, secret:).each_person.pluck(:name).to_set
-    no_email_names = DemoWorkspace::NO_EMAIL_NAMES.first(3)
-    available_names = DemoWorkspace::PEOPLE.values.pluck(:name) + DemoWorkspace::DIRECTORY_NAMES
+    no_email_names = DemoOrganization::NO_EMAIL_NAMES.first(3)
+    available_names = DemoOrganization::PEOPLE.values.pluck(:name) + DemoOrganization::DIRECTORY_NAMES
     names = available_names.reject { |name| no_email_names.include?(name) }.first(22) + no_email_names
     created = 0
 

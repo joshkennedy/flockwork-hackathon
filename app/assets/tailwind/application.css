@@ -177,7 +177,7 @@
   .meal-builder-rename > summary, .meal-slot-editor > summary { list-style: none; }
   .meal-builder-rename > summary::-webkit-details-marker, .meal-slot-editor > summary::-webkit-details-marker { display: none; }
   .meal-builder-popover { @apply absolute right-0 top-10 z-10 w-72 rounded-panel bg-panel p-4 shadow-float; }
-  .meal-builder-workspace { @apply mt-7 grid min-w-0 gap-7; }
+  .meal-builder-organization { @apply mt-7 grid min-w-0 gap-7; }
   .meal-builder :is(.btn, summary) { min-height: 44px; }
   .meal-builder-guide { @apply min-w-0; }
   .meal-builder-text-action { @apply -ms-2 inline-flex min-h-11 cursor-pointer items-center rounded-control px-2 text-meta font-semibold text-ink-2; }
@@ -233,7 +233,7 @@
   }
 
   @media (width >= 1024px) {
-    .meal-builder-workspace { grid-template-columns: minmax(240px, .55fr) minmax(0, 1.45fr); gap: 40px; }
+    .meal-builder-organization { grid-template-columns: minmax(240px, .55fr) minmax(0, 1.45fr); gap: 40px; }
     .meal-preview { @apply border-t-0 border-l pl-10 pt-0; }
     .meal-preview-view-all { display: none; }
     .meal-mobile-update { display: none; }

@@ -32,7 +32,7 @@ class RecipientsTest < ActionDispatch::IntegrationTest
       end
     end
 
-    new_person = people(:leader).workspace.people.find_by!(name: "Taylor Care")
+    new_person = people(:leader).organization.people.find_by!(name: "Taylor Care")
     assert_nil new_person.email
     assert_equal "555-0100", new_person.phone
     assert_redirected_to project_path(@project)

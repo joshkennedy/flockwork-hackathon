@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_01_010001) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_02_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -100,7 +100,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_01_010001) do
   end
 
   create_table "invitations", force: :cascade do |t|
-    t.bigint "workspace_id", null: false
+    t.bigint "organization_id", null: false
     t.bigint "project_id", null: false
     t.bigint "person_id", null: false
     t.bigint "inviter_id", null: false
@@ -110,10 +110,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_01_010001) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["inviter_id"], name: "index_invitations_on_inviter_id"
+    t.index ["organization_id"], name: "index_invitations_on_organization_id"
     t.index ["person_id"], name: "index_invitations_on_person_id"
     t.index ["project_id", "person_id"], name: "index_invitations_on_pending_project_and_person", unique: true, where: "(status = 0)"
     t.index ["project_id"], name: "index_invitations_on_project_id"
-    t.index ["workspace_id"], name: "index_invitations_on_workspace_id"
   end
 
   create_table "list_columns", force: :cascade do |t|
@@ -177,7 +177,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_01_010001) do
   end
 
   create_table "notes", force: :cascade do |t|
-    t.bigint "workspace_id", null: false
+    t.bigint "organization_id", null: false
     t.string "notable_type", null: false
     t.bigint "notable_id", null: false
     t.bigint "author_id", null: false
@@ -187,7 +187,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_01_010001) do
     t.datetime "updated_at", null: false
     t.index ["author_id"], name: "index_notes_on_author_id"
     t.index ["notable_type", "notable_id"], name: "index_notes_on_notable"
-    t.index ["workspace_id"], name: "index_notes_on_workspace_id"
+    t.index ["organization_id"], name: "index_notes_on_organization_id"
   end
 
   create_table "notifications", force: :cascade do |t|
@@ -205,8 +205,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_01_010001) do
     t.index ["recipient_id"], name: "index_notifications_on_recipient_id"
   end
 
+  create_table "organizations", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "slug", null: false
+    t.boolean "demo", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "overextended_limit", default: 3, null: false
+    t.text "pco_app_id"
+    t.text "pco_secret"
+    t.datetime "pco_last_synced_at"
+    t.jsonb "pco_last_sync_result", default: {}, null: false
+    t.text "pco_last_sync_error"
+    t.index ["slug"], name: "index_organizations_on_slug", unique: true
+  end
+
   create_table "people", force: :cascade do |t|
-    t.bigint "workspace_id", null: false
+    t.bigint "organization_id", null: false
     t.string "name", null: false
     t.string "email"
     t.string "phone"
@@ -217,9 +232,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_01_010001) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "email_preferences", default: {}, null: false
-    t.index ["workspace_id", "email"], name: "index_people_on_workspace_id_and_email", unique: true, where: "(email IS NOT NULL)"
-    t.index ["workspace_id", "external_source", "external_id"], name: "index_people_on_workspace_and_external_identity", unique: true, where: "(external_id IS NOT NULL)"
-    t.index ["workspace_id"], name: "index_people_on_workspace_id"
+    t.index ["organization_id", "email"], name: "index_people_on_organization_id_and_email", unique: true, where: "(email IS NOT NULL)"
+    t.index ["organization_id", "external_source", "external_id"], name: "index_people_on_organization_and_external_identity", unique: true, where: "(external_id IS NOT NULL)"
+    t.index ["organization_id"], name: "index_people_on_organization_id"
   end
 
   create_table "planner_sessions", force: :cascade do |t|
@@ -246,7 +261,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_01_010001) do
   end
 
   create_table "projects", force: :cascade do |t|
-    t.bigint "workspace_id", null: false
+    t.bigint "organization_id", null: false
     t.string "name", null: false
     t.text "description"
     t.date "starts_on"
@@ -260,9 +275,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_01_010001) do
     t.datetime "deleted_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_projects_on_organization_id"
     t.index ["owner_id"], name: "index_projects_on_owner_id"
     t.index ["public_token"], name: "index_projects_on_public_token", unique: true
-    t.index ["workspace_id"], name: "index_projects_on_workspace_id"
   end
 
   create_table "recipients", force: :cascade do |t|
@@ -504,21 +519,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_01_010001) do
     t.index ["project_id"], name: "index_tasks_on_project_id"
   end
 
-  create_table "workspaces", force: :cascade do |t|
-    t.string "name", null: false
-    t.string "slug", null: false
-    t.boolean "demo", default: false, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.integer "overextended_limit", default: 3, null: false
-    t.text "pco_app_id"
-    t.text "pco_secret"
-    t.datetime "pco_last_synced_at"
-    t.jsonb "pco_last_sync_result", default: {}, null: false
-    t.text "pco_last_sync_error"
-    t.index ["slug"], name: "index_workspaces_on_slug", unique: true
-  end
-
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "budget_lines", "people", column: "responsible_person_id"
@@ -527,10 +527,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_01_010001) do
   add_foreign_key "doc_items", "people", column: "author_id"
   add_foreign_key "doc_items", "projects"
   add_foreign_key "follows", "people"
+  add_foreign_key "invitations", "organizations"
   add_foreign_key "invitations", "people"
   add_foreign_key "invitations", "people", column: "inviter_id"
   add_foreign_key "invitations", "projects"
-  add_foreign_key "invitations", "workspaces"
   add_foreign_key "list_columns", "lists"
   add_foreign_key "list_rows", "lists"
   add_foreign_key "lists", "projects"
@@ -540,15 +540,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_01_010001) do
   add_foreign_key "messages", "messages", column: "parent_id"
   add_foreign_key "messages", "people", column: "author_id"
   add_foreign_key "messages", "projects"
+  add_foreign_key "notes", "organizations"
   add_foreign_key "notes", "people", column: "author_id"
-  add_foreign_key "notes", "workspaces"
   add_foreign_key "notifications", "people", column: "actor_id"
   add_foreign_key "notifications", "people", column: "recipient_id"
-  add_foreign_key "people", "workspaces"
+  add_foreign_key "people", "organizations"
   add_foreign_key "planner_sessions", "people", column: "started_by_id"
   add_foreign_key "planner_sessions", "projects"
+  add_foreign_key "projects", "organizations"
   add_foreign_key "projects", "people", column: "owner_id"
-  add_foreign_key "projects", "workspaces"
   add_foreign_key "recipients", "people"
   add_foreign_key "recipients", "projects"
   add_foreign_key "schedule_items", "projects"

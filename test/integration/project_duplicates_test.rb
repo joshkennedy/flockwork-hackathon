@@ -43,7 +43,7 @@ class ProjectDuplicatesTest < ActionDispatch::IntegrationTest
     source_slot.slot_claims.create!(person: people(:volunteer))
     source.recipients.create!(person: people(:recipient))
     source.invitations.create!(
-      workspace: source.workspace,
+      organization: source.organization,
       person: people(:other_volunteer),
       inviter: leader,
       role: :volunteer
@@ -70,7 +70,7 @@ class ProjectDuplicatesTest < ActionDispatch::IntegrationTest
       }
     end
 
-    copy = leader.workspace.projects.find_by!(name: "Community Meal 2028")
+    copy = leader.organization.projects.find_by!(name: "Community Meal 2028")
     assert_redirected_to project_path(copy)
     assert_equal "Prepare and serve a neighborhood dinner.", copy.description
     assert_equal Date.new(2028, 3, 15), copy.starts_on
@@ -176,7 +176,7 @@ class ProjectDuplicatesTest < ActionDispatch::IntegrationTest
       project_duplicate: { name: "Retreat 2028", start_on: "2028-01-20" }
     }
 
-    copy = leader.workspace.projects.find_by!(name: "Retreat 2028")
+    copy = leader.organization.projects.find_by!(name: "Retreat 2028")
     assert_redirected_to project_path(copy)
     assert_equal Date.new(2028, 1, 20), copy.starts_on
     assert_equal Date.new(2028, 1, 22), copy.tasks.find_by!(title: "Confirm speaker").due_on
@@ -200,7 +200,7 @@ class ProjectDuplicatesTest < ActionDispatch::IntegrationTest
       project_duplicate: { name: "Admin Copy", start_on: "2028-02-12" }
     }
 
-    copy = admin.workspace.projects.find_by!(name: "Admin Copy")
+    copy = admin.organization.projects.find_by!(name: "Admin Copy")
     assert_redirected_to project_path(copy)
     assert_equal admin, copy.owner
     assert_equal 1, copy.memberships.count
@@ -222,7 +222,7 @@ class ProjectDuplicatesTest < ActionDispatch::IntegrationTest
       project_duplicate: { name: "Undated Checklist Copy", start_on: "2029-01-01" }
     }
 
-    copy = leader.workspace.projects.find_by!(name: "Undated Checklist Copy")
+    copy = leader.organization.projects.find_by!(name: "Undated Checklist Copy")
     assert_redirected_to project_path(copy)
     assert_equal Date.new(2029, 1, 1), copy.starts_on
     assert_equal Date.new(2029, 12, 31), copy.ends_on
@@ -287,7 +287,7 @@ class ProjectDuplicatesTest < ActionDispatch::IntegrationTest
         }
       }
 
-      copy = leader.workspace.projects.find_by!(name: "Random copy #{index}")
+      copy = leader.organization.projects.find_by!(name: "Random copy #{index}")
       assert_redirected_to project_path(copy)
       assert_equal pairwise_date_differences(source), pairwise_date_differences(copy), "random source #{index}"
     end

@@ -5,27 +5,27 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
     sign_in_as_admin
 
     patch planning_center_directory_path, params: {
-      workspace: { pco_app_id: "cassette-app-id", pco_secret: "cassette-secret" }
+      organization: { pco_app_id: "cassette-app-id", pco_secret: "cassette-secret" }
     }
 
     assert_redirected_to planning_center_directory_path
     follow_redirect!
     assert_select "p", text: "Connected"
-    assert workspaces(:st_example).reload.planning_center_connected?
+    assert organizations(:st_example).reload.planning_center_connected?
   end
 
   test "sync creates every recorded Planning Center Person and reports literal counts" do
     sign_in_as_admin
     connect
-    workspace = workspaces(:st_example)
+    organization = organizations(:st_example)
 
-    assert_difference -> { workspace.people.count }, 26 do
+    assert_difference -> { organization.people.count }, 26 do
       sync_with_recording
     end
 
-    assert workspace.people.exists?(name: "Daniel Okafor", email: "daniel.okafor@grace.example")
-    assert workspace.people.exists?(name: "Ruth Bennett", phone: "202-555-0104")
-    assert workspace.people.exists?(name: "The Alvarez Family", email: nil)
+    assert organization.people.exists?(name: "Daniel Okafor", email: "daniel.okafor@grace.example")
+    assert organization.people.exists?(name: "Ruth Bennett", phone: "202-555-0104")
+    assert organization.people.exists?(name: "The Alvarez Family", email: nil)
     follow_redirect!
     assert_select "p", text: "26 created, 0 updated, 0 unchanged."
   end
@@ -33,10 +33,10 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
   test "syncing twice creates no duplicates and reports unchanged People" do
     sign_in_as_admin
     connect
-    workspace = workspaces(:st_example)
+    organization = organizations(:st_example)
     sync_with_recording
 
-    assert_no_difference -> { workspace.people.count } do
+    assert_no_difference -> { organization.people.count } do
       sync_with_recording
     end
 
@@ -47,10 +47,10 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
   test "sync adopts a matching email without an external identity" do
     sign_in_as_admin
     connect
-    workspace = workspaces(:st_example)
-    existing = workspace.people.create!(name: "Ruth Before", email: "ruth.bennett@grace.example")
+    organization = organizations(:st_example)
+    existing = organization.people.create!(name: "Ruth Before", email: "ruth.bennett@grace.example")
 
-    assert_difference -> { workspace.people.count }, 25 do
+    assert_difference -> { organization.people.count }, 25 do
       sync_with_recording
     end
 
@@ -58,14 +58,14 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
     assert_equal "Ruth Bennett", existing.name
     assert_equal "planning_center", existing.external_source
     assert existing.external_id.present?
-    assert_equal 1, workspace.people.where(email: "ruth.bennett@grace.example").count
+    assert_equal 1, organization.people.where(email: "ruth.bennett@grace.example").count
   end
 
   test "sync updates a Person matched by Planning Center ID" do
     sign_in_as_admin
     connect
-    workspace = workspaces(:st_example)
-    existing = workspace.people.create!(
+    organization = organizations(:st_example)
+    existing = organization.people.create!(
       name: "Ruth Before",
       email: "old-ruth@grace.example",
       phone: "202-555-9999",
@@ -73,7 +73,7 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
       external_id: "204576403"
     )
 
-    assert_difference -> { workspace.people.count }, 25 do
+    assert_difference -> { organization.people.count }, 25 do
       sync_with_recording
     end
 
@@ -87,7 +87,7 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
     sign_in_as_admin
     connect
     sync_with_recording
-    person = workspaces(:st_example).people.find_by!(name: "Sofia Nguyen")
+    person = organizations(:st_example).people.find_by!(name: "Sofia Nguyen")
 
     assert_not person.can_sign_in?
     delete session_path
@@ -102,9 +102,9 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
   test "rejected credentials show a plain error and change no People" do
     sign_in_as_admin
     connect(app_id: "wrong", secret: "wrong")
-    workspace = workspaces(:st_example)
+    organization = organizations(:st_example)
 
-    assert_no_difference -> { workspace.people.count } do
+    assert_no_difference -> { organization.people.count } do
       VCR.use_cassette("planning_center/unauthorized") do
         perform_enqueued_jobs { post sync_planning_center_directory_path }
       end
@@ -133,7 +133,7 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
   private
     def connect(app_id: "cassette-app-id", secret: "cassette-secret")
       patch planning_center_directory_path, params: {
-        workspace: { pco_app_id: app_id, pco_secret: secret }
+        organization: { pco_app_id: app_id, pco_secret: secret }
       }
     end
 

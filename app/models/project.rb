@@ -1,5 +1,5 @@
 class Project < ApplicationRecord
-  include WorkspaceScoped
+  include OrganizationScoped
 
   TOOLS = %w[tasks schedule signup_sheet budget recipients messages docs list].freeze
   TOOL_LABELS = {
@@ -82,7 +82,7 @@ class Project < ApplicationRecord
   end
 
   def self.create_for(creator:, attributes:)
-    project = creator.workspace.projects.build(attributes.merge(owner: creator))
+    project = creator.organization.projects.build(attributes.merge(owner: creator))
 
     transaction do
       unless project.save

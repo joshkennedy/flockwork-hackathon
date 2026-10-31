@@ -11,7 +11,7 @@ class SignInLinksController < ApplicationController
 
     if person
       start_new_session_for person
-      redirect_to Person.where(email: person.email).many? ? new_workspace_choice_path : home_path
+      redirect_to Person.where(email: person.email).many? ? new_organization_choice_path : home_path
     else
       render :invalid, status: :unprocessable_content
     end

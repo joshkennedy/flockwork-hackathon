@@ -4,7 +4,7 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
   test "Admin adds a Person with email and they appear in the directory" do
     sign_in_as_admin
 
-    assert_difference -> { workspaces(:st_example).people.count }, 1 do
+    assert_difference -> { organizations(:st_example).people.count }, 1 do
       post people_path, params: {
         person: { name: "Pat Person", email: "pat@st-example.test", phone: "555-0100" }
       }
@@ -22,7 +22,7 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     post people_path, params: { person: { name: "No Email Pat" } }
 
     assert_redirected_to people_path
-    person = workspaces(:st_example).people.find_by!(name: "No Email Pat")
+    person = organizations(:st_example).people.find_by!(name: "No Email Pat")
     assert_not person.can_sign_in?
 
     follow_redirect!
@@ -75,7 +75,7 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     }
 
     assert_response :unprocessable_entity
-    assert_select "[role=alert]", /Admin cannot be removed from the last Admin in the Workspace/
+    assert_select "[role=alert]", /Admin cannot be removed from the last Admin in the Organization/
     assert people(:admin).reload.admin?
   end
 
@@ -121,7 +121,7 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     assert_equal "vic@st-example.test", people(:volunteer).email
   end
 
-  test "duplicate email in the same Workspace is rejected on the form" do
+  test "duplicate email in the same Organization is rejected on the form" do
     sign_in_as_admin
 
     post people_path, params: {
@@ -132,10 +132,10 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     assert_select "[role=alert]", /Email has already been taken/
   end
 
-  test "the same email in another Workspace is allowed" do
+  test "the same email in another Organization is allowed" do
     sign_in_as_outsider
 
-    assert_difference -> { workspaces(:outsider_church).people.count }, 1 do
+    assert_difference -> { organizations(:outsider_church).people.count }, 1 do
       post people_path, params: {
         person: { name: "Shared Email", email: people(:admin).email }
       }
@@ -144,7 +144,7 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     assert_redirected_to people_path
   end
 
-  test "workspace home links to People for Admins and to My profile for everyone" do
+  test "organization home links to People for Admins and to My profile for everyone" do
     sign_in_as_admin
     get home_path
     assert_select "a[href=?]", people_path, text: "People"

@@ -1,10 +1,10 @@
-<% content_for :title, @workspace.name %>
+<% content_for :title, @organization.name %>
 
 <div class="w-full max-w-3xl">
   <div class="flex items-start justify-between gap-4">
     <div>
       <p class="text-meta text-ink-2">Signed in as <%= @person.name %></p>
-      <h1 class="mt-2 text-ink"><%= @workspace.name %></h1>
+      <h1 class="mt-2 text-ink"><%= @organization.name %></h1>
     </div>
 
   </div>
@@ -37,7 +37,7 @@
     <% if @person.admin? %>
       <%= link_to "People", people_path, class: "text-ink-2 hover:text-ink" %>
     <% end %>
-    <% if Policy.can?(@person, :view_oversight, @workspace) %>
+    <% if Policy.can?(@person, :view_oversight, @organization) %>
       <%= link_to "Oversight", oversight_path, class: "text-ink-2 hover:text-ink" %>
     <% end %>
     <%= link_to "My profile", edit_profile_path, class: "text-ink-2 hover:text-ink" %>

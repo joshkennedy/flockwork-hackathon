@@ -32,7 +32,7 @@ class ProjectDuplicate
 
   private
     def create_project
-      source.workspace.projects.create!(
+      source.organization.projects.create!(
         name:,
         description: source.description,
         starts_on: start_on,

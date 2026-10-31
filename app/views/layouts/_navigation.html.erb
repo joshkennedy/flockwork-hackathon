@@ -1,6 +1,6 @@
-<p class="mb-6 px-3 text-meta font-medium"><%= Current.workspace.name %></p>
+<p class="mb-6 px-3 text-meta font-medium"><%= Current.organization.name %></p>
 <nav aria-label="Main navigation" class="grid gap-0.5">
-  <% workspace_navigation.each do |label, path, symbol| %>
+  <% organization_navigation.each do |label, path, symbol| %>
     <%= link_to path, class: "nav-item", aria: { current: ("page" if navigation_current?(path)), label: ("Notifications, #{unread_notification_count} unread" if symbol == :notifications) } do %>
       <%= icon(symbol) %>
       <span><%= label %></span>

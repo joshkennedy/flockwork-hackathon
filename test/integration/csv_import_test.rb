@@ -3,27 +3,27 @@ require "test_helper"
 class CsvImportTest < ActionDispatch::IntegrationTest
   test "Admin imports a CSV and creates new People" do
     sign_in_as_admin
-    workspace = workspaces(:st_example)
-    starting_count = workspace.people.count
+    organization = organizations(:st_example)
+    starting_count = organization.people.count
 
     upload_csv "people_import.csv"
 
     assert_response :success
     assert_select "p", text: /2 created, 1 updated, 0 rejected/
 
-    assert_equal starting_count + 2, workspace.people.reload.count
-    assert workspace.people.exists?(name: "New Person", email: "np@st-example.test", phone: "555-1001")
-    assert workspace.people.exists?(name: "No Email Person", email: nil)
+    assert_equal starting_count + 2, organization.people.reload.count
+    assert organization.people.exists?(name: "New Person", email: "np@st-example.test", phone: "555-1001")
+    assert organization.people.exists?(name: "No Email Person", email: nil)
   end
 
   test "matching email updates instead of duplicating" do
     sign_in_as_admin
-    workspace = workspaces(:st_example)
-    starting_count = workspace.people.count
+    organization = organizations(:st_example)
+    starting_count = organization.people.count
 
     upload_csv "people_import.csv"
 
-    assert_equal starting_count + 2, workspace.people.reload.count
+    assert_equal starting_count + 2, organization.people.reload.count
     people(:leader).reload
     assert_equal "Updated Leader", people(:leader).name
     assert_equal "555-2002", people(:leader).phone
@@ -46,16 +46,16 @@ class CsvImportTest < ActionDispatch::IntegrationTest
 
   test "malformed file is refused and changes nothing" do
     sign_in_as_admin
-    workspace = workspaces(:st_example)
+    organization = organizations(:st_example)
 
-    assert_no_difference -> { workspace.people.count } do
+    assert_no_difference -> { organization.people.count } do
       upload_csv "people_import_malformed.csv"
     end
 
     assert_response :unprocessable_entity
     assert_select "p[role=alert]", text: "That file isn't a CSV with a name column."
 
-    assert_no_difference -> { workspace.people.count } do
+    assert_no_difference -> { organization.people.count } do
       upload_csv "people_import_no_name_column.csv"
     end
 

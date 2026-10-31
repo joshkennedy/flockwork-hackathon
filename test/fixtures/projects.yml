@@ -1,5 +1,5 @@
 community_meal:
-  workspace: st_example
+  organization: st_example
   name: Community Meal
   description: Prepare and serve a neighborhood dinner.
   starts_on: 2027-02-12
@@ -13,7 +13,7 @@ community_meal:
     - messages
 
 building_cleanup:
-  workspace: st_example
+  organization: st_example
   name: Building Cleanup
   description: Freshen the building before Easter.
   starts_on: 2027-03-20
@@ -23,7 +23,7 @@ building_cleanup:
   enabled_tools: []
 
 outsider_project:
-  workspace: outsider_church
+  organization: outsider_church
   name: Outsider Church Picnic
   description: Gather for a spring picnic.
   starts_on: 2027-04-10

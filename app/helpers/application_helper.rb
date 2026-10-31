@@ -34,15 +34,15 @@ module ApplicationHelper
     end
   end
 
-  def workspace_navigation
+  def organization_navigation
     items = [
       [ "Home", home_path, :home ],
       [ "My Tasks", my_tasks_path, :tasks ],
       [ "Projects", projects_path, :projects ],
       [ "Get involved", get_involved_path, :heart ]
     ]
-    items << [ "People", people_path, :people ] if Policy.can?(Current.person, :manage_people, Current.workspace)
-    items << [ "Oversight", oversight_path, :oversight ] if Policy.can?(Current.person, :view_oversight, Current.workspace)
+    items << [ "People", people_path, :people ] if Policy.can?(Current.person, :manage_people, Current.organization)
+    items << [ "Oversight", oversight_path, :oversight ] if Policy.can?(Current.person, :view_oversight, Current.organization)
     items << [ "Notifications", notifications_path, :notifications ]
     items
   end

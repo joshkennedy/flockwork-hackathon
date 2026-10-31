@@ -5,21 +5,21 @@ module Oversight
     person.memberships.joins(:project).merge(Project.active).distinct.count(:project_id)
   end
 
-  def overextended(workspace)
-    workspace.people
+  def overextended(organization)
+    organization.people
       .joins(memberships: :project)
       .merge(Project.active)
       .select("people.*, COUNT(DISTINCT projects.id) AS serving_load")
       .group("people.id")
-      .having("COUNT(DISTINCT projects.id) >= ?", workspace.overextended_limit)
+      .having("COUNT(DISTINCT projects.id) >= ?", organization.overextended_limit)
       .order(Arel.sql("COUNT(DISTINCT projects.id) DESC"), :name)
   end
 
-  def never_asked(workspace)
+  def never_asked(organization)
     # Invitations and ownership preserve Team history after Membership deletion; soft-deleted Projects retain Memberships.
     # Admins already lead the church, so listing them as not yet invited would misstate their involvement.
     # Recipients are being cared for by a Project, even on deleted Projects and without Team history.
-    workspace.people.where(admin: false).where.missing(:invitations, :memberships, :owned_projects, :recipients).order(:name)
+    organization.people.where(admin: false).where.missing(:invitations, :memberships, :owned_projects, :recipients).order(:name)
   end
 
   def involvement(person)
@@ -37,17 +37,17 @@ module Oversight
     end
   end
 
-  def involvement_list(workspace, year)
-    people = workspace.people.order(:name).to_a
+  def involvement_list(organization, year)
+    people = organization.people.order(:name).to_a
     person_ids = people.map(&:id)
     period = Time.zone.local(year, 1, 1).all_year
 
-    project_counts = workspace.projects.joins(:memberships)
+    project_counts = organization.projects.joins(:memberships)
       .where(memberships: { person_id: person_ids, created_at: period })
       .group("memberships.person_id").count
-    task_counts = workspace.tasks.where(completed_by_id: person_ids, completed_at: period)
+    task_counts = organization.tasks.where(completed_by_id: person_ids, completed_at: period)
       .group(:completed_by_id).count
-    slot_counts = workspace.projects.joins(slots: :slot_claims)
+    slot_counts = organization.projects.joins(slots: :slot_claims)
       .where(slot_claims: { person_id: person_ids, created_at: period })
       .group("slot_claims.person_id").count
 

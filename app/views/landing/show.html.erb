@@ -5,9 +5,9 @@
   <p class="mt-2 text-ink-2">A shared space where church teams plan and run ministry together.</p>
   <p class="mt-4 text-meta text-ink-2"><%= link_to "Sign in", new_sign_in_request_path, class: "font-medium text-ink hover:text-ink-hover" %> or <%= link_to "explore the demo", new_demo_session_path, class: "font-medium text-ink hover:text-ink-hover" %></p>
 
-  <h2 class="mt-7 text-ink">Create a Workspace</h2>
+  <h2 class="mt-7 text-ink">Create an Organization</h2>
 
-  <%= form_with url: workspaces_path, class: "mt-4 space-y-4" do |f| %>
+  <%= form_with url: organizations_path, class: "mt-4 space-y-4" do |f| %>
     <div>
       <%= f.label :church_name, "Church name", class: "block text-label font-medium text-ink-2" %>
       <%= f.text_field :church_name, required: true, class: "mt-1 block w-full field" %>
@@ -23,6 +23,6 @@
       <%= f.email_field :email, required: true, autocomplete: "email", class: "mt-1 block w-full field" %>
     </div>
 
-    <%= f.submit "Create a Workspace", class: "w-full btn btn-primary" %>
+    <%= f.submit "Create an Organization", class: "w-full btn btn-primary" %>
   <% end %>
 </div>

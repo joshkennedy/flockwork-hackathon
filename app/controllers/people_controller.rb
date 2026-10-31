@@ -2,15 +2,15 @@ class PeopleController < ApplicationController
   before_action :authorize_people_management
 
   def index
-    @people = Current.workspace.people.order(:name)
+    @people = Current.organization.people.order(:name)
   end
 
   def new
-    @person = Current.workspace.people.build
+    @person = Current.organization.people.build
   end
 
   def create
-    @person = Current.workspace.people.build(person_params)
+    @person = Current.organization.people.build(person_params)
 
     if @person.save
       redirect_to people_path, notice: "Added #{@person.name}."
@@ -20,13 +20,13 @@ class PeopleController < ApplicationController
   end
 
   def edit
-    @person = Current.workspace.people.find(params[:id])
+    @person = Current.organization.people.find(params[:id])
     load_notes
     load_involvement
   end
 
   def update
-    @person = Current.workspace.people.find(params[:id])
+    @person = Current.organization.people.find(params[:id])
 
     if @person.update(person_params)
       redirect_to people_path, notice: "Saved #{@person.name}."
@@ -39,7 +39,7 @@ class PeopleController < ApplicationController
 
   private
     def authorize_people_management
-      raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :manage_people, Current.workspace)
+      raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :manage_people, Current.organization)
     end
 
     def authorize_involvement

@@ -1,4 +1,4 @@
-<% content_for :title, "Planning Center · #{Current.workspace.name}" %>
+<% content_for :title, "Planning Center · #{Current.organization.name}" %>
 <% content_for :breadcrumbs do %>
   <%= link_to "← People", people_path, class: "text-meta text-ink-2 hover:text-ink-2" %>
   <span aria-hidden="true" class="text-ink-3">/</span>
@@ -16,27 +16,27 @@
     <p class="mt-5 text-meta font-medium text-danger" role="alert"><%= flash[:alert] %></p>
   <% end %>
 
-  <% if Current.workspace.planning_center_connected? %>
+  <% if Current.organization.planning_center_connected? %>
     <div class="mt-7 rounded-tile bg-sunlit-soft p-4">
       <p class="font-medium text-ink">Connected</p>
-      <% if Current.workspace.pco_last_synced_at.present? %>
-        <p class="mt-1 text-meta text-ink-2">Last synced <%= time_ago_in_words(Current.workspace.pco_last_synced_at) %> ago.</p>
+      <% if Current.organization.pco_last_synced_at.present? %>
+        <p class="mt-1 text-meta text-ink-2">Last synced <%= time_ago_in_words(Current.organization.pco_last_synced_at) %> ago.</p>
       <% else %>
         <p class="mt-1 text-meta text-ink-2">Not synced yet.</p>
       <% end %>
     </div>
 
-    <% if Current.workspace.pco_last_sync_error.present? %>
-      <p class="mt-5 text-meta font-medium text-danger" role="alert"><%= Current.workspace.pco_last_sync_error %></p>
-    <% elsif Current.workspace.pco_last_sync_result.present? %>
-      <% result = Current.workspace.pco_last_sync_result %>
+    <% if Current.organization.pco_last_sync_error.present? %>
+      <p class="mt-5 text-meta font-medium text-danger" role="alert"><%= Current.organization.pco_last_sync_error %></p>
+    <% elsif Current.organization.pco_last_sync_result.present? %>
+      <% result = Current.organization.pco_last_sync_result %>
       <p class="mt-5 text-meta text-ink-2"><%= result.fetch("created") %> created, <%= result.fetch("updated") %> updated, <%= result.fetch("unchanged") %> unchanged.</p>
     <% end %>
 
     <%= button_to "Sync now", sync_planning_center_directory_path, class: "mt-5 btn btn-primary" %>
   <% end %>
 
-  <%= form_with model: Current.workspace, url: planning_center_directory_path, method: :patch, class: "mt-7 space-y-4" do |form| %>
+  <%= form_with model: Current.organization, url: planning_center_directory_path, method: :patch, class: "mt-7 space-y-4" do |form| %>
     <div>
       <%= form.label :pco_app_id, "App ID", class: "block text-label font-medium text-ink" %>
       <%= form.password_field :pco_app_id, value: nil, required: true, autocomplete: "off", class: "mt-1 block w-full field" %>
@@ -45,6 +45,6 @@
       <%= form.label :pco_secret, "Secret", class: "block text-label font-medium text-ink" %>
       <%= form.password_field :pco_secret, value: nil, required: true, autocomplete: "off", class: "mt-1 block w-full field" %>
     </div>
-    <%= form.submit Current.workspace.planning_center_connected? ? "Replace connection" : "Connect", class: Current.workspace.planning_center_connected? ? "btn btn-secondary" : "btn btn-primary" %>
+    <%= form.submit Current.organization.planning_center_connected? ? "Replace connection" : "Connect", class: Current.organization.planning_center_connected? ? "btn btn-secondary" : "btn btn-primary" %>
   <% end %>
 </div>

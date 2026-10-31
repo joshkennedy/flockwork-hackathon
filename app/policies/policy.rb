@@ -2,7 +2,7 @@ module Policy
   module_function
 
   def visible_projects(person)
-    projects = person.workspace.projects.where(deleted_at: nil)
+    projects = person.organization.projects.where(deleted_at: nil)
     return projects if person.admin?
 
     member_projects = projects.joins(:memberships).where(memberships: { person_id: person.id })
@@ -23,9 +23,9 @@ module Policy
   end
 
   def deleted_projects(person)
-    return person.workspace.projects.none unless person.admin?
+    return person.organization.projects.none unless person.admin?
 
-    person.workspace.projects.where.not(deleted_at: nil)
+    person.organization.projects.where.not(deleted_at: nil)
   end
 
   def can?(person, action, record)
@@ -71,8 +71,8 @@ module Policy
     return can_respond_to_invitation?(person, action, record) if record.is_a?(::Invitation)
     return can_manage_membership?(person, action, record) if record.is_a?(::Membership)
 
-    if record.is_a?(::Workspace)
-      return false unless record.id == person.workspace_id
+    if record.is_a?(::Organization)
+      return false unless record.id == person.organization_id
 
       return person.admin? if action.in?([ :view_oversight, :update_oversight ])
       return person.admin? if action == :manage_people
@@ -82,7 +82,7 @@ module Policy
     end
 
     if record.is_a?(::Person)
-      return false unless record.workspace_id == person.workspace_id
+      return false unless record.organization_id == person.organization_id
 
       return person.admin? || record.id == person.id if action == :view_involvement
 
@@ -90,7 +90,7 @@ module Policy
     end
 
     return false unless record.is_a?(::Project)
-    return false unless record.workspace_id == person.workspace_id
+    return false unless record.organization_id == person.organization_id
 
     if action == :restore
       return person.admin? && record.deleted_at.present?
@@ -142,7 +142,7 @@ module Policy
 
   def budget_line_can?(person, action, budget_line)
     project = budget_line.project
-    return false unless project.workspace_id == person.workspace_id
+    return false unless project.organization_id == person.organization_id
     return false unless project.deleted_at.nil?
 
     case action
@@ -158,7 +158,7 @@ module Policy
 
   def task_can?(person, action, task)
     project = task.project
-    return false unless project.workspace_id == person.workspace_id
+    return false unless project.organization_id == person.organization_id
     return false unless project.deleted_at.nil?
 
     team_member = project.memberships.exists?(person: person)
@@ -181,16 +181,16 @@ module Policy
 
   def can_respond_to_invitation?(person, action, invitation)
     action == :respond && invitation.pending? && invitation.person_id == person.id &&
-      invitation.workspace_id == person.workspace_id
+      invitation.organization_id == person.organization_id
   end
 
   def visible_invitations(person)
-    person.workspace.invitations.pending.where(person: person)
+    person.organization.invitations.pending.where(person: person)
   end
 
   def can_manage_membership?(person, action, membership)
     project = membership.project
-    return false unless project.workspace_id == person.workspace_id && project.deleted_at.nil?
+    return false unless project.organization_id == person.organization_id && project.deleted_at.nil?
     return false if membership.person_id == project.owner_id
 
     case action
@@ -205,7 +205,7 @@ module Policy
 
   def message_can?(person, action, message)
     project = message.project
-    return false unless project.workspace_id == person.workspace_id
+    return false unless project.organization_id == person.organization_id
     return false unless project.deleted_at.nil?
     return false unless person.admin? || project.memberships.exists?(person: person)
 
@@ -231,7 +231,7 @@ module Policy
   private :follow_can?
 
   def open_team_visible?(person, project)
-    project.workspace_id == person.workspace_id &&
+    project.organization_id == person.organization_id &&
       project.deleted_at.nil? &&
       project.archived_at.nil? &&
       project.open_team?
@@ -240,7 +240,7 @@ module Policy
 
   def doc_item_access?(person, action, record)
     project = record.project
-    return false unless project.workspace_id == person.workspace_id
+    return false unless project.organization_id == person.organization_id
     return false unless project.deleted_at.nil?
 
     case action
@@ -255,7 +255,7 @@ module Policy
   private :doc_item_access?
 
   def visible_notes(person, scope)
-    notes = scope.where(workspace_id: person.workspace_id)
+    notes = scope.where(organization_id: person.organization_id)
     return notes if person.admin?
 
     member_project_ids = person.memberships.select(:project_id)
@@ -276,18 +276,18 @@ module Policy
     return person.admin? ? [ "admins" ] : [] if notable.is_a?(Person)
 
     Note.visibilities.keys.select do |visibility|
-      note = Note.new(workspace: person.workspace, notable: notable, author: person, visibility: visibility)
+      note = Note.new(organization: person.organization, notable: notable, author: person, visibility: visibility)
       can?(person, :write_note, note)
     end
   end
 
   def note_can?(person, action, note)
     return false unless action == :write_note
-    return false unless note.workspace_id == person.workspace_id
+    return false unless note.organization_id == person.organization_id
     return person.admin? if note.notable.is_a?(Person)
 
     project = note.project
-    return false unless project&.workspace_id == person.workspace_id
+    return false unless project&.organization_id == person.organization_id
     return false if project.deleted_at.present?
     return true if person.admin?
     return false unless project.memberships.exists?(person: person)
@@ -298,12 +298,12 @@ module Policy
   private :note_can?
 
   def visible_notifications(person)
-    person.workspace.notifications.where(recipient_id: person.id)
+    person.organization.notifications.where(recipient_id: person.id)
   end
 
   def notification_can?(person, action, notification)
     action == :mark_read && notification.recipient_id == person.id &&
-      notification.recipient.workspace_id == person.workspace_id
+      notification.recipient.organization_id == person.organization_id
   end
   private :notification_can?
 end

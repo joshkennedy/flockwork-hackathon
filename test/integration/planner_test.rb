@@ -187,13 +187,13 @@ class PlannerTest < ActionDispatch::IntegrationTest
 
   test "Planner contexts exclude People, Team, Recipients, and Messages" do
     project = projects(:community_meal)
-    workspace = project.workspace
-    team_person = workspace.people.create!(
+    organization = project.organization
+    team_person = organization.people.create!(
       name: "Zebulon Privacy Sentinel",
       email: "zebulon.sentinel@example.test",
       phone: "+1-555-810-1818"
     )
-    recipient_person = workspace.people.create!(
+    recipient_person = organization.people.create!(
       name: "Xanthe Recipient Marker",
       email: "xanthe.marker@example.test",
       phone: "+1-555-810-1919"
@@ -333,7 +333,7 @@ class PlannerTest < ActionDispatch::IntegrationTest
 
   test "a Leader mints a voice session from safe Planner context and the current card" do
     project = projects(:community_meal)
-    project.workspace.people.create!(
+    project.organization.people.create!(
       name: "Xavier Voice Sentinel",
       email: "xavier.voice@example.test",
       phone: "+1-555-700-2800"
@@ -366,7 +366,7 @@ class PlannerTest < ActionDispatch::IntegrationTest
     assert_includes payload.fetch("instructions"), "Cook together"
     assert_includes payload.fetch("instructions"), "Never ask for or repeat people's names"
     assert_equal "answer_card", payload.fetch("tools").sole.fetch("name")
-    project.workspace.people.find_each do |person|
+    project.organization.people.find_each do |person|
       [ person.name, person.email, person.phone ].compact.each do |private_value|
         assert_not_includes payload.fetch("instructions"), private_value
       end
@@ -660,13 +660,13 @@ class PlannerTest < ActionDispatch::IntegrationTest
 
   test "past Project context excludes deleted Projects and People" do
     current_project = projects(:community_meal)
-    workspace = current_project.workspace
-    private_person = workspace.people.create!(
+    organization = current_project.organization
+    private_person = organization.people.create!(
       name: "Past Project Private Person",
       email: "past-private@example.test",
       phone: "+1-555-300-4019"
     )
-    past_project = workspace.projects.create!(
+    past_project = organization.projects.create!(
       name: "Previous Community Supper",
       description: "A prior meal.",
       owner: private_person,
@@ -676,7 +676,7 @@ class PlannerTest < ActionDispatch::IntegrationTest
     past_project.tasks.create!(title: "Arrange old tables")
     past_project.budget_lines.create!(kind: :booking, description: "Old hall", estimated: "300")
     past_project.budget_lines.create!(kind: :purchase, description: "Old napkins", estimated: "45")
-    deleted_project = workspace.projects.create!(
+    deleted_project = organization.projects.create!(
       name: "Deleted Private Project",
       owner: private_person,
       enabled_tools: [ "tasks" ],

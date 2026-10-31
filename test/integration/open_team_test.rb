@@ -108,7 +108,7 @@ class OpenTeamTest < ActionDispatch::IntegrationTest
     assert_select "a", text: "Building Cleanup", count: 0
   end
 
-  test "a Person in another Workspace never sees another Workspace's Open Team Project" do
+  test "a Person in another Organization never sees another Organization's Open Team Project" do
     sign_in_as(:other_leader)
     project = projects(:building_cleanup)
     patch project_path(project), params: { project: { open_team: "1" } }

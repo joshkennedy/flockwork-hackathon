@@ -1,11 +1,11 @@
 module Planner
   class NameRedactor
-    def initialize(workspace)
-      @workspace = workspace
+    def initialize(organization)
+      @organization = organization
     end
 
     def call(text)
-      names = workspace.people.pluck(:name).flat_map do |name|
+      names = organization.people.pluck(:name).flat_map do |name|
         [ name, name.split.first ]
       end.compact_blank.uniq.sort_by { |name| -name.length }
       return text if names.empty?
@@ -15,6 +15,6 @@ module Planner
     end
 
     private
-      attr_reader :workspace
+      attr_reader :organization
   end
 end

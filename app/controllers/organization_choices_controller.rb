@@ -1,8 +1,8 @@
-# Lets someone whose email belongs to a Person in more than one Workspace pick which one to work in.
+# Lets someone whose email belongs to a Person in more than one Organization pick which one to work in.
 # The sign-in link already proved they own the email, so any Person sharing it is theirs to switch to.
-class WorkspaceChoicesController < ApplicationController
+class OrganizationChoicesController < ApplicationController
   def new
-    @people = choosable_people.includes(:workspace).sort_by { |person| person.workspace.name }
+    @people = choosable_people.includes(:organization).sort_by { |person| person.organization.name }
   end
 
   def create

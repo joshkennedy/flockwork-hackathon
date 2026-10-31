@@ -117,7 +117,7 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
     assert_no_match volunteer.name, response.body
   end
 
-  test "Sign in to help links point to the Workspace sign-in page" do
+  test "Sign in to help links point to the Organization sign-in page" do
     sign_in_as_leader
     project = projects(:community_meal)
     project.update!(enabled_tools: project.enabled_tools + [ "signup_sheet" ])

@@ -5,56 +5,56 @@ class NotesVisibilityTest < ActionDispatch::IntegrationTest
     @project = projects(:community_meal)
     @project.update!(enabled_tools: @project.enabled_tools + [ "recipients" ])
     @recipient = @project.recipients.create!(person: people(:recipient))
-    @restricted_author = @project.workspace.people.create!(
+    @restricted_author = @project.organization.people.create!(
       name: "Riley Note Author",
       email: "riley@st-example.test"
     )
     @project.memberships.create!(person: @restricted_author, role: :volunteer)
 
     Note.create!(
-      workspace: @project.workspace,
+      organization: @project.organization,
       notable: @project,
       author: people(:leader),
       visibility: :team,
       body: "Project team note: arrive by five."
     )
     Note.create!(
-      workspace: @project.workspace,
+      organization: @project.organization,
       notable: @recipient,
       author: people(:leader),
       visibility: :team,
       body: "Recipient team note: avoid peanuts."
     )
     Note.create!(
-      workspace: @project.workspace,
+      organization: @project.organization,
       notable: @project,
       author: @restricted_author,
       visibility: :leaders,
       body: "Project leaders note: follow up privately."
     )
     Note.create!(
-      workspace: @project.workspace,
+      organization: @project.organization,
       notable: @project,
       author: @restricted_author,
       visibility: :admins,
       body: "Project admins note: confidential concern."
     )
     Note.create!(
-      workspace: @project.workspace,
+      organization: @project.organization,
       notable: @recipient,
       author: people(:leader),
       visibility: :leaders,
       body: "Recipient leaders note: call before visiting."
     )
     Note.create!(
-      workspace: @project.workspace,
+      organization: @project.organization,
       notable: @recipient,
       author: people(:admin),
       visibility: :admins,
       body: "Recipient admins note: private care context."
     )
     Note.create!(
-      workspace: @project.workspace,
+      organization: @project.organization,
       notable: people(:recipient),
       author: people(:admin),
       visibility: :admins,

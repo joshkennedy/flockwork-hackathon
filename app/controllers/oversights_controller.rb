@@ -6,7 +6,7 @@ class OversightsController < ApplicationController
   end
 
   def update
-    if Current.workspace.update(oversight_params)
+    if Current.organization.update(oversight_params)
       redirect_to oversight_path, notice: "Oversight settings saved."
     else
       load_oversight
@@ -17,17 +17,17 @@ class OversightsController < ApplicationController
   private
     def authorize_oversight
       action = action_name == "update" ? :update_oversight : :view_oversight
-      raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, action, Current.workspace)
+      raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, action, Current.organization)
     end
 
     def load_oversight
-      @overextended_people = Oversight.overextended(Current.workspace).load
-      @never_asked_people = Oversight.never_asked(Current.workspace).load
+      @overextended_people = Oversight.overextended(Current.organization).load
+      @never_asked_people = Oversight.never_asked(Current.organization).load
       @involvement_year = Time.current.year
-      @involvement = Oversight.involvement_list(Current.workspace, @involvement_year)
+      @involvement = Oversight.involvement_list(Current.organization, @involvement_year)
     end
 
     def oversight_params
-      params.expect(workspace: [ :overextended_limit ])
+      params.expect(organization: [ :overextended_limit ])
     end
 end

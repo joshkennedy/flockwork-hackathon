@@ -175,7 +175,7 @@ class PlannerSession < ApplicationRecord
 
       raise ArgumentError, "Answer can't be blank" if text.blank?
 
-      redacted_text = Planner::NameRedactor.new(Current.workspace).call(text)
+      redacted_text = Planner::NameRedactor.new(Current.organization).call(text)
       revised_steps = steps.take(index) + [
         {
           "question" => card.fetch("question"),
@@ -329,7 +329,7 @@ class PlannerSession < ApplicationRecord
   def record_answer!(text)
     card = current_card&.stringify_keys
     raise ArgumentError, "There is no current Planner card" unless card
-    redacted_text = Planner::NameRedactor.new(Current.workspace).call(text)
+    redacted_text = Planner::NameRedactor.new(Current.organization).call(text)
 
     update!(
       steps: steps + [
@@ -415,7 +415,7 @@ class PlannerSession < ApplicationRecord
 
   private
     def private_safe_text(text)
-      Planner::NameRedactor.new(Current.workspace).call(text.to_s)
+      Planner::NameRedactor.new(Current.organization).call(text.to_s)
     end
 
     def apply_generation!(revision:, response:)

@@ -4,7 +4,7 @@ class SlotTest < ActiveSupport::TestCase
   test "random claim attempts never exceed Slot capacity" do
     project = projects(:community_meal)
     members = 10.times.map do |index|
-      person = project.workspace.people.create!(name: "Property Member #{index + 1}")
+      person = project.organization.people.create!(name: "Property Member #{index + 1}")
       project.memberships.create!(person:, role: :volunteer)
       person
     end

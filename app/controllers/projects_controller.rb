@@ -29,7 +29,7 @@ class ProjectsController < ApplicationController
     return unless Policy.can?(Current.person, :view_notes, @project)
 
     @project_notes = Policy.visible_notes(Current.person, @project.notes).includes(:author).order(:created_at, :id)
-    recipient_scope = Current.workspace.notes.where(notable_type: "Recipient", notable_id: @project.recipient_ids)
+    recipient_scope = Current.organization.notes.where(notable_type: "Recipient", notable_id: @project.recipient_ids)
     @recipient_notes_by_id = Policy.visible_notes(Current.person, recipient_scope)
       .includes(:author).order(:created_at, :id).group_by(&:notable_id)
     @note_visibilities = Policy.writable_note_visibilities(Current.person, @project)
@@ -40,11 +40,11 @@ class ProjectsController < ApplicationController
     @can_manage_team = Policy.can?(Current.person, :manage_team, @project)
     return unless @can_manage_team
 
-    @invitations = Current.workspace.invitations.where(project: @project).includes(:person).order(created_at: :desc)
+    @invitations = Current.organization.invitations.where(project: @project).includes(:person).order(created_at: :desc)
     return unless params[:query].present?
 
     member_ids = @project.memberships.select(:person_id)
-    @directory_people = Current.workspace.people
+    @directory_people = Current.organization.people
       .where("name ILIKE ?", "%#{ActiveRecord::Base.sanitize_sql_like(params[:query])}%")
       .where.not(id: member_ids)
       .order(:name)
@@ -52,7 +52,7 @@ class ProjectsController < ApplicationController
 
   def new
     authorize_project_creation
-    @project = Current.workspace.projects.new
+    @project = Current.organization.projects.new
     @manual_project = params[:manual].present?
   end
 
@@ -127,7 +127,7 @@ class ProjectsController < ApplicationController
 
   def transfer_ownership
     authorize_lifecycle(:transfer_ownership)
-    new_owner = Current.workspace.people.find(params[:new_owner_id])
+    new_owner = Current.organization.people.find(params[:new_owner_id])
     raise ActiveRecord::RecordNotFound unless @project.memberships.leader.exists?(person: new_owner)
 
     @project.update!(owner: new_owner)

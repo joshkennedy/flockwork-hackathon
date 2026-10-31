@@ -1,6 +1,6 @@
-class Workspace < ApplicationRecord
+class Organization < ApplicationRecord
   # Slugs that would shadow top-level routes
-  RESERVED_SLUGS = %w[oversight projects up workspaces].freeze
+  RESERVED_SLUGS = %w[oversight projects up organizations].freeze
 
   has_many :projects, dependent: :destroy
   has_many :tasks, through: :projects
@@ -28,8 +28,8 @@ class Workspace < ApplicationRecord
 
   private
     def assign_slug
-      base = name.to_s.parameterize.presence || "workspace"
-      taken = RESERVED_SLUGS.include?(base) || Workspace.exists?(slug: base)
+      base = name.to_s.parameterize.presence || "organization"
+      taken = RESERVED_SLUGS.include?(base) || Organization.exists?(slug: base)
       self.slug = taken ? "#{base}-#{SecureRandom.hex(3)}" : base
     end
 end

@@ -15,7 +15,7 @@ class ProjectsTest < ActionDispatch::IntegrationTest
       }
     end
 
-    project = creator.workspace.projects.find_by!(name: "Community Dinner")
+    project = creator.organization.projects.find_by!(name: "Community Dinner")
     assert_redirected_to project_path(project)
     assert_equal creator, project.owner
     assert_predicate project.memberships.find_by!(person: creator), :leader?
@@ -105,7 +105,7 @@ class ProjectsTest < ActionDispatch::IntegrationTest
     assert_equal "Community Meal", project.reload.name
   end
 
-  test "an Admin sees every non-deleted Project in their Workspace" do
+  test "an Admin sees every non-deleted Project in their Organization" do
     sign_in_as_admin
 
     get projects_path
@@ -145,7 +145,7 @@ class ProjectsTest < ActionDispatch::IntegrationTest
     assert_no_match "Community Meal", response.body
   end
 
-  test "a Person from another Workspace cannot find a Project or see its name in the Projects list" do
+  test "a Person from another Organization cannot find a Project or see its name in the Projects list" do
     sign_in_as_outsider
     project = projects(:community_meal)
 
@@ -160,7 +160,7 @@ class ProjectsTest < ActionDispatch::IntegrationTest
     assert_no_match "Community Meal", response.body
   end
 
-  test "the Workspace home links to Projects" do
+  test "the Organization home links to Projects" do
     sign_in_as_leader
 
     get home_path

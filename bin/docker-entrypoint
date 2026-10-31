@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-# If running the rails server then create or migrate the database, then seed the demo Workspace (seeds are idempotent)
+# If running the rails server then create or migrate the database, then seed the demo Organization (seeds are idempotent)
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
   ./bin/rails db:seed

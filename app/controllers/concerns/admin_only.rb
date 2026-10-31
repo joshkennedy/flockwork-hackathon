@@ -14,8 +14,8 @@ module AdminOnly
 
   private
     def require_admin
-      authorized = Current.person && Current.workspace &&
-        Policy.can?(Current.person, self.class.admin_policy_action, Current.workspace)
+      authorized = Current.person && Current.organization &&
+        Policy.can?(Current.person, self.class.admin_policy_action, Current.organization)
       raise ActiveRecord::RecordNotFound unless authorized
     end
 end

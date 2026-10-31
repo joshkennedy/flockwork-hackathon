@@ -3,11 +3,11 @@ require "test_helper"
 class OversightTest < ActionDispatch::IntegrationTest
   test "Admin sees Overextended People at the default and changed limits" do
     sign_in_as_admin
-    workspace = workspaces(:st_example)
+    organization = organizations(:st_example)
     other_leader = people(:other_leader)
     volunteer = people(:volunteer)
 
-    third_active_project = workspace.projects.create!(name: "Neighborhood Visits", owner: other_leader)
+    third_active_project = organization.projects.create!(name: "Neighborhood Visits", owner: other_leader)
     third_active_project.memberships.create!(person: other_leader, role: :leader)
     projects(:building_cleanup).memberships.create!(person: volunteer, role: :volunteer)
 
@@ -16,7 +16,7 @@ class OversightTest < ActionDispatch::IntegrationTest
       "Archived Project" => { archived_at: Time.current },
       "Deleted Project" => { deleted_at: Time.current }
     }.each do |name, state|
-      project = workspace.projects.create!({ name: name, owner: people(:admin) }.merge(state))
+      project = organization.projects.create!({ name: name, owner: people(:admin) }.merge(state))
       project.memberships.create!(person: volunteer, role: :volunteer)
     end
     projects(:community_meal).recipients.create!(person: people(:recipient))
@@ -24,16 +24,16 @@ class OversightTest < ActionDispatch::IntegrationTest
     get oversight_path
 
     assert_response :success
-    assert_select "input[name='workspace[overextended_limit]'][value='3']"
+    assert_select "input[name='organization[overextended_limit]'][value='3']"
     assert_select "[data-overextended-person]", 1
     assert_select "[data-overextended-person='Lucy Leader'][data-serving-load='3']"
     assert_select "[data-overextended-person='Vic Volunteer']", 0
     assert_select "[data-overextended-person='Rowan Recipient']", 0
 
-    patch oversight_path, params: { workspace: { overextended_limit: 2 } }
+    patch oversight_path, params: { organization: { overextended_limit: 2 } }
 
     assert_redirected_to oversight_path
-    assert_equal 2, workspace.reload.overextended_limit
+    assert_equal 2, organization.reload.overextended_limit
     follow_redirect!
     rows = css_select("[data-overextended-person]").map do |row|
       [ row["data-overextended-person"], row["data-serving-load"].to_i ]
@@ -43,9 +43,9 @@ class OversightTest < ActionDispatch::IntegrationTest
 
   test "Admin sees only People with no Invitation or Team history as Never asked" do
     sign_in_as_admin
-    workspace = workspaces(:st_example)
+    organization = organizations(:st_example)
 
-    workspace.invitations.create!(
+    organization.invitations.create!(
       project: projects(:community_meal),
       person: people(:other_volunteer),
       inviter: people(:leader),
@@ -54,18 +54,18 @@ class OversightTest < ActionDispatch::IntegrationTest
       responded_at: Time.current
     )
 
-    former_member = workspace.people.create!(name: "Frank Former Member")
-    deleted_project = workspace.projects.create!(
+    former_member = organization.people.create!(name: "Frank Former Member")
+    deleted_project = organization.projects.create!(
       name: "Past Workday",
       owner: people(:admin),
       deleted_at: Time.current
     )
     deleted_project.memberships.create!(person: former_member, role: :volunteer)
 
-    former_owner = workspace.people.create!(name: "Olivia Former Owner")
-    workspace.projects.create!(name: "Owner History", owner: former_owner, deleted_at: Time.current)
-    unasked_admin = workspace.people.create!(name: "Amara Admin", admin: true)
-    workspace.people.create!(name: "Nora Never Asked")
+    former_owner = organization.people.create!(name: "Olivia Former Owner")
+    organization.projects.create!(name: "Owner History", owner: former_owner, deleted_at: Time.current)
+    unasked_admin = organization.people.create!(name: "Amara Admin", admin: true)
+    organization.people.create!(name: "Nora Never Asked")
     projects(:community_meal).recipients.create!(person: people(:recipient))
 
     get oversight_path
@@ -82,16 +82,16 @@ class OversightTest < ActionDispatch::IntegrationTest
 
   test "Recipient with no Invitation or Membership is not in never asked" do
     sign_in_as_admin
-    workspace = workspaces(:st_example)
-    cared_for = workspace.people.create!(name: "Cara Cared For")
-    deleted_project = workspace.projects.create!(
+    organization = organizations(:st_example)
+    cared_for = organization.people.create!(name: "Cara Cared For")
+    deleted_project = organization.projects.create!(
       name: "Past Meal Train",
       owner: people(:admin),
       deleted_at: Time.current
     )
     deleted_project.recipients.create!(person: cared_for)
 
-    assert_not_includes Oversight.never_asked(workspace).pluck(:name), cared_for.name
+    assert_not_includes Oversight.never_asked(organization).pluck(:name), cared_for.name
 
     get oversight_path
 
@@ -156,8 +156,8 @@ class OversightTest < ActionDispatch::IntegrationTest
 
   private
     def create_involvement_history
-      workspace = workspaces(:st_example)
-      person = workspace.people.create!(name: "Ivy Involved", email: "ivy@st-example.test")
+      organization = organizations(:st_example)
+      person = organization.people.create!(name: "Ivy Involved", email: "ivy@st-example.test")
 
       travel_to Time.zone.local(2025, 4, 10, 12) do
         create_involvement_for(person, tasks: 2, slots: 3, project_name: "2025 Service")
@@ -171,7 +171,7 @@ class OversightTest < ActionDispatch::IntegrationTest
     end
 
     def create_involvement_for(person, tasks:, slots:, project_name:)
-      project = person.workspace.projects.create!(name: project_name, owner: people(:admin))
+      project = person.organization.projects.create!(name: project_name, owner: people(:admin))
       project.memberships.create!(person: person, role: :volunteer)
       tasks.times do |index|
         project.tasks.create!(

@@ -1,5 +1,5 @@
 class Person < ApplicationRecord
-  include WorkspaceScoped
+  include OrganizationScoped
 
   has_many :sessions, dependent: :destroy
   has_many :memberships, dependent: :destroy
@@ -34,9 +34,9 @@ class Person < ApplicationRecord
 
   validates :name, presence: true
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_nil: true
-  validates :email, uniqueness: { scope: :workspace_id }, allow_nil: true
-  # The first Admin of a new Workspace must be able to sign in, so they need an email then.
-  validates :email, presence: true, on: :workspace_creation
+  validates :email, uniqueness: { scope: :organization_id }, allow_nil: true
+  # The first Admin of a new Organization must be able to sign in, so they need an email then.
+  validates :email, presence: true, on: :organization_creation
   validate :cannot_remove_last_admin, if: :admin_changed?
 
   # Signing in consumes a link by stamping last_signed_in_at, which invalidates every link issued before it.
@@ -64,8 +64,8 @@ class Person < ApplicationRecord
   private
     def cannot_remove_last_admin
       return if admin?
-      return if workspace.people.where(admin: true).where.not(id:).exists?
+      return if organization.people.where(admin: true).where.not(id:).exists?
 
-      errors.add(:admin, "cannot be removed from the last Admin in the Workspace")
+      errors.add(:admin, "cannot be removed from the last Admin in the Organization")
     end
 end

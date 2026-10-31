@@ -1,16 +1,16 @@
 class DirectorySyncJob < ApplicationJob
-  def perform(workspace)
+  def perform(organization)
     source = DirectorySources::PlanningCenter.new(
-      app_id: workspace.pco_app_id,
-      secret: workspace.pco_secret
+      app_id: organization.pco_app_id,
+      secret: organization.pco_secret
     )
-    result = DirectorySync.new(workspace, source).call
-    workspace.update!(
+    result = DirectorySync.new(organization, source).call
+    organization.update!(
       pco_last_synced_at: Time.current,
       pco_last_sync_result: result,
       pco_last_sync_error: nil
     )
   rescue DirectorySources::Error => error
-    workspace.update!(pco_last_sync_result: {}, pco_last_sync_error: error.message)
+    organization.update!(pco_last_sync_result: {}, pco_last_sync_error: error.message)
   end
 end

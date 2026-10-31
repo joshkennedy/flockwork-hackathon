@@ -1,5 +1,5 @@
-# The public demo Workspace. Seeding is idempotent, so the same code can run on every boot and from a nightly reset.
-class DemoWorkspace
+# The public demo Organization. Seeding is idempotent, so the same code can run on every boot and from a nightly reset.
+class DemoOrganization
   SLUG = "grace-fellowship".freeze
 
   PEOPLE = {
@@ -103,32 +103,32 @@ class DemoWorkspace
 
   class << self
     def seed!
-      Workspace.transaction do
-        workspace = Workspace.find_or_create_by!(slug: SLUG) do |record|
+      Organization.transaction do
+        organization = Organization.find_or_create_by!(slug: SLUG) do |record|
           record.name = "Grace Fellowship"
           record.demo = true
           record.overextended_limit = 3
         end
-        return workspace if workspace.projects.exists?
+        return organization if organization.projects.exists?
 
-        workspace.update!(name: "Grace Fellowship", demo: true, overextended_limit: 3)
-        people = seed_people!(workspace)
-        seed_retreat!(workspace, people)
-        seed_meal_train!(workspace, people)
-        seed_vbs_projects!(workspace, people)
-        seed_workday!(workspace, people)
-        workspace
+        organization.update!(name: "Grace Fellowship", demo: true, overextended_limit: 3)
+        people = seed_people!(organization)
+        seed_retreat!(organization, people)
+        seed_meal_train!(organization, people)
+        seed_vbs_projects!(organization, people)
+        seed_workday!(organization, people)
+        organization
       end
     end
 
     def reset!
-      Workspace.transaction do
-        workspace = Workspace.lock.find_by(slug: SLUG)
-        if workspace
-          raise ActiveRecord::RecordNotFound unless workspace.demo?
+      Organization.transaction do
+        organization = Organization.lock.find_by(slug: SLUG)
+        if organization
+          raise ActiveRecord::RecordNotFound unless organization.demo?
 
-          workspace.invitations.destroy_all
-          workspace.destroy!
+          organization.invitations.destroy_all
+          organization.destroy!
         end
 
         seed!
@@ -136,7 +136,7 @@ class DemoWorkspace
     end
 
     private
-      def seed_people!(workspace)
+      def seed_people!(organization)
         definitions = PEOPLE.values + DIRECTORY_NAMES.map { |name| { name:, admin: false } }
 
         definitions.each_with_index.each_with_object({}) do |(attributes, index), seeded_people|
@@ -144,9 +144,9 @@ class DemoWorkspace
           email = attributes[:email]
           email ||= "#{attributes[:name].parameterize(separator: ".")}@grace.example" unless NO_EMAIL_NAMES.include?(attributes[:name])
           person = if email
-            workspace.people.find_or_initialize_by(email:)
+            organization.people.find_or_initialize_by(email:)
           else
-            workspace.people.find_or_initialize_by(external_source: "planning_center", external_id:)
+            organization.people.find_or_initialize_by(external_source: "planning_center", external_id:)
           end
           person.update!(
             name: attributes[:name],
@@ -160,7 +160,7 @@ class DemoWorkspace
         end
       end
 
-      def seed_retreat!(workspace, people)
+      def seed_retreat!(organization, people)
         grace = people.fetch("Grace Kim")
         retreat = Project.create_for(
           creator: grace,
@@ -173,16 +173,16 @@ class DemoWorkspace
           }
         )
 
-        invite!(workspace, retreat, people.fetch("Maria Lopez"), grace, :volunteer, :accepted)
-        invite!(workspace, retreat, people.fetch("Tasha Williams"), grace, :volunteer, :accepted)
-        invite!(workspace, retreat, people.fetch("Abigail Turner"), grace, :volunteer, :pending)
-        invite!(workspace, retreat, people.fetch("Gabriel White"), grace, :volunteer, :pending)
-        invite!(workspace, retreat, people.fetch("Natalie King"), grace, :volunteer, :declined)
-        invite!(workspace, retreat, people.fetch("Isaiah Green"), grace, :leader, :declined)
-        invite!(workspace, retreat, people.fetch("Julia Adams"), grace, :volunteer, :pending)
+        invite!(organization, retreat, people.fetch("Maria Lopez"), grace, :volunteer, :accepted)
+        invite!(organization, retreat, people.fetch("Tasha Williams"), grace, :volunteer, :accepted)
+        invite!(organization, retreat, people.fetch("Abigail Turner"), grace, :volunteer, :pending)
+        invite!(organization, retreat, people.fetch("Gabriel White"), grace, :volunteer, :pending)
+        invite!(organization, retreat, people.fetch("Natalie King"), grace, :volunteer, :declined)
+        invite!(organization, retreat, people.fetch("Isaiah Green"), grace, :leader, :declined)
+        invite!(organization, retreat, people.fetch("Julia Adams"), grace, :volunteer, :pending)
       end
 
-      def seed_meal_train!(workspace, people)
+      def seed_meal_train!(organization, people)
         grace = people.fetch("Grace Kim")
         maria = people.fetch("Maria Lopez")
         meal_train = Project.create_for(
@@ -207,10 +207,10 @@ class DemoWorkspace
         })
 
         recipient = meal_train.recipients.create!(person: people.fetch("The Alvarez Family"))
-        recipient.notes.create!(workspace:, author: maria, visibility: :team, body: "Allergic to tree nuts")
-        recipient.notes.create!(workspace:, author: maria, visibility: :team, body: "Drop off at the side door after 5pm")
+        recipient.notes.create!(organization:, author: maria, visibility: :team, body: "Allergic to tree nuts")
+        recipient.notes.create!(organization:, author: maria, visibility: :team, body: "Drop off at the side door after 5pm")
         recipient.notes.create!(
-          workspace:,
+          organization:,
           author: grace,
           visibility: :leaders,
           body: "Dad's surgery recovery may take 8 weeks"
@@ -234,28 +234,28 @@ class DemoWorkspace
         end
       end
 
-      def seed_vbs_projects!(workspace, people)
+      def seed_vbs_projects!(organization, people)
         source = seed_previous_vbs!(people)
         maria = people.fetch("Maria Lopez")
         duplicate = ProjectDuplicate.new(source:, start_on: Date.current + 8.weeks, by: maria)
         duplicate.name = "Vacation Bible School #{Date.current.year}"
         vbs = duplicate.call
 
-        invite!(workspace, vbs, people.fetch("Elijah Brooks"), maria, :leader, :accepted)
-        invite!(workspace, vbs, people.fetch("Naomi Patel"), maria, :leader, :accepted)
-        invite!(workspace, vbs, people.fetch("Sam Chen"), maria, :volunteer, :accepted)
+        invite!(organization, vbs, people.fetch("Elijah Brooks"), maria, :leader, :accepted)
+        invite!(organization, vbs, people.fetch("Naomi Patel"), maria, :leader, :accepted)
+        invite!(organization, vbs, people.fetch("Sam Chen"), maria, :volunteer, :accepted)
         VBS_VOLUNTEER_NAMES.drop(1).each do |name|
           vbs.memberships.create!(person: people.fetch(name), role: :volunteer)
         end
 
-        invite!(workspace, vbs, people.fetch("Andrew Baker"), maria, :volunteer, :pending)
-        invite!(workspace, vbs, people.fetch("Rebecca Nelson"), maria, :volunteer, :pending)
-        invite!(workspace, vbs, people.fetch("Nathan Hill"), maria, :volunteer, :pending)
-        invite!(workspace, vbs, people.fetch("Jasmine Mitchell"), maria, :leader, :pending)
-        invite!(workspace, vbs, people.fetch("Samuel Roberts"), maria, :volunteer, :declined)
-        invite!(workspace, vbs, people.fetch("Luke Harris"), maria, :volunteer, :declined)
-        invite!(workspace, vbs, people.fetch("Danielle Walker"), maria, :volunteer, :declined)
-        invite!(workspace, vbs, people.fetch("Thomas Allen"), maria, :volunteer, :pending)
+        invite!(organization, vbs, people.fetch("Andrew Baker"), maria, :volunteer, :pending)
+        invite!(organization, vbs, people.fetch("Rebecca Nelson"), maria, :volunteer, :pending)
+        invite!(organization, vbs, people.fetch("Nathan Hill"), maria, :volunteer, :pending)
+        invite!(organization, vbs, people.fetch("Jasmine Mitchell"), maria, :leader, :pending)
+        invite!(organization, vbs, people.fetch("Samuel Roberts"), maria, :volunteer, :declined)
+        invite!(organization, vbs, people.fetch("Luke Harris"), maria, :volunteer, :declined)
+        invite!(organization, vbs, people.fetch("Danielle Walker"), maria, :volunteer, :declined)
+        invite!(organization, vbs, people.fetch("Thomas Allen"), maria, :volunteer, :pending)
 
         tasks = vbs.tasks.order(:id).to_a
         tasks.fetch(0).update!(assignee: people.fetch("Sam Chen"))
@@ -338,7 +338,7 @@ class DemoWorkspace
         source
       end
 
-      def seed_workday!(_workspace, people)
+      def seed_workday!(_organization, people)
         grace = people.fetch("Grace Kim")
         workday = Project.create_for(
           creator: grace,
@@ -371,8 +371,8 @@ class DemoWorkspace
         end
       end
 
-      def invite!(workspace, project, person, inviter, role, status)
-        invitation = workspace.invitations.create!(project:, person:, inviter:, role:)
+      def invite!(organization, project, person, inviter, role, status)
+        invitation = organization.invitations.create!(project:, person:, inviter:, role:)
         invitation.accept! if status == :accepted
         invitation.decline! if status == :declined
         invitation

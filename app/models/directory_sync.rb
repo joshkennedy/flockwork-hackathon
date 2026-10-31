@@ -1,13 +1,13 @@
 class DirectorySync
-  def initialize(workspace, source)
-    @workspace = workspace
+  def initialize(organization, source)
+    @organization = organization
     @source = source
   end
 
   def call
     counts = { created: 0, updated: 0, unchanged: 0 }
 
-    workspace.transaction do
+    organization.transaction do
       source.each_person do |attributes|
         person = find_person(attributes)
         new_record = person.new_record?
@@ -35,17 +35,17 @@ class DirectorySync
   end
 
   private
-    attr_reader :workspace, :source
+    attr_reader :organization, :source
 
     def find_person(attributes)
-      workspace.people.find_by(
+      organization.people.find_by(
         external_source: "planning_center",
         external_id: attributes.fetch(:external_id)
-      ) || adoptable_person(attributes) || workspace.people.build
+      ) || adoptable_person(attributes) || organization.people.build
     end
 
     def adoptable_person(attributes)
       email = attributes.fetch(:email)
-      workspace.people.find_by(email:, external_id: nil) if email.present?
+      organization.people.find_by(email:, external_id: nil) if email.present?
     end
 end

@@ -70,20 +70,20 @@ class SignInTest < ActionDispatch::IntegrationTest
     assert_select "h1", "Check your email"
   end
 
-  test "one email in two Workspaces gets a single link, then chooses which church to enter" do
-    leo_elsewhere = workspaces(:outsider_church).people.create!(name: "Leo Elsewhere", email: "leo@st-example.test")
+  test "one email in two Organizations gets a single link, then chooses which organization to enter" do
+    leo_elsewhere = organizations(:outsider_church).people.create!(name: "Leo Elsewhere", email: "leo@st-example.test")
 
     assert_emails 1 do
       token = request_sign_in_link(people(:leader))
       post sign_in_link_path(token)
     end
 
-    assert_redirected_to new_workspace_choice_path
+    assert_redirected_to new_organization_choice_path
     follow_redirect!
     assert_select "button", text: "St. Example"
     assert_select "button", text: "Outsider Church"
 
-    post workspace_choice_path, params: { person_id: leo_elsewhere.id }
+    post organization_choice_path, params: { person_id: leo_elsewhere.id }
 
     assert_redirected_to home_path
     follow_redirect!
@@ -91,17 +91,17 @@ class SignInTest < ActionDispatch::IntegrationTest
     assert_select "p", "Signed in as Leo Elsewhere"
   end
 
-  test "choosing a church cannot switch to a Person with a different email" do
+  test "choosing an organization cannot switch to a Person with a different email" do
     sign_in_as_leader
 
-    post workspace_choice_path, params: { person_id: people(:outsider).id }
+    post organization_choice_path, params: { person_id: people(:outsider).id }
 
     assert_response :not_found
     get home_path
     assert_select "p", "Signed in as Leo Leader"
   end
 
-  test "a Person in one Workspace skips the chooser" do
+  test "a Person in one Organization skips the chooser" do
     token = request_sign_in_link(people(:leader))
 
     post sign_in_link_path(token)

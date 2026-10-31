@@ -16,11 +16,11 @@ production:
   slot_reminders:
     class: SlotReminderJob
     schedule: at 7am every day
-  demo_workspace_reset:
+  demo_organization_reset:
     class: DemoResetJob
     schedule: at 3am every day
 
 development:
-  demo_workspace_reset:
+  demo_organization_reset:
     class: DemoResetJob
     schedule: at 3am every day

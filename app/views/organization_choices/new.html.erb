@@ -1,0 +1,12 @@
+<% content_for :title, "Choose an Organization" %>
+
+<div class="w-full max-w-xl mx-auto">
+  <h1 class="text-ink">Choose an Organization</h1>
+  <p class="mt-2 text-ink-2">Your email belongs to more than one Organization in Flockwork. Pick where you want to work.</p>
+
+  <div class="mt-6 grid gap-3">
+    <% @people.each do |person| %>
+      <%= button_to person.organization.name, organization_choice_path, params: { person_id: person.id }, class: "w-full btn btn-secondary" %>
+    <% end %>
+  </div>
+</div>

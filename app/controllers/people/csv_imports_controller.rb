@@ -7,7 +7,7 @@ module People
 
     def create
       file = params.require(:csv_file)
-      @result = CsvImport.new(Current.workspace, file.read).call
+      @result = CsvImport.new(Current.organization, file.read).call
 
       if @result.fatal_error
         flash.now[:alert] = @result.fatal_error

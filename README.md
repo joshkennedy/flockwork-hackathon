@@ -1,20 +1,20 @@
 # Flockwork
 
-Entry for **AI for Church Hackathon 2026** (Church Operations & Admin track). Flockwork is “Basecamp for churches”: each church gets a **Workspace** with a **People** directory and **Projects** built from a fixed set of **Tools**—Tasks, Schedule, Sign-up sheet, Budget, Recipients, Messages, Docs & Files, and List. Leaders run an **AI Planner** to shape a Project; **Oversight** helps Admins see serving load and who still needs an invitation. The Planner is designed so it sees the work, not the people: it never receives directory data, names, or care details ([docs/adr/0002-the-ai-never-sees-people.md](docs/adr/0002-the-ai-never-sees-people.md)).
+Entry for **AI for Church Hackathon 2026** (Church Operations & Admin track). Flockwork is “Basecamp for churches”: each church gets a **Organization** with a **People** directory and **Projects** built from a fixed set of **Tools**—Tasks, Schedule, Sign-up sheet, Budget, Recipients, Messages, Docs & Files, and List. Leaders run an **AI Planner** to shape a Project; **Oversight** helps Admins see serving load and who still needs an invitation. The Planner is designed so it sees the work, not the people: it never receives directory data, names, or care details ([docs/adr/0002-the-ai-never-sees-people.md](docs/adr/0002-the-ai-never-sees-people.md)).
 
 ## Try it
 
-After setup, open [http://localhost:3000/grace-fellowship/sign_in](http://localhost:3000/grace-fellowship/sign_in). The demo Workspace **Grace Fellowship** is seeded from `DemoWorkspace` on `db:prepare` / `db:seed`.
+After setup, open [http://localhost:3000/grace-fellowship/sign_in](http://localhost:3000/grace-fellowship/sign_in). The demo Organization **Grace Fellowship** is seeded from `DemoOrganization` on `db:prepare` / `db:seed`.
 
 Three buttons sign you in as fixed synthetic People (no email link needed):
 
 | Button | Person | What you see |
 |--------|--------|--------------|
-| Explore as Admin | Daniel Okafor | Full Workspace: **People** (directory, CSV import, Planning Center sync), **Oversight** (overextended limit, never asked, involvement by year), and every Project |
+| Explore as Admin | Daniel Okafor | Full Organization: **People** (directory, CSV import, Planning Center sync), **Oversight** (overextended limit, never asked, involvement by year), and every Project |
 | Explore as Leader | Maria Lopez | Projects Maria leads or belongs to (retreat, meal train, VBS, workday, and duplicates)—including **Planner**, Team management, and Tools she can manage |
 | Explore as Volunteer | Sam Chen | Home, **My Tasks**, Projects Sam is on (for example VBS), **Get involved**, and open-team Projects—no People or Oversight |
 
-Non-demo Workspaces use email magic links only; the Explore buttons appear when `workspace.demo?` is true.
+Non-demo Organizations use email magic links only; the Explore buttons appear when `organization.demo?` is true.
 
 ## How the AI Planner works
 
@@ -51,7 +51,7 @@ Tests stub the provider with `Planner::Providers::Fake` and assert no Person nam
 **Quick path**
 
 ```bash
-bin/setup --skip-server   # bundle, db:prepare (loads db/seeds.rb → DemoWorkspace), clear tmp
+bin/setup --skip-server   # bundle, db:prepare (loads db/seeds.rb → DemoOrganization), clear tmp
 ```
 
 **Manual path**
@@ -97,7 +97,7 @@ bin/brakeman
 
 CI (`bin/ci`) runs setup, RuboCop, bundler-audit, importmap audit, Brakeman, and `bin/rails test`.
 
-**Planner privacy tests:** integration tests build a workspace full of distinctive Person names/emails/phones and assert `Planner::ContextBuilder` output never includes them (ADR 0002).
+**Planner privacy tests:** integration tests build an organization full of distinctive Person names/emails/phones and assert `Planner::ContextBuilder` output never includes them (ADR 0002).
 
 **Planning Center:** integration tests use VCR cassettes recorded against a synthetic sandbox org. Re-record with `VCR_RECORD=1` (loads `.env.development.local` in [test/support/vcr.rb](test/support/vcr.rb)). Seed the sandbox with `PCO_SANDBOX=1 bin/rails pco:seed_sandbox` (requires `PCO_APP_ID` / `PCO_SECRET`).
 
@@ -111,13 +111,13 @@ CI (`bin/ci`) runs setup, RuboCop, bundler-audit, importmap audit, Brakeman, and
 | Directory import | [app/models/directory_sources/](app/models/directory_sources/) (Planning Center + base) |
 | Duplicate Project | [app/models/project_duplicate.rb](app/models/project_duplicate.rb) |
 | Design tokens | [app/assets/tailwind/application.css](app/assets/tailwind/application.css) (companion spec: [DESIGN.md](DESIGN.md)) |
-| Demo seed | [app/models/demo_workspace.rb](app/models/demo_workspace.rb), [db/seeds.rb](db/seeds.rb) |
+| Demo seed | [app/models/demo_organization.rb](app/models/demo_organization.rb), [db/seeds.rb](db/seeds.rb) |
 
 ## Docs
 
 - [DESIGN.md](DESIGN.md) — visual system (colors, type, components)
 - [docs/adr/](docs/adr/) — architecture decisions (toolkit, AI privacy, Rails/Hotwire)
-- [docs/GLOSSARY.md](docs/GLOSSARY.md) — product language (Workspace, Project, Tool, Planner, Oversight, etc.)
+- [docs/GLOSSARY.md](docs/GLOSSARY.md) — product language (Organization, Project, Tool, Planner, Oversight, etc.)
 
 ## Data and privacy
 

@@ -2,15 +2,15 @@ class PlannerStepJob < ApplicationJob
   queue_as :default
 
   def perform(project_id, planner_session_id, current_session_id, revision = nil)
-    current_session = Session.includes(person: :workspace).find_by(id: current_session_id)
+    current_session = Session.includes(person: :organization).find_by(id: current_session_id)
     unless current_session
-      saved_planner = PlannerSession.includes(started_by: :workspace).find_by(id: planner_session_id, project_id: project_id)
+      saved_planner = PlannerSession.includes(started_by: :organization).find_by(id: planner_session_id, project_id: project_id)
       return unless saved_planner&.build_as_you_go?
       current_session = Session.new(person: saved_planner.started_by)
     end
 
     Current.set(session: current_session) do
-      project = Current.workspace.projects.find(project_id)
+      project = Current.organization.projects.find(project_id)
       planner_session = project.planner_sessions.find(planner_session_id)
       if planner_session.build_as_you_go?
         return unless revision

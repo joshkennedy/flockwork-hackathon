@@ -275,7 +275,7 @@ class NotificationsTest < ActionDispatch::IntegrationTest
   test "the Slot reminder job notifies and emails each claimer only once" do
     person = people(:volunteer)
     project = projects(:community_meal)
-    no_email_person = project.workspace.people.create!(name: "Nora No Email")
+    no_email_person = project.organization.people.create!(name: "Nora No Email")
     project.memberships.create!(person: no_email_person, role: :volunteer)
     ActionMailer::Base.deliveries.clear
 

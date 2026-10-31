@@ -5,9 +5,9 @@ class DemoSessionsController < ApplicationController
   end
 
   def create
-    workspace = Workspace.find_by!(slug: DemoWorkspace::SLUG, demo: true)
-    email = DemoWorkspace::ROLE_EMAILS.fetch(params[:role]) { raise ActiveRecord::RecordNotFound }
-    start_new_session_for workspace.people.find_by!(email:)
+    organization = Organization.find_by!(slug: DemoOrganization::SLUG, demo: true)
+    email = DemoOrganization::ROLE_EMAILS.fetch(params[:role]) { raise ActiveRecord::RecordNotFound }
+    start_new_session_for organization.people.find_by!(email:)
     redirect_to home_path
   end
 end

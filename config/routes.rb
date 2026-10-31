@@ -5,7 +5,7 @@ Rails.application.routes.draw do
 
   get "p/:token", to: "public_projects#show", as: :public_project
 
-  resources :workspaces, only: :create
+  resources :organizations, only: :create
   get "get_involved", to: "get_involved#show"
   get "my_tasks", to: "my_tasks#index"
   resource :oversight, only: %i[ show update ]
@@ -113,11 +113,11 @@ Rails.application.routes.draw do
   get "sign_in/:token", to: "sign_in_links#show", as: :sign_in_link, format: false
   post "sign_in/:token", to: "sign_in_links#create", format: false
 
-  get "home", to: "workspaces#show", as: :home
+  get "home", to: "organizations#show", as: :home
   get "sign_in", to: "sign_in_requests#new", as: :new_sign_in_request
   post "sign_in", to: "sign_in_requests#create", as: :sign_in_requests
-  get "choose_church", to: "workspace_choices#new", as: :new_workspace_choice
-  post "choose_church", to: "workspace_choices#create", as: :workspace_choice
+  get "choose_organization", to: "organization_choices#new", as: :new_organization_choice
+  post "choose_organization", to: "organization_choices#create", as: :organization_choice
   get "demo", to: "demo_sessions#new", as: :new_demo_session
   post "demo/:role", to: "demo_sessions#create", as: :demo_session
   get "people/import", to: "people/csv_imports#new", as: :new_people_csv_import

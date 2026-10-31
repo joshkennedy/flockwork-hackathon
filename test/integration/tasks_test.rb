@@ -167,7 +167,7 @@ class TasksTest < ActionDispatch::IntegrationTest
       completed_by: volunteer
     )
     projects(:outsider_project).tasks.insert_all!([ {
-      title: "Other Workspace Task",
+      title: "Other Organization Task",
       assignee_id: volunteer.id,
       created_at: Time.current,
       updated_at: Time.current
@@ -183,7 +183,7 @@ class TasksTest < ActionDispatch::IntegrationTest
       assert_select "button", text: "Done"
     end
     assert_no_match "Finished meal Task", response.body
-    assert_no_match "Other Workspace Task", response.body
+    assert_no_match "Other Organization Task", response.body
 
     post mark_done_project_task_path(cleanup, soon_task, return_to: "my_tasks")
 

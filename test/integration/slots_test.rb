@@ -173,7 +173,7 @@ class SlotsTest < ActionDispatch::IntegrationTest
   test "a non-member gets 404 when claiming a Slot" do
     project = projects(:community_meal)
     slot = project.slots.create!(date: "2027-02-15", label: "Bring drinks", capacity: 2)
-    non_member = workspaces(:st_example).people.create!(name: "Nina Nonmember", email: "nina@st-example.test")
+    non_member = organizations(:st_example).people.create!(name: "Nina Nonmember", email: "nina@st-example.test")
     sign_in_as(non_member)
 
     assert_no_difference "SlotClaim.count" do

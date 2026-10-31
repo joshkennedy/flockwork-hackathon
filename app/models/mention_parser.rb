@@ -22,7 +22,7 @@ class MentionParser
     attr_reader :mentionable
 
     def mentioned_people
-      project.workspace.people.where(id: mentioned_person_ids)
+      project.organization.people.where(id: mentioned_person_ids)
     end
 
     def mentioned_person_ids

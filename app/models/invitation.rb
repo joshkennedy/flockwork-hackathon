@@ -1,5 +1,5 @@
 class Invitation < ApplicationRecord
-  include WorkspaceScoped
+  include OrganizationScoped
 
   belongs_to :project
   belongs_to :person
@@ -18,7 +18,7 @@ class Invitation < ApplicationRecord
     conditions: -> { where(status: :pending) },
     message: "already has a pending Invitation"
   }, if: :pending?
-  validate :people_and_project_belong_to_workspace, on: :create
+  validate :people_and_project_belong_to_organization, on: :create
   validate :person_can_be_invited, on: :create
 
   def accept!
@@ -45,10 +45,10 @@ class Invitation < ApplicationRecord
   end
 
   private
-    def people_and_project_belong_to_workspace
-      return if [ project, person, inviter ].all? { |record| record&.workspace_id == workspace_id }
+    def people_and_project_belong_to_organization
+      return if [ project, person, inviter ].all? { |record| record&.organization_id == organization_id }
 
-      errors.add(:base, "Project, invitee, and inviter must belong to the Workspace")
+      errors.add(:base, "Project, invitee, and inviter must belong to the Organization")
     end
 
     def person_can_be_invited

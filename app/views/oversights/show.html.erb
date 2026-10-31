@@ -7,7 +7,7 @@
   <div class="mt-7 grid gap-7 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
     <section aria-labelledby="overextended-heading">
       <h2 id="overextended-heading">May need a check-in</h2>
-      <p class="mt-2 text-meta text-ink-2">Overextended: serving on <%= Current.workspace.overextended_limit %> or more Active Projects.</p>
+      <p class="mt-2 text-meta text-ink-2">Overextended: serving on <%= Current.organization.overextended_limit %> or more Active Projects.</p>
       <% if @overextended_people.any? %>
         <ul class="mt-2 divide-y divide-hairline">
           <% @overextended_people.each do |person| %>
@@ -16,7 +16,7 @@
                 <%= link_to person.name, edit_person_path(person), class: "font-semibold" %>
                 <p class="mt-1 text-meta text-ink-2"><%= pluralize(person.serving_load, "Active Project") %></p>
                 <ul class="mt-1 text-meta text-ink-2">
-                  <% Current.workspace.projects.active.joins(:memberships).where(memberships: { person_id: person.id }).distinct.order(:name).each do |project| %>
+                  <% Current.organization.projects.active.joins(:memberships).where(memberships: { person_id: person.id }).distinct.order(:name).each do |project| %>
                     <li><%= link_to project.name, project_path(project), class: "hover:text-ink" %></li>
                   <% end %>
                 </ul>
@@ -63,12 +63,12 @@
   <% end %>
 
   <section class="mt-7 border-t border-hairline pt-5" aria-label="Oversight settings">
-      <%= form_with model: Current.workspace, url: oversight_path, method: :patch, class: "flex items-end gap-3" do |form| %>
+      <%= form_with model: Current.organization, url: oversight_path, method: :patch, class: "flex items-end gap-3" do |form| %>
         <div>
           <%= form.label :overextended_limit, "Serving load limit", class: "block text-label font-medium text-ink-2" %>
           <%= form.number_field :overextended_limit, min: 1, required: true, class: "mt-1 w-24 field" %>
-          <% if Current.workspace.errors[:overextended_limit].any? %>
-            <p class="mt-1 text-meta font-medium text-danger" role="alert"><%= Current.workspace.errors.full_messages_for(:overextended_limit).to_sentence %></p>
+          <% if Current.organization.errors[:overextended_limit].any? %>
+            <p class="mt-1 text-meta font-medium text-danger" role="alert"><%= Current.organization.errors.full_messages_for(:overextended_limit).to_sentence %></p>
           <% end %>
         </div>
         <%= form.submit "Save", class: "btn btn-primary" %>

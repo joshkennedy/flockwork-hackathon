@@ -12,7 +12,7 @@ class PlannerContextBuilderTest < ActiveSupport::TestCase
 
   test "randomized Planner contexts never contain generated Person data" do
     random = Random.new(18)
-    workspace = workspaces(:st_example)
+    organization = organizations(:st_example)
     responses = Array.new(30) do
       Planner::Response.new(
         card: {
@@ -33,13 +33,13 @@ class PlannerContextBuilderTest < ActiveSupport::TestCase
       30.times do |iteration|
         team = Array.new(random.rand(1..4)) do |person_index|
           token = random.rand(100_000..999_999)
-          workspace.people.create!(
+          organization.people.create!(
             name: "Zebulon Qx#{iteration}#{person_index} #{token}",
             email: "zebulon-qx#{iteration}-#{person_index}-#{token}@example.test",
             phone: "+1-555-#{iteration.to_s.rjust(2, "0")}-#{token}"
           ).tap { |person| generated_people << person }
         end
-        project = workspace.projects.create!(
+        project = organization.projects.create!(
           name: "Random Project #{iteration}",
           description: "A generated planning scenario #{random.rand(1_000_000)}.",
           owner: team.first,

@@ -15,8 +15,8 @@ class InvitationsController < ApplicationController
     project = Policy.visible_projects(Current.person).find(params[:project_id])
     raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :manage_team, project)
 
-    person = Current.workspace.people.find(invitation_params[:person_id])
-    invitation = Current.workspace.invitations.build(
+    person = Current.organization.people.find(invitation_params[:person_id])
+    invitation = Current.organization.invitations.build(
       project: project,
       person: person,
       inviter: Current.person,
@@ -50,7 +50,7 @@ class InvitationsController < ApplicationController
 
   private
     def set_response_invitation
-      @invitation = Current.workspace.invitations.find_by_token_for(:access, params[:token])
+      @invitation = Current.organization.invitations.find_by_token_for(:access, params[:token])
       raise ActiveRecord::RecordNotFound unless @invitation
       raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :respond, @invitation)
     end

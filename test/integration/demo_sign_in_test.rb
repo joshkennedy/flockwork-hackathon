@@ -40,8 +40,8 @@ class DemoSignInTest < ActionDispatch::IntegrationTest
     assert_select "p", "Signed in as Sam Chen"
   end
 
-  test "the demo endpoint 404s when the demo Workspace is not flagged demo, and starts no session" do
-    workspaces(:grace_fellowship).update!(demo: false)
+  test "the demo endpoint 404s when the demo Organization is not flagged demo, and starts no session" do
+    organizations(:grace_fellowship).update!(demo: false)
 
     post demo_session_path(role: "admin")
 
