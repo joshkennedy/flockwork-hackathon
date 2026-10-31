@@ -1,8 +1,9 @@
-<section id="meal-preview" class="meal-preview" aria-labelledby="meal-preview-heading">
+<section id="meal-preview" class="meal-preview" aria-labelledby="meal-preview-heading" aria-busy="<%= planner_session.generation_busy? %>"
+  data-controller="preview-changes" data-preview-changes-key-value="<%= dom_id(planner_session) %>">
   <div class="meal-preview-heading">
     <div>
       <h2 id="meal-preview-heading" class="text-ink">Sign-up sheet</h2>
-      <p class="mt-1 text-meta text-ink-2" aria-live="polite" aria-atomic="true"><%= visible_items.any? ? pluralize(visible_items.size, "meal slot") : "The first meal will appear here" %></p>
+      <p class="mt-1 text-meta text-ink-2"><%= visible_items.any? ? pluralize(visible_items.size, "meal slot") : "The first meal will appear here" %></p>
     </div>
     <% if visible_items.any? %>
       <a href="#meal-preview-list" class="meal-preview-view-all text-meta font-semibold text-ink-2">View all</a>

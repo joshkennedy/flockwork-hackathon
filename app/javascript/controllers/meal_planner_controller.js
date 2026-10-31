@@ -1,7 +1,14 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
+  static targets = ["status"]
   static values = { busy: Boolean, url: String }
+
+  // Swapped-in live regions are rarely announced, so copy status text into the stable one.
+  statusTargetConnected(element) {
+    const announcer = document.getElementById("planner-announcer")
+    if (announcer) announcer.textContent = element.textContent.trim()
+  }
 
   connect() {
     if (this.busyValue) this.timer = window.setTimeout(() => this.refresh(), 3000)

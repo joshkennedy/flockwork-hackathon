@@ -29,6 +29,8 @@ class MealPlannerSystemTest < ApplicationSystemTestCase
     assert_text "Preview updated. Change your choice or continue."
     assert_text "3 meal slots"
     assert_selector "button[aria-pressed='true']", text: "Dinner"
+    assert_selector "article.meal-slot-changed", count: 3
+    assert_selector "#planner-announcer", text: "Preview updated. Change your choice or continue.", visible: :all
 
     first_meal = all("article.meal-slot").first
     within first_meal do
@@ -40,6 +42,7 @@ class MealPlannerSystemTest < ApplicationSystemTestCase
     end
     assert_text "Bring soup"
     assert_text "6:30 PM"
+    assert_selector "article.meal-slot-changed", count: 1, text: "Bring soup"
 
     within all("article.meal-slot")[1] do
       find("summary", text: "Edit").click
