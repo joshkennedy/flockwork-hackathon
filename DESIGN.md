@@ -185,7 +185,7 @@ Sentence case everywhere. No tracked all-caps, no monospace decoration, no itali
 
 ## Layout
 
-App shell: `frame` background, 232px sidebar (wordmark, church switcher, nav items 32px tall with 2px gaps), content in one `panel` inset 8px. Topbar 48px with a breadcrumb in 12px `ink-2`. Panel padding 28px desktop, 16px phone. Major blocks separated by 28px; groups by 20px; tiles by 8px (12px on phones). The Planner is a 1.45fr / 1fr split: question and answer tiles left, "Your plan so far" right with a hairline divider. Oversight is two flat name lists side by side. Phones: the sidebar collapses to a top bar with the wordmark and a menu button; 16px gutters; one full-width primary action per card.
+App shell: `frame` background, 232px sidebar (wordmark, church switcher, nav items 32px tall with 2px gaps), content in one `panel` inset 8px. Topbar 48px with a breadcrumb in 12px `ink-2`. Panel padding 28px desktop, 16px phone. Major blocks separated by 28px; groups by 20px; tiles by 8px (12px on phones). The build-as-you-go Planner gives the Project preview roughly two thirds of the usable width and keeps a compact guide beside it. The Project name is the only display heading; the current question uses the ordinary UI heading scale. Oversight is two flat name lists side by side. Phones: the sidebar collapses to a top bar with the wordmark and a menu button; 16px gutters; one full-width primary action per card. During planning, show the current choice with the most recently changed preview row and an explicit View all route so the work is never reduced to a count.
 
 ## Elevation & Depth
 
@@ -201,7 +201,8 @@ Badges 4px, buttons and inputs 6px, nav items 8px, tiles 10px, panels and popove
 - **Secondary button:** white with border and a hairline bottom inset; same press behavior.
 - **Text button:** no chrome, `ink-2`, hover tints with `hairline`; danger variant in `danger` with `danger-soft` hover.
 - **Planner answer tile:** raised tile 48px tall, 14px padding, radio on the left, keyboard number 1–4 in `ink-3` on the right; hover darkens the border to `border-strong`; selected shows an ink border and filled radio; pressed sinks 1px.
-- **Suggestion:** ghost tile (dashed `ghost-border`, `ghost-fill`, `ink-2` text, "Suggested" label, Keep · Edit · Drop text actions 12/500). Keep turns it into a solid panel tile with ink text and a sunlit check (180ms color/border transition, check scales in). Kept tiles hide their actions.
+- **Pending Planner work:** generated work stays on the `ghost-fill` surface with a dashed `ghost-border` and one "Suggestions · not added yet" state label for the whole preview. Tool contents use compact rows rather than a card per item. Edit opens fields in place; Remove lives inside that edit area, and Undo appears after removal. There is no Keep/Edit/Drop queue. One final Add to Project action accepts every visible, non-removed item.
+- **Planner choices:** answer tiles retain their raised treatment and show an unmistakable selected radio and ink border. Selecting an answer prepares the visible preview; Continue only advances after that preparation completes. Back, Finish with this, and Save and leave are quiet actions. The final primary changes to Add to Project in the same workspace.
 - **Slot (phone):** claimed Slots are flat rows (date 14/600, "✓ Ruth Bennett" in `ink-2`); open Slots are raised tiles with date, a `badge-need` ("1 spot left") and a full-width primary "I can bring dinner"; after claiming the tile flattens and shows "You're bringing dinner" with the sunlit check.
 - **Inputs:** 36px tall (44px phone), 6px radius, `border`, placeholder in `ink-2`; the dictation mic is an icon button inside the field.
 - **Privacy line:** on every Planner screen, a lock icon and "The planner sees project details. It never sees your people." in 13/18 `ink-2`.
@@ -220,8 +221,8 @@ Badges 4px, buttons and inputs 6px, nav items 8px, tiles 10px, panels and popove
 
 - **Approach:** minimal-functional.
 - **Easing:** enter ease-out, exit ease-in, move ease-in-out.
-- **Duration:** press 100ms, hover/border/background 150ms, Suggestion keep 180ms. Nothing longer than 300ms.
-- **The one authored moment:** a ghost Suggestion turning solid with the sunlit check scaling in when a Leader taps Keep. `prefers-reduced-motion` removes transforms and keeps color changes instant.
+- **Duration:** press 100ms, hover/border/background 150ms, preview-update emphasis 180ms. Nothing longer than 300ms.
+- **The authored moment:** a changed choice produces a short tonal emphasis on the affected preview row after the new content is already visible. Content is never hidden waiting for an entrance animation. `prefers-reduced-motion` removes transforms and makes the tonal change instant.
 
 ## Decisions Log
 
@@ -233,3 +234,4 @@ Badges 4px, buttons and inputs 6px, nav items 8px, tiles 10px, panels and popove
 | 2026-10-30 | Refined radii, padding, spacing and type sizes (v2 scale) | Josh: "refine the border radii, padding, spacing, and font sizes" |
 | 2026-10-30 | Tabular figures only in aligned columns | Mona Sans tabular figures render a dotted zero |
 | 2026-10-30 | Preview built as HTML by Codex gpt-6-astra (no OpenAI key for image mockups) | Exact fonts and values; the approved v2 preview is the reference for the Tailwind theme |
+| 2026-10-30 | Build-as-you-go Planner replaces the Keep/Edit/Drop review queue for new flows | The Project stays primary, choices visibly change pending work, direct edits happen in context, and one final Add action defines acceptance |

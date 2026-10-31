@@ -1,0 +1,158 @@
+<%= turbo_frame_tag dom_id(planner_session, :meal_builder), data: {
+  controller: "meal-planner",
+  meal_planner_busy_value: planner_session.generation_busy?,
+  meal_planner_url_value: project_planner_session_path(project, planner_session)
+} do %>
+  <% pending_answer = planner_session.pending_answer&.fetch("text", nil) %>
+  <% removed_item = planner_session.pending_items.select { |item| item["removed"] }.max_by { |item| item["removed_revision"].to_i } %>
+  <% visible_items = planner_session.visible_pending_items %>
+  <% addable = visible_items.any? && visible_items.all? { |item| item.dig("fields", "date").present? && item["conflict"].blank? } %>
+  <% current_step = if planner_session.pending_answer.present?
+    planner_session.pending_answer.fetch("step_index") + 1
+  else
+    [ planner_session.steps.length + 1, PlannerSession::MAX_GENERATED_QUESTIONS ].min
+  end %>
+
+  <% if flash[:alert].present? %>
+    <p role="alert" class="mb-5 rounded-control bg-danger-soft px-4 py-3 text-danger"><%= flash[:alert] %></p>
+  <% end %>
+
+  <section class="meal-builder" aria-labelledby="meal-project-heading">
+    <header class="meal-builder-header">
+      <div class="min-w-0">
+        <p class="text-meta text-ink-2">Suggestions · not added yet</p>
+        <h1 id="meal-project-heading" class="mt-2 text-ink"><%= project.name %></h1>
+      </div>
+
+      <% unless planner_session.generation_busy? %>
+      <details class="meal-builder-rename">
+        <summary class="btn btn-text">Project details</summary>
+        <%= form_with url: planning_details_project_planner_session_path(project, planner_session), method: :patch, class: "meal-builder-popover popover-in" do |form| %>
+          <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
+          <%= form.label :name, "Project name", class: "block text-label font-medium text-ink" %>
+          <%= form.text_field :name, name: "project[name]", value: project.name, required: true, class: "mt-2 block w-full field" %>
+          <%= form.label :starts_on, "First meal date", class: "mt-4 block text-label font-medium text-ink" %>
+          <%= form.date_field :starts_on, name: "project[starts_on]", value: project.starts_on, class: "mt-2 block w-full field" %>
+          <%= form.submit "Save details", class: "mt-3 btn btn-secondary", data: { turbo_submits_with: "Saving…" } %>
+        <% end %>
+      </details>
+      <% end %>
+    </header>
+
+    <div class="meal-builder-workspace">
+      <section class="meal-builder-guide" aria-labelledby="meal-guide-heading">
+        <% if planner_session.generation_stalled? %>
+          <p role="status" class="mb-3 text-ink-2">Planning is taking longer than usual. Your existing preview is saved.</p>
+          <%= button_to "Retry planning", retry_generation_project_planner_session_path(project, planner_session), params: { expected_revision: planner_session.generation_revision }, class: "mb-4 btn btn-secondary" %>
+        <% end %>
+        <% if planner_session.reviewing? %>
+          <p class="text-meta text-ink-2">Ready to finish</p>
+          <h2 id="meal-guide-heading" class="mt-2 text-lg font-semibold text-ink">Here’s your meal train</h2>
+          <p class="mt-3 text-ink-2"><%= pluralize(planner_session.pending_item_count, "meal slot") %> will be added to the Sign-up sheet.</p>
+          <%= render "planner_sessions/meal_answers", project:, planner_session: %>
+
+          <% if addable %>
+            <%= button_to "Add to Project", accept_project_planner_session_path(project, planner_session),
+              params: { expected_revision: planner_session.generation_revision }, class: "mt-6 btn btn-primary",
+              form: { data: { turbo_frame: "_top" } }, data: { turbo_submits_with: "Adding #{pluralize(planner_session.pending_item_count, "item")}…" } %>
+          <% else %>
+            <button class="mt-6 btn btn-primary" disabled>Add to Project</button>
+            <p class="mt-3 text-meta text-ink-2"><%=
+              if visible_items.empty?
+                "Restore a removed meal before adding."
+              elsif visible_items.any? { |item| item["conflict"].present? }
+                "Resolve the highlighted change before adding."
+              else
+                "Choose the first meal date in Project details before adding."
+              end
+            %></p>
+          <% end %>
+        <% elsif planner_session.current_card.present? %>
+          <p class="text-meta text-ink-2">Up to 3 choices · Choice <%= current_step %></p>
+          <h2 id="meal-guide-heading" class="mt-2 text-lg font-semibold leading-snug text-ink"><%= planner_session.current_card.fetch("question") %></h2>
+
+          <div class="mt-5 grid gap-2">
+            <% planner_session.current_card.fetch("options", []).each do |option| %>
+              <% selected = option == pending_answer %>
+              <%= button_to select_answer_project_planner_session_path(project, planner_session), params: { answer: option, expected_revision: planner_session.generation_revision }, class: "answer-tile meal-answer-tile", aria: { pressed: selected }, disabled: planner_session.generation_busy?, data: { turbo_submits_with: "Preparing…" } do %>
+                <span class="meal-answer-radio" aria-hidden="true"></span>
+                <span class="min-w-0 flex-1"><%= option %></span>
+              <% end %>
+            <% end %>
+          </div>
+
+          <details class="mt-4">
+            <summary class="meal-builder-text-action">Answer in your own words</summary>
+            <%= form_with url: select_answer_project_planner_session_path(project, planner_session), class: "mt-3" do |form| %>
+              <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
+              <%= form.label :answer, "Your answer", class: "block text-label font-medium text-ink" %>
+              <div class="mt-2 flex flex-col gap-3 sm:flex-row">
+                <%= form.text_field :answer, required: true, value: pending_answer, disabled: planner_session.generation_busy?, class: "block min-w-0 flex-1 field" %>
+                <%= form.submit "Use answer", disabled: planner_session.generation_busy?, class: "btn btn-secondary", data: { turbo_submits_with: "Preparing…" } %>
+              </div>
+            <% end %>
+          </details>
+
+          <div class="mt-6">
+            <% if planner_session.generation_busy? %>
+              <p class="meal-builder-status" data-meal-planner-target="status">Preparing Suggestions…</p>
+            <% elsif planner_session.last_error.present? %>
+              <p role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger"><%= PlannerSession::ERROR_MESSAGE %></p>
+              <%= button_to "Retry", retry_generation_project_planner_session_path(project, planner_session), params: { expected_revision: planner_session.generation_revision }, class: "mt-3 btn btn-secondary" %>
+            <% elsif planner_session.ready_to_continue? %>
+              <p class="meal-builder-status" data-meal-planner-target="status">Preview updated. Change your choice or continue.</p>
+            <% end %>
+          </div>
+
+          <% if visible_items.any? %>
+            <% mobile_item = visible_items.first %>
+            <% mobile_last_item = visible_items.last %>
+            <% mobile_fields = mobile_item.fetch("fields") %>
+            <% mobile_last_fields = mobile_last_item.fetch("fields") %>
+            <% mobile_date = Date.iso8601(mobile_fields["date"]) rescue nil %>
+            <% mobile_last_date = Date.iso8601(mobile_last_fields["date"]) rescue nil %>
+            <div class="meal-mobile-update">
+              <p class="font-semibold text-ink"><%= pluralize(visible_items.size, "meal slot") %> taking shape</p>
+              <p class="mt-1 text-meta text-ink-2"><%= mobile_fields.fetch("label", "Meal") %> · <%=
+                if mobile_date
+                  [ mobile_date.to_fs(:long), mobile_last_date&.to_fs(:long) ].compact.uniq.join(" to ")
+                else
+                  "Day #{mobile_item.fetch("day_offset", 0).to_i + 1} to Day #{mobile_last_item.fetch("day_offset", visible_items.size - 1).to_i + 1}"
+                end
+              %></p>
+              <a href="#meal-preview" class="mt-2 inline-flex min-h-11 items-center text-meta font-semibold text-ink">View all</a>
+            </div>
+          <% end %>
+
+          <div class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
+            <%= button_to "Continue", continue_planning_project_planner_session_path(project, planner_session), params: { expected_revision: planner_session.generation_revision }, class: "btn btn-primary", disabled: !planner_session.ready_to_continue?, data: { turbo_submits_with: "Continuing…" } %>
+            <% if visible_items.any? && !planner_session.generation_busy? %>
+              <%= button_to "Finish with this", finish_planning_project_planner_session_path(project, planner_session), params: { expected_revision: planner_session.generation_revision }, class: "btn btn-text" %>
+            <% end %>
+          </div>
+        <% else %>
+          <h2 id="meal-guide-heading" class="text-lg font-semibold text-ink">Preparing your first choice…</h2>
+          <p class="mt-3 meal-builder-status" data-meal-planner-target="status">The Planner is shaping questions around this meal train.</p>
+          <% if planner_session.last_error.present? %>
+            <p role="alert" class="mt-4 rounded-control bg-danger-soft px-4 py-3 text-danger"><%= PlannerSession::ERROR_MESSAGE %></p>
+            <%= button_to "Retry", retry_generation_project_planner_session_path(project, planner_session), params: { expected_revision: planner_session.generation_revision }, class: "mt-3 btn btn-secondary" %>
+          <% end %>
+        <% end %>
+
+        <% unless planner_session.accepted? %>
+          <% if planner_session.asking? && (planner_session.pending_answer&.fetch("step_index", 0) || planner_session.steps.length).positive? %>
+            <details class="mt-5">
+              <summary class="meal-builder-text-action">Back to earlier choices</summary>
+              <%= render "planner_sessions/meal_answers", project:, planner_session:, previous_only: true %>
+            </details>
+          <% end %>
+          <%= button_to "Save and leave", save_and_leave_project_planner_session_path(project, planner_session), class: "-ms-3 mt-7 btn btn-text",
+            form: { data: { turbo_frame: "_top" } } %>
+        <% end %>
+        <%= render "planner_sessions/privacy" %>
+      </section>
+
+      <%= render "planner_sessions/meal_preview", project:, planner_session:, visible_items:, removed_item: %>
+    </div>
+  </section>
+<% end %>

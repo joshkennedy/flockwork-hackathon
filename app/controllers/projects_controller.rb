@@ -21,6 +21,10 @@ class ProjectsController < ApplicationController
   end
 
   def show
+    if Policy.can?(Current.person, :plan, @project)
+      @resumable_planner_session = @project.planner_sessions.where(flow_version: 2, started_by: Current.person, status: %i[asking reviewing]).order(updated_at: :desc).first
+      @completed_planner_session = @project.planner_sessions.where(flow_version: 2, status: :accepted).find_by(id: params[:added_plan]) if params[:added_plan].present?
+    end
     @ownership_transfer_leaders = @project.memberships.leader.where.not(person_id: @project.owner_id).includes(:person)
     return unless Policy.can?(Current.person, :view_notes, @project)
 
@@ -49,6 +53,24 @@ class ProjectsController < ApplicationController
   def new
     authorize_project_creation
     @project = Current.workspace.projects.new
+    @manual_project = params[:manual].present?
+  end
+
+  def start_meal_planner
+    authorize_project_creation
+    Project.transaction do
+      @project = Project.create_for(creator: Current.person, attributes: {
+        name: "Meal train", description: "Organize meals for a meal train.", enabled_tools: []
+      })
+      @project.save!
+      @planner_session = @project.planner_sessions.create!(
+        started_by: Current.person, flow_version: 2,
+        description: "Help organize a meal train. Build a Sign-up sheet of meals with open roles, without asking for names or private care details."
+      )
+      @revision = @planner_session.queue_generation!
+    end
+    PlannerStepJob.perform_later(@project.id, @planner_session.id, Current.session.id, @revision)
+    redirect_to project_planner_session_path(@project, @planner_session), status: :see_other
   end
 
   def create
@@ -58,6 +80,7 @@ class ProjectsController < ApplicationController
     if @project.persisted?
       redirect_to @project
     else
+      @manual_project = true
       render :new, status: :unprocessable_content
     end
   end

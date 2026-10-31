@@ -1,6 +1,9 @@
 <% content_for :title, @project.name %>
 
-<div class="w-full max-w-5xl">
+<div class="w-full max-w-5xl" data-controller="<%= 'project-arrival' if @completed_planner_session %>" data-action="turbo:load@document->project-arrival#scheduleArrival" data-project-arrival-target-id-value="tool-signup-sheet">
+  <% if flash[:notice].present? %>
+    <p role="status" class="mb-5 rounded-control bg-sunlit-soft px-4 py-3 text-ink"><%= flash[:notice] %></p>
+  <% end %>
 
   <header class="max-w-4xl">
     <h1 class="text-ink"><%= @project.name %></h1>
@@ -20,7 +23,11 @@
   <nav class="mt-5 flex flex-wrap items-center gap-4" aria-label="Project navigation">
     <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
       <% if Policy.can?(Current.person, :plan, @project) %>
-        <%= link_to "Plan more", new_project_planner_session_path(@project), class: "btn btn-primary" %>
+        <% if @resumable_planner_session.present? %>
+          <%= link_to "Continue planning", project_planner_session_path(@project, @resumable_planner_session), class: "btn btn-primary" %>
+        <% else %>
+          <%= link_to "Plan more", new_project_planner_session_path(@project), class: "btn btn-primary" %>
+        <% end %>
       <% end %>
       <% if Policy.can?(Current.person, :view_team, @project) %>
         <%= link_to "Team", team_project_path(@project), class: "text-meta font-semibold text-ink-2 hover:text-ink" %>

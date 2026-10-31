@@ -6,11 +6,11 @@
     <h1 class="mt-4 text-ink">Archived Projects</h1>
   </div>
 
-  <nav class="mt-6 flex flex-wrap gap-4 text-meta font-semibold">
-    <%= link_to "Active", projects_path, class: "text-ink-2 hover:text-ink" %>
-    <%= link_to "Archived", archived_projects_path, class: "text-ink" %>
+  <nav class="mt-6 flex flex-wrap gap-4 text-meta font-semibold" aria-label="Project lists">
+    <%= link_to "Active", projects_path, class: "tab-link" %>
+    <%= link_to "Archived", archived_projects_path, class: "tab-link", aria: { current: "page" } %>
     <% if Policy.can?(Current.person, :view_deleted, Project) %>
-      <%= link_to "Deleted", deleted_projects_path, class: "text-ink-2 hover:text-ink" %>
+      <%= link_to "Deleted", deleted_projects_path, class: "tab-link" %>
     <% end %>
   </nav>
 
