@@ -105,7 +105,7 @@ class NotesVisibilityTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Recipient admins note: private care context."
     assert_not_includes response.body, "Person admins note: directory context."
 
-    get edit_person_path(@project.workspace, people(:recipient))
+    get edit_person_path(people(:recipient))
 
     assert_response :success
     assert_includes response.body, "Person admins note: directory context."
@@ -224,7 +224,7 @@ class NotesVisibilityTest < ActionDispatch::IntegrationTest
   test "an Admin writes a Person Note that is forced to Admins visibility" do
     sign_in_as_admin
     person = people(:recipient)
-    get edit_person_path(@project.workspace, person)
+    get edit_person_path(person)
 
     assert_response :success
     assert_select "form[data-note-form] select[name='note[visibility]'] option" do |options|
@@ -232,7 +232,7 @@ class NotesVisibilityTest < ActionDispatch::IntegrationTest
     end
 
     assert_difference "Note.count", 1 do
-      post person_notes_path(@project.workspace, person), params: {
+      post person_notes_path(person), params: {
         note: {
           notable_type: "Person",
           notable_id: person.id,
@@ -243,7 +243,7 @@ class NotesVisibilityTest < ActionDispatch::IntegrationTest
     end
 
     note = Note.order(:id).last
-    assert_redirected_to edit_person_path(@project.workspace, person)
+    assert_redirected_to edit_person_path(person)
     assert_equal person, note.notable
     assert_equal people(:admin), note.author
     assert_equal "admins", note.visibility
@@ -298,7 +298,7 @@ class NotesVisibilityTest < ActionDispatch::IntegrationTest
     person = people(:recipient)
 
     assert_no_difference "Note.count" do
-      post person_notes_path(@project.workspace, person), params: {
+      post person_notes_path(person), params: {
         note: {
           notable_type: "Person",
           notable_id: person.id,

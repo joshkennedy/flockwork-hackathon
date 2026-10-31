@@ -1,4 +1,5 @@
 <section class="tool-section" aria-labelledby="tool-docs">
+  <%= render "projects/tools/planner_arrival", tool: "docs" %>
   <% doc_items = project.doc_items.includes(:author, file_attachment: :blob).ordered %>
   <% documents = doc_items.select(&:document?) %>
   <% files = doc_items.select(&:file?) %>

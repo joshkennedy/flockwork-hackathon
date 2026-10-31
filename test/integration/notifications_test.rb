@@ -184,7 +184,7 @@ class NotificationsTest < ActionDispatch::IntegrationTest
   test "turning mention email off still creates the in-app notification" do
     mentioned_person = sign_in_as(:other_leader)
 
-    patch profile_path(mentioned_person.workspace), params: {
+    patch profile_path, params: {
       person: {
         name: mentioned_person.name,
         phone: mentioned_person.phone,
@@ -192,7 +192,7 @@ class NotificationsTest < ActionDispatch::IntegrationTest
       }
     }
 
-    assert_redirected_to workspace_path(mentioned_person.workspace)
+    assert_redirected_to home_path
     assert_not mentioned_person.reload.email_for?("mention")
 
     delete session_path
@@ -223,7 +223,7 @@ class NotificationsTest < ActionDispatch::IntegrationTest
   test "opting in to followed replies sends email" do
     follower = sign_in_as_leader
 
-    patch profile_path(follower.workspace), params: {
+    patch profile_path, params: {
       person: {
         name: follower.name,
         phone: follower.phone,
@@ -259,7 +259,7 @@ class NotificationsTest < ActionDispatch::IntegrationTest
   test "the profile form shows every email preference with registry defaults" do
     person = sign_in_as_volunteer
 
-    get edit_profile_path(person.workspace)
+    get edit_profile_path
 
     assert_response :success
     assert_select "fieldset legend", "Email notifications"

@@ -38,7 +38,7 @@ module Planner
       attr_reader :session
 
       def context
-        if session.meal_planner?
+        if session.build_as_you_go?
           payload = session.planning_context
           return JSON.parse(Planner::NameRedactor.new(Current.workspace).call(JSON.generate(payload)))
         end

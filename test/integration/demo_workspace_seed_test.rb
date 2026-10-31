@@ -166,9 +166,9 @@ class DemoWorkspaceSeedTest < ActionDispatch::IntegrationTest
       "leader" => "Maria Lopez",
       "volunteer" => "Sam Chen"
     }.each do |role, name|
-      post demo_session_path(DemoWorkspace::SLUG, role:)
+      post demo_session_path(role:)
 
-      assert_redirected_to workspace_path(DemoWorkspace::SLUG)
+      assert_redirected_to home_path
       follow_redirect!
       assert_select "p", "Signed in as #{name}"
       delete session_path

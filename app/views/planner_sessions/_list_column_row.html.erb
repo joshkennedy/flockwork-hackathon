@@ -1,0 +1,11 @@
+<div class="planner-column-row" data-list-columns-target="row">
+  <div>
+    <%= label_tag "#{field_id}_#{index}_name", "Column name", class: "block text-label font-medium text-ink-2" %>
+    <%= text_field_tag "item[fields][columns][#{index}][name]", column["name"], id: "#{field_id}_#{index}_name", required: true, class: "mt-1 block w-full field" %>
+  </div>
+  <div>
+    <%= label_tag "#{field_id}_#{index}_type", "Type", class: "block text-label font-medium text-ink-2" %>
+    <%= select_tag "item[fields][columns][#{index}][type]", options_for_select(ListColumn.column_types.keys.map { |type| [ type.humanize, type ] }, column["type"]), id: "#{field_id}_#{index}_type", class: "mt-1 block w-full field" %>
+  </div>
+  <button type="button" class="btn btn-danger planner-column-remove" data-action="list-columns#remove" aria-label="Remove column">Remove</button>
+</div>

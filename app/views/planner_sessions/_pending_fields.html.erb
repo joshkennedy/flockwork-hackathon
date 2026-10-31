@@ -1,0 +1,25 @@
+<% definitions = Planner::PendingItems.fields_for(item.fetch("kind")) %>
+<% Planner::PendingItems.editable_fields(item.fetch("kind")).each do |field_name| %>
+  <% definition = definitions.fetch(field_name) %>
+  <% value = fields[field_name] %>
+  <% field_id = "pending_#{item.fetch('id')}_#{field_name}" %>
+  <% input_name = "item[fields][#{field_name}]" %>
+  <% required = !Array(definition.fetch(:schema).fetch(:type)).include?("null") %>
+
+  <% if definition.fetch(:input) == :columns %>
+    <%= render "planner_sessions/list_columns_editor", item:, value: Array(value), field_id: %>
+  <% else %>
+    <div>
+      <%= label_tag field_id, definition.fetch(:label), class: "block text-label font-medium text-ink" %>
+      <% case definition.fetch(:input) %>
+      <% when :textarea %>
+        <%= text_area_tag input_name, value, id: field_id, rows: 3, required:, class: "mt-2 block w-full field" %>
+      <% when :select %>
+        <% options = definition.fetch(:options).map { |option_value, label| [ label, option_value ] } %>
+        <%= select_tag input_name, options_for_select(options, value), id: field_id, required:, class: "mt-2 block w-full field" %>
+      <% else %>
+        <%= tag.input type: definition.fetch(:input), name: input_name, id: field_id, value:, required:, min: definition[:min], step: definition[:step], class: "mt-2 block w-full field" %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

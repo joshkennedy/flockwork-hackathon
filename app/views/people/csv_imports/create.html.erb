@@ -1,6 +1,6 @@
 <% content_for :title, "Import results · #{Current.workspace.name}" %>
 <% content_for :breadcrumbs do %>
-  <%= link_to "← People", people_path(Current.workspace), class: "text-meta text-ink-2 hover:text-ink-2" %>
+  <%= link_to "← People", people_path, class: "text-meta text-ink-2 hover:text-ink-2" %>
   <span aria-hidden="true" class="text-ink-3">/</span>
   <span class="truncate text-ink"><%= content_for(:title) %></span>
 <% end %>

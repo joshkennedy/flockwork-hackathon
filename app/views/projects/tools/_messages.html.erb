@@ -1,4 +1,5 @@
 <section class="tool-section" aria-labelledby="tool-messages">
+  <%= render "projects/tools/planner_arrival", tool: "messages" %>
   <h2 id="tool-messages" class="text-ink"><%= icon(:messages, class: "text-tool-messages") %> <%= Project::TOOL_LABELS.fetch("messages") %></h2>
 
   <% if Policy.can?(Current.person, :post_message, project) %>

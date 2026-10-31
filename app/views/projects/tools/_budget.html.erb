@@ -4,6 +4,7 @@
 <% booking_totals = project.budget_kind_totals(:booking) %>
 <% purchase_totals = project.budget_kind_totals(:purchase) %>
 <section class="tool-section" aria-labelledby="tool-budget">
+  <%= render "projects/tools/planner_arrival", tool: "budget" %>
   <div class="flex flex-wrap items-start justify-between gap-4">
     <h2 id="tool-budget" class="text-ink"><%= icon(:budget, class: "text-tool-budget") %> <%= Project::TOOL_LABELS.fetch("budget") %></h2>
     <% if Policy.can?(Current.person, :manage_budget, project) %>

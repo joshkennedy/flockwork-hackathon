@@ -1,6 +1,6 @@
 <% content_for :title, @project.name %>
 
-<div class="w-full max-w-5xl" data-controller="<%= 'project-arrival' if @completed_planner_session %>" data-action="turbo:load@document->project-arrival#scheduleArrival" data-project-arrival-target-id-value="tool-signup-sheet">
+<div class="w-full max-w-5xl" data-controller="<%= 'project-arrival' if @completed_planner_session %>" data-action="turbo:load@document->project-arrival#scheduleArrival" data-project-arrival-target-id-value="tool-<%= (@completed_planner_session&.acceptance_tool || 'signup_sheet').tr('_', '-') %>">
   <% if flash[:notice].present? %>
     <p role="status" class="mb-5 rounded-control bg-sunlit-soft px-4 py-3 text-ink"><%= flash[:notice] %></p>
   <% end %>

@@ -5,12 +5,12 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     sign_in_as_admin
 
     assert_difference -> { workspaces(:st_example).people.count }, 1 do
-      post people_path("st-example"), params: {
+      post people_path, params: {
         person: { name: "Pat Person", email: "pat@st-example.test", phone: "555-0100" }
       }
     end
 
-    assert_redirected_to people_path("st-example")
+    assert_redirected_to people_path
     follow_redirect!
     assert_select "li", /Pat Person/
     assert_select "li", /pat@st-example\.test/
@@ -19,9 +19,9 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
   test "Admin adds a Person without email; they show as unable to sign in and cannot receive a link" do
     sign_in_as_admin
 
-    post people_path("st-example"), params: { person: { name: "No Email Pat" } }
+    post people_path, params: { person: { name: "No Email Pat" } }
 
-    assert_redirected_to people_path("st-example")
+    assert_redirected_to people_path
     person = workspaces(:st_example).people.find_by!(name: "No Email Pat")
     assert_not person.can_sign_in?
 
@@ -32,7 +32,7 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     delete session_path
     assert_no_emails do
       perform_enqueued_jobs do
-        post sign_in_requests_path(workspaces(:st_example)), params: { email: "pat@st-example.test" }
+        post sign_in_requests_path, params: { email: "pat@st-example.test" }
       end
     end
   end
@@ -40,11 +40,11 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
   test "Admin edits another Person's name, email and phone" do
     sign_in_as_admin
 
-    patch person_path("st-example", people(:volunteer)), params: {
+    patch person_path(people(:volunteer)), params: {
       person: { name: "Victor Volunteer", email: "victor@st-example.test", phone: "555-0199", admin: "0" }
     }
 
-    assert_redirected_to people_path("st-example")
+    assert_redirected_to people_path
     people(:volunteer).reload
     assert_equal "Victor Volunteer", people(:volunteer).name
     assert_equal "victor@st-example.test", people(:volunteer).email
@@ -54,13 +54,13 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
   test "Admin grants and revokes Admin on another Person" do
     sign_in_as_admin
 
-    patch person_path("st-example", people(:leader)), params: {
+    patch person_path(people(:leader)), params: {
       person: { name: people(:leader).name, email: people(:leader).email, admin: "1" }
     }
 
     assert people(:leader).reload.admin?
 
-    patch person_path("st-example", people(:leader)), params: {
+    patch person_path(people(:leader)), params: {
       person: { name: people(:leader).name, email: people(:leader).email, admin: "0" }
     }
 
@@ -70,7 +70,7 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
   test "the last Admin cannot revoke their own Admin role" do
     sign_in_as_admin
 
-    patch person_path("st-example", people(:admin)), params: {
+    patch person_path(people(:admin)), params: {
       person: { name: people(:admin).name, email: people(:admin).email, admin: "0" }
     }
 
@@ -82,27 +82,27 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
   test "non-Admin gets 404 on directory management" do
     sign_in_as_volunteer
 
-    get people_path("st-example")
+    get people_path
     assert_response :not_found
 
-    get new_person_path("st-example")
+    get new_person_path
     assert_response :not_found
 
-    post people_path("st-example"), params: { person: { name: "Sneak" } }
+    post people_path, params: { person: { name: "Sneak" } }
     assert_response :not_found
 
-    get edit_person_path("st-example", people(:leader))
+    get edit_person_path(people(:leader))
     assert_response :not_found
   end
 
   test "a Person edits their own name and phone" do
     sign_in_as_volunteer
 
-    patch profile_path("st-example"), params: {
+    patch profile_path, params: {
       person: { name: "Vic Updated", phone: "555-7777" }
     }
 
-    assert_redirected_to workspace_path("st-example")
+    assert_redirected_to home_path
     people(:volunteer).reload
     assert_equal "Vic Updated", people(:volunteer).name
     assert_equal "555-7777", people(:volunteer).phone
@@ -111,11 +111,11 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
   test "forged admin param on profile update does not grant Admin" do
     sign_in_as_volunteer
 
-    patch profile_path("st-example"), params: {
+    patch profile_path, params: {
       person: { name: people(:volunteer).name, phone: "", admin: "1", email: "hacker@example.com" }
     }
 
-    assert_redirected_to workspace_path("st-example")
+    assert_redirected_to home_path
     people(:volunteer).reload
     assert_not people(:volunteer).admin?
     assert_equal "vic@st-example.test", people(:volunteer).email
@@ -124,7 +124,7 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
   test "duplicate email in the same Workspace is rejected on the form" do
     sign_in_as_admin
 
-    post people_path("st-example"), params: {
+    post people_path, params: {
       person: { name: "Duplicate", email: people(:leader).email }
     }
 
@@ -136,31 +136,31 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     sign_in_as_outsider
 
     assert_difference -> { workspaces(:outsider_church).people.count }, 1 do
-      post people_path("outsider-church"), params: {
+      post people_path, params: {
         person: { name: "Shared Email", email: people(:admin).email }
       }
     end
 
-    assert_redirected_to people_path("outsider-church")
+    assert_redirected_to people_path
   end
 
   test "workspace home links to People for Admins and to My profile for everyone" do
     sign_in_as_admin
-    get workspace_path("st-example")
-    assert_select "a[href=?]", people_path("st-example"), text: "People"
-    assert_select "a[href=?]", edit_profile_path("st-example"), text: "My profile"
+    get home_path
+    assert_select "a[href=?]", people_path, text: "People"
+    assert_select "a[href=?]", edit_profile_path, text: "My profile"
 
     delete session_path
     sign_in_as_volunteer
-    get workspace_path("st-example")
-    assert_select "a[href=?]", people_path("st-example"), count: 0
-    assert_select "a[href=?]", edit_profile_path("st-example"), text: "My profile"
+    get home_path
+    assert_select "a[href=?]", people_path, count: 0
+    assert_select "a[href=?]", edit_profile_path, text: "My profile"
   end
 
   test "the directory lists People sorted by name" do
     sign_in_as_admin
 
-    get people_path("st-example")
+    get people_path
 
     assert_response :success
     names = css_select("ul li").map do |li|

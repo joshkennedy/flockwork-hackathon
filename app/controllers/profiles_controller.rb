@@ -1,6 +1,4 @@
 class ProfilesController < ApplicationController
-  include WorkspaceAccess
-
   def edit
     @person = Current.person
     load_involvement
@@ -10,7 +8,7 @@ class ProfilesController < ApplicationController
     @person = Current.person
 
     if @person.update(profile_params)
-      redirect_to workspace_path(Current.workspace), notice: "Your profile was updated."
+      redirect_to home_path, notice: "Your profile was updated."
     else
       load_involvement
       render :edit, status: :unprocessable_entity

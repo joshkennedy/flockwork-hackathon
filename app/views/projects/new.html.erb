@@ -10,18 +10,31 @@
   <% else %>
     <section class="mt-7" aria-labelledby="project-kind-heading">
       <h2 id="project-kind-heading" class="text-ink">What are we organizing?</h2>
-      <p class="mt-2 text-meta text-ink-2">Choose a starting point. The Planner will shape the next choices around your work.</p>
-
-      <div class="mt-5 max-w-xl">
+      <div class="project-kind-grid mt-5">
         <%= button_to start_meal_planner_projects_path, method: :post, class: "project-kind-tile", data: { turbo_submits_with: "Creating Project…" } do %>
           <span class="font-semibold text-ink">Meal train</span>
           <span class="mt-1 block text-meta text-ink-2">Build a dated sign-up sheet for meals.</span>
         <% end %>
+        <%= button_to start_planner_projects_path, method: :post, params: { planning_kind: "retreat" }, class: "project-kind-tile", data: { turbo_submits_with: "Creating Project…" } do %>
+          <span class="font-semibold text-ink">Retreat</span>
+          <span class="mt-1 block text-meta text-ink-2">Shape the schedule, tasks, bookings, and supplies.</span>
+        <% end %>
+        <%= button_to start_planner_projects_path, method: :post, params: { planning_kind: "workday" }, class: "project-kind-tile", data: { turbo_submits_with: "Creating Project…" } do %>
+          <span class="font-semibold text-ink">Workday</span>
+          <span class="mt-1 block text-meta text-ink-2">Organize jobs, materials, and ways to help.</span>
+        <% end %>
+        <%= button_to start_planner_projects_path, method: :post, params: { planning_kind: "children_program" }, class: "project-kind-tile", data: { turbo_submits_with: "Creating Project…" } do %>
+          <span class="font-semibold text-ink">Children’s program</span>
+          <span class="mt-1 block text-meta text-ink-2">Plan dates, volunteers, supplies, and details.</span>
+        <% end %>
+        <%= button_to start_planner_projects_path, method: :post, params: { planning_kind: "other" }, class: "project-kind-tile", data: { turbo_submits_with: "Creating Project…" } do %>
+          <span class="font-semibold text-ink">Something else</span>
+          <span class="mt-1 block text-meta text-ink-2">Start with a few clear choices about your idea.</span>
+        <% end %>
       </div>
 
-      <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-meta font-semibold">
-        <%= link_to "Something else", new_project_path(manual: true), class: "btn btn-secondary" %>
-        <span class="font-normal text-ink-2">Retreats, workdays, children’s programs, and any other Project continue with manual setup.</span>
+      <div class="mt-6 text-meta font-semibold">
+        <%= link_to "Set up manually", new_project_path(manual: true), class: "inline-flex min-h-11 items-center text-ink-2 hover:text-ink" %>
       </div>
     </section>
   <% end %>

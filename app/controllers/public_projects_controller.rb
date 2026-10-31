@@ -11,6 +11,6 @@ class PublicProjectsController < ApplicationController
     @schedule_items_by_day = @project.schedule_items.grouped_by_day
     @open_tasks = @project.tasks.open.where(assignee_id: nil).due_first
     @open_slots = @project.slots.chronological.where("claims_count < capacity")
-    @sign_in_path = new_sign_in_request_path(@workspace)
+    @sign_in_path = new_sign_in_request_path
   end
 end

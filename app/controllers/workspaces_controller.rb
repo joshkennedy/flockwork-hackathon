@@ -2,8 +2,6 @@ class WorkspacesController < ApplicationController
   allow_unauthenticated_access only: :create
 
   def show
-    return redirect_to workspace_path(Current.workspace) unless params[:workspace_slug] == Current.workspace.slug
-
     @workspace = Current.workspace
     @person = Current.person
     @pending_invitations = Policy.visible_invitations(Current.person).includes(:project).order(created_at: :desc)
@@ -15,7 +13,7 @@ class WorkspacesController < ApplicationController
 
     if @admin.valid?(:workspace_creation) && @workspace.save
       start_new_session_for @admin
-      redirect_to workspace_path(@workspace)
+      redirect_to home_path
     else
       redirect_to root_path, alert: (@workspace.errors.full_messages + @admin.errors.full_messages).to_sentence
     end

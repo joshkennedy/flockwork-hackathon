@@ -1,6 +1,6 @@
 <% content_for :title, "My profile" %>
 <% content_for :breadcrumbs do %>
-  <%= link_to "← #{Current.workspace.name}", workspace_path(Current.workspace), class: "text-meta text-ink-2 hover:text-ink-2" %>
+  <%= link_to "← #{Current.workspace.name}", home_path, class: "text-meta text-ink-2 hover:text-ink-2" %>
   <span aria-hidden="true" class="text-ink-3">/</span>
   <span class="truncate text-ink"><%= content_for(:title) %></span>
 <% end %>
@@ -8,7 +8,7 @@
 <div class="w-full max-w-lg">
   <h1 class="mt-1 text-ink">My profile</h1>
 
-  <%= form_with model: @person, url: profile_path(Current.workspace), method: :patch, class: "mt-7 space-y-4" do |form| %>
+  <%= form_with model: @person, url: profile_path, method: :patch, class: "mt-7 space-y-4" do |form| %>
     <% if @person.errors.any? %>
       <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-meta text-danger">
         <%= @person.errors.full_messages.to_sentence %>

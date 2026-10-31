@@ -35,11 +35,11 @@
   <nav class="mt-7 flex flex-wrap gap-4 text-meta font-medium">
     <%= link_to "My Tasks", my_tasks_path, class: "text-ink-2 hover:text-ink" %>
     <% if @person.admin? %>
-      <%= link_to "People", people_path(@workspace), class: "text-ink-2 hover:text-ink" %>
+      <%= link_to "People", people_path, class: "text-ink-2 hover:text-ink" %>
     <% end %>
     <% if Policy.can?(@person, :view_oversight, @workspace) %>
       <%= link_to "Oversight", oversight_path, class: "text-ink-2 hover:text-ink" %>
     <% end %>
-    <%= link_to "My profile", edit_profile_path(@workspace), class: "text-ink-2 hover:text-ink" %>
+    <%= link_to "My profile", edit_profile_path, class: "text-ink-2 hover:text-ink" %>
   </nav>
 </div>

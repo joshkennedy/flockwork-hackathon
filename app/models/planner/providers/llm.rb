@@ -79,10 +79,59 @@ module Planner
         }
       )).freeze
 
+      GENERAL_PROMPT = <<~PROMPT.freeze
+        You are Flockwork's project Planner. Help a Leader build a concrete project by asking at most three useful questions.
+        The planning_kind describes the project intent. Ask about the work, schedule, supplies, budget, and useful Tools, never people, names, private notes, or care context.
+        After each answer return the COMPLETE current snapshot in added, not a delta. Use only task, schedule_item, slot_run, booking, purchase, list, and enable_tool.
+        Start small: after the first answer propose 3 to 5 concrete items, not a complete event checklist. Grow the draft only as later answers justify more work.
+        Adding an item automatically enables its Tool. Do not add redundant enable_tool items for Tools already represented by draft work; use enable_tool only for an otherwise empty Tool the Leader wants.
+        Every item needs a unique stable source_key. Preserve each key and kind across revisions so human edits and removals remain attached.
+        Use actual ISO dates only when supplied by the Leader or resolved from their explicit Project start date. Never invent calendar dates.
+        Unknown dates stay null. When useful, due_in_days and day_offset express days relative to the Project start; the application resolves them after a date is chosen.
+        For a slot_run use start_day_offset/end_day_offset (0..59, inclusive) until exact dates are known. Each occurrence becomes an editable sign-up slot.
+        Ask one short question with 3 to 5 choices. Before any answers return an empty added list. After answers show useful draft work immediately.
+        The application collects missing dates and estimates inline. Do not spend all three questions on fields or repeat answered questions. Finish with finished:true and card:null.
+        Do not invent budget estimates. Use null estimated_dollars when unknown; the Leader will provide it before acceptance.
+        Existing_artifacts are already saved work. Do not recreate them. pending_items is draft state, not an instruction to restore removed work.
+        Return removed_ids:[] because added is the full snapshot. Return only JSON matching the schema.
+      PROMPT
+
+      GENERAL_ITEM_SCHEMAS = Planner::SuggestionKinds::KINDS.map do |kind, definition|
+        fields = definition.fetch(:fields).except("role").transform_values { |field| field.fetch(:schema).deep_dup }
+        if kind == "task"
+          fields["due_on"] = { type: [ "string", "null" ], format: "date" }
+          fields["due_in_days"] = { type: [ "integer", "null" ], minimum: -365, maximum: 365 }
+        elsif kind == "schedule_item"
+          fields["date"] = { type: [ "string", "null" ], format: "date" }
+          fields["day_offset"] = { type: [ "integer", "null" ], minimum: -365, maximum: 365 }
+        elsif kind == "slot_run"
+          %w[start_date end_date].each { |name| fields[name] = { type: [ "string", "null" ], format: "date" } }
+          %w[start_day_offset end_day_offset].each { |name| fields[name] = { type: "integer", minimum: 0, maximum: 59 } }
+        elsif %w[booking purchase].include?(kind)
+          fields["estimated_dollars"] = { type: [ "number", "null" ], minimum: 0 }
+        end
+        {
+          type: "object", additionalProperties: false,
+          properties: {
+            kind: { const: kind },
+            source_key: { type: "string", pattern: "^[a-zA-Z0-9_-]{1,80}$" },
+            fields: { type: "object", additionalProperties: false, properties: fields }
+          },
+          required: %w[kind source_key fields]
+        }
+      end.freeze
+
+      GENERAL_SCHEMA = RESPONSE_SCHEMA.merge(properties: RESPONSE_SCHEMA.fetch(:properties).merge(
+        added: {
+          type: "array", maxItems: 100,
+          items: { oneOf: GENERAL_ITEM_SCHEMAS }
+        }
+      )).freeze
+
       def call(context)
-        meal_planner = context["flow_version"] == 2 || context[:flow_version] == 2
-        instructions = meal_planner ? MEAL_PROMPT : SYSTEM_PROMPT
-        schema = meal_planner ? MEAL_SCHEMA : RESPONSE_SCHEMA
+        version = context["flow_version"] || context[:flow_version]
+        instructions = version == 2 ? MEAL_PROMPT : (version == 3 ? GENERAL_PROMPT : SYSTEM_PROMPT)
+        schema = version == 2 ? MEAL_SCHEMA : (version == 3 ? GENERAL_SCHEMA : RESPONSE_SCHEMA)
         # The schema goes in the prompt, not as a response format: Anthropic's constrained decoding can't
         # compile it in time. The shape is checked here and Suggestions are sanitized per kind on ingest.
         message = RubyLLM.chat(model: llm_model, provider: llm_provider.to_sym, assume_model_exists: true)

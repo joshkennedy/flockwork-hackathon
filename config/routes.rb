@@ -23,6 +23,7 @@ Rails.application.routes.draw do
       get :archived
       get :deleted
       post :start_meal_planner
+      post :start_planner
     end
 
     member do
@@ -112,19 +113,20 @@ Rails.application.routes.draw do
   get "sign_in/:token", to: "sign_in_links#show", as: :sign_in_link, format: false
   post "sign_in/:token", to: "sign_in_links#create", format: false
 
-  scope ":workspace_slug", constraints: { workspace_slug: /[a-z0-9-]+/ } do
-    get "/", to: "workspaces#show", as: :workspace
-    get "sign_in", to: "sign_in_requests#new", as: :new_sign_in_request
-    post "sign_in", to: "sign_in_requests#create", as: :sign_in_requests
-    post "demo/:role", to: "demo_sessions#create", as: :demo_session
-    get "people/import", to: "people/csv_imports#new", as: :new_people_csv_import
-    post "people/import", to: "people/csv_imports#create", as: :people_csv_import
-    get "directory/planning_center", to: "directory/planning_center#show", as: :planning_center_directory
-    patch "directory/planning_center", to: "directory/planning_center#update"
-    post "directory/planning_center/sync", to: "directory/planning_center#sync", as: :sync_planning_center_directory
-    resources :people, only: %i[index new create edit update] do
-      resources :notes, only: :create
-    end
-    resource :profile, only: %i[edit update]
+  get "home", to: "workspaces#show", as: :home
+  get "sign_in", to: "sign_in_requests#new", as: :new_sign_in_request
+  post "sign_in", to: "sign_in_requests#create", as: :sign_in_requests
+  get "choose_church", to: "workspace_choices#new", as: :new_workspace_choice
+  post "choose_church", to: "workspace_choices#create", as: :workspace_choice
+  get "demo", to: "demo_sessions#new", as: :new_demo_session
+  post "demo/:role", to: "demo_sessions#create", as: :demo_session
+  get "people/import", to: "people/csv_imports#new", as: :new_people_csv_import
+  post "people/import", to: "people/csv_imports#create", as: :people_csv_import
+  get "directory/planning_center", to: "directory/planning_center#show", as: :planning_center_directory
+  patch "directory/planning_center", to: "directory/planning_center#update"
+  post "directory/planning_center/sync", to: "directory/planning_center#sync", as: :sync_planning_center_directory
+  resources :people, only: %i[index new create edit update] do
+    resources :notes, only: :create
   end
+  resource :profile, only: %i[edit update]
 end

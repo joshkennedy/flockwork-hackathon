@@ -1,6 +1,7 @@
 <% open_tasks = project.tasks.open.includes(:assignee, :rich_text_details).due_first %>
 <% done_tasks = project.tasks.done.includes(:assignee, :completed_by, :rich_text_details).order(completed_at: :desc, id: :desc) %>
 <section class="tool-section" aria-labelledby="tool-tasks">
+  <%= render "projects/tools/planner_arrival", tool: "tasks" %>
   <div class="flex flex-wrap items-start justify-between gap-4">
     <h2 id="tool-tasks" class="text-ink"><%= icon(:tasks, class: "text-tool-tasks") %> <%= Project::TOOL_LABELS.fetch("tasks") %></h2>
     <% if Policy.can?(Current.person, :manage_tasks, project) %>

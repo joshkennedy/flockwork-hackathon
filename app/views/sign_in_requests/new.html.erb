@@ -1,10 +1,10 @@
-<% content_for :title, "Sign in to #{@workspace.name}" %>
+<% content_for :title, "Sign in" %>
 
 <div class="w-full max-w-xl mx-auto">
-  <h1 class="text-ink">Sign in to <%= @workspace.name %></h1>
+  <h1 class="text-ink">Sign in to Flockwork</h1>
   <p class="mt-2 text-ink-2">Enter your email and we will send you a sign-in link. It works once and expires in 15 minutes.</p>
 
-  <%= form_with url: sign_in_requests_path(@workspace), class: "mt-6 space-y-4" do |f| %>
+  <%= form_with url: sign_in_requests_path, class: "mt-6 space-y-4" do |f| %>
     <div>
       <%= f.label :email, "Email", class: "block text-label font-medium text-ink-2" %>
       <%= f.email_field :email, required: true, autofocus: true, autocomplete: "email", class: "mt-1 block w-full field" %>
@@ -13,16 +13,5 @@
     <%= f.submit "Email me a sign-in link", class: "w-full btn btn-primary" %>
   <% end %>
 
-  <% if @workspace.demo? %>
-    <div class="mt-7 border-t border-hairline pt-6">
-      <h2 class="text-ink">Explore the demo</h2>
-      <p class="mt-1 text-meta text-ink-2">No email needed. Pick a role to look around.</p>
-
-      <div class="mt-4 grid gap-3">
-        <%= button_to "Explore as Admin", demo_session_path(@workspace, role: "admin"), class: "w-full btn btn-secondary" %>
-        <%= button_to "Explore as Leader", demo_session_path(@workspace, role: "leader"), class: "w-full btn btn-secondary" %>
-        <%= button_to "Explore as Volunteer", demo_session_path(@workspace, role: "volunteer"), class: "w-full btn btn-secondary" %>
-      </div>
-    </div>
-  <% end %>
+  <p class="mt-6 text-meta text-ink-2">Just looking around? <%= link_to "Explore the demo", new_demo_session_path, class: "font-medium text-ink hover:text-ink-hover" %></p>
 </div>

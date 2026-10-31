@@ -3,7 +3,7 @@
 <div class="w-full max-w-4xl">
   <div class="flex items-end justify-between gap-5">
     <div>
-      <%= link_to Current.workspace.name, workspace_path(Current.workspace), class: "text-meta font-semibold text-ink-2 hover:text-ink" %>
+      <%= link_to Current.workspace.name, home_path, class: "text-meta font-semibold text-ink-2 hover:text-ink" %>
       <h1 class="mt-4 text-ink">Projects</h1>
     </div>
     <%= link_to "Start a Project", new_project_path, class: "btn btn-primary" %>

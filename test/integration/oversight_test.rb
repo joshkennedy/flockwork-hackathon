@@ -130,7 +130,7 @@ class OversightTest < ActionDispatch::IntegrationTest
     sign_in_as_admin
     involved_person = create_involvement_history
 
-    get edit_person_path(workspaces(:st_example), involved_person)
+    get edit_person_path(involved_person)
 
     assert_response :success
     assert_select "h2", "Involvement"
@@ -141,13 +141,13 @@ class OversightTest < ActionDispatch::IntegrationTest
     involved_person = create_involvement_history
     sign_in_as(involved_person)
 
-    get edit_profile_path(workspaces(:st_example))
+    get edit_profile_path
 
     assert_response :success
     assert_select "h2", "Your Involvement"
     assert_equal [ [ 2026, 1, 1, 2 ], [ 2025, 1, 2, 3 ] ], involvement_timeline_rows
 
-    get edit_person_path(workspaces(:st_example), people(:leader))
+    get edit_person_path(people(:leader))
     assert_response :not_found
 
     get oversight_path

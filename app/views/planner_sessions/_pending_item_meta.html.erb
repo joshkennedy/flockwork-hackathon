@@ -1,0 +1,23 @@
+<% fields = item.fetch("fields") %>
+<% kind = item.fetch("kind") %>
+<% parts = case kind
+  when "task"
+    [ ("Due #{planner_date(fields['due_on'])}" if fields["due_on"].present?), fields["details"].presence ]
+  when "schedule_item"
+    date = fields["date"].present? ? planner_date(fields["date"]) : "Date to choose"
+    times = [ fields["starts_at"], fields["ends_at"] ].compact_blank.map { |time| planner_time(time) }.join(" to ")
+    [ date, times.presence, fields["location"].presence ]
+  when "slot"
+    date = fields["date"].present? ? planner_date(fields["date"]) : "Date to choose"
+    [ date, (planner_time(fields["time"]) if fields["time"].present?), pluralize(fields.fetch("capacity", 1), "spot") ]
+  when "booking", "purchase"
+    estimate = fields["estimated_dollars"]
+    [ estimate.present? ? number_to_currency(estimate) : "Estimate unknown" ]
+  when "list"
+    [ pluralize(Array(fields["columns"]).size, "column") ]
+  when "enable_tool"
+    [ "Will be available on this Project" ]
+  else
+    []
+  end.compact_blank %>
+<% if parts.any? %><p class="mt-1 text-meta text-ink-2"><%= parts.join(" · ") %></p><% end %>

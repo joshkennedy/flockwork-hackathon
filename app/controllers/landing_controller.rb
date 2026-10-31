@@ -2,6 +2,6 @@ class LandingController < ApplicationController
   allow_unauthenticated_access
 
   def show
-    redirect_to workspace_path(Current.workspace) if authenticated?
+    redirect_to home_path if authenticated?
   end
 end

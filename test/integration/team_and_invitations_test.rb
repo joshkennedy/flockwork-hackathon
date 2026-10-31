@@ -88,7 +88,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     assert_select "form[action='#{accept_invitation_path(token)}'] button", "Accept"
     assert_select "form[action='#{decline_invitation_path(token)}'] button", "Decline"
 
-    get workspace_path(invitee.workspace)
+    get home_path
 
     assert_response :success
     assert_select "p", "Signed in as Vera Volunteer"
@@ -125,7 +125,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     delete session_path
     get invitation_path(token)
     assert_response :unprocessable_content
-    get workspace_path(invitee.workspace)
+    get home_path
     assert_redirected_to root_path
   end
 
@@ -148,7 +148,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
       patch decline_invitation_path(token)
     end
 
-    assert_redirected_to workspace_path(invitee.workspace)
+    assert_redirected_to home_path
     assert_predicate invitation.reload, :declined?
     assert_not_nil invitation.responded_at
     assert_nil project.memberships.find_by(person: invitee)
@@ -263,7 +263,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
 
     delete session_path
     sign_in_as(invitee)
-    get workspace_path(invitee.workspace)
+    get home_path
 
     assert_response :success
     assert_select "h2", "Pending Invitations"

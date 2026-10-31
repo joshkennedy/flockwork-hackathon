@@ -11,7 +11,7 @@
   <% end %>
 </nav>
 <div class="mt-auto pt-10">
-  <%= link_to edit_profile_path(Current.workspace), class: "nav-item" do %>
+  <%= link_to edit_profile_path, class: "nav-item" do %>
     <%= icon(:people) %>
     <span><%= Current.person.name %><span class="block text-label font-normal text-ink-2">Profile</span></span>
   <% end %>

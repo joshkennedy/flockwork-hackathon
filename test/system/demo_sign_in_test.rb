@@ -2,7 +2,7 @@ require "application_system_test_case"
 
 class DemoSignInTest < ApplicationSystemTestCase
   test "Explore as Volunteer signs straight in and lands on the Workspace home" do
-    visit "/grace-fellowship/sign_in"
+    visit new_demo_session_path
 
     click_on "Explore as Volunteer"
 

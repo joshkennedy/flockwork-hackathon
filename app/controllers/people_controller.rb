@@ -1,5 +1,4 @@
 class PeopleController < ApplicationController
-  include WorkspaceAccess
   before_action :authorize_people_management
 
   def index
@@ -14,7 +13,7 @@ class PeopleController < ApplicationController
     @person = Current.workspace.people.build(person_params)
 
     if @person.save
-      redirect_to people_path(Current.workspace), notice: "Added #{@person.name}."
+      redirect_to people_path, notice: "Added #{@person.name}."
     else
       render :new, status: :unprocessable_entity
     end
@@ -30,7 +29,7 @@ class PeopleController < ApplicationController
     @person = Current.workspace.people.find(params[:id])
 
     if @person.update(person_params)
-      redirect_to people_path(Current.workspace), notice: "Saved #{@person.name}."
+      redirect_to people_path, notice: "Saved #{@person.name}."
     else
       load_notes
       load_involvement

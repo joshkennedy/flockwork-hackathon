@@ -66,7 +66,7 @@ class CsvImportTest < ActionDispatch::IntegrationTest
   test "non-Admin gets 404 on CSV import" do
     sign_in_as_volunteer
 
-    get new_people_csv_import_path("st-example")
+    get new_people_csv_import_path
     assert_response :not_found
 
     upload_csv "people_import.csv"
@@ -75,7 +75,7 @@ class CsvImportTest < ActionDispatch::IntegrationTest
 
   private
     def upload_csv(filename)
-      post people_csv_import_path("st-example"), params: {
+      post people_csv_import_path, params: {
         csv_file: fixture_file_upload(filename, "text/csv")
       }
     end

@@ -104,7 +104,7 @@ class MealPlannerSystemTest < ApplicationSystemTestCase
 
   private
     def sign_in_as_leader_in_browser
-      visit new_sign_in_request_path(workspaces(:grace_fellowship))
+      visit new_demo_session_path
       click_on "Explore as Leader"
       assert_text "Signed in as Maria Lopez"
     end

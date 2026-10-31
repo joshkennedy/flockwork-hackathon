@@ -1,6 +1,5 @@
 module People
   class CsvImportsController < ApplicationController
-    include WorkspaceAccess
     include AdminOnly
 
     def new

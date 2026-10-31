@@ -4,11 +4,11 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
   test "Admin connects Planning Center and sees the connected state" do
     sign_in_as_admin
 
-    patch planning_center_directory_path("st-example"), params: {
+    patch planning_center_directory_path, params: {
       workspace: { pco_app_id: "cassette-app-id", pco_secret: "cassette-secret" }
     }
 
-    assert_redirected_to planning_center_directory_path("st-example")
+    assert_redirected_to planning_center_directory_path
     follow_redirect!
     assert_select "p", text: "Connected"
     assert workspaces(:st_example).reload.planning_center_connected?
@@ -93,7 +93,7 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
     delete session_path
     assert_no_emails do
       perform_enqueued_jobs do
-        post sign_in_requests_path("st-example"), params: { email: "" }
+        post sign_in_requests_path, params: { email: "" }
       end
     end
     assert_select "h1", "Check your email"
@@ -106,7 +106,7 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
 
     assert_no_difference -> { workspace.people.count } do
       VCR.use_cassette("planning_center/unauthorized") do
-        perform_enqueued_jobs { post sync_planning_center_directory_path("st-example") }
+        perform_enqueued_jobs { post sync_planning_center_directory_path }
       end
     end
 
@@ -117,7 +117,7 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
   test "non-Admin gets 404 on Planning Center connection" do
     sign_in_as_volunteer
 
-    get planning_center_directory_path("st-example")
+    get planning_center_directory_path
 
     assert_response :not_found
   end
@@ -125,21 +125,21 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
   test "People directory links to Planning Center" do
     sign_in_as_admin
 
-    get people_path("st-example")
+    get people_path
 
-    assert_select "a[href=?]", planning_center_directory_path("st-example"), text: "Planning Center"
+    assert_select "a[href=?]", planning_center_directory_path, text: "Planning Center"
   end
 
   private
     def connect(app_id: "cassette-app-id", secret: "cassette-secret")
-      patch planning_center_directory_path("st-example"), params: {
+      patch planning_center_directory_path, params: {
         workspace: { pco_app_id: app_id, pco_secret: secret }
       }
     end
 
     def sync_with_recording
       VCR.use_cassette("planning_center/people") do
-        perform_enqueued_jobs { post sync_planning_center_directory_path("st-example") }
+        perform_enqueued_jobs { post sync_planning_center_directory_path }
       end
     end
 end

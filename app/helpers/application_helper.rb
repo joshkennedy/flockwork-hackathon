@@ -36,12 +36,12 @@ module ApplicationHelper
 
   def workspace_navigation
     items = [
-      [ "Home", workspace_path(Current.workspace), :home ],
+      [ "Home", home_path, :home ],
       [ "My Tasks", my_tasks_path, :tasks ],
       [ "Projects", projects_path, :projects ],
       [ "Get involved", get_involved_path, :heart ]
     ]
-    items << [ "People", people_path(Current.workspace), :people ] if Policy.can?(Current.person, :manage_people, Current.workspace)
+    items << [ "People", people_path, :people ] if Policy.can?(Current.person, :manage_people, Current.workspace)
     items << [ "Oversight", oversight_path, :oversight ] if Policy.can?(Current.person, :view_oversight, Current.workspace)
     items << [ "Notifications", notifications_path, :notifications ]
     items
@@ -56,6 +56,6 @@ module ApplicationHelper
   end
 
   def navigation_current?(path)
-    current_page?(path) || (path != workspace_path(Current.workspace) && request.path.start_with?("#{path}/"))
+    current_page?(path) || (path != home_path && request.path.start_with?("#{path}/"))
   end
 end

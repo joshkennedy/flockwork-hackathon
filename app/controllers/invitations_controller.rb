@@ -45,7 +45,7 @@ class InvitationsController < ApplicationController
 
   def decline
     @invitation.decline!
-    redirect_to workspace_path(Current.workspace), notice: "You declined the Invitation."
+    redirect_to home_path, notice: "You declined the Invitation."
   end
 
   private

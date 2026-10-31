@@ -1,6 +1,6 @@
 <% content_for :title, "Planning Center · #{Current.workspace.name}" %>
 <% content_for :breadcrumbs do %>
-  <%= link_to "← People", people_path(Current.workspace), class: "text-meta text-ink-2 hover:text-ink-2" %>
+  <%= link_to "← People", people_path, class: "text-meta text-ink-2 hover:text-ink-2" %>
   <span aria-hidden="true" class="text-ink-3">/</span>
   <span class="truncate text-ink"><%= content_for(:title) %></span>
 <% end %>
@@ -33,10 +33,10 @@
       <p class="mt-5 text-meta text-ink-2"><%= result.fetch("created") %> created, <%= result.fetch("updated") %> updated, <%= result.fetch("unchanged") %> unchanged.</p>
     <% end %>
 
-    <%= button_to "Sync now", sync_planning_center_directory_path(Current.workspace), class: "mt-5 btn btn-primary" %>
+    <%= button_to "Sync now", sync_planning_center_directory_path, class: "mt-5 btn btn-primary" %>
   <% end %>
 
-  <%= form_with model: Current.workspace, url: planning_center_directory_path(Current.workspace), method: :patch, class: "mt-7 space-y-4" do |form| %>
+  <%= form_with model: Current.workspace, url: planning_center_directory_path, method: :patch, class: "mt-7 space-y-4" do |form| %>
     <div>
       <%= form.label :pco_app_id, "App ID", class: "block text-label font-medium text-ink" %>
       <%= form.password_field :pco_app_id, value: nil, required: true, autocomplete: "off", class: "mt-1 block w-full field" %>

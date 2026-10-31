@@ -5,7 +5,7 @@ module SignInHelpers
     token = request_sign_in_link(person)
 
     post sign_in_link_path(token)
-    assert_redirected_to workspace_path(person.workspace)
+    assert_redirected_to home_path
     person
   end
 
@@ -16,7 +16,7 @@ module SignInHelpers
 
   def request_sign_in_link(person)
     perform_enqueued_jobs do
-      post sign_in_requests_path(person.workspace), params: { email: person.email }
+      post sign_in_requests_path, params: { email: person.email }
     end
 
     ActionMailer::Base.deliveries.last.body.encoded[%r{/sign_in/(\S+)}, 1]

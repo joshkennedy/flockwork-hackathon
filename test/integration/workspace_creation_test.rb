@@ -4,7 +4,7 @@ class WorkspaceCreationTest < ActionDispatch::IntegrationTest
   test "creating a Workspace makes the creator its Admin, signs them in, and lands on its home" do
     post workspaces_path, params: { church_name: "Hope Church", your_name: "Casey Creator", email: "Casey@Hope.test" }
 
-    assert_redirected_to "/hope-church"
+    assert_redirected_to home_path
     follow_redirect!
     assert_select "h1", "Hope Church"
     assert_select "p", "Signed in as Casey Creator"

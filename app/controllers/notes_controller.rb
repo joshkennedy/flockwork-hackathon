@@ -20,15 +20,13 @@ class NotesController < ApplicationController
     end
 
     def create_person_note
-      raise ActiveRecord::RecordNotFound unless params[:workspace_slug] == Current.workspace.slug
-
       person = Current.workspace.people.find(params[:person_id])
       note = Current.workspace.notes.build(note_params.except(:notable_type, :notable_id).merge(
         notable: person,
         author: Current.person
       ))
       authorize_note(note)
-      save_note(note, edit_person_path(Current.workspace, person))
+      save_note(note, edit_person_path(person))
     end
 
     def find_project_notable(project)

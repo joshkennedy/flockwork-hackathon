@@ -1,0 +1,63 @@
+<% fields = item.fetch("fields") %>
+<% errors = Array(pending_errors.fetch(item.fetch("id"), [])) %>
+<article id="pending-item-<%= item.fetch("id") %>" class="meal-slot <%= "meal-slot-conflict" if item["conflict"].present? %>">
+  <div class="meal-slot-summary">
+    <div class="min-w-0 flex-1">
+      <p class="font-semibold text-ink"><%= planner_pending_summary(item) %></p>
+      <%= render "planner_sessions/pending_item_meta", item: %>
+      <% if errors.any? %>
+        <ul class="mt-2 text-meta text-danger" aria-label="Needs attention">
+          <% errors.each do |error| %><li><%= error %></li><% end %>
+        </ul>
+      <% end %>
+    </div>
+    <% unless planner_session.generation_busy? %>
+      <details class="meal-slot-editor">
+        <summary class="btn btn-text">Edit</summary>
+        <div class="meal-slot-edit-panel">
+          <%= form_with url: pending_item_project_planner_session_path(project, planner_session), method: :patch,
+            namespace: "pending_#{item.fetch('id')}", class: "grid gap-4" do |form| %>
+            <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
+            <%= form.hidden_field :id, name: "item[id]", value: item.fetch("id") %>
+            <%= render "planner_sessions/pending_fields", item:, fields: %>
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <%= form.button "Save changes", name: "item[decision]", value: "edit", class: "btn btn-secondary", data: { turbo_submits_with: "Saving…" } %>
+              <%= form.button "Remove", name: "item[decision]", value: "remove", class: "btn btn-danger", formnovalidate: true %>
+            </div>
+          <% end %>
+        </div>
+      </details>
+    <% end %>
+  </div>
+
+  <% if item["conflict"].present? %>
+    <% conflict = item.fetch("conflict") %>
+    <div class="meal-slot-conflict-actions" role="alert">
+      <p class="font-semibold text-ink"><%= conflict["type"] == "removed_by_revision" ? "Your new choice no longer includes this item." : "Your new choice changed an item you edited." %></p>
+      <% if conflict["type"] == "removed_by_revision" %>
+        <p class="mt-1 text-meta text-ink-2">Keep your version, or remove it from the Project preview.</p>
+      <% else %>
+        <dl class="mt-2 grid gap-2 text-meta">
+          <% conflict.fetch("fields", {}).each do |field, values| %>
+            <div>
+              <dt class="font-semibold text-ink"><%= field.humanize %></dt>
+              <dd class="text-ink-2">Your edit: <%= planner_conflict_value(values["edited"]) %></dd>
+              <dd class="text-ink-2">New suggestion: <%= planner_conflict_value(values["suggested"]) %></dd>
+            </div>
+          <% end %>
+        </dl>
+      <% end %>
+      <div class="mt-3 flex flex-wrap gap-3">
+        <%= button_to "Keep my edit", pending_item_project_planner_session_path(project, planner_session), method: :patch,
+          params: { item: { id: item.fetch("id"), decision: "resolve", resolution: "keep_edit" }, expected_revision: planner_session.generation_revision }, class: "btn btn-secondary" %>
+        <% if conflict["type"] == "removed_by_revision" %>
+          <%= button_to "Remove", pending_item_project_planner_session_path(project, planner_session), method: :patch,
+            params: { item: { id: item.fetch("id"), decision: "remove" }, expected_revision: planner_session.generation_revision }, class: "btn btn-danger" %>
+        <% else %>
+          <%= button_to "Use new suggestion", pending_item_project_planner_session_path(project, planner_session), method: :patch,
+            params: { item: { id: item.fetch("id"), decision: "resolve", resolution: "use_suggestion" }, expected_revision: planner_session.generation_revision }, class: "btn btn-text" %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</article>

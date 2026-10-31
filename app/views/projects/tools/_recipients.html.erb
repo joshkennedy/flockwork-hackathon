@@ -1,6 +1,7 @@
 <% if Policy.can?(Current.person, :view_recipients, project) %>
   <% recipients = project.recipients.joins(:person).order("people.name") %>
   <section class="tool-section" aria-labelledby="tool-recipients">
+    <%= render "projects/tools/planner_arrival", tool: "recipients" %>
     <div class="flex flex-wrap items-start justify-between gap-4">
       <h2 id="tool-recipients" class="text-ink"><%= icon(:heart, class: "text-tool-messages") %> <%= Project::TOOL_LABELS.fetch("recipients") %></h2>
       <% if Policy.can?(Current.person, :manage_recipients, project) %>

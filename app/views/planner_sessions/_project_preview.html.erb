@@ -1,0 +1,43 @@
+<section id="meal-preview" class="meal-preview" aria-labelledby="meal-preview-heading" aria-busy="<%= planner_session.generation_busy? %>"
+  data-controller="preview-changes" data-preview-changes-key-value="<%= dom_id(planner_session) %>">
+  <div class="meal-preview-heading">
+    <div>
+      <h2 id="meal-preview-heading" class="text-ink">Project preview</h2>
+      <p class="mt-1 text-meta text-ink-2"><%= visible_items.any? ? pluralize(visible_items.size, "item") : "Your Project will take shape here" %></p>
+    </div>
+    <% if visible_items.any? %>
+      <a href="#meal-preview-list" class="meal-preview-view-all text-meta font-semibold text-ink-2">View all</a>
+    <% end %>
+  </div>
+
+  <div class="mt-4">
+    <% if visible_items.any? %>
+      <div id="meal-preview-list" class="planner-tool-groups">
+        <% visible_items.group_by { |item| planner_pending_tool(item) }.each do |tool, items| %>
+          <section class="planner-tool-group" aria-labelledby="pending-tool-<%= tool %>">
+            <h3 id="pending-tool-<%= tool %>" class="planner-tool-heading"><%= planner_tool_icon(tool) %><%= planner_tool_label(tool) %></h3>
+            <div class="meal-preview-list">
+              <% items.each do |item| %>
+                <%= render "planner_sessions/pending_item", project:, planner_session:, item:, pending_errors: %>
+              <% end %>
+            </div>
+          </section>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="meal-preview-empty">
+        <p class="font-semibold text-ink">Choose what matters first.</p>
+        <p class="mt-1 text-meta text-ink-2">Tasks, dates, costs, and lists will stay visible here before anything is added.</p>
+      </div>
+    <% end %>
+
+    <% if removed_item.present? %>
+      <div class="mt-4 flex flex-wrap items-center gap-3 rounded-control bg-ghost-fill px-3 py-2 text-meta text-ink-2">
+        <span>Item removed.</span>
+        <%= button_to "Undo", pending_item_project_planner_session_path(project, planner_session), method: :patch,
+          params: { item: { id: removed_item.fetch("id"), decision: "restore" }, expected_revision: planner_session.generation_revision },
+          disabled: planner_session.generation_busy?, class: "font-semibold text-ink hover:text-ink-hover disabled:text-ink-3" %>
+      </div>
+    <% end %>
+  </div>
+</section>

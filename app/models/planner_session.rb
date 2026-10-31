@@ -9,11 +9,18 @@ class PlannerSession < ApplicationRecord
   enum :status, { asking: 0, reviewing: 1, accepted: 2, abandoned: 3 }
 
   validates :description, presence: true
-  validates :flow_version, inclusion: { in: [ 1, 2 ] }
+  PLANNING_KINDS = %w[meal_train retreat workday children_program other].freeze
+
+  validates :flow_version, inclusion: { in: [ 1, 2, 3 ] }
+  validates :planning_kind, inclusion: { in: PLANNING_KINDS }
   validates :generation_state, inclusion: { in: GENERATION_STATES }
 
   def meal_planner?
     flow_version == 2
+  end
+
+  def build_as_you_go?
+    flow_version.in?([ 2, 3 ])
   end
 
   def generation_busy?
@@ -25,7 +32,7 @@ class PlannerSession < ApplicationRecord
   end
 
   def ready_to_continue?
-    meal_planner? && generation_state == "ready" && pending_answer.present?
+    build_as_you_go? && generation_state == "ready" && pending_answer.present?
   end
 
   def visible_pending_items
@@ -36,25 +43,45 @@ class PlannerSession < ApplicationRecord
     visible_pending_items.size
   end
 
+  def pending_item_errors
+    visible_pending_items.to_h do |item|
+      [ item.fetch("id"), Planner::PendingItems.errors(item, project:) ]
+    end.reject { |_, errors| errors.empty? }
+  end
+
+  def acceptance_tool
+    visible_pending_items.lazy.map { |item| Planner::PendingItems.tool(item) }.find(&:present?)
+  end
+
   def planning_context
-    ensure_v2!
+    ensure_build_as_you_go!
     {
       "flow_version" => flow_version,
-      "planning_kind" => "meal_train",
+      "planning_kind" => planning_kind,
       "question_limit" => MAX_GENERATED_QUESTIONS,
       "questions_answered" => steps.size,
-      "answers" => steps.map { |step| step.slice("question", "answer") },
-      "pending_answer" => pending_answer&.slice("text", "step_index"),
+      "project_intent" => description,
+      "answers" => steps.map { |step| step.slice("question", "answer").merge("answer" => private_safe_text(step["answer"])) },
+      "pending_answer" => pending_answer&.slice("text", "step_index")&.merge("text" => private_safe_text(pending_answer["text"])),
       "project" => { "name" => project.name, "starts_on" => project.starts_on&.iso8601 },
-      "pending_slots" => visible_pending_items.map do |item|
-        item.slice("source_key", "fields", "day_offset", "removed", "user_edits", "conflict")
+      "existing_artifacts" => {
+        "task_titles" => project.tasks.order(:id).limit(100).pluck(:title),
+        "schedule_item_titles" => project.schedule_items.order(:id).limit(100).pluck(:title),
+        "slot_labels" => project.slots.order(:id).limit(100).pluck(:label),
+        "booking_descriptions" => project.budget_lines.booking.order(:id).limit(100).pluck(:description),
+        "purchase_descriptions" => project.budget_lines.purchase.order(:id).limit(100).pluck(:description),
+        "list_names" => project.lists.order(:id).limit(100).pluck(:name),
+        "enabled_tools" => project.enabled_tools
+      },
+      "pending_items" => visible_pending_items.map do |item|
+        item.slice("source_key", "kind", "fields", "day_offset", "removed", "user_edits", "conflict")
       end
     }
   end
 
   def update_planning_details!(name: nil, starts_on: nil, expected_revision:)
     with_lock do
-      ensure_mutable_v2!
+      ensure_mutable_build_as_you_go!
       ensure_not_busy!
       raise Planner::StaleRevision unless generation_revision == expected_revision
 
@@ -70,17 +97,21 @@ class PlannerSession < ApplicationRecord
       if new_start && old_start != new_start
         offset = old_start ? (new_start - old_start).to_i : nil
         self.pending_items = pending_items.map do |item|
-          next item if item.dig("user_edits", "date").present?
+          next item unless %w[slot schedule_item task].include?(item["kind"])
+          date_field = item["kind"] == "task" ? "due_on" : "date"
+          next item if item.fetch("user_edits", {}).key?(date_field)
 
-          date = item.dig("fields", "date").presence
+          date = item.dig("fields", date_field).presence
+          next item unless date.present? || item.key?("day_offset")
+          next item if old_start.nil? && date.present?
           rebased = if date && offset
             Date.iso8601(date) + offset
           else
             new_start + item.fetch("day_offset", 0).to_i
           end
           item.deep_merge(
-            "fields" => { "date" => rebased.iso8601 },
-            "suggested_fields" => { "date" => rebased.iso8601 }
+            "fields" => { date_field => rebased.iso8601 },
+            "suggested_fields" => { date_field => rebased.iso8601 }
           )
         rescue Date::Error, TypeError
           item
@@ -95,7 +126,7 @@ class PlannerSession < ApplicationRecord
 
   def queue_generation!(expected_revision: nil)
     with_lock do
-      ensure_mutable_v2!
+      ensure_mutable_build_as_you_go!
       ensure_not_busy! unless generation_stalled?
       if expected_revision.present? && generation_revision != Integer(expected_revision)
         raise Planner::StaleRevision
@@ -129,7 +160,7 @@ class PlannerSession < ApplicationRecord
 
   def select_answer!(text, expected_revision:, step_index: nil)
     with_lock do
-      ensure_mutable_v2!
+      ensure_mutable_build_as_you_go!
       ensure_not_busy!
       raise Planner::StaleRevision unless generation_revision == expected_revision
 
@@ -167,7 +198,7 @@ class PlannerSession < ApplicationRecord
 
   def continue!(expected_revision:)
     with_lock do
-      ensure_mutable_v2!
+      ensure_mutable_build_as_you_go!
       raise Planner::StaleRevision unless generation_revision == expected_revision
       raise ArgumentError, "The preview is not ready" unless ready_to_continue?
       self.generation_revision += 1
@@ -190,7 +221,7 @@ class PlannerSession < ApplicationRecord
 
   def finish_preview!(expected_revision:)
     with_lock do
-      ensure_mutable_v2!
+      ensure_mutable_build_as_you_go!
       ensure_not_busy!
       raise Planner::StaleRevision unless generation_revision == expected_revision
       raise ArgumentError, "There is no useful preview" if visible_pending_items.empty?
@@ -208,7 +239,7 @@ class PlannerSession < ApplicationRecord
 
   def edit_pending_item!(id:, fields:, expected_revision:)
     change_pending_item!(id:, expected_revision:) do |item|
-      sanitized = Planner::PendingItems.sanitize_slot_fields(fields)
+      sanitized = Planner::PendingItems.sanitize_fields(item.fetch("kind"), fields)
       item.merge(
         "fields" => item.fetch("fields").merge(sanitized),
         "user_edits" => item.fetch("user_edits", {}).merge(sanitized),
@@ -250,7 +281,7 @@ class PlannerSession < ApplicationRecord
 
   def accept_visible!(expected_revision: nil)
     with_lock do
-      ensure_v2!
+      ensure_build_as_you_go!
       return acceptance_receipt if accepted?
       raise Planner::StaleRevision if expected_revision && generation_revision != expected_revision
       ensure_not_busy!
@@ -260,21 +291,29 @@ class PlannerSession < ApplicationRecord
       raise ArgumentError, "There is no pending work to add" if items.empty?
       raise ArgumentError, "Resolve pending conflicts before adding" if items.any? { |item| item["conflict"].present? }
 
-      slots = items.map { |item| Planner::PendingItems.valid_slot(item, project:) }
-      invalid = slots.reject(&:valid?)
-      raise ActiveRecord::RecordInvalid, invalid.first if invalid.any?
-
-      created_ids = slots.map do |slot|
-        project.slots.create!(
-          label: slot.label,
-          date: slot.date,
-          starts_at_time: slot.starts_at_time,
-          capacity: slot.capacity
-        ).id
+      errors = pending_item_errors
+      if errors.any?
+        if meal_planner?
+          item = items.find { |candidate| errors.key?(candidate.fetch("id")) }
+          fields = item.fetch("fields")
+          invalid = Slot.new(project:, label: fields["label"], date: fields["date"], starts_at_time: fields["time"].presence, capacity: fields["capacity"])
+          invalid.valid?
+          raise ActiveRecord::RecordInvalid, invalid
+        end
+        raise ArgumentError, errors.values.flatten.to_sentence
       end
-      project.update!(enabled_tools: project.enabled_tools | [ "signup_sheet" ])
+
+      created_ids = Hash.new { |hash, key| hash[key] = [] }
+      items.each do |item|
+        created = Planner::PendingItems.create!(project, item)
+        created_ids[item.fetch("kind")] << created.id if created.respond_to?(:id)
+      end
+      tools = items.map { |item| Planner::PendingItems.tool(item) }.compact
+      project.update!(enabled_tools: project.enabled_tools | tools)
       update!(status: :accepted, accepted_at: Time.current, current_card: nil, prepared_card: nil)
-      acceptance_receipt.merge("slot_ids" => created_ids)
+      receipt = acceptance_receipt.merge("created_ids" => created_ids, "acceptance_tool" => acceptance_tool)
+      receipt["slot_ids"] = created_ids["slot"] if meal_planner?
+      receipt
     end
   end
 
@@ -314,10 +353,10 @@ class PlannerSession < ApplicationRecord
   end
 
   def abandon!
-    return update!(status: :abandoned, current_card: nil) unless meal_planner?
+    return update!(status: :abandoned, current_card: nil) unless build_as_you_go?
 
     with_lock do
-      ensure_mutable_v2!
+      ensure_mutable_build_as_you_go!
       self.generation_revision += 1
       update!(
         status: :abandoned,
@@ -375,8 +414,15 @@ class PlannerSession < ApplicationRecord
   end
 
   private
+    def private_safe_text(text)
+      Planner::NameRedactor.new(Current.workspace).call(text.to_s)
+    end
+
     def apply_generation!(revision:, response:)
       response.validate!
+      if meal_planner? && (response.added.size > 3 || response.added.any? { |item| item["kind"] != "slot_run" })
+        raise ArgumentError, "Expected a meal preview"
+      end
       with_lock do
         return false unless generation_revision == revision && generation_state == "running" && asking?
 
@@ -408,7 +454,7 @@ class PlannerSession < ApplicationRecord
 
     def change_pending_item!(id:, expected_revision:)
       with_lock do
-        ensure_mutable_v2!
+        ensure_mutable_build_as_you_go!
         ensure_not_busy!
         raise Planner::StaleRevision unless generation_revision == expected_revision
         found = false
@@ -433,12 +479,12 @@ class PlannerSession < ApplicationRecord
       }
     end
 
-    def ensure_v2!
-      raise ArgumentError, "This operation requires a meal Planner session" unless meal_planner?
+    def ensure_build_as_you_go!
+      raise ArgumentError, "This operation requires a build-as-you-go Planner session" unless build_as_you_go?
     end
 
-    def ensure_mutable_v2!
-      ensure_v2!
+    def ensure_mutable_build_as_you_go!
+      ensure_build_as_you_go!
       raise ArgumentError, "Accepted Planner sessions are immutable" if accepted?
     end
 

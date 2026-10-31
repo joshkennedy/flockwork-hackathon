@@ -163,7 +163,7 @@ class ProjectsTest < ActionDispatch::IntegrationTest
   test "the Workspace home links to Projects" do
     sign_in_as_leader
 
-    get workspace_path(workspaces(:st_example))
+    get home_path
 
     assert_select "a[href='#{projects_path}']", "Projects"
   end

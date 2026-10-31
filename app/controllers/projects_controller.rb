@@ -22,8 +22,8 @@ class ProjectsController < ApplicationController
 
   def show
     if Policy.can?(Current.person, :plan, @project)
-      @resumable_planner_session = @project.planner_sessions.where(flow_version: 2, started_by: Current.person, status: %i[asking reviewing]).order(updated_at: :desc).first
-      @completed_planner_session = @project.planner_sessions.where(flow_version: 2, status: :accepted).find_by(id: params[:added_plan]) if params[:added_plan].present?
+      @resumable_planner_session = @project.planner_sessions.where(flow_version: [ 2, 3 ], started_by: Current.person, status: %i[asking reviewing]).order(updated_at: :desc).first
+      @completed_planner_session = @project.planner_sessions.where(flow_version: [ 2, 3 ], status: :accepted).find_by(id: params[:added_plan]) if params[:added_plan].present?
     end
     @ownership_transfer_leaders = @project.memberships.leader.where.not(person_id: @project.owner_id).includes(:person)
     return unless Policy.can?(Current.person, :view_notes, @project)
@@ -58,19 +58,15 @@ class ProjectsController < ApplicationController
 
   def start_meal_planner
     authorize_project_creation
-    Project.transaction do
-      @project = Project.create_for(creator: Current.person, attributes: {
-        name: "Meal train", description: "Organize meals for a meal train.", enabled_tools: []
-      })
-      @project.save!
-      @planner_session = @project.planner_sessions.create!(
-        started_by: Current.person, flow_version: 2,
-        description: "Help organize a meal train. Build a Sign-up sheet of meals with open roles, without asking for names or private care details."
-      )
-      @revision = @planner_session.queue_generation!
-    end
-    PlannerStepJob.perform_later(@project.id, @planner_session.id, Current.session.id, @revision)
-    redirect_to project_planner_session_path(@project, @planner_session), status: :see_other
+    start_planning("meal_train")
+  end
+
+  def start_planner
+    authorize_project_creation
+    kind = params.expect(:planning_kind)
+    raise ActionController::BadRequest, "Choose a Project type" unless Planner::ProjectKinds::CHOICES.key?(kind)
+
+    start_planning(kind)
   end
 
   def create
@@ -169,6 +165,21 @@ class ProjectsController < ApplicationController
   end
 
   private
+    def start_planning(kind)
+      starter = Planner::ProjectKinds::CHOICES.fetch(kind)
+      Project.transaction do
+        @project = Project.create_for(creator: Current.person, attributes: starter.slice(:name, :description).merge(enabled_tools: []))
+        @project.save!
+        @planner_session = @project.planner_sessions.create!(
+          started_by: Current.person, flow_version: kind == "meal_train" ? 2 : 3,
+          planning_kind: kind, description: starter.fetch(:prompt)
+        )
+        @revision = @planner_session.queue_generation!
+      end
+      PlannerStepJob.perform_later(@project.id, @planner_session.id, Current.session.id, @revision)
+      redirect_to project_planner_session_path(@project, @planner_session), status: :see_other
+    end
+
     def set_project
       @project = Policy.visible_projects(Current.person).find(params[:id])
     end

@@ -2,200 +2,261 @@ module Planner
   module PendingItems
     SLOT_KIND = "slot"
     SLOT_RUN_KIND = "slot_run"
-    EDITABLE_SLOT_FIELDS = %w[label date time capacity].freeze
+    KINDS = Planner::SuggestionKinds::KINDS.keys.freeze
+    EDITABLE = {
+      "slot" => %w[label date time capacity], "task" => %w[title details due_on],
+      "schedule_item" => %w[title date starts_at ends_at location],
+      "booking" => %w[description estimated_dollars], "purchase" => %w[description estimated_dollars],
+      "list" => %w[name columns], "enable_tool" => %w[tool]
+    }.freeze
+    TOOLS = { "slot" => "signup_sheet", "task" => "tasks", "schedule_item" => "schedule",
+      "booking" => "budget", "purchase" => "budget", "list" => "list" }.freeze
+    TIME = /\A(?:[01]\d|2[0-3]):[0-5]\d\z/
+    SOURCE_KEY = /\A[a-zA-Z0-9_-]{1,80}\z/
 
     module_function
 
     def reconcile(existing:, added:, removed_ids:, project:)
-      validate_snapshot!(added, existing:)
-      existing_by_key = existing.index_by { |item| item.fetch("source_key") }
+      validate_snapshot!(added, existing:, project:)
+      prior = existing.index_by { |item| item.fetch("source_key") }
       incoming = expand(added, project:)
-      incoming_keys = incoming.to_set(&:source_key)
-
-      reconciled = incoming.map do |candidate|
-        previous = existing_by_key[candidate.source_key]
-        previous ? merge(previous, candidate) : candidate.to_h
-      end
-
+      raise ArgumentError, "Planner preview is too large" if incoming.size > 200
+      keys = incoming.to_set(&:source_key)
+      result = incoming.map { |candidate| prior[candidate.source_key] ? merge(prior[candidate.source_key], candidate) : candidate.to_h }
       existing.each do |item|
-        next if incoming_keys.include?(item.fetch("source_key"))
-        next unless preserved_by_leader?(item)
-
-        reconciled << item.merge("conflict" => {
-          "type" => "removed_by_revision",
-          "suggested_fields" => nil
-        })
+        next if keys.include?(item.fetch("source_key")) || !preserved_by_leader?(item)
+        result << item.merge("conflict" => { "type" => "removed_by_revision", "suggested_fields" => nil })
       end
-
-      reconciled.reject do |item|
-        removed_ids.include?(item.fetch("id")) && !preserved_by_leader?(item)
-      end
+      result.reject { |item| removed_ids.include?(item.fetch("id")) && !preserved_by_leader?(item) }
     end
 
     def expand(added, project:)
-      added.flat_map.with_index do |raw, source_index|
-        suggestion = raw.deep_stringify_keys
-        case suggestion.fetch("kind")
-        when SLOT_KIND
-          fields = sanitize_slot_fields(suggestion.fetch("fields"))
-          [ candidate(fields:, source_key: source_key(suggestion, source_index, 0)) ]
-        when SLOT_RUN_KIND
-          expand_slot_run(suggestion, project:, source_index:)
+      added.flat_map.with_index do |raw, index|
+        item = raw.deep_stringify_keys
+        if item.fetch("kind") == SLOT_RUN_KIND
+          expand_slot_run(item, project:, source_index: index)
         else
-          []
+          kind = item.fetch("kind")
+          fields, metadata = normalize_provider_fields(kind, item.fetch("fields"), project:)
+          [ candidate(kind:, source_key: item.fetch("source_key"), fields:, metadata:) ]
         end
       end
     end
 
-    def visible(items)
-      items.reject { |item| item["removed"] }
+    def visible(items) = items.reject { |item| item["removed"] }
+    def fields_for(kind)
+      definitions = Planner::SuggestionKinds.fields_for(kind == SLOT_KIND ? SLOT_RUN_KIND : kind).slice(*editable_fields(kind))
+      definitions = definitions.merge("date" => { label: "Date", input: :date, schema: { type: "string" } }) if %w[slot schedule_item].include?(kind.to_s)
+      definitions = definitions.merge("due_on" => { label: "Due date", input: :date, schema: { type: [ "string", "null" ] } }) if kind.to_s == "task"
+      definitions
+    end
+    def editable_fields(kind) = EDITABLE.fetch(kind.to_s)
+    def tool(item)
+      item = item.deep_stringify_keys
+      item["kind"] == "enable_tool" ? item.dig("fields", "tool") : TOOLS.fetch(item.fetch("kind"))
+    end
+    def summary(item)
+      item = item.deep_stringify_keys
+      fields = item.fetch("fields")
+      case item.fetch("kind")
+      when "slot" then fields["label"]
+      when "task", "schedule_item" then fields["title"]
+      when "booking", "purchase" then fields["description"]
+      when "list" then fields["name"]
+      when "enable_tool" then Project::TOOL_LABELS[fields["tool"]] || fields["tool"]
+      end
     end
 
-    def validate_snapshot!(added, existing:)
-      raise ArgumentError, "Expected a complete meal preview" unless added.is_a?(Array) && added.size <= 3
-
-      keys = added.map.with_index do |raw, index|
-        suggestion = raw.deep_stringify_keys
-        raise ArgumentError, "Expected a meal series" unless suggestion["kind"] == SLOT_RUN_KIND
-        fields = suggestion.fetch("fields")
-        raise ArgumentError, "Meal label is required" unless fields["label"].is_a?(String) && fields["label"].strip.present?
-        capacity = fields.fetch("capacity", 1)
-        raise ArgumentError, "Meal capacity must be positive" unless capacity.is_a?(Integer) && capacity.positive?
-        time = fields["time"]
-        raise ArgumentError, "Invalid meal time" unless time.nil? || time == "" || (time.is_a?(String) && time.match?(/\A(?:[01]\d|2[0-3]):[0-5]\d\z/))
-        if fields["start_date"].present?
-          start_date = Date.iso8601(fields.fetch("start_date"))
-          end_date = Date.iso8601(fields.fetch("end_date"))
-          raise ArgumentError, "Meal dates must span at most 60 days" unless (end_date - start_date).to_i.between?(0, 59)
-        else
-          start_offset = fields.fetch("start_day_offset", 0)
-          end_offset = fields.fetch("end_day_offset", start_offset)
-          unless start_offset.is_a?(Integer) && end_offset.is_a?(Integer) && start_offset.between?(0, 59) && end_offset.between?(start_offset, 59)
-            raise ArgumentError, "Meal offsets must be within 60 days"
-          end
-        end
-        key = suggestion["source_key"]
-        raise ArgumentError, "Invalid meal series identity" unless key.is_a?(String) && key.match?(/\A[a-zA-Z0-9_-]{1,80}\z/)
-        key
+    def validate_snapshot!(added, existing:, project:)
+      raise ArgumentError, "Expected a complete Planner preview" unless added.is_a?(Array) && added.size <= 100
+      identities = added.map do |raw|
+        item = raw.deep_stringify_keys
+        kind, key = item["kind"], item["source_key"]
+        raise ArgumentError, "Unknown Planner item kind" unless KINDS.include?(kind)
+        raise ArgumentError, "Invalid Planner item identity" unless key.is_a?(String) && key.match?(SOURCE_KEY)
+        validate_fields!(kind, item["fields"], project:)
+        [ key, kind ]
       end
-      raise ArgumentError, "Duplicate meal series" unless keys.uniq.size == keys.size
-
-      previous_keys = existing.map { |item| item.fetch("source_key").sub(/:\d+\z/, "") }.uniq
-      if (keys - previous_keys).any? && (previous_keys - keys).any?
+      raise ArgumentError, "Duplicate meal series" unless identities.map(&:first).uniq.size == identities.size
+      old = existing.group_by { |item| item.fetch("source_key").sub(/:\d+\z/, "") }
+      fresh = identities.to_h
+      old.each do |key, items|
+        next unless fresh[key]
+        old_kind = items.first.fetch("kind") == SLOT_KIND ? SLOT_RUN_KIND : items.first.fetch("kind")
+        raise ArgumentError, "Planner item kind changed; the existing preview was preserved" unless old_kind == fresh[key]
+      end
+      if old.any? && (fresh.keys - old.keys).any? && (old.keys - fresh.keys).any?
         raise ArgumentError, "Meal series identity changed; the existing preview was preserved"
       end
+    rescue KeyError, NoMethodError, TypeError, Date::Error
+      raise ArgumentError, "Malformed Planner preview"
     end
 
-    def sanitize_slot_fields(fields)
-      fields = fields.to_h.deep_stringify_keys.slice(*EDITABLE_SLOT_FIELDS)
-      fields["date"] = Date.iso8601(fields.fetch("date")).iso8601 if fields["date"].present?
-      fields["capacity"] = fields["capacity"].to_i if fields.key?("capacity")
-      fields
-    rescue Date::Error
-      fields
+    def sanitize_fields(kind, fields)
+      fields = fields.to_h.deep_stringify_keys
+      if kind == SLOT_RUN_KIND
+        return fields.slice("label", "start_date", "end_date", "start_day_offset", "end_day_offset", "time", "capacity")
+      end
+      result = fields.slice(*editable_fields(kind))
+      %w[date due_on].each { |key| result[key] = Date.iso8601(result[key]).iso8601 if result[key].present? }
+      result["capacity"] = Integer(result["capacity"]) if result.key?("capacity")
+      if result["columns"].is_a?(Array)
+        result["columns"] = result["columns"].map { |column| column.to_h.deep_stringify_keys.slice("name", "type") }
+      end
+      result
+    rescue ArgumentError, TypeError
+      result || fields
     end
-
+    def sanitize_slot_fields(fields) = sanitize_fields(SLOT_KIND, fields)
     def valid_slot(item, project:)
       fields = item.fetch("fields")
-      Slot.new(
-        project:,
-        label: fields["label"],
-        date: fields["date"],
-        starts_at_time: fields["time"].presence,
-        capacity: fields["capacity"]
-      )
+      Slot.new(project:, label: fields["label"], date: fields["date"], starts_at_time: fields["time"].presence, capacity: fields["capacity"])
     end
 
-    def source_key(suggestion, source_index, occurrence_index)
-      base = suggestion["source_key"].presence || "meal-slots-#{source_index}"
-      "#{base}:#{occurrence_index}"
+    def normalize_provider_fields(kind, fields, project:)
+      raw = fields.to_h.deep_stringify_keys
+      offset = kind == "task" ? raw["due_in_days"] : raw["day_offset"]
+      normalized = sanitize_fields(kind, raw)
+      date_field = kind == "task" ? "due_on" : (kind == "schedule_item" ? "date" : nil)
+      if date_field && normalized[date_field].blank? && offset.is_a?(Integer) && offset.between?(-365, 365)
+        normalized[date_field] = (project.starts_on + offset).iso8601 if project.starts_on
+      end
+      [ normalized, date_field && offset.is_a?(Integer) ? { "day_offset" => offset } : {} ]
     end
 
-    def stable_id(source_key)
-      Digest::SHA256.hexdigest(source_key).then do |hex|
-        "#{hex[0, 8]}-#{hex[8, 4]}-4#{hex[13, 3]}-8#{hex[17, 3]}-#{hex[20, 12]}"
+    def errors(item, project:)
+      item = item.deep_stringify_keys
+      fields = item["fields"]
+      return [ "Item fields are missing" ] unless fields.is_a?(Hash)
+      raw_errors = raw_field_errors(item["kind"], fields)
+      return raw_errors if raw_errors.any?
+      if item["kind"] == "task" && item.key?("day_offset") && fields["due_on"].blank? && !item.fetch("user_edits", {}).key?("due_on")
+        return [ "Choose a Project start date or a due date" ]
+      end
+      record = case item["kind"]
+      when "slot" then Slot.new(project:, label: fields["label"], date: fields["date"], starts_at_time: fields["time"].presence, capacity: fields["capacity"])
+      when "task" then Task.new(project:, title: fields["title"], details: fields["details"], due_on: fields["due_on"])
+      when "schedule_item" then ScheduleItem.new(project:, title: fields["title"], date: fields["date"], starts_at_time: fields["starts_at"].presence, ends_at_time: fields["ends_at"].presence, location: fields["location"].presence)
+      when "booking", "purchase"
+        return [ "Estimated cost is required" ] if fields["estimated_dollars"].blank?
+        BudgetLine.new(project:, kind: item["kind"], description: fields["description"], estimated: fields["estimated_dollars"])
+      when "list"
+        return [ "At least one valid column is required" ] unless valid_columns?(fields["columns"])
+        List.new(project:, name: fields["name"])
+      when "enable_tool" then return Project::TOOLS.include?(fields["tool"]) ? [] : [ "Tool is invalid" ]
+      else return [ "Unknown item type" ]
+      end
+      record.valid?
+      record.errors.full_messages
+    rescue ArgumentError, TypeError
+      [ "Item fields are invalid" ]
+    end
+
+    def create!(project, item)
+      item = item.deep_stringify_keys
+      fields = item.fetch("fields")
+      case item.fetch("kind")
+      when "slot" then project.slots.create!(label: fields["label"], date: fields["date"], starts_at_time: fields["time"].presence, capacity: fields["capacity"])
+      when "task" then project.tasks.create!(title: fields["title"], details: fields["details"], due_on: fields["due_on"])
+      when "schedule_item" then project.schedule_items.create!(title: fields["title"], date: fields["date"], starts_at_time: fields["starts_at"].presence, ends_at_time: fields["ends_at"].presence, location: fields["location"].presence)
+      when "booking", "purchase" then project.budget_lines.create!(kind: item["kind"], description: fields["description"], estimated: fields["estimated_dollars"])
+      when "list"
+        project.lists.create!(name: fields["name"]).tap { |list| fields.fetch("columns").each { |column| list.columns.create!(name: column["name"], column_type: column["type"]) } }
       end
     end
 
-    def candidate(fields:, source_key:, metadata: {})
-      Data.define(:source_key, :fields, :metadata) do
+    def candidate(kind: SLOT_KIND, fields:, source_key:, metadata: {})
+      Data.define(:kind, :source_key, :fields, :metadata) do
         def to_h
-          {
-            "id" => Planner::PendingItems.stable_id(source_key),
-            "source_key" => source_key,
-            "kind" => Planner::PendingItems::SLOT_KIND,
-            "fields" => fields,
-            "suggested_fields" => fields,
-            "removed" => false,
-            "user_edits" => {},
-            "conflict" => nil
-          }.merge(metadata)
+          { "id" => Planner::PendingItems.stable_id(source_key), "source_key" => source_key, "kind" => kind,
+            "fields" => fields, "suggested_fields" => fields, "removed" => false, "user_edits" => {}, "conflict" => nil }.merge(metadata)
         end
-      end.new(source_key, fields, metadata)
+      end.new(kind, source_key, fields, metadata)
     end
+    def stable_id(key) = Digest::SHA256.hexdigest(key).then { |h| "#{h[0, 8]}-#{h[8, 4]}-4#{h[13, 3]}-8#{h[17, 3]}-#{h[20, 12]}" }
+    def source_key(item, index, occurrence) = "#{item['source_key'].presence || "meal-slots-#{index}"}:#{occurrence}"
 
-    def expand_slot_run(suggestion, project:, source_index:)
-      fields = suggestion.fetch("fields")
-      start_date = if fields["start_date"].present?
-        Date.iso8601(fields.fetch("start_date"))
-      elsif project.starts_on
-        project.starts_on + fields.fetch("start_day_offset", 0).to_i
+    def expand_slot_run(item, project:, source_index:)
+      fields = item.fetch("fields")
+      start = fields["start_date"].present? ? Date.iso8601(fields["start_date"]) : (project.starts_on && project.starts_on + fields.fetch("start_day_offset", 0))
+      count = fields["end_date"].present? ? (start ? (Date.iso8601(fields["end_date"]) - start).to_i + 1 : 0) : fields.fetch("end_day_offset", 0) - fields.fetch("start_day_offset", 0) + 1
+      return [] unless count.between?(1, 60)
+      count.times.map do |index|
+        candidate(source_key: source_key(item, source_index, index), fields: sanitize_slot_fields(
+          "label" => fields["label"], "date" => start && (start + index).iso8601, "time" => fields["time"], "capacity" => fields.fetch("capacity", 1)
+        ), metadata: { "day_offset" => fields.fetch("start_day_offset", 0) + index })
       end
-      length = if fields["end_date"].present?
-        return [] unless start_date
-        (Date.iso8601(fields.fetch("end_date")) - start_date).to_i + 1
-      else
-        fields.fetch("end_day_offset", fields.fetch("start_day_offset", 0)).to_i -
-          fields.fetch("start_day_offset", 0).to_i + 1
-      end
-      return [] unless length.between?(1, 60)
-
-      length.times.map do |occurrence_index|
-        key = source_key(suggestion, source_index, occurrence_index)
-        candidate(
-          source_key: key,
-          fields: sanitize_slot_fields(
-            "label" => fields["label"],
-            "date" => start_date && (start_date + occurrence_index).iso8601,
-            "time" => fields["time"],
-            "capacity" => fields.fetch("capacity", 1)
-          ),
-          metadata: { "day_offset" => fields.fetch("start_day_offset", 0).to_i + occurrence_index }
-        )
-      end
-    rescue Date::Error
-      []
     end
 
     def merge(previous, candidate)
-      suggested_fields = candidate.fields
-      user_edits = previous.fetch("user_edits", {})
-      conflicts = user_edits.each_with_object({}) do |(field, edited_value), result|
-        previous_suggested = previous.fetch("suggested_fields", previous.fetch("fields"))[field]
-        unresolved = previous.dig("conflict", "fields", field).present?
-        next if suggested_fields[field] == edited_value
-        next if suggested_fields[field] == previous_suggested && !unresolved
-
-        result[field] = {
-          "edited" => edited_value,
-          "suggested" => suggested_fields[field]
-        }
+      edits = previous.fetch("user_edits", {})
+      conflicts = edits.each_with_object({}) do |(field, value), result|
+        prior = previous.fetch("suggested_fields", previous.fetch("fields"))[field]
+        result[field] = { "edited" => value, "suggested" => candidate.fields[field] } if candidate.fields[field] != value && (candidate.fields[field] != prior || previous.dig("conflict", "fields", field))
       end
-
-      candidate.to_h.merge(
-        "id" => previous.fetch("id"),
-        "fields" => suggested_fields.merge(user_edits),
-        "suggested_fields" => suggested_fields,
-        "removed" => previous.fetch("removed", false),
-        "user_edits" => user_edits,
-        "conflict" => conflicts.presence && { "type" => "field_changes", "fields" => conflicts },
-        "day_offset" => candidate.to_h["day_offset"],
-        "removed_revision" => previous["removed_revision"]
-      )
+      candidate.to_h.merge("id" => previous.fetch("id"), "fields" => candidate.fields.merge(edits), "suggested_fields" => candidate.fields,
+        "removed" => previous.fetch("removed", false), "user_edits" => edits, "conflict" => conflicts.presence && { "type" => "field_changes", "fields" => conflicts },
+        "removed_revision" => previous["removed_revision"])
     end
 
-    def preserved_by_leader?(item)
-      item.fetch("removed", false) || item.fetch("user_edits", {}).present?
+    def validate_fields!(kind, fields, project:)
+      raise ArgumentError unless fields.is_a?(Hash) && fields.values.none? { |v| v.is_a?(String) && v.bytesize > 10_000 }
+      if kind == SLOT_RUN_KIND
+        raise ArgumentError unless fields["label"].is_a?(String) && fields["label"].present? && fields.fetch("capacity", 1).is_a?(Integer) && fields.fetch("capacity", 1).between?(1, 10_000)
+        raise ArgumentError unless fields["time"].blank? || fields["time"].is_a?(String) && fields["time"].match?(TIME)
+        if fields["start_date"].present?
+          raise ArgumentError unless (Date.iso8601(fields.fetch("end_date")) - Date.iso8601(fields["start_date"])).to_i.between?(0, 59)
+        else
+          first, last = fields.fetch("start_day_offset", 0), fields.fetch("end_day_offset", 0)
+          unless first.is_a?(Integer) && last.is_a?(Integer) && first.between?(0, 59) && last.between?(first, 59)
+            raise ArgumentError, "Meal offsets must be within 60 days"
+          end
+        end
+      else
+        offset_name = kind == "task" ? "due_in_days" : (kind == "schedule_item" ? "day_offset" : nil)
+        if offset_name && !fields[offset_name].nil? && !(fields[offset_name].is_a?(Integer) && fields[offset_name].between?(-365, 365))
+          raise ArgumentError, "Date offsets must be whole days within a year"
+        end
+        invalid = raw_field_errors(kind, fields)
+        raise ArgumentError, invalid.to_sentence if invalid.any?
+        normalized, = normalize_provider_fields(kind, fields, project:)
+        draft = errors(candidate(kind:, fields: normalized, source_key: "validation").to_h, project:)
+        draft -= [ "Estimated cost is required" ] if %w[booking purchase].include?(kind)
+        draft -= [ "Date can't be blank" ] if kind == "schedule_item"
+        draft -= [ "At least one valid column is required" ] if kind == "list"
+        raise ArgumentError, draft.to_sentence if draft.any?
+      end
     end
+
+    def raw_field_errors(kind, fields)
+      errors = []
+      required_text = case kind
+      when "task", "schedule_item" then [ "title" ]
+      when "booking", "purchase" then [ "description" ]
+      when "list" then [ "name" ]
+      else []
+      end
+      required_text.each { |name| errors << "#{name.humanize} is invalid" unless fields[name].is_a?(String) && fields[name].present? }
+      %w[date due_on].each do |name|
+        next unless fields[name].present?
+        Date.iso8601(fields[name]) if fields[name].is_a?(String)
+        errors << "#{name.humanize} is invalid" unless fields[name].is_a?(String)
+      rescue Date::Error
+        errors << "#{name.humanize} is invalid"
+      end
+      %w[time starts_at ends_at].each do |name|
+        errors << "#{name.humanize} is invalid" if fields[name].present? && (!fields[name].is_a?(String) || !fields[name].match?(TIME))
+      end
+      if %w[booking purchase].include?(kind) && fields["estimated_dollars"].present?
+        value = BigDecimal(fields["estimated_dollars"].to_s, exception: false)
+        errors << "Estimated cost is invalid" unless value&.finite? && value >= 0
+      end
+      if kind == "enable_tool"
+        errors << "Tool is invalid" unless fields["tool"].is_a?(String) && Project::TOOLS.include?(fields["tool"])
+      end
+      errors
+    end
+    def valid_columns?(columns) = columns.is_a?(Array) && columns.size.between?(1, 20) && columns.all? { |c| c.is_a?(Hash) && c["name"].is_a?(String) && c["name"].present? && ListColumn.column_types.key?(c["type"]) }
+    def preserved_by_leader?(item) = item.fetch("removed", false) || item.fetch("user_edits", {}).present?
   end
 end

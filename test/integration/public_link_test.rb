@@ -126,7 +126,7 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
 
     post enable_public_link_project_path(project)
     token = project.reload.public_token
-    sign_in_path = new_sign_in_request_path(project.workspace)
+    sign_in_path = new_sign_in_request_path
 
     get public_project_path(token)
     assert_response :success

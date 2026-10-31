@@ -1,5 +1,6 @@
 <% lists = project.lists.includes(:columns, :rows) %>
 <section class="tool-section" aria-labelledby="tool-list">
+  <%= render "projects/tools/planner_arrival", tool: "list" %>
   <div class="flex flex-wrap items-start justify-between gap-4">
     <h2 id="tool-list" class="text-ink"><%= icon(:list, class: "text-tool-list") %> <%= Project::TOOL_LABELS.fetch("list") %></h2>
     <% if Policy.can?(Current.person, :manage_lists, project) %>

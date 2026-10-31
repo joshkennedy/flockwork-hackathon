@@ -169,6 +169,7 @@
   .suggestion.kept .kept-check { animation: keep-check var(--duration-keep) var(--ease-enter); }
   @starting-style { .suggestion.kept { background-color: var(--color-ghost-fill); border-color: var(--color-ghost-border); color: var(--color-ink-2); } }
   .project-kind-tile { @apply block min-h-28 w-full rounded-tile border border-border bg-panel p-5 text-left shadow-raised; transition: border-color var(--duration-hover), background-color var(--duration-hover), box-shadow var(--duration-press), transform var(--duration-press); }
+  .project-kind-grid { @apply grid max-w-3xl gap-3 sm:grid-cols-2; }
   button.project-kind-tile:active { transform: translateY(1px); box-shadow: var(--shadow-secondary-active); }
   .meal-builder { @apply w-full; }
   .meal-builder-header { @apply flex items-start justify-between gap-5 border-b border-hairline pb-6; }
@@ -196,6 +197,9 @@
   .meal-preview-heading { @apply flex items-start justify-between gap-4; }
   .meal-preview-view-all { @apply min-h-11 items-center; display: inline-flex; }
   .meal-preview-list { @apply overflow-hidden rounded-tile border border-dashed border-ghost-border bg-ghost-fill; }
+  .planner-tool-groups { @apply grid gap-5; }
+  .planner-tool-group { @apply min-w-0; }
+  .planner-tool-heading { @apply mb-2 flex items-center gap-2 text-heading text-ink; }
   .meal-slot { @apply min-w-0 border-b border-ghost-border px-4 py-3; }
   .meal-slot:last-child { border-bottom: 0; }
   .meal-slot-changed { @apply bg-panel; box-shadow: inset 2px 0 0 var(--color-ink); animation: slot-changed var(--duration-keep) var(--ease-enter); }
@@ -207,6 +211,8 @@
   .meal-slot-conflict { @apply bg-danger-soft; }
   .meal-slot-conflict-actions { @apply mt-3 border-t border-danger/20 pt-3; }
   .meal-preview-empty { @apply rounded-tile border border-dashed border-ghost-border bg-ghost-fill px-4 py-7; }
+  .planner-column-row { @apply grid items-end gap-3 rounded-nav bg-ghost-fill p-3 sm:grid-cols-[minmax(0,1fr)_10rem_auto]; }
+  .planner-column-remove:disabled { visibility: hidden; }
   .rich-content :where(p, ul, ol) + :where(p, ul, ol) { margin-top: 12px; }
   .rich-content a { text-decoration: underline; }
   .rich-content ul { padding-left: 20px; list-style: disc; }
