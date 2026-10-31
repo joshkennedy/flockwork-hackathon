@@ -1,16 +1,15 @@
 <% content_for :title, "Import CSV · #{Current.organization.name}" %>
 <% content_for :breadcrumbs do %>
-  <%= link_to "← People", people_path, class: "text-meta text-ink-2 hover:text-ink-2" %>
-  <span aria-hidden="true" class="text-ink-3">/</span>
-  <span class="truncate text-ink"><%= content_for(:title) %></span>
+  <%= link_to "People", people_path, class: "shrink-0 whitespace-nowrap hover:text-ink" %>
+  <span aria-hidden="true" class="shrink-0 text-ink-3">/</span>
+  <span class="min-w-0 truncate text-ink" aria-current="page"><%= breadcrumb_label %></span>
 <% end %>
 
-<div class="w-full max-w-lg">
-  <h1 class="mt-1 text-ink">Import CSV</h1>
-  <p class="mt-2 text-meta text-ink-2">Upload a CSV with name, email, and phone columns. Existing People are matched by email.</p>
+<div class="w-full max-w-2xl">
+  <%= page_header "Import CSV", subtitle: "Upload a CSV with name, email, and phone columns. Existing People are matched by email." %>
 
   <% if (alert = flash[:alert] || flash.now[:alert]).present? %>
-    <p role="alert" class="mt-4 text-meta text-danger"><%= alert %></p>
+    <p role="alert" class="mt-7 text-meta text-danger"><%= alert %></p>
   <% end %>
 
   <%= form_with url: people_csv_import_path, method: :post, multipart: true, class: "mt-6 space-y-4" do |form| %>

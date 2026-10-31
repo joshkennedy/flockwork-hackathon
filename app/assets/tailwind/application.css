@@ -97,7 +97,7 @@
 
 @layer base {
   body { @apply bg-page font-sans text-body-phone text-ink sm:text-body; font-stretch: normal; }
-  h1 { @apply font-display text-display-phone sm:text-display; overflow-wrap: anywhere; }
+  h1 { @apply font-display text-display-phone sm:text-display; overflow-wrap: anywhere; text-wrap: balance; }
   h2, h3 { @apply text-heading; }
   h4, label, legend { @apply text-label; }
   button, input, select, textarea { font: inherit; }
@@ -144,6 +144,9 @@
   .tile-raised { @apply rounded-tile border border-border bg-panel shadow-raised; }
   .tile-ghost { @apply rounded-tile border border-dashed border-ghost-border bg-ghost-fill text-ink-2; }
   .panel { @apply rounded-panel border border-border bg-panel; }
+  .page-header { @apply flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between; }
+  .page-subtitle { @apply mt-2 text-ink-2; text-wrap: pretty; }
+  .page-actions { @apply flex flex-wrap gap-2 sm:shrink-0; }
   .badge-need { @apply inline-flex items-center rounded-badge bg-sunlit-soft px-2 py-1 text-label text-ink; }
   .field { @apply min-h-input-h-phone min-w-0 rounded-control border border-border bg-panel px-3 py-2 text-body-phone text-ink sm:min-h-input-h sm:py-1.5 sm:text-body; }
   :is(textarea, trix-editor).field { min-height: 112px; }

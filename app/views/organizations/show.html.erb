@@ -1,13 +1,7 @@
 <% content_for :title, @organization.name %>
 
-<div class="w-full max-w-3xl">
-  <div class="flex items-start justify-between gap-4">
-    <div>
-      <p class="text-meta text-ink-2">Signed in as <%= @person.name %></p>
-      <h1 class="mt-2 text-ink"><%= @organization.name %></h1>
-    </div>
-
-  </div>
+<div class="w-full max-w-5xl">
+  <%= page_header @organization.name, subtitle: "Signed in as #{@person.name}" %>
 
   <section class="mt-7 border-t border-hairline pt-7">
     <h2 >Plan the work together</h2>

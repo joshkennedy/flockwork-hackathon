@@ -1,19 +1,18 @@
 <% content_for :title, "Planning Center · #{Current.organization.name}" %>
 <% content_for :breadcrumbs do %>
-  <%= link_to "← People", people_path, class: "text-meta text-ink-2 hover:text-ink-2" %>
-  <span aria-hidden="true" class="text-ink-3">/</span>
-  <span class="truncate text-ink"><%= content_for(:title) %></span>
+  <%= link_to "People", people_path, class: "shrink-0 whitespace-nowrap hover:text-ink" %>
+  <span aria-hidden="true" class="shrink-0 text-ink-3">/</span>
+  <span class="min-w-0 truncate text-ink" aria-current="page"><%= breadcrumb_label %></span>
 <% end %>
 
-<div class="w-full max-w-xl">
-  <h1 class="mt-1 text-ink">Planning Center</h1>
-  <p class="mt-2 text-meta text-ink-2">Connect a personal access token to pull names and contact details into this directory.</p>
+<div class="w-full max-w-2xl">
+  <%= page_header "Planning Center", subtitle: "Connect a personal access token to pull names and contact details into this directory." %>
 
   <% if flash[:notice].present? %>
-    <p class="mt-5 text-meta font-medium text-ink"><%= flash[:notice] %></p>
+    <p class="mt-7 text-meta font-medium text-ink"><%= flash[:notice] %></p>
   <% end %>
   <% if flash[:alert].present? %>
-    <p class="mt-5 text-meta font-medium text-danger" role="alert"><%= flash[:alert] %></p>
+    <p class="mt-7 text-meta font-medium text-danger" role="alert"><%= flash[:alert] %></p>
   <% end %>
 
   <% if Current.organization.planning_center_connected? %>

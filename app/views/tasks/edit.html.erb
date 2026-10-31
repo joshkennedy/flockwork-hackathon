@@ -1,11 +1,7 @@
 <% content_for :title, "Edit Task" %>
 
 <div class="w-full max-w-2xl">
-  <nav class="mb-7">
-    <%= link_to "Back to #{@project.name}", @project, class: "text-meta font-semibold text-ink-2 hover:text-ink" %>
-  </nav>
-
-  <h1 class="text-ink">Edit Task</h1>
+  <%= page_header "Edit Task" %>
 
   <div class="mt-7">
     <%= render "form", project: @project, task: @task, team_people: @team_people %>

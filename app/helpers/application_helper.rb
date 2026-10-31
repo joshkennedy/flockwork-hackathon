@@ -47,6 +47,16 @@ module ApplicationHelper
     items
   end
 
+  def page_header(title, subtitle: nil, &actions)
+    tag.header(class: "page-header") do
+      heading = tag.div(class: "min-w-0") do
+        safe_join([ tag.h1(title, class: "text-ink"), (tag.p(subtitle, class: "page-subtitle") if subtitle) ].compact)
+      end
+      actions_html = capture(&actions) if actions
+      safe_join([ heading, (tag.div(actions_html, class: "page-actions") if actions_html.present?) ].compact)
+    end
+  end
+
   def breadcrumb_label
     return "Planner" if controller_name == "planner_sessions"
     return "Team" if controller_name == "projects" && action_name == "team"

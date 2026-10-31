@@ -1,12 +1,9 @@
 <% content_for :title, "Archived Projects" %>
 
-<div class="w-full max-w-4xl">
-  <div>
-    <%= link_to "Projects", projects_path, class: "text-meta font-semibold text-ink-2 hover:text-ink" %>
-    <h1 class="mt-4 text-ink">Archived Projects</h1>
-  </div>
+<div class="w-full max-w-5xl">
+  <%= page_header "Archived Projects" %>
 
-  <nav class="mt-6 flex flex-wrap gap-4 text-meta font-semibold" aria-label="Project lists">
+  <nav class="mt-5 flex flex-wrap gap-4 text-meta font-semibold" aria-label="Project lists">
     <%= link_to "Active", projects_path, class: "tab-link" %>
     <%= link_to "Archived", archived_projects_path, class: "tab-link", aria: { current: "page" } %>
     <% if Policy.can?(Current.person, :view_deleted, Project) %>

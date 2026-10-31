@@ -1,14 +1,14 @@
 <% content_for :title, "Import results · #{Current.organization.name}" %>
 <% content_for :breadcrumbs do %>
-  <%= link_to "← People", people_path, class: "text-meta text-ink-2 hover:text-ink-2" %>
-  <span aria-hidden="true" class="text-ink-3">/</span>
-  <span class="truncate text-ink"><%= content_for(:title) %></span>
+  <%= link_to "People", people_path, class: "shrink-0 whitespace-nowrap hover:text-ink" %>
+  <span aria-hidden="true" class="shrink-0 text-ink-3">/</span>
+  <span class="min-w-0 truncate text-ink" aria-current="page"><%= breadcrumb_label %></span>
 <% end %>
 
 <div class="w-full max-w-2xl">
-  <h1 class="mt-1 text-ink">Import results</h1>
+  <%= page_header "Import results" %>
 
-  <p class="mt-4 text-ink">
+  <p class="mt-7 text-ink">
     <%= @result.created_count %> created,
     <%= @result.updated_count %> updated,
     <%= @result.rejected_rows.size %> rejected

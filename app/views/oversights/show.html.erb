@@ -1,8 +1,7 @@
 <% content_for :title, "Oversight" %>
 
 <div class="w-full max-w-5xl">
-  <h1><%= pluralize(@overextended_people.length, "person", plural: "people") %> may need a check-in</h1>
-  <p class="mt-2 text-ink-2"><%= pluralize(@never_asked_people.length, "person", plural: "people") %> haven't been invited yet.</p>
+  <%= page_header "#{pluralize(@overextended_people.length, "person", plural: "people")} may need a check-in", subtitle: "#{pluralize(@never_asked_people.length, "person", plural: "people")} haven't been invited yet." %>
 
   <div class="mt-7 grid gap-7 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
     <section aria-labelledby="overextended-heading">

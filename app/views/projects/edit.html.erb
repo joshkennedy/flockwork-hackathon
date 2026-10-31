@@ -1,7 +1,7 @@
 <% content_for :title, "Edit #{@project.name}" %>
 
 <div class="w-full max-w-2xl">
-  <h1 class="mt-5 text-ink">Edit Project</h1>
+  <%= page_header "Edit Project" %>
 
   <div class="mt-7">
     <%= render "form", project: @project %>

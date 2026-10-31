@@ -1,13 +1,7 @@
 <% content_for :title, "Edit row - #{@list.name}" %>
-<% content_for :breadcrumbs do %>
-  <%= link_to "Back to #{@project.name}", @project, class: "text-meta font-semibold text-ink-2 hover:text-ink" %>
-  <span aria-hidden="true" class="text-ink-3">/</span>
-  <span class="truncate text-ink"><%= content_for(:title) %></span>
-<% end %>
 
 <div class="w-full max-w-2xl">
-
-  <h1 class="mt-7 text-ink">Edit row in <%= @list.name %></h1>
+  <%= page_header "Edit row in #{@list.name}" %>
 
   <div class="mt-7">
     <%= render "form", project: @project, list: @list, list_row: @list_row %>

@@ -1,13 +1,7 @@
 <% content_for :title, "Edit #{@doc_item.title}" %>
-<% content_for :breadcrumbs do %>
-  <%= link_to "Back to #{@project.name}", @project, class: "text-meta font-semibold text-ink-2 hover:text-ink" %>
-  <span aria-hidden="true" class="text-ink-3">/</span>
-  <span class="truncate text-ink"><%= content_for(:title) %></span>
-<% end %>
 
 <div class="w-full max-w-2xl">
-
-  <h1 class="mt-7 text-ink">Edit <%= @doc_item.kind.humanize.downcase %></h1>
+  <%= page_header "Edit #{@doc_item.kind.humanize.downcase}" %>
 
   <div class="mt-7">
     <%= render "form", project: @project, doc_item: @doc_item %>

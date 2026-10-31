@@ -1,18 +1,11 @@
 <% content_for :title, "People · #{Current.organization.name}" %>
 
 <div class="w-full max-w-5xl">
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-    <div>
-      <%= link_to "← #{Current.organization.name}", home_path, class: "text-meta text-ink-2 hover:text-ink-2" %>
-      <h1 class="mt-1 text-ink">People</h1>
-    </div>
-
-    <div class="flex flex-wrap gap-2 sm:shrink-0">
-      <%= link_to "Planning Center", planning_center_directory_path, class: "btn btn-secondary" %>
-      <%= link_to "Import CSV", new_people_csv_import_path, class: "btn btn-secondary" %>
-      <%= link_to "Add person", new_person_path, class: "btn btn-primary" %>
-    </div>
-  </div>
+  <%= page_header "People" do %>
+    <%= link_to "Planning Center", planning_center_directory_path, class: "btn btn-secondary" %>
+    <%= link_to "Import CSV", new_people_csv_import_path, class: "btn btn-secondary" %>
+    <%= link_to "Add person", new_person_path, class: "btn btn-primary" %>
+  <% end %>
 
   <ul class="mt-7 divide-y divide-hairline border-b border-hairline">
     <% @people.each do |person| %>

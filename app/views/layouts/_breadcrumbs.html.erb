@@ -5,13 +5,13 @@
     <%= link_to "Projects", projects_path, class: "shrink-0 whitespace-nowrap hover:text-ink" %>
     <span aria-hidden="true" class="shrink-0 text-ink-3">/</span>
     <% if controller_name == "projects" && action_name == "show" %>
-      <span class="truncate text-ink"><%= @project.name %></span>
+      <span class="truncate text-ink" aria-current="page"><%= @project.name %></span>
     <% else %>
       <%= link_to @project.name, project_path(@project), class: "min-w-0 truncate hover:text-ink" %>
       <span aria-hidden="true" class="shrink-0 text-ink-3">/</span>
-      <span class="min-w-0 truncate text-ink"><%= breadcrumb_label %></span>
+      <span class="min-w-0 truncate text-ink" aria-current="page"><%= breadcrumb_label %></span>
     <% end %>
   <% else %>
-    <span class="truncate text-ink"><%= controller_name == "organizations" ? "Home" : content_for(:title) %></span>
+    <span class="truncate text-ink" aria-current="page"><%= controller_name == "organizations" ? "Home" : breadcrumb_label %></span>
   <% end %>
 <% end %>

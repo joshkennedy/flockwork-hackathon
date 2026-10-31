@@ -1,11 +1,7 @@
 <% content_for :title, "Update budget line" %>
 
 <div class="w-full max-w-2xl">
-  <nav class="mb-7">
-    <%= link_to "Back to #{@project.name}", @project, class: "text-meta font-semibold text-ink-2 hover:text-ink" %>
-  </nav>
-
-  <h1 class="text-ink">Update status and actual cost</h1>
+  <%= page_header "Update status and actual cost" %>
 
   <div class="mt-7">
     <%= render "form", project: @project, budget_line: @budget_line %>

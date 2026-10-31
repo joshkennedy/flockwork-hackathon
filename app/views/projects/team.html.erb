@@ -1,7 +1,7 @@
 <% content_for :title, "#{@project.name} Team" %>
 
-<div class="w-full max-w-4xl">
-  <h1 class="mt-4 text-ink"><%= @project.name %> Team</h1>
+<div class="w-full max-w-5xl">
+  <%= page_header "#{@project.name} Team" %>
 
   <section class="mt-7" aria-labelledby="members-heading">
     <h2 id="members-heading" class="text-ink">Members</h2>
