@@ -2,6 +2,7 @@ class PlannerSessionsController < ApplicationController
   before_action :set_project
   before_action :authorize_plan
   before_action :set_planner_session, except: %i[ new create ]
+  rescue_from Planner::StaleRevision, with: :stale_planning_action
 
   def new
     @planner_session = @project.planner_sessions.build
@@ -21,10 +22,15 @@ class PlannerSessionsController < ApplicationController
   end
 
   def show
+    if @planner_session.meal_planner?
+      return render :meal_show unless @planner_session.accepted? || @planner_session.abandoned?
+      return redirect_to planner_destination
+    end
     redirect_to planner_destination unless @planner_session.asking? || request.headers["Turbo-Frame"].present?
   end
 
   def answer
+    raise ActiveRecord::RecordNotFound if @planner_session.meal_planner?
     raise ActiveRecord::RecordNotFound unless @planner_session.asking?
 
     @planner_session.record_answer!(params.expect(:answer))
@@ -33,6 +39,7 @@ class PlannerSessionsController < ApplicationController
   end
 
   def voice_session
+    raise ActiveRecord::RecordNotFound if @planner_session.meal_planner?
     render json: Planner::VoiceSession.new(@planner_session).payload
   rescue Planner::VoiceClientSecretMinter::Error => error
     Rails.error.report(error, handled: true, severity: :warning)
@@ -40,10 +47,12 @@ class PlannerSessionsController < ApplicationController
   end
 
   def review
+    return redirect_to project_planner_session_path(@project, @planner_session) if @planner_session.meal_planner?
     raise ActiveRecord::RecordNotFound unless @planner_session.reviewing?
   end
 
   def skip_to_review
+    raise ActiveRecord::RecordNotFound if @planner_session.meal_planner?
     raise ActiveRecord::RecordNotFound unless @planner_session.asking?
 
     @planner_session.skip_to_review!
@@ -58,6 +67,7 @@ class PlannerSessionsController < ApplicationController
   end
 
   def suggestion
+    raise ActiveRecord::RecordNotFound if @planner_session.meal_planner?
     raise ActiveRecord::RecordNotFound unless @planner_session.asking? || @planner_session.reviewing?
 
     values = params.expect(
@@ -84,15 +94,108 @@ class PlannerSessionsController < ApplicationController
   end
 
   def accept
+    if @planner_session.meal_planner?
+      @planner_session.accept_visible!(expected_revision: expected_revision)
+      return redirect_to project_path(@project, added_plan: @planner_session.id, anchor: "tool-signup-sheet"), status: :see_other
+    end
     raise ActiveRecord::RecordNotFound unless @planner_session.reviewing?
 
     @planner_session.accept!(include_proposed: params[:mode] == "all")
     redirect_to @project
-  rescue ArgumentError => error
+  rescue ArgumentError, ActiveRecord::RecordInvalid => error
+    return meal_error(error) if @planner_session.meal_planner?
     redirect_to review_project_planner_session_path(@project, @planner_session), alert: error.message
   end
 
+  def select_answer
+    require_meal_planner
+    revision = @planner_session.select_answer!(params.expect(:answer), expected_revision: expected_revision,
+      step_index: params[:step_index].presence&.to_i)
+    enqueue_meal_generation(revision)
+    meal_redirect
+  rescue ArgumentError => error
+    meal_error(error)
+  end
+
+  def continue_planning
+    require_meal_planner
+    @planner_session.continue!(expected_revision: expected_revision)
+    meal_redirect
+  rescue ArgumentError => error
+    meal_error(error)
+  end
+
+  def finish_planning
+    require_meal_planner
+    @planner_session.finish_preview!(expected_revision: expected_revision)
+    meal_redirect
+  rescue ArgumentError => error
+    meal_error(error)
+  end
+
+  def retry_generation
+    require_meal_planner
+    enqueue_meal_generation(@planner_session.queue_generation!(expected_revision: expected_revision))
+    meal_redirect
+  rescue ArgumentError => error
+    meal_error(error)
+  end
+
+  def save_and_leave
+    require_meal_planner
+    redirect_to @project, status: :see_other, notice: "Planning saved. You can continue from this Project."
+  end
+
+  def pending_item
+    require_meal_planner
+    item = params.expect(item: [ :id, :decision, :resolution, { fields: [ :label, :date, :time, :capacity ] } ])
+    args = { id: item.fetch(:id), expected_revision: expected_revision }
+    case item[:decision]
+    when "edit" then @planner_session.edit_pending_item!(**args, fields: item.fetch(:fields).to_h)
+    when "remove" then @planner_session.remove_pending_item!(**args)
+    when "restore" then @planner_session.restore_pending_item!(**args)
+    when "resolve" then @planner_session.resolve_pending_conflict!(**args, choice: item.fetch(:resolution))
+    else raise ArgumentError, "Choose an item action."
+    end
+    meal_redirect
+  rescue ArgumentError, ActiveRecord::RecordInvalid => error
+    meal_error(error)
+  end
+
+  def planning_details
+    require_meal_planner
+    details = params.expect(project: [ :name, :starts_on ]).to_h.symbolize_keys
+    @planner_session.update_planning_details!(**details, expected_revision: expected_revision)
+    meal_redirect
+  rescue ArgumentError, ActiveRecord::RecordInvalid => error
+    meal_error(error)
+  end
+
   private
+    def require_meal_planner
+      raise ActiveRecord::RecordNotFound unless @planner_session.meal_planner?
+    end
+
+    def expected_revision
+      Integer(params.expect(:expected_revision).to_s, 10)
+    end
+
+    def enqueue_meal_generation(revision)
+      PlannerStepJob.perform_later(@project.id, @planner_session.id, Current.session.id, revision)
+    end
+
+    def meal_redirect
+      redirect_to project_planner_session_path(@project, @planner_session), status: :see_other
+    end
+
+    def meal_error(error)
+      redirect_to project_planner_session_path(@project, @planner_session), status: :see_other, alert: error.message
+    end
+
+    def stale_planning_action
+      meal_error(ArgumentError.new("This plan changed in another request. Your latest plan is shown; please try that change again."))
+    end
+
     def set_project
       @project = Policy.visible_projects(Current.person).find(params[:project_id])
     end

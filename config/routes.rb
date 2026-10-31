@@ -22,6 +22,7 @@ Rails.application.routes.draw do
     collection do
       get :archived
       get :deleted
+      post :start_meal_planner
     end
 
     member do
@@ -62,6 +63,13 @@ Rails.application.routes.draw do
         post :abandon
         patch :suggestion
         post :accept
+        post :select_answer
+        post :continue_planning
+        post :finish_planning
+        post :retry_generation
+        post :save_and_leave
+        patch :pending_item
+        patch :planning_details
       end
     end
     resources :budget_lines, except: %i[ index show ] do

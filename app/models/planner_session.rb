@@ -1,5 +1,7 @@
 class PlannerSession < ApplicationRecord
   ERROR_MESSAGE = "The Planner couldn't reach the AI just now. You can keep building by hand."
+  MAX_GENERATED_QUESTIONS = 3
+  GENERATION_STATES = %w[idle queued running ready failed].freeze
 
   belongs_to :project
   belongs_to :started_by, class_name: "Person"
@@ -7,6 +9,274 @@ class PlannerSession < ApplicationRecord
   enum :status, { asking: 0, reviewing: 1, accepted: 2, abandoned: 3 }
 
   validates :description, presence: true
+  validates :flow_version, inclusion: { in: [ 1, 2 ] }
+  validates :generation_state, inclusion: { in: GENERATION_STATES }
+
+  def meal_planner?
+    flow_version == 2
+  end
+
+  def generation_busy?
+    generation_state.in?(%w[queued running])
+  end
+
+  def generation_stalled?
+    generation_busy? && updated_at < 90.seconds.ago
+  end
+
+  def ready_to_continue?
+    meal_planner? && generation_state == "ready" && pending_answer.present?
+  end
+
+  def visible_pending_items
+    Planner::PendingItems.visible(pending_items)
+  end
+
+  def pending_item_count
+    visible_pending_items.size
+  end
+
+  def planning_context
+    ensure_v2!
+    {
+      "flow_version" => flow_version,
+      "planning_kind" => "meal_train",
+      "question_limit" => MAX_GENERATED_QUESTIONS,
+      "questions_answered" => steps.size,
+      "answers" => steps.map { |step| step.slice("question", "answer") },
+      "pending_answer" => pending_answer&.slice("text", "step_index"),
+      "project" => { "name" => project.name, "starts_on" => project.starts_on&.iso8601 },
+      "pending_slots" => visible_pending_items.map do |item|
+        item.slice("source_key", "fields", "day_offset", "removed", "user_edits", "conflict")
+      end
+    }
+  end
+
+  def update_planning_details!(name: nil, starts_on: nil, expected_revision:)
+    with_lock do
+      ensure_mutable_v2!
+      ensure_not_busy!
+      raise Planner::StaleRevision unless generation_revision == expected_revision
+
+      old_start = project.starts_on
+      new_start = starts_on.present? ? Date.iso8601(starts_on.to_s) : old_start
+      project.name = name if name.present?
+      if starts_on.present?
+        project.ends_on += (new_start - old_start).to_i if old_start && project.ends_on
+        project.starts_on = new_start
+      end
+      project.save!
+
+      if new_start && old_start != new_start
+        offset = old_start ? (new_start - old_start).to_i : nil
+        self.pending_items = pending_items.map do |item|
+          next item if item.dig("user_edits", "date").present?
+
+          date = item.dig("fields", "date").presence
+          rebased = if date && offset
+            Date.iso8601(date) + offset
+          else
+            new_start + item.fetch("day_offset", 0).to_i
+          end
+          item.deep_merge(
+            "fields" => { "date" => rebased.iso8601 },
+            "suggested_fields" => { "date" => rebased.iso8601 }
+          )
+        rescue Date::Error, TypeError
+          item
+        end
+      end
+
+      self.generation_revision += 1
+      save!
+      generation_revision
+    end
+  end
+
+  def queue_generation!(expected_revision: nil)
+    with_lock do
+      ensure_mutable_v2!
+      ensure_not_busy! unless generation_stalled?
+      if expected_revision.present? && generation_revision != Integer(expected_revision)
+        raise Planner::StaleRevision
+      end
+      self.generation_revision += 1
+      self.generation_state = "queued"
+      self.prepared_card = nil
+      self.last_error = nil
+      save!
+      generation_revision
+    end
+  end
+
+  def generate!(revision:)
+    with_lock do
+      return false unless generation_revision == revision && generation_state == "queued" && asking?
+
+      update!(generation_state: "running")
+    end
+
+    response = Planner::ContextBuilder.new(self).ask
+    apply_generation!(revision:, response:)
+  rescue StandardError => error
+    with_lock do
+      if generation_revision == revision && generation_state == "running" && asking?
+        update!(generation_state: "failed", last_error: error.message)
+      end
+    end
+    false
+  end
+
+  def select_answer!(text, expected_revision:, step_index: nil)
+    with_lock do
+      ensure_mutable_v2!
+      ensure_not_busy!
+      raise Planner::StaleRevision unless generation_revision == expected_revision
+
+      index = if step_index.nil?
+        pending_answer&.fetch("step_index", nil) || steps.length
+      else
+        Integer(step_index)
+      end
+      raise ArgumentError, "Unknown Planner step" unless index.between?(0, steps.length)
+      card = index < steps.length ? steps.fetch(index) : current_card&.stringify_keys
+      raise ArgumentError, "There is no current Planner card" unless card
+
+      raise ArgumentError, "Answer can't be blank" if text.blank?
+
+      redacted_text = Planner::NameRedactor.new(Current.workspace).call(text)
+      revised_steps = steps.take(index) + [
+        {
+          "question" => card.fetch("question"),
+          "options" => card.fetch("options", []),
+          "answer" => redacted_text
+        }
+      ]
+      self.steps = revised_steps
+      self.status = :asking
+      self.pending_answer = { "text" => redacted_text, "step_index" => index }
+      self.current_card = card.slice("question", "options")
+      self.generation_revision += 1
+      self.generation_state = "queued"
+      self.prepared_card = nil
+      self.last_error = nil
+      save!
+      generation_revision
+    end
+  end
+
+  def continue!(expected_revision:)
+    with_lock do
+      ensure_mutable_v2!
+      raise Planner::StaleRevision unless generation_revision == expected_revision
+      raise ArgumentError, "The preview is not ready" unless ready_to_continue?
+      self.generation_revision += 1
+
+      if prepared_card.present? && steps.length < MAX_GENERATED_QUESTIONS
+        self.current_card = prepared_card
+        self.prepared_card = nil
+        self.pending_answer = nil
+        self.generation_state = "idle"
+      else
+        self.status = :reviewing
+        self.current_card = nil
+        self.prepared_card = nil
+        self.pending_answer = nil
+        self.generation_state = "idle"
+      end
+      save!
+    end
+  end
+
+  def finish_preview!(expected_revision:)
+    with_lock do
+      ensure_mutable_v2!
+      ensure_not_busy!
+      raise Planner::StaleRevision unless generation_revision == expected_revision
+      raise ArgumentError, "There is no useful preview" if visible_pending_items.empty?
+
+      update!(
+        generation_revision: generation_revision + 1,
+        status: :reviewing,
+        current_card: nil,
+        prepared_card: nil,
+        pending_answer: nil,
+        generation_state: "idle"
+      )
+    end
+  end
+
+  def edit_pending_item!(id:, fields:, expected_revision:)
+    change_pending_item!(id:, expected_revision:) do |item|
+      sanitized = Planner::PendingItems.sanitize_slot_fields(fields)
+      item.merge(
+        "fields" => item.fetch("fields").merge(sanitized),
+        "user_edits" => item.fetch("user_edits", {}).merge(sanitized),
+        "conflict" => nil
+      )
+    end
+  end
+
+  def remove_pending_item!(id:, expected_revision:)
+    change_pending_item!(id:, expected_revision:) { |item| item.merge("removed" => true, "removed_revision" => generation_revision + 1) }
+  end
+
+  def restore_pending_item!(id:, expected_revision:)
+    change_pending_item!(id:, expected_revision:) { |item| item.merge("removed" => false) }
+  end
+
+  def resolve_pending_conflict!(id:, choice:, expected_revision:)
+    change_pending_item!(id:, expected_revision:) do |item|
+      conflict = item.fetch("conflict")
+      case choice.to_s
+      when "keep_edit"
+        item.merge("conflict" => nil)
+      when "use_suggestion"
+        if conflict.fetch("type") == "removed_by_revision"
+          next item.merge("removed" => true, "conflict" => nil)
+        end
+        fields = item.fetch("fields").dup
+        user_edits = item.fetch("user_edits", {}).dup
+        conflict.fetch("fields", {}).each do |field, values|
+          fields[field] = values.fetch("suggested")
+          user_edits.delete(field)
+        end
+        item.merge("fields" => fields, "user_edits" => user_edits, "conflict" => nil)
+      else
+        raise ArgumentError, "Unknown conflict choice"
+      end
+    end
+  end
+
+  def accept_visible!(expected_revision: nil)
+    with_lock do
+      ensure_v2!
+      return acceptance_receipt if accepted?
+      raise Planner::StaleRevision if expected_revision && generation_revision != expected_revision
+      ensure_not_busy!
+      raise ArgumentError, "Finish reviewing before adding pending work" unless reviewing?
+
+      items = visible_pending_items
+      raise ArgumentError, "There is no pending work to add" if items.empty?
+      raise ArgumentError, "Resolve pending conflicts before adding" if items.any? { |item| item["conflict"].present? }
+
+      slots = items.map { |item| Planner::PendingItems.valid_slot(item, project:) }
+      invalid = slots.reject(&:valid?)
+      raise ActiveRecord::RecordInvalid, invalid.first if invalid.any?
+
+      created_ids = slots.map do |slot|
+        project.slots.create!(
+          label: slot.label,
+          date: slot.date,
+          starts_at_time: slot.starts_at_time,
+          capacity: slot.capacity
+        ).id
+      end
+      project.update!(enabled_tools: project.enabled_tools | [ "signup_sheet" ])
+      update!(status: :accepted, accepted_at: Time.current, current_card: nil, prepared_card: nil)
+      acceptance_receipt.merge("slot_ids" => created_ids)
+    end
+  end
 
   def start!
     run_step!
@@ -44,7 +314,19 @@ class PlannerSession < ApplicationRecord
   end
 
   def abandon!
-    update!(status: :abandoned, current_card: nil)
+    return update!(status: :abandoned, current_card: nil) unless meal_planner?
+
+    with_lock do
+      ensure_mutable_v2!
+      self.generation_revision += 1
+      update!(
+        status: :abandoned,
+        generation_state: "idle",
+        current_card: nil,
+        prepared_card: nil,
+        pending_answer: nil
+      )
+    end
   end
 
   def decide_suggestion!(id:, decision:, fields: nil, title: nil, details: nil)
@@ -93,6 +375,77 @@ class PlannerSession < ApplicationRecord
   end
 
   private
+    def apply_generation!(revision:, response:)
+      response.validate!
+      with_lock do
+        return false unless generation_revision == revision && generation_state == "running" && asking?
+
+        self.pending_items = Planner::PendingItems.reconcile(
+          existing: pending_items,
+          added: response.added,
+          removed_ids: response.removed_ids,
+          project:
+        )
+        next_card = response.finished || steps.length >= MAX_GENERATED_QUESTIONS ? nil : response.card&.deep_stringify_keys
+        if pending_answer.present?
+          self.prepared_card = next_card
+          self.generation_state = "ready"
+        elsif next_card.present?
+          self.current_card = next_card
+          self.prepared_card = nil
+          self.generation_state = "idle"
+        else
+          self.status = :reviewing
+          self.current_card = nil
+          self.prepared_card = nil
+          self.generation_state = "idle"
+        end
+        self.last_error = nil
+        save!
+        true
+      end
+    end
+
+    def change_pending_item!(id:, expected_revision:)
+      with_lock do
+        ensure_mutable_v2!
+        ensure_not_busy!
+        raise Planner::StaleRevision unless generation_revision == expected_revision
+        found = false
+        self.pending_items = pending_items.map do |item|
+          next item unless item.fetch("id") == id
+
+          found = true
+          yield item
+        end
+        raise ActiveRecord::RecordNotFound unless found
+
+        self.generation_revision += 1
+        save!
+        generation_revision
+      end
+    end
+
+    def acceptance_receipt
+      {
+        "accepted_at" => accepted_at&.iso8601,
+        "item_count" => pending_item_count
+      }
+    end
+
+    def ensure_v2!
+      raise ArgumentError, "This operation requires a meal Planner session" unless meal_planner?
+    end
+
+    def ensure_mutable_v2!
+      ensure_v2!
+      raise ArgumentError, "Accepted Planner sessions are immutable" if accepted?
+    end
+
+    def ensure_not_busy!
+      raise ArgumentError, "Generation is still in progress" if generation_busy?
+    end
+
     def request_next_response
       response = begin
         Planner::ContextBuilder.new(self).ask

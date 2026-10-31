@@ -45,3 +45,6 @@
 
 # Environment-specific credentials keys stay local.
 /config/credentials/*.key
+
+# Lavish review artifacts
+/.lavish/

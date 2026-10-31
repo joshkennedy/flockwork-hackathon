@@ -156,6 +156,46 @@
   .suggestion.kept { @apply border-solid border-border bg-panel text-ink shadow-raised; }
   .suggestion.kept .kept-check { animation: keep-check var(--duration-keep) ease-out; }
   @starting-style { .suggestion.kept { background-color: var(--color-ghost-fill); border-color: var(--color-ghost-border); color: var(--color-ink-2); } }
+  .project-kind-tile { @apply block min-h-28 w-full rounded-tile border border-border bg-panel p-5 text-left shadow-raised; transition: border-color var(--duration-hover), background-color var(--duration-hover), box-shadow var(--duration-press), transform var(--duration-press); }
+  button.project-kind-tile:hover { @apply border-border-strong bg-ghost-fill; }
+  button.project-kind-tile:active { transform: translateY(1px); box-shadow: var(--shadow-secondary-active); }
+  .meal-builder { @apply w-full; }
+  .meal-builder-header { @apply flex items-start justify-between gap-5 border-b border-hairline pb-6; }
+  .meal-builder-rename { @apply relative shrink-0; }
+  .meal-builder-rename > summary, .meal-slot-editor > summary { list-style: none; }
+  .meal-builder-rename > summary::-webkit-details-marker, .meal-slot-editor > summary::-webkit-details-marker { display: none; }
+  .meal-builder-popover { @apply absolute right-0 top-10 z-10 w-72 rounded-panel bg-panel p-4 shadow-float; }
+  .meal-builder-workspace { @apply mt-7 grid min-w-0 gap-7; }
+  .meal-builder :is(.btn, summary) { min-height: 44px; }
+  .meal-builder-guide { @apply min-w-0; }
+  .meal-builder-text-action { @apply inline-flex min-h-11 cursor-pointer items-center rounded-control px-2 text-meta font-semibold text-ink-2; }
+  .meal-builder-text-action:hover { @apply bg-hairline text-ink; }
+  .meal-builder-status { @apply text-meta text-ink-2; }
+  .meal-mobile-update { @apply mt-5 rounded-nav border border-dashed border-ghost-border bg-ghost-fill px-3 py-3; }
+  .meal-answer-summary { @apply rounded-control border border-border bg-panel; }
+  .meal-answer-summary > summary { @apply flex min-h-11 cursor-pointer flex-col justify-center gap-1 px-3 py-2 text-meta; list-style: none; }
+  .meal-answer-summary > summary::-webkit-details-marker { display: none; }
+  .meal-answer-summary[open] { @apply p-2; }
+  .meal-answer-summary[open] > summary { @apply px-1; }
+  .meal-answer-tile::before { display: none; }
+  .meal-answer-tile[aria-pressed="true"] { @apply border-ink bg-ghost-fill; }
+  .meal-answer-radio { @apply size-4 shrink-0 rounded-full border border-border-strong bg-panel; }
+  .meal-answer-tile[aria-pressed="true"] .meal-answer-radio { border: 4px solid var(--color-ink); }
+  .meal-answer-tile:disabled { @apply cursor-wait text-ink-2 shadow-none; transform: none; }
+  .meal-preview { @apply min-w-0 border-t border-hairline pt-7; }
+  .meal-preview-heading { @apply flex items-start justify-between gap-4; }
+  .meal-preview-view-all { @apply min-h-11 items-center; display: inline-flex; }
+  .meal-preview-list { @apply overflow-hidden rounded-tile border border-dashed border-ghost-border bg-ghost-fill; }
+  .meal-slot { @apply min-w-0 border-b border-ghost-border px-4 py-3; }
+  .meal-slot:last-child { border-bottom: 0; }
+  .meal-slot-summary { @apply flex min-w-0 flex-wrap items-start gap-3; }
+  .meal-slot-editor { @apply ml-auto shrink-0; }
+  .meal-slot-editor[open] { flex-basis: 100%; }
+  .meal-slot-editor[open] > summary { @apply ml-auto; width: max-content; }
+  .meal-slot-edit-panel { @apply mt-3 rounded-nav bg-panel p-4; }
+  .meal-slot-conflict { @apply bg-danger-soft; }
+  .meal-slot-conflict-actions { @apply mt-3 border-t border-danger/20 pt-3; }
+  .meal-preview-empty { @apply rounded-tile border border-dashed border-ghost-border bg-ghost-fill px-4 py-7; }
   .rich-content :where(p, ul, ol) + :where(p, ul, ol) { margin-top: 12px; }
   .rich-content a { text-decoration: underline; }
   .rich-content ul { padding-left: 20px; list-style: disc; }
@@ -167,6 +207,19 @@
     .btn-primary { @apply min-h-phone-action-h w-full text-heading; }
     .button_to:has(> .btn-primary) { width: 100%; }
     .nav-item { min-height: 44px; }
+    .meal-builder-header { @apply items-start; }
+    .meal-builder-popover { @apply fixed inset-x-4 top-20 w-auto; }
+    .meal-builder-guide .btn-primary { width: 100%; }
+    .meal-slot { @apply px-3; }
+    .meal-slot-summary { @apply items-center; }
+    .meal-slot-edit-panel { @apply -mx-1; }
+  }
+
+  @media (width >= 1024px) {
+    .meal-builder-workspace { grid-template-columns: minmax(240px, .55fr) minmax(0, 1.45fr); gap: 40px; }
+    .meal-preview { @apply border-t-0 border-l pl-10 pt-0; }
+    .meal-preview-view-all { display: none; }
+    .meal-mobile-update { display: none; }
   }
 }
 

@@ -1,0 +1,22 @@
+<% answer_steps = local_assigns[:previous_only] && planner_session.pending_answer.present? ? planner_session.steps.take(planner_session.pending_answer.fetch("step_index")) : planner_session.steps %>
+<% if answer_steps.any? %>
+  <div class="mt-5 grid gap-2">
+    <% answer_steps.each_with_index do |step, index| %>
+      <details class="meal-answer-summary">
+        <summary>
+          <span class="text-ink-2"><%= step.fetch("question") %></span>
+          <span class="font-semibold text-ink"><%= step.fetch("answer") %><span class="ml-2 text-label text-ink-2">Change</span></span>
+        </summary>
+        <div class="mt-2 grid gap-2">
+          <% step.fetch("options", []).each do |option| %>
+            <%= button_to option, select_answer_project_planner_session_path(project, planner_session),
+              params: { answer: option, step_index: index, expected_revision: planner_session.generation_revision },
+              class: "answer-tile meal-answer-tile", aria: { pressed: option == step.fetch("answer") },
+              disabled: planner_session.generation_busy?,
+              data: { turbo_submits_with: "Preparing…" } %>
+          <% end %>
+        </div>
+      </details>
+    <% end %>
+  </div>
+<% end %>

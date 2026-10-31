@@ -1,5 +1,8 @@
 <% slots_by_date = project.slots.includes(slot_claims: :person).chronological.group_by(&:date) %>
 <section class="tool-section" aria-labelledby="tool-signup-sheet">
+  <% if @completed_planner_session %>
+    <p role="status" class="mb-4 rounded-control bg-sunlit-soft px-4 py-3 text-ink"><%= pluralize(@completed_planner_session.pending_item_count, "meal") %> added to your Sign-up sheet.</p>
+  <% end %>
   <div class="flex flex-wrap items-start justify-between gap-4">
     <h2 id="tool-signup-sheet"><%= icon(:schedule, class: "text-tool-signup") %> <%= Project::TOOL_LABELS.fetch("signup_sheet") %></h2>
     <% if Policy.can?(Current.person, :manage_slots, project) %>
