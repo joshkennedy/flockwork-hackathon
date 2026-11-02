@@ -1,0 +1,43 @@
+<% own_claim = slot.slot_claims.find { |claim| claim.person_id == Current.person.id } %>
+<% open = !slot.full? && !own_claim %>
+<% manage = Policy.can?(Current.person, :manage_slots, project) %>
+<li class="<%= open ? "tile-raised p-4" : "border-b border-hairline py-3" %>">
+  <div class="flex flex-wrap items-start justify-between gap-3">
+    <div class="min-w-0">
+      <p>
+        <span class="font-semibold"><%= slot.label %></span>
+        <% if slot.starts_at_time.present? %>
+          <span class="text-meta text-ink-2">· <%= slot.starts_at_time.strftime("%-l:%M %p") %></span>
+        <% end %>
+      </p>
+      <% unless slot.full? %>
+        <p class="mt-1 text-meta text-ink-2"><%= "#{slot.claims_count} of #{slot.capacity} filled" %></p>
+      <% end %>
+      <% if slot.slot_claims.any? %>
+        <p class="mt-1 flex items-start gap-2 text-meta text-ink-2"><%= icon(:check, class: own_claim ? "text-sunlit" : "text-ink-2") %><span><%= slot.slot_claims.map { |claim| claim.person.name }.to_sentence %></span></p>
+      <% end %>
+      <% if own_claim %>
+        <p class="mt-1 text-meta text-ink-2"><%= slot.label.downcase == "dinner" ? "You’re bringing dinner" : "You’re signed up for #{slot.label.downcase}" %></p>
+      <% end %>
+    </div>
+    <div class="flex items-center gap-1">
+      <% if open %>
+        <span class="badge-need"><%= pluralize(slot.capacity - slot.claims_count, "spot") %> left</span>
+      <% end %>
+      <% if own_claim %>
+        <%= button_to "Release", project_slot_claim_path(project, slot), method: :delete, class: "btn btn-text" %>
+      <% end %>
+      <% if manage %>
+        <%= link_to "Edit", edit_project_slot_path(project, slot), class: "btn btn-text" %>
+        <%= button_to "Delete", project_slot_path(project, slot), method: :delete, class: "btn btn-danger" %>
+      <% end %>
+    </div>
+  </div>
+  <% if open && Policy.can?(Current.person, :claim_slot, project) %>
+    <%# Leaders see the whole sheet, so a primary per slot would drown the page; volunteers get the phone action DESIGN.md specifies. %>
+    <%= button_to (slot.label.downcase == "dinner" ? "I can bring dinner" : "I can help with #{slot.label.downcase}"), project_slot_claim_path(project, slot),
+          class: manage ? "mt-3 btn btn-secondary" : "mt-3 btn btn-primary min-h-phone-action-h w-full",
+          aria: { label: "Claim: #{slot.label}" } %>
+  <% end %>
+  <%= render "comments/thread", commentable: slot %>
+</li>

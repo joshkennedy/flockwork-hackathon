@@ -111,9 +111,25 @@ class SlotsTest < ActionDispatch::IntegrationTest
     assert_equal "This slot is full.", flash[:alert]
     assert_not slot.slot_claims.exists?(person: member)
     follow_redirect!
-    assert_select "section[aria-labelledby='tool-signup-sheet']", text: /Full/
     assert_select "section[aria-labelledby='tool-signup-sheet']", text: /Leo Leader/
+    assert_select "section[aria-labelledby='tool-signup-sheet'] .badge-need", count: 0
     assert_select "form[action='#{project_slot_claim_path(project, slot)}'] button", text: "Claim", count: 0
+  end
+
+  test "past Slots fold away and Leaders get a quiet claim button" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    project.update!(enabled_tools: project.enabled_tools + [ "signup_sheet" ])
+    project.slots.create!(date: Date.current - 1, label: "Yesterday dinner", capacity: 1)
+    project.slots.create!(date: Date.current, label: "Tonight dinner", capacity: 1)
+
+    get project_path(project)
+
+    assert_select "details[data-signup-past] summary", text: /Past · 1 slot/
+    assert_select "details[data-signup-past]", text: /Yesterday dinner/
+    assert_select "details[data-signup-past]", text: /Tonight dinner/, count: 0
+    assert_select "section[aria-labelledby='tool-signup-sheet']", text: /Tonight dinner/
+    assert_select "section[aria-labelledby='tool-signup-sheet'] .btn-primary", count: 0
   end
 
   test "a run longer than sixty days is refused" do
