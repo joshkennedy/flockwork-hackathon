@@ -31,14 +31,17 @@
           <% end %>
 
           <% if Policy.can?(Current.person, :post_message, project) %>
-            <%= form_with model: [ project, project.messages.build(parent: root) ], class: "ml-6 space-y-3 border-l border-hairline pl-6" do |form| %>
-              <%= render "mentions/field",
-                    form: form,
-                    project: project,
-                    label: "Reply",
-                    input_id: "message_reply_#{root.id}_body" %>
-              <%= form.submit "Post reply", class: "btn btn-secondary" %>
-            <% end %>
+            <details class="ml-6 mt-2 border-l border-hairline pl-6" data-reply-form>
+              <summary class="btn btn-text -ml-3 list-none [&::-webkit-details-marker]:hidden">Reply</summary>
+              <%= form_with model: [ project, project.messages.build(parent: root) ], class: "mt-2 space-y-3" do |form| %>
+                <%= render "mentions/field",
+                      form: form,
+                      project: project,
+                      label: "Reply",
+                      input_id: "message_reply_#{root.id}_body" %>
+                <%= form.submit "Post reply", class: "btn btn-secondary" %>
+              <% end %>
+            </details>
           <% end %>
         </li>
       <% end %>

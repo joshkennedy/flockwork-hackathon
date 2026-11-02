@@ -7,9 +7,9 @@
     <%= message.body %>
   </div>
   <% if Policy.can?(Current.person, :edit_message, message) || Policy.can?(Current.person, :delete_message, message) %>
-    <div class="mt-3 flex gap-3 text-meta font-semibold">
+    <div class="-ml-3 mt-2 flex items-center gap-1">
       <% if Policy.can?(Current.person, :edit_message, message) %>
-        <%= link_to "Edit", edit_project_message_path(project, message), class: "text-ink-2 hover:text-ink" %>
+        <%= link_to "Edit", edit_project_message_path(project, message), class: "btn btn-text" %>
       <% end %>
       <% if Policy.can?(Current.person, :delete_message, message) %>
         <%= button_to "Delete", project_message_path(project, message), method: :delete, class: "btn btn-danger" %>
@@ -22,7 +22,7 @@
       <%= button_to "Unfollow",
             project_follow_path(project, follow),
             method: :delete,
-            class: "btn btn-text" %>
+            class: "btn btn-text -mr-3" %>
     </div>
   <% end %>
 </article>

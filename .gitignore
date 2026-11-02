@@ -48,3 +48,4 @@
 
 # Lavish review artifacts
 /.lavish/
+.design-audit/

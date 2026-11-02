@@ -2,25 +2,25 @@
   <% recipients = project.recipients.joins(:person).order("people.name") %>
   <section class="tool-section" aria-labelledby="tool-recipients">
     <%= render "projects/tools/planner_arrival", tool: "recipients" %>
-    <div class="flex flex-wrap items-start justify-between gap-4">
+    <div class="flex flex-wrap items-center justify-between gap-4">
       <h2 id="tool-recipients" class="text-ink"><%= icon(:heart, class: "text-tool-messages") %> <%= Project::TOOL_LABELS.fetch("recipients") %></h2>
       <% if Policy.can?(Current.person, :manage_recipients, project) %>
-        <%= link_to "Add recipient", new_project_recipient_path(project), class: "text-meta font-semibold text-ink-2 hover:text-ink" %>
+        <%= link_to "Add recipient", new_project_recipient_path(project), class: "inline-flex min-h-control-h items-center text-meta font-semibold text-ink-2 hover:text-ink" %>
       <% end %>
     </div>
 
     <% if recipients.any? %>
-      <ul class="mt-6 divide-y divide-hairline border-y border-hairline">
+      <ul class="mt-6 divide-y divide-hairline border-t border-hairline">
         <% recipients.each do |recipient| %>
           <li class="py-4">
             <div class="flex items-center justify-between gap-4">
               <span class="font-semibold text-ink"><%= recipient.person.name %></span>
               <% if Policy.can?(Current.person, :manage_recipients, project) %>
-                <%= button_to "Remove", project_recipient_path(project, recipient), method: :delete, class: "btn btn-danger" %>
+                <%= button_to "Remove", project_recipient_path(project, recipient), method: :delete, class: "btn btn-danger -mr-3" %>
               <% end %>
             </div>
             <div class="mt-3" aria-label="Notes for <%= recipient.person.name %>">
-              <h3 class="text-ink">Notes</h3>
+              <h3 class="text-label font-medium text-ink-2">Notes</h3>
               <%= render "notes/list", notes: @recipient_notes_by_id.fetch(recipient.id, []) %>
               <%= render "notes/form",
                 notable: recipient,

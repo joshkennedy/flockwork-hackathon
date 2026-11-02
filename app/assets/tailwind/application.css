@@ -225,6 +225,8 @@
   .rich-content pre { white-space: pre-wrap; overflow-wrap: anywhere; }
   trix-toolbar .trix-button-row { flex-wrap: wrap; gap: 4px; }
   trix-toolbar .trix-button-group { margin: 0 0 4px; border-color: var(--color-border); }
+  summary::marker { color: var(--color-ink-3); }
+  summary::-webkit-details-marker { color: var(--color-ink-3); }
   @media (width < 640px) {
     .btn-primary { @apply min-h-phone-action-h w-full text-heading; }
     .button_to:has(> .btn-primary) { width: 100%; }

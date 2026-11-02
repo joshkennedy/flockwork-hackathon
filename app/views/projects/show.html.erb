@@ -30,31 +30,31 @@
         <% end %>
       <% end %>
       <% if Policy.can?(Current.person, :view_team, @project) %>
-        <%= link_to "View Team", team_project_path(@project), class: "text-meta font-semibold text-ink-2 hover:text-ink" %>
+        <%= link_to "View Team", team_project_path(@project), class: "inline-flex min-h-control-h items-center text-meta font-semibold text-ink-2 hover:text-ink" %>
       <% elsif Policy.can?(Current.person, :join, @project) %>
         <%= button_to "Join", join_project_path(@project), class: "btn btn-primary" %>
       <% end %>
       <% if Policy.can?(Current.person, :update, @project) %>
-        <%= link_to "Edit Project", edit_project_path(@project), class: "text-meta font-semibold text-ink-2 hover:text-ink" %>
+        <%= link_to "Edit Project", edit_project_path(@project), class: "inline-flex min-h-control-h items-center text-meta font-semibold text-ink-2 hover:text-ink" %>
       <% end %>
       <% lifecycle_access = Policy.member?(Current.person, @project) || Current.person.admin? %>
       <% lifecycle_actions = lifecycle_access ? %i[mark_done reopen archive unarchive destroy].select { |action| Policy.can?(Current.person, action, @project) } : [] %>
       <% can_duplicate = Policy.can?(Current.person, :duplicate, @project) %>
       <% if can_duplicate || lifecycle_actions.any? %>
-        <details class="relative" data-project-more>
+        <details class="relative -ml-3" data-project-more>
           <summary class="btn btn-text list-none [&::-webkit-details-marker]:hidden">More</summary>
           <div class="popover-in absolute left-0 top-full z-30 mt-1 flex w-56 flex-col rounded-panel border border-border bg-panel p-2 shadow-float">
             <% if can_duplicate %>
-              <%= link_to "Duplicate", new_project_duplicate_path(@project), class: "btn btn-text w-full justify-start" %>
+              <%= link_to "Duplicate", new_project_duplicate_path(@project), class: "btn btn-text w-full justify-start rounded-badge" %>
             <% end %>
             <% { mark_done: [ "Mark done", mark_done_project_path(@project) ],
                  reopen: [ "Reopen", reopen_project_path(@project) ],
                  archive: [ "Archive", archive_project_path(@project) ],
                  unarchive: [ "Unarchive", unarchive_project_path(@project) ] }.slice(*lifecycle_actions).each_value do |label, path| %>
-              <%= button_to label, path, class: "btn btn-text w-full justify-start" %>
+              <%= button_to label, path, class: "btn btn-text w-full justify-start rounded-badge" %>
             <% end %>
             <% if lifecycle_actions.include?(:destroy) %>
-              <%= button_to "Delete", project_path(@project), method: :delete, class: "btn btn-danger w-full justify-start" %>
+              <%= button_to "Delete", project_path(@project), method: :delete, class: "btn btn-danger w-full justify-start rounded-badge" %>
             <% end %>
           </div>
         </details>
@@ -66,7 +66,7 @@
   <% can_transfer = lifecycle_access && Policy.can?(Current.person, :transfer_ownership, @project) && @ownership_transfer_leaders.any? %>
   <% if can_share || can_transfer %>
     <%# Stays open while the Public link is on so the URL is in view. %>
-    <details class="mt-5 border-t border-hairline pt-3" data-project-settings <%= "open" if @project.public_token.present? %>>
+    <details class="mt-3" data-project-settings <%= "open" if @project.public_token.present? %>>
       <summary class="cursor-pointer py-2 text-meta font-semibold text-ink-2 hover:text-ink">
         Sharing and ownership<%= " · Public link on" if @project.public_token.present? %>
       </summary>
