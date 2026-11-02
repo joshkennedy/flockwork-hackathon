@@ -15,6 +15,13 @@ class Slot < ApplicationRecord
     order(:date, Arel.sql("starts_at_time ASC NULLS FIRST"), :starts_at_time, :id)
   }
 
+  scope :this_week, -> { where(date: Date.current..(Date.current + 6)) }
+  scope :with_open_spots, -> { where("claims_count < capacity") }
+
+  def self.open_this_week_by_project(project_ids)
+    where(project_id: project_ids).this_week.with_open_spots.includes(:project).chronological.group_by(&:project)
+  end
+
   def self.grouped_by_date
     chronological.group_by(&:date)
   end

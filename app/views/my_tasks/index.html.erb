@@ -29,6 +29,14 @@
       <% end %>
     </ul>
   <% else %>
-    <p class="mt-7 py-6 text-ink-2">You have no open Tasks.</p>
+    <section class="mt-7" data-my-tasks-empty>
+      <h2>Nothing on your plate</h2>
+      <% if @open_slots_by_project.any? %>
+        <p class="mt-2 text-ink-2">These still need someone this week.</p>
+        <%= render "shared/open_needs", open_slots_by_project: @open_slots_by_project %>
+      <% else %>
+        <p class="mt-2 text-ink-2">Every spot this week is covered. <%= link_to "See open Teams", get_involved_path, class: "font-medium text-ink underline underline-offset-2" %></p>
+      <% end %>
+    </section>
   <% end %>
 </div>

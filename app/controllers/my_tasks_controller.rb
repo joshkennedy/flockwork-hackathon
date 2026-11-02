@@ -5,5 +5,6 @@ class MyTasksController < ApplicationController
       .where(project_id: visible_project_ids, assignee_id: Current.person.id, completed_at: nil)
       .includes(:project, :rich_text_details)
       .due_first
+    @open_slots_by_project = @tasks.empty? ? Slot.open_this_week_by_project(visible_project_ids) : {}
   end
 end

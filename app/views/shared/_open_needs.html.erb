@@ -1,0 +1,14 @@
+<ul class="mt-4 space-y-2">
+  <% open_slots_by_project.each do |project, slots| %>
+    <% next_slot = slots.first %>
+    <li>
+      <%= link_to project_path(project), class: "tile-raised flex items-start justify-between gap-3 p-4 hover:border-border-strong" do %>
+        <span class="min-w-0">
+          <span class="block font-semibold text-ink"><%= project.name %></span>
+          <span class="block text-meta text-ink-2">Next: <%= next_slot.label %> · <%= next_slot.date.strftime("%A, %B %-d") %></span>
+        </span>
+        <span class="badge-need shrink-0"><%= pluralize(slots.sum { |slot| slot.capacity - slot.claims_count }, "spot") %> open</span>
+      <% end %>
+    </li>
+  <% end %>
+</ul>

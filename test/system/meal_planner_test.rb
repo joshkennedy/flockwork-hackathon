@@ -70,7 +70,7 @@ class MealPlannerSystemTest < ApplicationSystemTestCase
       assert_text "3 meals added to your Sign-up sheet."
       assert_text "Bring soup"
       assert_text "Bring dinner", count: 2
-      assert_text "0 of 2 filled"
+      assert_text "2 spots left"
     end
     assert_selector "#tool-signup-sheet", focused: true
     section_top = page.evaluate_script("document.querySelector('[aria-labelledby=tool-signup-sheet]').getBoundingClientRect().top")

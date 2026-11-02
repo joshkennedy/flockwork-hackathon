@@ -21,6 +21,16 @@ class HomeTest < ActionDispatch::IntegrationTest
     assert_no_match "Far off", response.body
   end
 
+  test "an empty My Tasks points at open spots this week" do
+    sign_in_as_volunteer
+    projects(:community_meal).slots.create!(date: Date.current + 1, label: "Bring rolls", capacity: 2)
+
+    get my_tasks_path
+
+    assert_select "[data-my-tasks-empty]", text: /Nothing on your plate/
+    assert_select "[data-my-tasks-empty] a[href=?] .badge-need", project_path(projects(:community_meal)), text: "2 spots open"
+  end
+
   test "Home points a person with no Projects somewhere useful" do
     organization = Organization.create!(name: "New Church")
     sign_in_as organization.people.create!(name: "Nina New", email: "nina@new.example", admin: true)

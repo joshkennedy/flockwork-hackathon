@@ -10,14 +10,14 @@
           <span class="text-meta text-ink-2">· <%= slot.starts_at_time.strftime("%-l:%M %p") %></span>
         <% end %>
       </p>
-      <% unless slot.full? %>
+      <% if own_claim && !slot.full? %>
         <p class="mt-1 text-meta text-ink-2"><%= "#{slot.claims_count} of #{slot.capacity} filled" %></p>
       <% end %>
       <% if slot.slot_claims.any? %>
         <p class="mt-1 flex items-start gap-2 text-meta text-ink-2"><%= icon(:check, class: own_claim ? "text-sunlit" : "text-ink-2") %><span><%= slot.slot_claims.map { |claim| claim.person.name }.to_sentence %></span></p>
       <% end %>
       <% if own_claim %>
-        <p class="mt-1 text-meta text-ink-2"><%= slot.label.downcase == "dinner" ? "You’re bringing dinner" : "You’re signed up for #{slot.label.downcase}" %></p>
+        <p class="mt-1 text-meta text-ink-2"><%= slot.label.downcase == "dinner" ? "You’re bringing dinner" : "You’re signed up" %></p>
       <% end %>
     </div>
     <div class="flex items-center gap-1">
@@ -35,7 +35,7 @@
   </div>
   <% if open && Policy.can?(Current.person, :claim_slot, project) %>
     <%# Leaders see the whole sheet, so a primary per slot would drown the page; volunteers get the phone action DESIGN.md specifies. %>
-    <%= button_to (slot.label.downcase == "dinner" ? "I can bring dinner" : "I can help with #{slot.label.downcase}"), project_slot_claim_path(project, slot),
+    <%= button_to (slot.label.downcase == "dinner" ? "I can bring dinner" : "I can help"), project_slot_claim_path(project, slot),
           class: manage ? "mt-3 btn btn-secondary" : "mt-3 btn btn-primary min-h-phone-action-h w-full",
           aria: { label: "Claim: #{slot.label}" } %>
   <% end %>

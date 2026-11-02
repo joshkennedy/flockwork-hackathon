@@ -7,14 +7,12 @@ class OrganizationsController < ApplicationController
     @pending_invitations = Policy.visible_invitations(Current.person).includes(:project).order(created_at: :desc)
 
     visible_project_ids = Policy.visible_projects(@person).select(:id)
-    week = Date.current..(Date.current + 6)
     @any_projects = visible_project_ids.exists?
-    @my_slots = Slot.joins(:slot_claims).where(project_id: visible_project_ids, date: week, slot_claims: { person_id: @person.id })
-      .includes(:project).chronological
+    @my_slots = Slot.joins(:slot_claims).where(project_id: visible_project_ids, slot_claims: { person_id: @person.id })
+      .this_week.includes(:project).chronological
     @my_tasks = @organization.tasks.where(project_id: visible_project_ids, assignee_id: @person.id, completed_at: nil)
       .includes(:project).due_first.limit(5)
-    @open_slots_by_project = Slot.where(project_id: visible_project_ids, date: week).where("claims_count < capacity")
-      .includes(:project).chronological.group_by(&:project)
+    @open_slots_by_project = Slot.open_this_week_by_project(visible_project_ids)
   end
 
   def create
