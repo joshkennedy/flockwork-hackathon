@@ -1,14 +1,7 @@
 <% content_for :title, "Get involved" %>
 
 <div class="w-full max-w-3xl">
-  <nav aria-label="Get involved navigation">
-    <%= link_to "Home", home_path, class: "text-meta font-semibold text-ink-2 hover:text-ink" %>
-  </nav>
-
-  <header class="mt-7">
-    <h1 class="text-ink">Get involved</h1>
-    <p class="mt-4 text-body-phone sm:text-body text-ink-2">Open Team Projects welcome Volunteers from across the Organization.</p>
-  </header>
+  <%= page_header "Get involved", subtitle: "Open Team Projects welcome Volunteers from across the Organization." %>
 
   <% if @projects.any? %>
     <ul class="mt-7 divide-y divide-hairline border-y border-hairline">
