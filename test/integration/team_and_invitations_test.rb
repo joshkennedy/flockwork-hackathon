@@ -41,7 +41,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     assert_select "form[action='#{project_invitations_path(project)}']" do
       assert_select "input[name='invitation[person_id]'][value='#{invitee.id}']"
       assert_select "select[name='invitation[role]'] option[value='leader']", "Leader"
-      assert_select "select[name='invitation[role]'] option[value='volunteer']", "Volunteer"
+      assert_select "select[name='invitation[role]'] option[value='volunteer'][selected]", "Volunteer"
       assert_select "input[type='submit'][value='Invite']"
     end
 
