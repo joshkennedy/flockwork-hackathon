@@ -325,6 +325,6 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     get project_path(project)
 
     assert_response :success
-    assert_select "a[href='#{team_project_path(project)}']", "Team"
+    assert_select "a[href='#{team_project_path(project)}']", "View Team"
   end
 end

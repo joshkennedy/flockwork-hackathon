@@ -30,47 +30,55 @@
         <% end %>
       <% end %>
       <% if Policy.can?(Current.person, :view_team, @project) %>
-        <%= link_to "Team", team_project_path(@project), class: "text-meta font-semibold text-ink-2 hover:text-ink" %>
+        <%= link_to "View Team", team_project_path(@project), class: "text-meta font-semibold text-ink-2 hover:text-ink" %>
       <% elsif Policy.can?(Current.person, :join, @project) %>
         <%= button_to "Join", join_project_path(@project), class: "btn btn-primary" %>
       <% end %>
       <% if Policy.can?(Current.person, :update, @project) %>
         <%= link_to "Edit Project", edit_project_path(@project), class: "text-meta font-semibold text-ink-2 hover:text-ink" %>
       <% end %>
-      <% if Policy.can?(Current.person, :duplicate, @project) %>
-        <%= link_to "Duplicate", new_project_duplicate_path(@project), class: "text-meta font-semibold text-ink-2 hover:text-ink" %>
+      <% lifecycle_access = Policy.member?(Current.person, @project) || Current.person.admin? %>
+      <% lifecycle_actions = lifecycle_access ? %i[mark_done reopen archive unarchive destroy].select { |action| Policy.can?(Current.person, action, @project) } : [] %>
+      <% can_duplicate = Policy.can?(Current.person, :duplicate, @project) %>
+      <% if can_duplicate || lifecycle_actions.any? %>
+        <details class="relative" data-project-more>
+          <summary class="btn btn-text list-none [&::-webkit-details-marker]:hidden">More</summary>
+          <div class="popover-in absolute left-0 top-full z-30 mt-1 flex w-56 flex-col rounded-panel border border-border bg-panel p-2 shadow-float">
+            <% if can_duplicate %>
+              <%= link_to "Duplicate", new_project_duplicate_path(@project), class: "btn btn-text w-full justify-start" %>
+            <% end %>
+            <% { mark_done: [ "Mark done", mark_done_project_path(@project) ],
+                 reopen: [ "Reopen", reopen_project_path(@project) ],
+                 archive: [ "Archive", archive_project_path(@project) ],
+                 unarchive: [ "Unarchive", unarchive_project_path(@project) ] }.slice(*lifecycle_actions).each_value do |label, path| %>
+              <%= button_to label, path, class: "btn btn-text w-full justify-start" %>
+            <% end %>
+            <% if lifecycle_actions.include?(:destroy) %>
+              <%= button_to "Delete", project_path(@project), method: :delete, class: "btn btn-danger w-full justify-start" %>
+            <% end %>
+          </div>
+        </details>
       <% end %>
     </div>
   </nav>
 
-  <%= render "public_link", project: @project %>
-
-  <div class="mt-7 flex flex-wrap gap-3">
-    <% if Policy.member?(Current.person, @project) || Current.person.admin? %>
-    <% if Policy.can?(Current.person, :mark_done, @project) %>
-      <%= button_to "Mark done", mark_done_project_path(@project), class: "btn btn-secondary" %>
-    <% end %>
-    <% if Policy.can?(Current.person, :reopen, @project) %>
-      <%= button_to "Reopen", reopen_project_path(@project), class: "btn btn-secondary" %>
-    <% end %>
-    <% if Policy.can?(Current.person, :archive, @project) %>
-      <%= button_to "Archive", archive_project_path(@project), class: "btn btn-secondary" %>
-    <% end %>
-    <% if Policy.can?(Current.person, :unarchive, @project) %>
-      <%= button_to "Unarchive", unarchive_project_path(@project), class: "btn btn-secondary" %>
-    <% end %>
-    <% if Policy.can?(Current.person, :destroy, @project) %>
-      <%= button_to "Delete", project_path(@project), method: :delete, class: "btn btn-danger" %>
-    <% end %>
-    <% end %>
-  </div>
-
-  <% if (Policy.member?(Current.person, @project) || Current.person.admin?) && Policy.can?(Current.person, :transfer_ownership, @project) && @ownership_transfer_leaders.any? %>
-    <%= form_with url: transfer_ownership_project_path(@project), method: :patch, class: "mt-6 flex flex-wrap items-end gap-3" do |form| %>
-      <%= form.label :new_owner_id, "Transfer ownership to", class: "block text-label font-medium text-ink" %>
-      <%= form.collection_select :new_owner_id, @ownership_transfer_leaders, :person_id, ->(membership) { membership.person.name }, { prompt: "Choose a Leader" }, class: "field" %>
-      <%= form.submit "Transfer", class: "btn btn-secondary" %>
-    <% end %>
+  <% can_share = Policy.can?(Current.person, :manage_public_link, @project) %>
+  <% can_transfer = lifecycle_access && Policy.can?(Current.person, :transfer_ownership, @project) && @ownership_transfer_leaders.any? %>
+  <% if can_share || can_transfer %>
+    <%# Stays open while the Public link is on so the URL is in view. %>
+    <details class="mt-5 border-t border-hairline pt-3" data-project-settings <%= "open" if @project.public_token.present? %>>
+      <summary class="cursor-pointer py-2 text-meta font-semibold text-ink-2 hover:text-ink">
+        Sharing and ownership<%= " · Public link on" if @project.public_token.present? %>
+      </summary>
+      <%= render "public_link", project: @project if can_share %>
+      <% if can_transfer %>
+        <%= form_with url: transfer_ownership_project_path(@project), method: :patch, class: "mt-5 flex flex-wrap items-end gap-3" do |form| %>
+          <%= form.label :new_owner_id, "Transfer ownership to", class: "block text-label font-medium text-ink" %>
+          <%= form.collection_select :new_owner_id, @ownership_transfer_leaders, :person_id, ->(membership) { membership.person.name }, { prompt: "Choose a Leader" }, class: "field" %>
+          <%= form.submit "Transfer", class: "btn btn-secondary" %>
+        <% end %>
+      <% end %>
+    </details>
   <% end %>
 
   <% if @project.enabled_tools.any? %>

@@ -47,7 +47,7 @@ class OpenTeamTest < ActionDispatch::IntegrationTest
     get project_path(project)
     assert_response :success
     assert_select "h1", "Building Cleanup"
-    assert_select "a", text: "Team", count: 0
+    assert_select "a", text: "View Team", count: 0
     assert_select "li", text: /Lucy Leader/, count: 0
     assert_select "section[aria-labelledby='tool-schedule']"
 

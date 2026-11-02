@@ -22,6 +22,19 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
     assert_select "meta[name=robots][content=noindex]", count: 1
   end
 
+  test "the project header keeps occasional actions folded away" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+
+    get project_path(project)
+    assert_select "details[data-project-settings]:not([open]) summary", text: /Sharing and ownership/
+    assert_select "details[data-project-more] form[action=?]", mark_done_project_path(project)
+
+    post enable_public_link_project_path(project)
+    get project_path(project)
+    assert_select "details[data-project-settings][open] summary", text: /Public link on/
+  end
+
   test "resetting the Public link invalidates the old URL" do
     sign_in_as_leader
     project = projects(:community_meal)

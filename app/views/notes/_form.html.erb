@@ -1,4 +1,6 @@
 <% field_prefix = "#{dom_id(notable)}_note" %>
+<details class="mt-4">
+<summary class="btn btn-secondary list-none [&::-webkit-details-marker]:hidden">Add note</summary>
 <%= form_with url: form_url, scope: :note, class: "mt-4 space-y-3", data: { note_form: true } do |form| %>
   <%= form.hidden_field :notable_type, value: notable.class.name, id: nil %>
   <%= form.hidden_field :notable_id, value: notable.id, id: nil %>
@@ -15,6 +17,7 @@
         visibilities.map { |visibility| [ Note::VISIBILITY_LABELS.fetch(visibility), visibility ] },
         {}, id: "#{field_prefix}_visibility", class: "mt-1 field" %>
     </div>
-    <%= form.submit "Add note", class: "btn btn-secondary" %>
+    <%= form.submit "Save note", class: "btn btn-secondary" %>
   </div>
 <% end %>
+</details>
