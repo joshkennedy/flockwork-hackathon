@@ -176,6 +176,8 @@ components:
 **Light or dark:** Light. Church offices by day and phones in the evening both read best on light; no dark mode is planned for the hackathon.
 Contrast (measured in the preview): `ink-2` on `panel` 6.49:1, `ink-2` on `frame` 5.80:1. `ink-3` is only for non-essential hints (keyboard numbers, breadcrumb separators), never body text.
 
+**Mark (Formation):** three round-capped chevrons flying in a V on a 24-unit grid; the lead bird is 1.15x the size of the two `ink` followers (stroke 2.8, lead 3.22). The lead is `mark` (#D69000, a deeper sunlit: plain sunlit is only 1.8:1 on `page` and disappears); on dark it goes back to bright `sunlit`. The lockup is `layouts/_wordmark`, an inline SVG set 15px tall beside the wordmark with an 8px gap so its strokes match Mattone Bold; the lead reads `--color-mark`, which each layout sets on `<body>` from the church's `mark_color`. An Admin picks it on Settings from seven presets (Deep sunlit, Copper, Clay, Berry, Teal, Forest, Cobalt) or a custom hex. The mark color only recolors the mark: in-app `sunlit` keeps its meaning for open needs and the kept check. The favicon is served by `IconsController` at `/icon.svg?c=<hex>` (followers white in dark browser chrome; the default lead also brightens to sunlit there). `public/icon.png` is the app icon: the mark on a full-bleed `page` tile, so iOS never fills the corners black. Never add a fourth bird or set the mark without its colored lead.
+
 ## Typography
 
 **Mattone** (Collletttivo, designed by Nunzio Mazzaferro, SIL OFL 1.1, self-hosted from `github.com/collletttivo/mattone` woff2, Regular/Bold/Black) is the signature: the "Flockwork" wordmark (Bold 18px) and page-level headlines (Regular 30/36 desktop, 24/30 phone): Project names on their page, the Planner question, the Oversight headline. It is wide and heavy, so it never sets body, buttons, labels, numbers, or anything below page level.
@@ -243,3 +245,6 @@ Badges 4px, buttons and inputs 6px, nav items 8px, tiles 10px, panels and popove
 | 2026-11-02 | Four-kind button grammar; row actions move behind ⋯ menus | Josh: buttons were inconsistent and "slapped on" |
 | 2026-11-02 | Header wash (blob gradient + grain) adopted; ASCII texture rejected | Josh asked for faint, subtle color and personality; ASCII would have needed monospace |
 | 2026-11-02 | Header wash drifts between pages over 1600ms, the one motion past 300ms | Josh asked for the blobs to change "slowly and subtly" on page transitions, "smooth and buttery" |
+| 2026-11-02 | Formation mark (three birds in a V, gold lead) | Josh picked it from four concepts and tuned the shapes himself in a playground |
+| 2026-11-02 | Mark lead is deeper sunlit #D69000, themeable via `--color-mark` | Plain sunlit faded on off-white; Josh chose deep sunlit over clay and wants themes to recolor the mark later |
+| 2026-11-02 | Churches choose their mark color on Settings (presets or custom hex) | Josh wanted the mark to follow a church's own theme, set by an Admin |

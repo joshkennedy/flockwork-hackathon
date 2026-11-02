@@ -16,6 +16,7 @@
   --color-ink-3: #9A9893;
   --color-sunlit: #F5B000;
   --color-sunlit-soft: #FFF4D6;
+  --color-mark: #D69000;
   --color-success: #1F9D55;
   --color-danger: #D93D2B;
   --color-danger-soft: #FFF3F0;
@@ -96,6 +97,11 @@
 }
 
 @layer base {
+  /* Native color inputs render as a plain swatch, matching the preset swatches beside them. */
+  input[type=color] { appearance: none; background: none; }
+  input[type=color]::-webkit-color-swatch-wrapper { padding: 0; }
+  input[type=color]::-webkit-color-swatch { border: 0; border-radius: var(--radius-badge); }
+  input[type=color]::-moz-color-swatch { border: 0; border-radius: var(--radius-badge); }
   body { @apply bg-page font-sans text-body-phone text-ink sm:text-body; font-stretch: normal; }
   h1 { @apply font-display text-display-phone sm:text-display; overflow-wrap: anywhere; text-wrap: balance; }
   h2, h3 { @apply text-heading; }

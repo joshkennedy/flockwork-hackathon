@@ -1,6 +1,17 @@
 class Organization < ApplicationRecord
   # Slugs that would shadow top-level routes
-  RESERVED_SLUGS = %w[oversight projects up organizations].freeze
+  RESERVED_SLUGS = %w[oversight projects up organizations settings].freeze
+  DEFAULT_MARK_COLOR = "#D69000"
+  # Every preset clears 2.5:1 on the page background, so the lead bird stays visible.
+  MARK_PRESETS = {
+    "Deep sunlit" => DEFAULT_MARK_COLOR,
+    "Copper" => "#D4731C",
+    "Clay" => "#C8502A",
+    "Berry" => "#C42E5C",
+    "Teal" => "#0E8C86",
+    "Forest" => "#2F8A55",
+    "Cobalt" => "#2D63D8"
+  }.freeze
 
   has_many :projects, dependent: :destroy
   has_many :tasks, through: :projects
@@ -12,10 +23,12 @@ class Organization < ApplicationRecord
   encrypts :pco_app_id, :pco_secret
 
   normalizes :name, with: ->(name) { name.strip }
+  normalizes :mark_color, with: ->(color) { color.strip.upcase.delete_prefix("#").prepend("#") }
   before_validation :assign_slug, on: :create, if: -> { slug.blank? }
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true, format: { with: /\A[a-z0-9]+(?:-[a-z0-9]+)*\z/ }
+  validates :mark_color, format: { with: /\A#\h{6}\z/, message: "must be a hex color like #D69000" }
   validates :overextended_limit, numericality: { only_integer: true, greater_than: 0 }
 
   def to_param

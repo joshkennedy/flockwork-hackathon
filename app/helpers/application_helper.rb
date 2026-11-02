@@ -18,7 +18,8 @@ module ApplicationHelper
     menu: "M4 7h16 M4 12h16 M4 17h16",
     more: "M5 11.2a.8.8 0 1 0 0 1.6.8.8 0 1 0 0-1.6Z M12 11.2a.8.8 0 1 0 0 1.6.8.8 0 1 0 0-1.6Z M19 11.2a.8.8 0 1 0 0 1.6.8.8 0 1 0 0-1.6Z",
     plus: "M12 5v14 M5 12h14",
-    sign_out: "M9 3H3v18h6 M9 12h12 m-5-5 5 5-5 5"
+    sign_out: "M9 3H3v18h6 M9 12h12 m-5-5 5 5-5 5",
+    settings: "M4 6h16 M4 12h16 M4 18h16 M15 4v4 M9 10v4 M17 16v4"
   }.freeze
 
   def icon(name, **options)
@@ -46,6 +47,7 @@ module ApplicationHelper
     items << [ "People", people_path, :people ] if Policy.can?(Current.person, :manage_people, Current.organization)
     items << [ "Oversight", oversight_path, :oversight ] if Policy.can?(Current.person, :view_oversight, Current.organization)
     items << [ "Notifications", notifications_path, :notifications ]
+    items << [ "Settings", settings_path, :settings ] if Policy.can?(Current.person, :manage_settings, Current.organization)
     items
   end
 
@@ -80,5 +82,20 @@ module ApplicationHelper
 
   def navigation_current?(path)
     current_page?(path) || (path != home_path && request.path.start_with?("#{path}/"))
+  end
+
+  # The church's mark color: the signed-in Organization, or the Project's on public pages.
+  def mark_color
+    (@organization || Current.organization)&.mark_color || Organization::DEFAULT_MARK_COLOR
+  end
+
+  def mark_favicon_svg(color)
+    # Deep sunlit brightens to sunlit on dark chrome; any other hue already reads on dark.
+    lead_dark = color == Organization::DEFAULT_MARK_COLOR ? " .lead { stroke: #F5B000 }" : ""
+    <<~SVG.squish
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><style>@media (prefers-color-scheme: dark) { .ink { stroke: #FFFFFF }#{lead_dark} }</style>
+      <g fill="none" stroke-linecap="round" stroke-linejoin="round"><path class="lead" d="M8.21 10.54 12 7.66l3.79 2.88" stroke="#{color}" stroke-width="3.22"/>
+      <path class="ink" d="M2.5 16.35 5.8 13.85l3.3 2.5M14.9 16.35l3.3-2.5 3.3 2.5" stroke="#141413" stroke-width="2.8"/></g></svg>
+    SVG
   end
 end

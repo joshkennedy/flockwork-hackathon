@@ -9,6 +9,8 @@ Rails.application.routes.draw do
   get "get_involved", to: "get_involved#show"
   get "my_tasks", to: "my_tasks#index"
   resource :oversight, only: %i[ show update ]
+  resource :settings, only: %i[ show update ]
+  get "icon.svg", to: "icons#show", as: :icon
   resources :notifications, only: :index do
     member do
       patch :mark_read
