@@ -241,4 +241,16 @@ class CommentsMentionsFollowsTest < ActionDispatch::IntegrationTest
     assert_select "details[data-commentable-type='Message']", count: 0
     assert_select "[data-controller='mention-picker']", minimum: 7
   end
+
+  test "an item with no comments shows a quiet Comment link" do
+    sign_in_as_volunteer
+    project = projects(:community_meal)
+    project.update!(enabled_tools: project.enabled_tools + [ "signup_sheet" ])
+    slot = project.slots.create!(date: "2027-02-12", label: "Quiet Slot")
+
+    get project_path(project)
+
+    assert_select "details[data-commentable-type='Slot'][data-commentable-id='#{slot.id}'] summary", "Comment"
+    assert_no_match "No comments yet", response.body
+  end
 end
