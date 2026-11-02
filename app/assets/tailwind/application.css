@@ -205,6 +205,8 @@
     .meal-builder-text-action:hover { @apply bg-hairline text-ink; }
   }
   .btn:disabled { @apply bg-frame text-ink-2 shadow-none; cursor: not-allowed; transform: none; }
+  /* frame is darker than panel in dark mode, so a frame-filled disabled button would vanish. */
+  :root[data-dark] .btn:disabled { @apply bg-nav-active; }
   .tile-raised { @apply rounded-tile border border-border bg-panel shadow-raised; }
   .tile-ghost { @apply rounded-tile border border-dashed border-ghost-border bg-ghost-fill text-ink-2; }
   .panel { @apply rounded-panel border border-border bg-panel; }

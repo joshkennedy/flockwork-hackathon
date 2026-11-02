@@ -12,6 +12,8 @@
       </script>
     <% end %>
     <title><%= content_for(:title) || "Project" %></title>
+    <meta name="theme-color" content="<%= appearance == "dark" ? "#141413" : "#F3F2EF" %>"<%= ' media="(prefers-color-scheme: light)"'.html_safe if appearance == "system" %>>
+    <% if appearance == "system" %><meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)"><% end %>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="robots" content="noindex">
     <%= csrf_meta_tags %>

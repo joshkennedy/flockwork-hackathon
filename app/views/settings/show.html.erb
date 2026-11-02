@@ -30,11 +30,11 @@
             <%= name %>
           </label>
         <% end %>
-        <label class="tile-raised flex cursor-pointer items-center gap-2 px-3 py-2.5 text-button has-[:checked]:border-ink has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ink">
+        <label for="organization_custom_mark_color" class="tile-raised flex cursor-pointer items-center gap-2 px-3 py-2.5 text-button has-[:checked]:border-ink has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ink">
           <%= form.radio_button :mark_color_choice, "custom", checked: !preset, class: "sr-only", data: { theme_picker_target: "customChoice" } %>
           <%= form.color_field :custom_mark_color, value: (preset ? saved_color : organization.mark_color).to_s.downcase,
                 class: "size-4 shrink-0 cursor-pointer rounded-badge border-0 p-0", aria: { label: "Custom color" },
-                data: { theme_picker_target: "custom", action: "input->theme-picker#previewCustom" } %>
+                data: { theme_picker_target: "custom", action: "input->theme-picker#previewCustom change->theme-picker#previewCustom" } %>
           Custom
         </label>
       </div>
