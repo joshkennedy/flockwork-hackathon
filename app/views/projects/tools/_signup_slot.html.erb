@@ -1,7 +1,7 @@
 <% own_claim = slot.slot_claims.find { |claim| claim.person_id == Current.person.id } %>
 <% open = !slot.full? && !own_claim %>
 <% manage = Policy.can?(Current.person, :manage_slots, project) %>
-<li class="<%= open ? "tile-raised p-4" : "border-b border-hairline py-3" %>">
+<li class="<%= open ? "tile-raised p-4 pb-1" : "border-b border-hairline py-3" %>">
   <div class="flex flex-wrap items-baseline justify-between gap-3">
     <div class="min-w-0">
       <p>

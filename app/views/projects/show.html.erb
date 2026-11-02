@@ -30,7 +30,7 @@
         <% end %>
       <% end %>
       <% if Policy.can?(Current.person, :view_team, @project) %>
-        <%= link_to "View Team", team_project_path(@project), class: "inline-flex min-h-control-h items-center text-meta font-semibold text-ink-2 hover:text-ink" %>
+        <%= link_to "View Team", team_project_path(@project), class: Policy.can?(Current.person, :plan, @project) ? "inline-flex min-h-control-h items-center text-meta font-semibold text-ink-2 hover:text-ink" : "btn btn-secondary" %>
       <% elsif Policy.can?(Current.person, :join, @project) %>
         <%= button_to "Join", join_project_path(@project), class: "btn btn-primary" %>
       <% end %>

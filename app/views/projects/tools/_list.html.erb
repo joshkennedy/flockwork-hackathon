@@ -25,14 +25,15 @@
           </div>
 
           <div class="relative mt-3 max-w-full overflow-x-auto">
-            <table class="min-w-full border-collapse bg-panel text-left text-meta">
-              <thead>
+            <% manage_lists = Policy.can?(Current.person, :manage_lists, project) %>
+            <table class="list-table min-w-full border-collapse bg-panel text-left text-meta">
+              <thead class="<%= "max-sm:hidden" unless manage_lists %>">
                 <tr>
                   <% list.columns.each_with_index do |column, index| %>
                     <th class="min-w-40 border-b border-hairline px-3 py-2 text-ink">
                       <span class="column-name block font-semibold"><%= column.name %></span>
-                      <span class="mt-0.5 block text-label font-normal text-ink-2"><%= column.column_type.humanize %></span>
-                      <% if Policy.can?(Current.person, :manage_lists, project) %>
+                      <% if manage_lists %>
+                        <span class="mt-0.5 block text-label font-normal text-ink-2"><%= column.column_type.humanize %></span>
                         <div class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-label font-semibold">
                           <%= link_to "Edit", edit_project_list_list_column_path(project, list, column), class: "inline-flex min-h-6 items-center text-ink-2 hover:text-ink" %>
                           <% if index.positive? %>
@@ -51,9 +52,9 @@
               </thead>
               <tbody>
                 <% list.rows.each do |row| %>
-                  <tr>
+                  <tr class="list-row">
                     <% list.columns.each do |column| %>
-                      <td class="border-b border-hairline px-3 py-3 text-ink <%="tabular-nums text-right" if column.column_type == "number" %>">
+                      <td data-label="<%= column.name %>" class="border-b border-hairline px-3 py-3 text-ink <%="tabular-nums text-right" if column.column_type == "number" %>">
                         <% if column.checkbox? && Policy.can?(Current.person, :manage_list_rows, project) %>
                           <%= render "list_rows/checkbox_cell", project: project, list: list, list_row: row, column: column %>
                         <% else %>
@@ -61,16 +62,16 @@
                         <% end %>
                       </td>
                     <% end %>
-                    <td class="border-b border-hairline px-3 py-3">
+                    <td class="whitespace-nowrap border-b border-hairline px-3 py-3">
                       <% if Policy.can?(Current.person, :manage_list_rows, project) %>
-                        <div class="flex justify-end gap-3 font-semibold">
-                          <%= link_to "Edit", edit_project_list_list_row_path(project, list, row), class: "inline-flex min-h-6 items-center text-ink-2 hover:text-ink" %>
+                        <div class="list-row-actions flex items-center justify-end gap-1">
+                          <%= link_to "Edit", edit_project_list_list_row_path(project, list, row), class: "btn btn-text" %>
                           <%= button_to "Delete", project_list_list_row_path(project, list, row), method: :delete, class: "btn btn-danger" %>
                         </div>
                       <% end %>
                     </td>
                   </tr>
-                  <tr>
+                  <tr class="list-comment-row">
                     <td colspan="<%= list.columns.length + 1 %>" class="px-3 pb-4">
                       <%= render "comments/thread", commentable: row %>
                     </td>

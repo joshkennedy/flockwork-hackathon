@@ -231,6 +231,16 @@
     .btn-primary { @apply min-h-phone-action-h w-full text-heading; }
     .button_to:has(> .btn-primary) { width: 100%; }
     .nav-item { min-height: 44px; }
+    .btn-text { min-height: 44px; }
+    summary:not(.btn) { padding-block: 12px; }
+    /* Lists stack into one card per row: a phone cannot show a wide table. */
+    .list-table, .list-table > :is(thead, tbody), .list-table tr, .list-table :is(th, td) { display: block; }
+    .list-table .list-row { @apply border-t border-hairline pt-3; }
+    .list-table .list-row > td { @apply border-0! px-0! py-1! text-left!; }
+    .list-table .list-row > td[data-label]::before { content: attr(data-label); @apply block text-label font-medium text-ink-2; }
+    .list-table .list-row-actions { @apply -ml-3! justify-start!; }
+    .list-table .list-comment-row > td { @apply px-0! pb-2!; }
+    .list-table > thead th { @apply border-0! px-0!; }
     .meal-builder-header { @apply items-start; }
     .meal-builder-popover { @apply fixed inset-x-4 top-20 w-auto; }
     .meal-builder-guide .btn-primary { width: 100%; }
