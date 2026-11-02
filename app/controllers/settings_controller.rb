@@ -7,7 +7,7 @@ class SettingsController < ApplicationController
 
   def update
     if Current.organization.update(settings_params)
-      redirect_to settings_path, notice: "Settings saved."
+      redirect_to settings_path
     else
       render :show, status: :unprocessable_entity
     end

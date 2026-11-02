@@ -16,14 +16,11 @@
     <p class="mt-7 text-meta font-medium text-danger" role="alert"><%= organization.errors.full_messages.to_sentence %></p>
   <% end %>
 
-  <%= form_with model: organization, url: settings_path, method: :patch, class: "mt-7 space-y-5", data: { controller: "mark-preview", action: "change->mark-preview#update" } do |form| %>
+  <%= form_with model: organization, url: settings_path, method: :patch, class: "mt-7",
+        data: { controller: "theme-picker", action: "change->theme-picker#pick" } do |form| %>
     <fieldset class="space-y-4">
-      <legend class="text-heading font-semibold text-ink">Mark color</legend>
-      <p class="text-meta text-ink-2">The lead bird in the Flockwork mark, in the sidebar and the browser tab.</p>
-
-      <div class="flex h-14 w-fit items-center rounded-tile bg-frame px-4" data-mark-preview-target="preview" style="--color-mark: <%= organization.mark_color %>">
-        <%= render "layouts/wordmark", path: settings_path %>
-      </div>
+      <legend class="text-heading font-semibold text-ink">Theme</legend>
+      <p class="text-meta text-ink-2">Colors the lead bird in the Flockwork mark, in the sidebar and the browser tab. Changes save as you pick.</p>
 
       <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <% Organization::MARK_PRESETS.each do |name, color| %>
@@ -34,15 +31,13 @@
           </label>
         <% end %>
         <label class="tile-raised flex cursor-pointer items-center gap-2 px-3 py-2.5 text-button has-[:checked]:border-ink has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ink">
-          <%= form.radio_button :mark_color_choice, "custom", checked: !preset, class: "sr-only", data: { mark_preview_target: "customChoice" } %>
+          <%= form.radio_button :mark_color_choice, "custom", checked: !preset, class: "sr-only", data: { theme_picker_target: "customChoice" } %>
           <%= form.color_field :custom_mark_color, value: (preset ? saved_color : organization.mark_color).to_s.downcase,
                 class: "size-4 shrink-0 cursor-pointer rounded-badge border-0 p-0", aria: { label: "Custom color" },
-                data: { mark_preview_target: "custom", action: "input->mark-preview#pickCustom" } %>
+                data: { theme_picker_target: "custom", action: "input->theme-picker#previewCustom" } %>
           Custom
         </label>
       </div>
     </fieldset>
-
-    <%= form.submit "Save settings", class: "btn btn-primary" %>
   <% end %>
 </div>
