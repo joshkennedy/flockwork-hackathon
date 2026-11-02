@@ -1,14 +1,7 @@
 <% content_for :title, @organization.name %>
 
-<div class="w-full max-w-5xl">
+<div class="w-full max-w-2xl">
   <%= page_header @organization.name, subtitle: "Signed in as #{@person.name}" %>
-
-  <section class="mt-7 border-t border-hairline pt-7">
-    <h2 >Plan the work together</h2>
-    <p class="mt-3 max-w-lg leading-normal text-ink-2">Projects give each Team one clear place for the Tools, dates, and details their work needs.</p>
-    <%= link_to "Projects", projects_path, class: "mt-5 btn btn-primary" %>
-    <%= link_to "Get involved", get_involved_path, class: "mt-5 btn btn-text" %>
-  </section>
 
   <% if @pending_invitations.any? %>
     <section class="mt-7" aria-labelledby="pending-invitations-heading">
@@ -26,14 +19,72 @@
     </section>
   <% end %>
 
-  <nav class="mt-7 flex flex-wrap gap-4 text-meta font-medium">
-    <%= link_to "My Tasks", my_tasks_path, class: "text-ink-2 hover:text-ink" %>
-    <% if @person.admin? %>
-      <%= link_to "People", people_path, class: "text-ink-2 hover:text-ink" %>
-    <% end %>
-    <% if Policy.can?(@person, :view_oversight, @organization) %>
-      <%= link_to "Oversight", oversight_path, class: "text-ink-2 hover:text-ink" %>
-    <% end %>
-    <%= link_to "My profile", edit_profile_path, class: "text-ink-2 hover:text-ink" %>
-  </nav>
+  <% if @any_projects %>
+    <section class="mt-7" aria-labelledby="your-week-heading" data-home-section="your-week">
+      <h2 id="your-week-heading">On your plate</h2>
+      <% if @my_slots.any? || @my_tasks.any? %>
+        <ul class="mt-4 divide-y divide-hairline border-y border-hairline">
+          <% @my_slots.each do |slot| %>
+            <li>
+              <%= link_to project_path(slot.project), class: "flex items-start gap-3 py-3 hover:bg-ghost-fill" do %>
+                <%= icon(:check, class: "mt-0.5 text-sunlit") %>
+                <span class="min-w-0">
+                  <span class="block font-semibold text-ink"><%= slot.label %> · <%= slot.date.strftime("%A, %B %-d") %></span>
+                  <span class="block text-meta text-ink-2"><%= slot.project.name %></span>
+                </span>
+              <% end %>
+            </li>
+          <% end %>
+          <% @my_tasks.each do |task| %>
+            <li>
+              <%= link_to project_path(task.project), class: "flex items-start gap-3 py-3 hover:bg-ghost-fill" do %>
+                <%= icon(:tasks, class: "mt-0.5 text-tool-tasks") %>
+                <span class="min-w-0">
+                  <span class="block font-semibold text-ink"><%= task.title %></span>
+                  <span class="block text-meta text-ink-2"><%= task.project.name %><%= " · Due #{task.due_on.strftime("%B %-d")}" if task.due_on %></span>
+                </span>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+        <%= link_to "All my Tasks", my_tasks_path, class: "mt-3 inline-block text-meta font-medium text-ink-2 hover:text-ink" if @my_tasks.any? %>
+      <% else %>
+        <p class="mt-3 text-ink-2">Nothing on your plate right now.</p>
+      <% end %>
+    </section>
+
+    <section class="mt-7" aria-labelledby="open-needs-heading" data-home-section="open-needs">
+      <h2 id="open-needs-heading">Still needs someone this week</h2>
+      <% if @open_slots_by_project.any? %>
+        <ul class="mt-4 space-y-2">
+          <% @open_slots_by_project.each do |project, slots| %>
+            <% next_slot = slots.first %>
+            <li>
+              <%= link_to project_path(project), class: "tile-raised flex items-start justify-between gap-3 p-4 hover:border-border-strong" do %>
+                <span class="min-w-0">
+                  <span class="block font-semibold text-ink"><%= project.name %></span>
+                  <span class="block text-meta text-ink-2">Next: <%= next_slot.label %> · <%= next_slot.date.strftime("%A, %B %-d") %></span>
+                </span>
+                <span class="badge-need shrink-0"><%= pluralize(slots.sum { |slot| slot.capacity - slot.claims_count }, "spot") %> open</span>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="mt-3 text-ink-2">Every spot this week is covered.</p>
+      <% end %>
+    </section>
+  <% else %>
+    <section class="mt-7 border-t border-hairline pt-7">
+      <% if Policy.can?(@person, :create, Project) %>
+        <h2>No Projects yet</h2>
+        <p class="mt-3 max-w-lg leading-normal text-ink-2">A Project gives a Team one place for the dates, sign-ups, and details their work needs.</p>
+        <%= link_to "Start a Project", new_project_path, class: "mt-5 btn btn-primary" %>
+      <% else %>
+        <h2>You’re not on a Team yet</h2>
+        <p class="mt-3 max-w-lg leading-normal text-ink-2">Open Projects welcome anyone who wants to help.</p>
+        <%= link_to "Get involved", get_involved_path, class: "mt-5 btn btn-primary" %>
+      <% end %>
+    </section>
+  <% end %>
 </div>

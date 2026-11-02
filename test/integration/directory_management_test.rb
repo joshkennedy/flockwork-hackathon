@@ -148,13 +148,13 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     sign_in_as_admin
     get home_path
     assert_select "a[href=?]", people_path, text: "People"
-    assert_select "a[href=?]", edit_profile_path, text: "My profile"
+    assert_select "a[href=?]", edit_profile_path
 
     delete session_path
     sign_in_as_volunteer
     get home_path
     assert_select "a[href=?]", people_path, count: 0
-    assert_select "a[href=?]", edit_profile_path, text: "My profile"
+    assert_select "a[href=?]", edit_profile_path
   end
 
   test "the directory lists People sorted by name" do
