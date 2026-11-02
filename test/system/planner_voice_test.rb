@@ -146,7 +146,7 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
       token = leader.generate_token_for(:sign_in)
       visit sign_in_link_path(token)
       click_on "Sign in"
-      assert_text "Signed in as Leo Leader"
+      assert_selector "[data-signed-in-as]", text: "Leo Leader"
     end
 
     def planner_response(card: nil, finished: false, added: [], removed_ids: [])

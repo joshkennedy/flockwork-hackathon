@@ -1,43 +1,51 @@
 <% own_claim = slot.slot_claims.find { |claim| claim.person_id == Current.person.id } %>
 <% open = !slot.full? && !own_claim %>
 <% manage = Policy.can?(Current.person, :manage_slots, project) %>
-<li class="<%= open ? "tile-raised p-4 pb-1" : "border-b border-hairline py-3" %>">
-  <div class="flex flex-wrap items-baseline justify-between gap-3">
-    <div class="min-w-0">
-      <p>
-        <span class="font-semibold"><%= slot.label %></span>
-        <% if slot.starts_at_time.present? %>
-          <span class="text-meta text-ink-2">· <%= slot.starts_at_time.strftime("%-l:%M %p") %></span>
-        <% end %>
+<% dinner = slot.label.downcase == "dinner" %>
+<%# Phones keep DESIGN.md's raised tile for an open Slot; wider screens show every Slot as a flat row. %>
+<li class="signup-row<%= " signup-open" if open %>">
+  <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+    <p class="w-28 shrink-0">
+      <span class="block font-semibold"><%= slot.date.strftime(slot.date.year == Date.current.year ? "%a, %b %-d" : "%a, %b %-d, %Y") %></span>
+      <% if slot.date == Date.current %><span class="block text-label text-ink-2">Today</span><% end %>
+    </p>
+    <div class="min-w-0 flex-1">
+      <p class="text-ink-2">
+        <span class="text-ink"><%= slot.label %></span><% if slot.starts_at_time.present? %> · <%= slot.starts_at_time.strftime("%-l:%M %p") %><% end %>
       </p>
-      <% if own_claim && !slot.full? %>
-        <p class="mt-1 text-meta text-ink-2"><%= "#{slot.claims_count} of #{slot.capacity} filled" %></p>
-      <% end %>
-      <% if slot.slot_claims.any? %>
-        <p class="mt-1 flex items-start gap-2 text-meta text-ink-2"><%= icon(:check, class: own_claim ? "text-sunlit" : "text-ink-2") %><span><%= slot.slot_claims.map { |claim| claim.person.name }.to_sentence %></span></p>
-      <% end %>
       <% if own_claim %>
-        <p class="mt-1 text-meta text-ink-2"><%= slot.label.downcase == "dinner" ? "You’re bringing dinner" : "You’re signed up" %></p>
+        <p class="flex items-center gap-1.5 text-meta text-ink"><%= icon(:check, class: "text-sunlit") %><%= dinner ? "You’re bringing dinner" : "You’re signed up" %></p>
       <% end %>
     </div>
-    <div class="<%= "-mr-3" if manage || own_claim %> flex items-baseline gap-1">
+    <div class="flex min-w-0 flex-wrap items-center gap-2.5 <%= "max-sm:w-full" if open %>">
+      <% if slot.slot_claims.any? %>
+        <p class="flex items-center gap-1.5 text-meta text-ink-2"><%= icon(:check, class: "text-success") %><%= slot.slot_claims.map { |claim| claim.person.name }.to_sentence %></p>
+      <% end %>
       <% if open %>
         <span class="badge-need"><%= pluralize(slot.capacity - slot.claims_count, "spot") %> left</span>
-      <% end %>
-      <% if own_claim %>
-        <%= button_to "Release", project_slot_claim_path(project, slot), method: :delete, class: "btn btn-text" %>
-      <% end %>
-      <% if manage %>
-        <%= link_to "Edit", edit_project_slot_path(project, slot), class: "btn btn-text" %>
-        <%= button_to "Delete", project_slot_path(project, slot), method: :delete, class: "btn btn-danger" %>
+        <% if Policy.can?(Current.person, :claim_slot, project) %>
+          <%# Leaders see the whole sheet, so a primary per slot would drown the page; volunteers get the phone action DESIGN.md specifies. %>
+          <%= button_to (dinner ? "I can bring dinner" : "I can help"), project_slot_claim_path(project, slot),
+                class: manage ? "btn btn-secondary btn-sm" : "btn btn-primary",
+                form_class: "button_to max-sm:w-full",
+                aria: { label: "Claim: #{slot.label}" } %>
+        <% end %>
+      <% elsif own_claim && !slot.full? %>
+        <span class="text-meta text-ink-2"><%= "#{slot.claims_count} of #{slot.capacity} filled" %></span>
       <% end %>
     </div>
+    <% if manage || own_claim %>
+      <%= actions_menu("Actions for #{slot.label} on #{slot.date.strftime("%B %-d")}") do %>
+        <% if own_claim %>
+          <%= button_to "Release", project_slot_claim_path(project, slot), method: :delete %>
+        <% end %>
+        <% if manage %>
+          <%= link_to "Edit slot", edit_project_slot_path(project, slot) %>
+          <hr>
+          <%= button_to "Delete slot", project_slot_path(project, slot), method: :delete, class: "menu-danger" %>
+        <% end %>
+      <% end %>
+    <% end %>
   </div>
-  <% if open && Policy.can?(Current.person, :claim_slot, project) %>
-    <%# Leaders see the whole sheet, so a primary per slot would drown the page; volunteers get the phone action DESIGN.md specifies. %>
-    <%= button_to (slot.label.downcase == "dinner" ? "I can bring dinner" : "I can help"), project_slot_claim_path(project, slot),
-          class: manage ? "mt-3 btn btn-secondary" : "mt-3 btn btn-primary min-h-phone-action-h w-full",
-          aria: { label: "Claim: #{slot.label}" } %>
-  <% end %>
   <%= render "comments/thread", commentable: slot %>
 </li>

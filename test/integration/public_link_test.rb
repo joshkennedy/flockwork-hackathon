@@ -28,7 +28,7 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
 
     get project_path(project)
     assert_select "details[data-project-settings]:not([open]) summary", text: /Sharing and ownership/
-    assert_select "details[data-project-more] form[action=?]", mark_done_project_path(project)
+    assert_select "details.actions-menu form[action=?]", mark_done_project_path(project)
 
     post enable_public_link_project_path(project)
     get project_path(project)

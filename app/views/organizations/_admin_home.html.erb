@@ -1,0 +1,39 @@
+<% content_for :wash, "wash-admin" %>
+<dl class="status-strip mt-6">
+  <div><dt>Active Projects</dt><dd><%= @projects.size %></dd></div>
+  <div><dt>Open spots this week</dt><dd><%= @open_spots_this_week %></dd></div>
+  <div><dt>Tasks with no one on them</dt><dd><%= @unassigned_task_count %></dd></div>
+  <div><dt>People</dt><dd><%= Policy.can?(@person, :manage_people, @organization) ? link_to(@people_count, people_path, class: "underline decoration-border-strong underline-offset-4 hover:decoration-ink") : @people_count %></dd></div>
+</dl>
+
+<div class="mt-7 grid gap-7 lg:grid-cols-[minmax(0,1fr)_320px]">
+  <section class="min-w-0" aria-labelledby="needs-attention-heading" data-home-section="needs-attention">
+    <h2 id="needs-attention-heading">Needs attention</h2>
+    <p class="text-meta text-ink-2">Every active Project, the ones short on people first.</p>
+    <% rows = @projects.map { |project| [ project, project_guidance(project, @person) ] }.each_with_index.sort_by { |(_, guidance), index| [ guidance ? 0 : 1, index ] }.map(&:first) %>
+    <ul class="mt-3 border-t border-border">
+      <% rows.each do |project, guidance| %>
+        <li>
+          <%= link_to project_path(project), class: "grid gap-x-5 gap-y-1 border-b border-hairline px-1 py-3.5 hover:bg-ghost-fill sm:grid-cols-[minmax(0,1fr)_8rem_13rem] sm:items-center" do %>
+            <span class="min-w-0">
+              <span class="block font-semibold text-ink"><%= project.name %></span>
+              <span class="block text-meta text-ink-2"><%= project.memberships.select(&:leader?).map { |membership| membership.person.name }.to_sentence.presence || "No Leader yet" %></span>
+            </span>
+            <span class="text-meta text-ink-2"><%= project.starts_on || project.ends_on ? project_date_range(project.starts_on, project.ends_on) : "No dates" %></span>
+            <span>
+              <% if guidance %>
+                <span class="badge-need"><%= guidance[:title] %></span>
+              <% else %>
+                <span class="text-meta text-ink-2"><%= project_planned?(project) ? "On track" : "Nothing planned yet" %></span>
+              <% end %>
+            </span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+
+  <aside class="min-w-0">
+    <%= render "organizations/your_week" %>
+  </aside>
+</div>

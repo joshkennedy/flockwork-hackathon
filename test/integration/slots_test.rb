@@ -22,7 +22,7 @@ class SlotsTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_select "section[aria-labelledby='tool-signup-sheet']", text: /Serve dinner/
     assert_select "section[aria-labelledby='tool-signup-sheet'] .badge-need", text: "3 spots left"
-    assert_select "section[aria-labelledby='tool-signup-sheet'] h3", text: "Monday, February 15"
+    assert_select "section[aria-labelledby='tool-signup-sheet'] .signup-row", text: /Mon, Feb 15, 2027/
 
     patch project_slot_path(project, slot), params: {
       slot: {

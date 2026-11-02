@@ -25,10 +25,11 @@
             </div>
             <div class="flex shrink-0 flex-col items-end gap-2 text-meta font-semibold">
               <% if Policy.can?(Current.person, :manage_budget, project) %>
-                <div class="flex gap-3">
-                  <%= link_to "Edit", edit_project_budget_line_path(project, line), class: "text-ink-2 hover:text-ink" %>
-                  <%= button_to "Delete", project_budget_line_path(project, line), method: :delete, class: "btn btn-danger" %>
-                </div>
+                <%= actions_menu("Actions for #{line.description}") do %>
+                  <%= link_to "Edit", edit_project_budget_line_path(project, line) %>
+                  <hr>
+                  <%= button_to "Delete", project_budget_line_path(project, line), method: :delete, class: "menu-danger" %>
+                <% end %>
               <% end %>
               <% if Policy.can?(Current.person, :update_budget_line_status, line) %>
                 <%= link_to "Update status", edit_project_budget_line_status_path(project, line), class: "text-ink-2 hover:text-ink" %>

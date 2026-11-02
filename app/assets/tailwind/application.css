@@ -127,6 +127,30 @@
   .btn-primary:active { box-shadow: var(--shadow-button-active); }
   .btn-text { @apply text-ink-2; }
   .btn-danger { @apply text-danger; }
+  .btn-sm { @apply min-h-control-h-sm px-2.5; }
+  .btn-icon { @apply min-h-control-h-sm w-7 px-0 text-ink-2; }
+  .actions-menu > summary { list-style: none; }
+  .actions-menu > summary::-webkit-details-marker { display: none; }
+  .actions-menu-panel { @apply absolute right-0 top-full z-30 mt-1 flex w-56 flex-col rounded-panel border border-border bg-panel p-1 shadow-float; }
+  .actions-menu-panel :is(a, button) { @apply flex min-h-control-h w-full items-center rounded-badge px-3 text-left text-button text-ink no-underline; transition: background-color var(--duration-hover); }
+  .actions-menu-panel .menu-danger { @apply text-danger; }
+  .actions-menu-panel form { @apply w-full; }
+  .actions-menu-panel hr { @apply my-1 border-hairline; }
+  .guidance-strip { @apply flex flex-col gap-3 rounded-tile bg-sunlit-soft px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between; }
+  .status-strip { @apply grid grid-cols-2 rounded-tile border border-border bg-panel/75 sm:grid-cols-4; }
+  .status-strip > div { @apply border-hairline px-4 py-3 max-sm:odd:border-r sm:not-last:border-r; }
+  .status-strip dt { @apply text-label text-ink-2; }
+  .status-strip dd { @apply mt-1 font-semibold; }
+  /* The one decorative surface: blurred tool-color blobs plus grain, faded out
+     before content starts. Tint carries meaning (see DESIGN.md, Header wash). */
+  /* wash_controller gives each page its own blob layout and drifts there from the previous page's. */
+  .header-wash { @apply pointer-events-none absolute inset-x-0 top-0 h-[300px] overflow-hidden rounded-t-panel; mask-image: linear-gradient(#000 35%, transparent); --wash-a: rgb(245 176 0 / .2); --wash-b: rgb(232 89 12 / .09); }
+  .header-wash.wash-admin { --wash-a: rgb(14 165 164 / .16); --wash-b: rgb(245 176 0 / .14); }
+  .header-wash.wash-volunteer { --wash-a: rgb(232 89 12 / .14); --wash-b: rgb(245 176 0 / .18); }
+  .header-wash::before, .header-wash::after { content: ""; position: absolute; border-radius: 50%; filter: blur(24px); }
+  .header-wash::before { width: 600px; height: 340px; left: var(--wash-a-x); top: var(--wash-a-y); background: radial-gradient(closest-side, var(--wash-a), transparent); }
+  .header-wash::after { width: 480px; height: 300px; left: var(--wash-b-x); top: var(--wash-b-y); background: radial-gradient(closest-side, var(--wash-b), transparent); }
+  .header-wash svg { position: absolute; inset: 0; width: 100%; height: 100%; mix-blend-mode: multiply; }
   /* Hover stays off touch screens, where it sticks after a tap. Kept above the
      disabled, pressed and current rules so those still win. */
   @media (hover: hover) {
@@ -134,6 +158,8 @@
     .btn-secondary:hover { @apply bg-ghost-fill; }
     .btn-text:hover { @apply bg-hairline text-ink; }
     .btn-danger:hover { @apply bg-danger-soft; }
+    .actions-menu-panel :is(a, button):hover { @apply bg-hairline; }
+    .actions-menu-panel .menu-danger:hover { @apply bg-danger-soft; }
     .nav-item:hover { @apply bg-nav-active text-ink; }
     .tab-link:hover { @apply text-ink; }
     .answer-tile:hover { @apply border-border-strong; }
@@ -152,8 +178,11 @@
   :is(textarea, trix-editor).field { min-height: 112px; }
   .nav-item { @apply flex min-h-control-h items-center gap-3 rounded-nav px-3 py-1.5 text-meta text-ink-2; transition: background-color var(--duration-hover), color var(--duration-hover); }
   .nav-item[aria-current="page"] { @apply bg-nav-active font-semibold text-ink; }
-  .tab-link { @apply text-ink-2; }
-  .tab-link[aria-current="page"] { @apply text-ink underline decoration-2 underline-offset-6; }
+  .tab-link { @apply -mb-px inline-flex min-h-10 shrink-0 items-center border-b-2 border-transparent font-medium text-ink-2 no-underline; }
+  .tab-link:is([aria-current="page"], [aria-current="true"]) { @apply border-ink text-ink; }
+  .tab-panel > .tool-section { @apply border-t-0 pt-0; }
+  .signup-row { @apply border-b border-hairline py-3; }
+  .project-aside .tool-section { @apply rounded-panel border border-border p-4; }
   .popover-in { transform-origin: top right; }
   details[open] > .popover-in { animation: popover-in var(--duration-hover) var(--ease-enter); }
   details[open] > :not(summary, .popover-in) { animation: disclose var(--duration-hover) var(--ease-enter); }
@@ -232,6 +261,7 @@
     .button_to:has(> .btn-primary) { width: 100%; }
     .nav-item { min-height: 44px; }
     .btn-text { min-height: 44px; }
+    .signup-row.signup-open { @apply mb-3 rounded-tile border border-border bg-panel p-4 shadow-raised; }
     summary:not(.btn) { padding-block: 12px; }
     /* Lists stack into one card per row: a phone cannot show a wide table. */
     .list-table, .list-table > :is(thead, tbody), .list-table tr, .list-table :is(th, td) { display: block; }
@@ -256,6 +286,14 @@
     .meal-mobile-update { display: none; }
   }
 }
+
+/* Registered so wash_controller can animate the header wash's colors and blob positions. */
+@property --wash-a { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --wash-b { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --wash-a-x { syntax: "<length-percentage>"; inherits: true; initial-value: -140px; }
+@property --wash-a-y { syntax: "<length-percentage>"; inherits: true; initial-value: -170px; }
+@property --wash-b-x { syntax: "<length-percentage>"; inherits: true; initial-value: 48%; }
+@property --wash-b-y { syntax: "<length-percentage>"; inherits: true; initial-value: -180px; }
 
 @keyframes keep-check { from { transform: scale(.7); } to { transform: scale(1); } }
 @keyframes popover-in { from { opacity: 0; transform: scale(.97); } }

@@ -6,8 +6,8 @@ class OrganizationCreationTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to home_path
     follow_redirect!
-    assert_select "h1", "Hope Church"
-    assert_select "p", "Signed in as Casey Creator"
+    assert_select "[data-organization-name]", "Hope Church"
+    assert_select "[data-signed-in-as]", "Casey Creator"
 
     creator = Person.find_by!(email: "casey@hope.test")
     assert creator.admin

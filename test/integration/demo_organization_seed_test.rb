@@ -170,7 +170,7 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
 
       assert_redirected_to home_path
       follow_redirect!
-      assert_select "p", "Signed in as #{name}"
+      assert_select "[data-signed-in-as]", "#{name}"
       delete session_path
     end
   end

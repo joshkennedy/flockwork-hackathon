@@ -18,7 +18,7 @@ class SignInTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to home_path
     follow_redirect!
-    assert_select "p", "Signed in as Leo Leader"
+    assert_select "[data-signed-in-as]", "Leo Leader"
   end
 
   test "a link that was already used is refused with a plain message and starts no session" do
@@ -87,8 +87,8 @@ class SignInTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to home_path
     follow_redirect!
-    assert_select "h1", "Outsider Church"
-    assert_select "p", "Signed in as Leo Elsewhere"
+    assert_select "[data-organization-name]", "Outsider Church"
+    assert_select "[data-signed-in-as]", "Leo Elsewhere"
   end
 
   test "choosing an organization cannot switch to a Person with a different email" do
@@ -98,7 +98,7 @@ class SignInTest < ActionDispatch::IntegrationTest
 
     assert_response :not_found
     get home_path
-    assert_select "p", "Signed in as Leo Leader"
+    assert_select "[data-signed-in-as]", "Leo Leader"
   end
 
   test "a Person in one Organization skips the chooser" do

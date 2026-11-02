@@ -3,7 +3,7 @@
 <div class="w-full max-w-5xl">
   <%= page_header "Deleted Projects" %>
 
-  <nav class="mt-5 flex flex-wrap gap-4 text-meta font-semibold" aria-label="Project lists">
+  <nav class="mt-5 flex gap-6 overflow-x-auto border-b border-border" aria-label="Project lists">
     <%= link_to "Active", projects_path, class: "tab-link" %>
     <%= link_to "Archived", archived_projects_path, class: "tab-link" %>
     <%= link_to "Deleted", deleted_projects_path, class: "tab-link", aria: { current: "page" } %>

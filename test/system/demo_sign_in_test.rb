@@ -6,7 +6,7 @@ class DemoSignInTest < ApplicationSystemTestCase
 
     click_on "Explore as Volunteer"
 
-    assert_selector "h1", text: "Grace Fellowship"
-    assert_text "Signed in as Sam Chen"
+    assert_selector "[data-organization-name]", text: "Grace Fellowship"
+    assert_selector "[data-signed-in-as]", text: "Sam Chen"
   end
 end

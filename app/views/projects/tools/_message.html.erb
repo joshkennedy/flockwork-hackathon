@@ -7,12 +7,14 @@
     <%= message.body %>
   </div>
   <% if Policy.can?(Current.person, :edit_message, message) || Policy.can?(Current.person, :delete_message, message) %>
-    <div class="-ml-3 mt-2 flex items-center gap-1">
-      <% if Policy.can?(Current.person, :edit_message, message) %>
-        <%= link_to "Edit", edit_project_message_path(project, message), class: "btn btn-text" %>
-      <% end %>
-      <% if Policy.can?(Current.person, :delete_message, message) %>
-        <%= button_to "Delete", project_message_path(project, message), method: :delete, class: "btn btn-danger" %>
+    <div class="mt-2 flex justify-end">
+      <%= actions_menu("Message actions") do %>
+        <% if Policy.can?(Current.person, :edit_message, message) %>
+          <%= link_to "Edit", edit_project_message_path(project, message) %>
+        <% end %>
+        <% if Policy.can?(Current.person, :delete_message, message) %>
+          <%= button_to "Delete", project_message_path(project, message), method: :delete, class: "menu-danger" %>
+        <% end %>
       <% end %>
     </div>
   <% end %>

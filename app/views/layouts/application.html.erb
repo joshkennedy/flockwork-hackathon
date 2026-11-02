@@ -33,11 +33,14 @@
             </div>
           </details>
         </header>
-        <div class="panel min-h-[calc(100dvh-72px)] min-w-0 md:min-h-0">
-          <nav aria-label="Breadcrumbs" class="flex h-topbar-h min-w-0 items-center gap-2 border-b border-hairline px-4 text-label text-ink-2 md:px-7">
+        <div class="panel relative min-h-[calc(100dvh-72px)] min-w-0 md:min-h-0">
+          <div class="header-wash <%= content_for(:wash) %>" aria-hidden="true" data-controller="wash">
+            <svg><filter id="wash-grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .08 0 0 0 0 .08 0 0 0 0 .07 0 0 0 .1 0"/></filter><rect width="100%" height="100%" filter="url(#wash-grain)"/></svg>
+          </div>
+          <nav aria-label="Breadcrumbs" class="relative flex h-topbar-h min-w-0 items-center gap-2 border-b border-ink/6 px-4 text-label text-ink-2 md:px-7">
             <%= render "layouts/breadcrumbs" %>
           </nav>
-          <main id="main-content" class="min-w-0 p-4 pb-10 md:p-7 md:pb-10">
+          <main id="main-content" class="relative min-w-0 p-4 pb-10 md:p-7 md:pb-10">
             <%= yield %>
           </main>
         </div>

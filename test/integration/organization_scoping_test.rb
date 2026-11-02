@@ -6,8 +6,8 @@ class OrganizationScopingTest < ActionDispatch::IntegrationTest
 
     get home_path
 
-    assert_select "h1", "St. Example"
-    assert_select "p", "Signed in as Vic Volunteer"
+    assert_select "[data-organization-name]", "St. Example"
+    assert_select "[data-signed-in-as]", "Vic Volunteer"
     assert_no_match "Outsider Church", response.body
   end
 
@@ -16,7 +16,7 @@ class OrganizationScopingTest < ActionDispatch::IntegrationTest
 
     get home_path
 
-    assert_select "h1", "Outsider Church"
+    assert_select "[data-organization-name]", "Outsider Church"
     assert_no_match "St. Example", response.body
   end
 

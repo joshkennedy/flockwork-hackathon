@@ -91,7 +91,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     get home_path
 
     assert_response :success
-    assert_select "p", "Signed in as Vera Volunteer"
+    assert_select "[data-signed-in-as]", "Vera Volunteer"
   end
 
 
@@ -325,6 +325,6 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     get project_path(project)
 
     assert_response :success
-    assert_select "a[href='#{team_project_path(project)}']", "View Team"
+    assert_select "a.tab-link[href='#{team_project_path(project)}']", "Team"
   end
 end

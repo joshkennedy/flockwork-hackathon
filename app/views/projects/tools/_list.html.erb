@@ -14,12 +14,12 @@
         <section class="min-w-0" aria-labelledby="list-<%= list.id %>">
           <div class="flex items-center justify-between gap-4">
             <h3 id="list-<%= list.id %>" class="text-body-phone sm:text-body font-semibold text-ink"><%= list.name %></h3>
-            <div class="flex flex-wrap justify-end gap-4">
+            <div class="flex flex-wrap justify-end gap-2">
               <% if Policy.can?(Current.person, :manage_list_rows, project) %>
-                <%= link_to "Add row", new_project_list_list_row_path(project, list), class: "inline-flex min-h-6 items-center text-meta font-semibold text-ink-2 hover:text-ink" %>
+                <%= link_to new_project_list_list_row_path(project, list), class: "btn btn-secondary btn-sm" do %><%= icon(:plus) %>Add row<% end %>
               <% end %>
               <% if Policy.can?(Current.person, :manage_lists, project) %>
-                <%= link_to "Add column", new_project_list_list_column_path(project, list), class: "inline-flex min-h-6 items-center text-meta font-semibold text-ink-2 hover:text-ink" %>
+                <%= link_to new_project_list_list_column_path(project, list), class: "btn btn-secondary btn-sm" do %><%= icon(:plus) %>Add column<% end %>
               <% end %>
             </div>
           </div>
@@ -65,8 +65,11 @@
                     <td class="whitespace-nowrap border-b border-hairline px-3 py-3">
                       <% if Policy.can?(Current.person, :manage_list_rows, project) %>
                         <div class="list-row-actions flex items-center justify-end gap-1">
-                          <%= link_to "Edit", edit_project_list_list_row_path(project, list, row), class: "btn btn-text" %>
-                          <%= button_to "Delete", project_list_list_row_path(project, list, row), method: :delete, class: "btn btn-danger" %>
+                          <%= actions_menu("Row actions") do %>
+                            <%= link_to "Edit row", edit_project_list_list_row_path(project, list, row) %>
+                            <hr>
+                            <%= button_to "Delete row", project_list_list_row_path(project, list, row), method: :delete, class: "menu-danger" %>
+                          <% end %>
                         </div>
                       <% end %>
                     </td>

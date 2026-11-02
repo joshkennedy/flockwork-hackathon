@@ -73,9 +73,10 @@ class MealPlannerSystemTest < ApplicationSystemTestCase
       assert_text "2 spots left"
     end
     assert_selector "#tool-signup-sheet", focused: true
+    assert_selector "a.tab-link[aria-current='true']", text: Project::TOOL_LABELS.fetch("signup_sheet")
     section_top = page.evaluate_script("document.querySelector('[aria-labelledby=tool-signup-sheet]').getBoundingClientRect().top")
-    assert_in_delta 0, section_top, 1
-    assert_operator page.evaluate_script("window.scrollY"), :>, 0
+    assert_operator section_top, :>=, 0
+    assert_operator section_top, :<, page.evaluate_script("window.innerHeight")
   end
 
   test "polling replaces a busy frame after generation finishes without a broadcast" do
@@ -106,7 +107,7 @@ class MealPlannerSystemTest < ApplicationSystemTestCase
     def sign_in_as_leader_in_browser
       visit new_demo_session_path
       click_on "Explore as Leader"
-      assert_text "Signed in as Maria Lopez"
+      assert_selector "[data-signed-in-as]", text: "Maria Lopez"
     end
 
     def response(card: nil, finished: false, added: [])

@@ -19,14 +19,14 @@
     <span class="mt-1 block text-meta text-ink-2"><%= item.author.name %></span>
     </div>
     <% if Policy.can?(Current.person, :manage_docs, project) || Policy.can?(Current.person, :destroy, item) %>
-      <div class="flex flex-wrap gap-3 text-meta font-semibold">
+      <%= actions_menu("Actions for #{item.title}") do %>
         <% if Policy.can?(Current.person, :manage_docs, project) %>
-          <%= link_to "Edit", edit_project_doc_item_path(project, item), class: "text-ink-2 hover:text-ink" %>
+          <%= link_to "Edit", edit_project_doc_item_path(project, item) %>
         <% end %>
         <% if Policy.can?(Current.person, :destroy, item) %>
-          <%= button_to "Delete", project_doc_item_path(project, item), method: :delete, class: "btn btn-danger" %>
+          <%= button_to "Delete", project_doc_item_path(project, item), method: :delete, class: "menu-danger" %>
         <% end %>
-      </div>
+      <% end %>
     <% end %>
   </div>
   <%= render "comments/thread", commentable: item %>

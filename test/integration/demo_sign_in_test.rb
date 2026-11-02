@@ -21,7 +21,7 @@ class DemoSignInTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to home_path
     follow_redirect!
-    assert_select "p", "Signed in as Daniel Okafor"
+    assert_select "[data-signed-in-as]", "Daniel Okafor"
   end
 
   test "Explore as Leader signs in as the demo Leader" do
@@ -29,7 +29,7 @@ class DemoSignInTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to home_path
     follow_redirect!
-    assert_select "p", "Signed in as Maria Lopez"
+    assert_select "[data-signed-in-as]", "Maria Lopez"
   end
 
   test "Explore as Volunteer signs in as the demo Volunteer" do
@@ -37,7 +37,7 @@ class DemoSignInTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to home_path
     follow_redirect!
-    assert_select "p", "Signed in as Sam Chen"
+    assert_select "[data-signed-in-as]", "Sam Chen"
   end
 
   test "the demo endpoint 404s when the demo Organization is not flagged demo, and starts no session" do

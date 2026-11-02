@@ -84,7 +84,7 @@ class ProjectsTest < ActionDispatch::IntegrationTest
 
     get projects_path
 
-    assert_select "h2", "Community Meal"
+    assert_select "h3", "Community Meal"
     assert_no_match "Building Cleanup", response.body
 
     get project_path(project)
@@ -111,8 +111,8 @@ class ProjectsTest < ActionDispatch::IntegrationTest
     get projects_path
 
     assert_response :success
-    assert_select "h2", "Building Cleanup"
-    assert_select "h2", "Community Meal"
+    assert_select "h3", "Building Cleanup"
+    assert_select "h3", "Community Meal"
     assert_no_match "Outsider Church Picnic", response.body
   end
 
@@ -156,7 +156,7 @@ class ProjectsTest < ActionDispatch::IntegrationTest
     get projects_path
 
     assert_response :success
-    assert_select "h2", "Outsider Church Picnic"
+    assert_select "h3", "Outsider Church Picnic"
     assert_no_match "Community Meal", response.body
   end
 
@@ -196,5 +196,18 @@ class ProjectsTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
     assert_select "li", "Tools contains an unknown Tool"
     assert_equal [ "tasks", "schedule", "budget", "messages" ], project.reload.enabled_tools
+  end
+
+  test "the Projects list groups by timing and says what each Project needs" do
+    sign_in_as_admin
+    projects(:community_meal).update!(starts_on: Date.current + 10, ends_on: Date.current + 10, enabled_tools: %w[signup_sheet])
+    projects(:community_meal).slots.create!(date: Date.current + 10, label: "Dinner", capacity: 1)
+    projects(:building_cleanup).update!(done_at: Time.current)
+
+    get projects_path
+
+    assert_select "section[aria-labelledby='group-coming-up'] h3", "Community Meal"
+    assert_select "section[aria-labelledby='group-coming-up'] .badge-need", "1 dinner still needs someone"
+    assert_select "section[aria-labelledby='group-done'] h3", "Building Cleanup"
   end
 end

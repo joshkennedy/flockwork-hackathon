@@ -1,0 +1,39 @@
+import { Controller } from "@hotwired/stimulus"
+
+// Shows one panel at a time. Every panel is server-rendered so forms keep working,
+// and the last tab is remembered per page because form redirects land on the bare URL.
+export default class extends Controller {
+  static targets = ["tab", "panel"]
+
+  connect() {
+    const anchored = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)))
+    const fromHash = anchored && this.panelTargets.find((panel) => panel.contains(anchored))
+    const stored = this.panelTargets.find((panel) => panel.dataset.tabsName === this.remembered)
+    const panel = fromHash || stored
+    if (panel) this.show(panel.dataset.tabsName)
+  }
+
+  select(event) {
+    event.preventDefault()
+    const name = event.currentTarget.dataset.tabsName
+    this.show(name)
+    this.remembered = name
+  }
+
+  show(name) {
+    this.panelTargets.forEach((panel) => { panel.hidden = panel.dataset.tabsName !== name })
+    this.tabTargets.forEach((tab) => tab.setAttribute("aria-current", tab.dataset.tabsName === name))
+  }
+
+  get remembered() {
+    try { return sessionStorage.getItem(this.storageKey) } catch { return null }
+  }
+
+  set remembered(name) {
+    try { sessionStorage.setItem(this.storageKey, name) } catch {}
+  }
+
+  get storageKey() {
+    return `tabs:${location.pathname}`
+  }
+}

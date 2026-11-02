@@ -16,4 +16,9 @@ class ApplicationHelperTest < ActionView::TestCase
     html = page_header("Notifications") { nil }
     assert_not_includes html, "page-actions"
   end
+
+  test "actions_menu wraps items in a labelled more button" do
+    html = actions_menu("Slot actions") { tag.a("Edit slot", href: "/slots/1/edit") }
+    assert_dom_equal(%(<details class="actions-menu relative"><summary class="btn btn-icon" aria-label="Slot actions" title="Slot actions">#{icon(:more)}</summary><div class="actions-menu-panel popover-in"><a href="/slots/1/edit">Edit slot</a></div></details>), html)
+  end
 end

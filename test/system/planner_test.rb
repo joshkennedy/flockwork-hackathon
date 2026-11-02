@@ -127,21 +127,19 @@ class PlannerSystemTest < ApplicationSystemTestCase
     click_button "Accept all", exact: true
 
     assert_current_path project_path(project)
-    assert_text "Set welcome tables"
-    assert_text "Volunteer huddle"
     assert_text "Meal delivery team", count: 2
-    assert_text "Overflow room"
-    assert_text "Welcome signs"
-    assert_text "Serving teams"
-    assert_text "Team"
-    assert_text "Ready"
+    click_on "Tasks"
+    assert_text "Set welcome tables"
+    assert_no_text "Meal delivery team"
+    # Every accepted item lands somewhere; the rest sit in tabs not shown right now.
+    [ "Volunteer huddle", "Overflow room", "Welcome signs", "Serving teams", "Ready" ].each { |text| assert_text :all, text }
   end
 
   private
     def sign_in_as_leader_in_browser
       visit new_demo_session_path
       click_on "Explore as Leader"
-      assert_text "Signed in as Maria Lopez"
+      assert_selector "[data-signed-in-as]", text: "Maria Lopez"
     end
 
     def planner_response(card: nil, finished: false, added: [], removed_ids: [])

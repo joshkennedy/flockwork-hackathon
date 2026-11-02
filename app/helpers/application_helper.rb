@@ -16,6 +16,8 @@ module ApplicationHelper
     list: "M9 5h12 M9 12h12 M9 19h12 M3 5h1 M3 12h1 M3 19h1",
     check: "m5 12 4 4L19 6",
     menu: "M4 7h16 M4 12h16 M4 17h16",
+    more: "M5 11.2a.8.8 0 1 0 0 1.6.8.8 0 1 0 0-1.6Z M12 11.2a.8.8 0 1 0 0 1.6.8.8 0 1 0 0-1.6Z M19 11.2a.8.8 0 1 0 0 1.6.8.8 0 1 0 0-1.6Z",
+    plus: "M12 5v14 M5 12h14",
     sign_out: "M9 3H3v18h6 M9 12h12 m-5-5 5 5-5 5"
   }.freeze
 
@@ -45,6 +47,17 @@ module ApplicationHelper
     items << [ "Oversight", oversight_path, :oversight ] if Policy.can?(Current.person, :view_oversight, Current.organization)
     items << [ "Notifications", notifications_path, :notifications ]
     items
+  end
+
+  # The "Manage it" tier of the button grammar: a ⋯ button opening a menu of
+  # links and button_tos. Mark destructive items with class "menu-danger".
+  def actions_menu(label, &items)
+    tag.details(class: "actions-menu relative") do
+      safe_join([
+        tag.summary(icon(:more), class: "btn btn-icon", aria: { label: label }, title: label),
+        tag.div(capture(&items), class: "actions-menu-panel popover-in")
+      ])
+    end
   end
 
   def page_header(title, subtitle: nil, &actions)

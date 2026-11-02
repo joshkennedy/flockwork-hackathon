@@ -12,7 +12,22 @@ class OrganizationsController < ApplicationController
       .this_week.includes(:project).chronological
     @my_tasks = @organization.tasks.where(project_id: visible_project_ids, assignee_id: @person.id, completed_at: nil)
       .includes(:project).due_first.limit(5)
-    @open_slots_by_project = Slot.open_this_week_by_project(visible_project_ids)
+    @home_role = if @person.admin? then :admin elsif @person.memberships.leader.exists? then :leader else :volunteer end
+
+    case @home_role
+    when :admin
+      @projects = Policy.visible_projects(@person).active.includes(memberships: :person).order(:starts_on, :name)
+      project_ids = @projects.map(&:id)
+      @open_spots_this_week = Slot.where(project_id: project_ids).this_week.with_open_spots.sum("capacity - claims_count")
+      @unassigned_task_count = Task.open.where(project_id: project_ids, assignee_id: nil).count
+      @people_count = @organization.people.count
+    when :leader
+      @projects = Current.organization.projects.active.where(id: @person.memberships.leader.select(:project_id)).order(:starts_on, :name)
+    else
+      member_project_ids = @person.memberships.select(:project_id)
+      @open_slots_by_project = Slot.open_this_week_by_project(member_project_ids)
+      @open_teams = Current.organization.projects.active.where(open_team: true).where.not(id: member_project_ids).order(:starts_on, :name)
+    end
   end
 
   def create
