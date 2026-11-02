@@ -1,6 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"<%= " data-dark" if appearance == "dark" %>>
   <head>
+    <% if appearance == "system" %>
+      <script>
+        {
+        const darkQuery = matchMedia("(prefers-color-scheme: dark)")
+        const followDevice = () => document.documentElement.toggleAttribute("data-dark", darkQuery.matches)
+        followDevice()
+        darkQuery.addEventListener("change", () => { if (!document.cookie.includes("appearance=")) followDevice() })
+        }
+      </script>
+    <% end %>
     <title><%= content_for(:title) || "Project" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="robots" content="noindex">
@@ -11,7 +21,7 @@
     <%= render "layouts/fonts" %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
   </head>
-  <body style="--color-mark: <%= mark_color %>" class="min-h-screen bg-page">
+  <body style="<%= mark_color_style %>" class="min-h-screen bg-page">
     <div class="mx-auto w-full max-w-3xl px-4 py-7 sm:py-10">
       <%= render "layouts/wordmark", path: root_path, class: "mb-10" %>
       <main><%= yield %></main>

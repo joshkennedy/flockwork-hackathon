@@ -42,5 +42,18 @@
     <%= form.submit "Save changes", class: "btn btn-primary" %>
   <% end %>
 
+  <fieldset class="mt-10 space-y-3" data-controller="appearance" data-action="change->appearance#pick">
+    <legend class="text-body-phone font-semibold text-ink sm:text-body">Appearance on this device</legend>
+    <p class="text-meta text-ink-2">Only this browser changes. Your church's theme color stays the same.</p>
+    <div class="grid grid-cols-3 gap-2 sm:max-w-md">
+      <% [["Light", "light"], ["Dark", "dark"], ["Match device", "system"]].each do |label, value| %>
+        <label class="tile-raised flex cursor-pointer items-center justify-center px-3 py-2.5 text-button has-[:checked]:border-ink has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ink">
+          <%= radio_button_tag :appearance, value, appearance == value, class: "sr-only" %>
+          <%= label %>
+        </label>
+      <% end %>
+    </div>
+  </fieldset>
+
   <%= render "shared/involvement_timeline", involvement: @involvement, title: "Your Involvement" %>
 </div>

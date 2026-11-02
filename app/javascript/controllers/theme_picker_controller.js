@@ -3,6 +3,7 @@ import { Controller } from "@hotwired/stimulus"
 // Applies a church's theme the moment an Admin picks it, then saves it.
 export default class extends Controller {
   static targets = ["custom", "customChoice"]
+  static values = { default: String }
 
   pick() {
     this.apply()
@@ -19,7 +20,9 @@ export default class extends Controller {
     const checked = this.element.querySelector("input[name='organization[mark_color_choice]']:checked")
     if (!checked) return
     const color = checked.value === "custom" ? this.customTarget.value : checked.value
-    document.body.style.setProperty("--color-mark", color)
+    // The default stays unset so dark mode can brighten it, matching the server render.
+    if (color.toUpperCase() === this.defaultValue) document.body.style.removeProperty("--color-mark")
+    else document.body.style.setProperty("--color-mark", color)
     const favicon = document.querySelector("link[rel=icon][type='image/svg+xml']")
     if (favicon) favicon.href = `/icon.svg?c=${color.replace("#", "").toUpperCase()}`
   }

@@ -96,6 +96,38 @@
   --duration-keep: 180ms;
 }
 
+/* Dark appearance: set per device (cookie or OS setting) as data-dark on <html>. Warm near-blacks, not inverted grays. */
+:root[data-dark] {
+  color-scheme: dark;
+  --color-frame: #141413;
+  --color-page: #191918;
+  --color-panel: #1D1D1B;
+  --color-border: #2E2D2A;
+  --color-border-strong: #5A5853;
+  --color-hairline: #262523;
+  --color-ink: #F2F1ED;
+  --color-on-ink: #141413;
+  --color-ink-hover: #D9D7D1;
+  --color-ink-2: #AAA8A2;
+  --color-ink-3: #78766F;
+  --color-sunlit-soft: #3A2D0E;
+  --color-mark: #F5B000;
+  --color-success: #3DBA6F;
+  --color-danger: #F2654F;
+  --color-danger-soft: #3A1D18;
+  --color-ghost-fill: #1A1A19;
+  --color-ghost-border: #3C3B37;
+  --color-nav-active: #2B2A27;
+  --color-tool-docs: #94A3B8;
+  --color-tool-list: #CA8A04;
+  --shadow-raised: inset 0 1px 0 rgba(255,255,255,.04), 0 1px 2px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.22);
+  --shadow-float: inset 0 1px 0 rgba(255,255,255,.05), 0 8px 24px rgba(0,0,0,.5), 0 2px 6px rgba(0,0,0,.3);
+  --shadow-button: inset 0 1px 0 rgba(255,255,255,.6), 0 1px 1px rgba(0,0,0,.4), 0 2px 6px rgba(0,0,0,.3);
+  --shadow-button-active: inset 0 2px 3px rgba(0,0,0,.25), 0 1px 1px rgba(0,0,0,.3);
+  --shadow-secondary: inset 0 1px 0 rgba(255,255,255,.05), 0 1px 2px rgba(0,0,0,.4);
+  --shadow-secondary-active: inset 0 1px 3px rgba(0,0,0,.5);
+}
+
 @layer base {
   /* Native color inputs render as a plain swatch, matching the preset swatches beside them. */
   input[type=color] { appearance: none; background: none; }

@@ -89,6 +89,16 @@ module ApplicationHelper
     (@organization || Current.organization)&.mark_color || Organization::DEFAULT_MARK_COLOR
   end
 
+  # Light or dark is chosen per device and kept in a cookie; anything else follows the OS.
+  def appearance
+    cookies[:appearance].presence_in(%w[light dark]) || "system"
+  end
+
+  # Only a church's own color is set inline, so the default mark can brighten in dark mode.
+  def mark_color_style
+    "--color-mark: #{mark_color}" unless mark_color == Organization::DEFAULT_MARK_COLOR
+  end
+
   def mark_favicon_svg(color)
     # Deep sunlit brightens to sunlit on dark chrome; any other hue already reads on dark.
     lead_dark = color == Organization::DEFAULT_MARK_COLOR ? " .lead { stroke: #F5B000 }" : ""

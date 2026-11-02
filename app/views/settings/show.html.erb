@@ -17,7 +17,7 @@
   <% end %>
 
   <%= form_with model: organization, url: settings_path, method: :patch, class: "mt-7",
-        data: { controller: "theme-picker", action: "change->theme-picker#pick" } do |form| %>
+        data: { controller: "theme-picker", action: "change->theme-picker#pick", theme_picker_default_value: Organization::DEFAULT_MARK_COLOR } do |form| %>
     <fieldset class="space-y-4">
       <legend class="text-heading font-semibold text-ink">Theme</legend>
       <p class="text-meta text-ink-2">Colors the lead bird in the Flockwork mark, in the sidebar and the browser tab. Changes save as you pick.</p>

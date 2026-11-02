@@ -13,7 +13,7 @@
         <li data-notification-id="<%= notification.id %>" class="border-b border-hairline py-4 <%="font-semibold" if notification.unread? %>">
           <div class="flex flex-wrap items-start justify-between gap-5">
             <div class="min-w-0">
-              <%= link_to notification.message, project_path(notification.project), class: "text-ink hover:text-black" %>
+              <%= link_to notification.message, project_path(notification.project), class: "text-ink hover:text-ink-hover" %>
               <p class="mt-1 text-label font-normal text-ink-2"><%= time_ago_in_words(notification.created_at) %> ago</p>
             </div>
             <% if notification.unread? %>
