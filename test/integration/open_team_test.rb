@@ -122,4 +122,17 @@ class OpenTeamTest < ActionDispatch::IntegrationTest
     get project_path(project)
     assert_response :not_found
   end
+
+  test "Get involved offers open Teams first and lists the ones you're on" do
+    projects(:building_cleanup).update!(open_team: true)
+    projects(:community_meal).update!(open_team: true)
+    sign_in_as_volunteer
+
+    get get_involved_path
+
+    assert_select "section[aria-labelledby='open-teams-heading'] li", text: /Building Cleanup/
+    assert_select "section[aria-labelledby='open-teams-heading'] form[action=?] button", join_project_path(projects(:building_cleanup)), "Join the Team"
+    assert_select "section[aria-labelledby='joined-teams-heading'] li", text: /Community Meal.*On the Team/m
+    assert_select "section[aria-labelledby='open-teams-heading'] li", text: /Community Meal/, count: 0
+  end
 end
