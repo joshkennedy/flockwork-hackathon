@@ -5,7 +5,7 @@
     <%= link_to "Start a Project", new_project_path, class: "btn btn-primary" %>
   <% end %>
 
-  <nav class="mt-5 flex gap-6 overflow-x-auto border-b border-border" aria-label="Project lists">
+  <nav class="mt-5 tab-bar" aria-label="Project lists">
     <%= link_to "Active", projects_path, class: "tab-link", aria: { current: "page" } %>
     <%= link_to "Archived", archived_projects_path, class: "tab-link" %>
     <% if Policy.can?(Current.person, :view_deleted, Project) %>

@@ -218,7 +218,9 @@
   :is(textarea, trix-editor).field { min-height: 112px; }
   .nav-item { @apply flex min-h-control-h items-center gap-3 rounded-nav px-3 py-1.5 text-meta text-ink-2; transition: background-color var(--duration-hover), color var(--duration-hover); }
   .nav-item[aria-current="page"] { @apply bg-nav-active font-semibold text-ink; }
-  .tab-link { @apply -mb-px inline-flex min-h-10 shrink-0 items-center border-b-2 border-transparent font-medium text-ink-2 no-underline; }
+  /* Inset shadow, not border-b: a -mb-px tab inside overflow-x-auto makes the bar scroll vertically. */
+  .tab-bar { @apply flex gap-6 overflow-x-auto overflow-y-hidden shadow-[inset_0_-1px_0_var(--color-border)]; }
+  .tab-link { @apply inline-flex min-h-10 shrink-0 items-center border-b-2 border-transparent font-medium text-ink-2 no-underline; }
   .tab-link:is([aria-current="page"], [aria-current="true"]) { @apply border-ink text-ink; }
   .tab-panel > .tool-section { @apply border-t-0 pt-0; }
   .signup-row { @apply border-b border-hairline py-3; }

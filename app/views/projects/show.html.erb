@@ -104,7 +104,7 @@
 
   <div>
     <% if tabs.any? || Policy.can?(Current.person, :view_team, @project) %>
-      <nav class="mt-7 flex gap-6 overflow-x-auto border-b border-border" aria-label="Project sections">
+      <nav class="mt-7 tab-bar" aria-label="Project sections">
         <% tabs.each do |tab| %>
           <%= link_to "#tab-#{tab}", class: "tab-link", aria: { current: tab == default_tab }, data: { tabs_target: "tab", tabs_name: tab, action: "tabs#select" } do %>
             <%= tab == "notes" ? "Notes" : Project::TOOL_LABELS.fetch(tab) %>

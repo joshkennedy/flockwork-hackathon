@@ -53,4 +53,13 @@ class PersonTest < ActiveSupport::TestCase
     assert_not admin.update(admin: false)
     assert_includes admin.errors[:admin], "cannot be removed from the last Admin in the Organization"
   end
+
+  test "matching finds names containing every typed word in any order" do
+    org = organizations(:st_example)
+    maria = Person.create!(organization: org, name: "Maria Lopez")
+    Person.create!(organization: org, name: "Mark Lowe")
+
+    assert_equal [ maria ], org.people.matching("lop mar").to_a
+    assert_includes org.people.matching("  MARIA ").to_a, maria
+  end
 end

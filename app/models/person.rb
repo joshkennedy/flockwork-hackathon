@@ -30,6 +30,11 @@ class Person < ApplicationRecord
     last_signed_in_at
   end
 
+  # Every typed word must appear somewhere in the name, so "ma lo" finds Maria Lopez.
+  scope :matching, ->(query) {
+    query.to_s.split.first(5).reduce(all) { |people, word| people.where("people.name ILIKE ?", "%#{sanitize_sql_like(word)}%") }
+  }
+
   normalizes :email, with: ->(email) { email.strip.downcase.presence }
 
   validates :name, presence: true

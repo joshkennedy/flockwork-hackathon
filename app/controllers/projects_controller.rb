@@ -45,7 +45,7 @@ class ProjectsController < ApplicationController
 
     member_ids = @project.memberships.select(:person_id)
     @directory_people = Current.organization.people
-      .where("name ILIKE ?", "%#{ActiveRecord::Base.sanitize_sql_like(params[:query])}%")
+      .matching(params[:query])
       .where.not(id: member_ids)
       .order(:name)
   end
