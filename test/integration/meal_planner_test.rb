@@ -380,6 +380,49 @@ class MealPlannerTest < ActionDispatch::IntegrationTest
     assert project.tasks.exists?(title: "Set the table")
   end
 
+
+  test "a provider outage keeps the answers and offers a calm way to keep going by hand" do
+    use_provider(
+      response(card: card("Which meals should people bring?", "Dinner", "Lunch")),
+      RuntimeError.new("OpenRouter is unavailable")
+    )
+    sign_in_as_leader
+    post start_meal_planner_projects_path
+    planner_session = PlannerSession.order(:id).last!
+    project = planner_session.project
+    perform_enqueued_jobs(only: PlannerStepJob)
+
+    post select_answer_project_planner_session_path(project, planner_session),
+      params: { answer: "Dinner", expected_revision: planner_session.reload.generation_revision }
+    perform_enqueued_jobs(only: PlannerStepJob)
+
+    planner_session.reload
+    assert_equal "failed", planner_session.generation_state
+    assert_equal [ "Dinner" ], planner_session.steps.map { |step| step["answer"] }
+
+    get project_planner_session_path(project, planner_session)
+    assert_select "[role='alert'] p", text: PlannerSession::ERROR_MESSAGE
+    assert_select "button[aria-pressed='true']", text: "Dinner"
+    assert_select "button", text: "Retry"
+    assert_select "button", text: "Keep going by hand"
+    assert_no_match(/Preparing Suggestions/, @response.body)
+
+    post save_and_leave_project_planner_session_path(project, planner_session)
+    assert_redirected_to project_path(project)
+    assert_equal "asking", planner_session.reload.status
+  end
+
+  test "Build it myself starts a Project by hand from the Planner's start" do
+    sign_in_as_leader
+    get new_project_path
+    assert_select "a[href=?]", new_project_path(manual: true), text: "Build it myself"
+
+    assert_difference "Project.count", 1 do
+      post projects_path, params: { project: { name: "Retreat by hand", description: "Built without the Planner.", starts_on: "2027-03-12", ends_on: "2027-03-13" } }
+    end
+    assert_equal "Retreat by hand", Project.order(:id).last!.name
+  end
+
   private
     def start_and_generate
       perform_enqueued_jobs(only: PlannerStepJob) { post start_meal_planner_projects_path }

@@ -136,8 +136,7 @@
             <% if planner_session.generation_busy? %>
               <p class="meal-builder-status" data-meal-planner-target="status">Preparing Suggestions…</p>
             <% elsif planner_session.last_error.present? %>
-              <p role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger"><%= PlannerSession::ERROR_MESSAGE %></p>
-              <%= button_to "Retry", retry_generation_project_planner_session_path(project, planner_session), params: { expected_revision: planner_session.generation_revision }, class: "mt-3 btn btn-secondary" %>
+              <%= render "planner_sessions/break", project:, planner_session: %>
             <% elsif planner_session.ready_to_continue? %>
               <p class="meal-builder-status" data-meal-planner-target="status">Preview updated. Change your choice or continue.</p>
             <% end %>
@@ -172,11 +171,12 @@
             <% end %>
           </div>
         <% else %>
-          <h2 id="meal-guide-heading" class="text-lg font-semibold text-ink">Preparing your first choice…</h2>
-          <p class="mt-3 meal-builder-status" data-meal-planner-target="status">The Planner is shaping questions around <%= general_planner ? "this Project" : "this meal train" %>.</p>
           <% if planner_session.last_error.present? %>
-            <p role="alert" class="mt-4 rounded-control bg-danger-soft px-4 py-3 text-danger"><%= PlannerSession::ERROR_MESSAGE %></p>
-            <%= button_to "Retry", retry_generation_project_planner_session_path(project, planner_session), params: { expected_revision: planner_session.generation_revision }, class: "mt-3 btn btn-secondary" %>
+            <h2 id="meal-guide-heading" class="text-lg font-semibold text-ink">The first choice isn’t ready yet</h2>
+            <div class="mt-4"><%= render "planner_sessions/break", project:, planner_session: %></div>
+          <% else %>
+            <h2 id="meal-guide-heading" class="text-lg font-semibold text-ink">Preparing your first choice…</h2>
+            <p class="mt-3 meal-builder-status" data-meal-planner-target="status">The Planner is shaping questions around <%= general_planner ? "this Project" : "this meal train" %>.</p>
           <% end %>
         <% end %>
 

@@ -1,6 +1,8 @@
 module Planner
   module Providers
     class Llm
+      class BudgetExceeded < StandardError; end
+
       SYSTEM_PROMPT = <<~PROMPT.freeze
         You are the Flockwork Planner. Ask one question at a time and provide 3 to 5 short answer options.
         Build Suggestions for Tools, Tasks, Schedule items, Slot runs, Bookings, Purchases, and Lists as you learn.
@@ -128,35 +130,11 @@ module Planner
         }
       )).freeze
 
+      # Wall-clock budget for one step, retries included. A slow or down provider fails the step so the
+      # planner can fall back to building by hand instead of waiting on a spinner.
       # With a block, complete card and added items are yielded as the model streams; the final parse still decides.
       def call(context, &on_partial)
-        version = context["flow_version"] || context[:flow_version]
-        instructions = version == 2 ? MEAL_PROMPT : (version == 3 ? GENERAL_PROMPT : SYSTEM_PROMPT)
-        schema = version == 2 ? MEAL_SCHEMA : (version == 3 ? GENERAL_SCHEMA : RESPONSE_SCHEMA)
-        # The schema goes in the prompt, not as a response format: Anthropic's constrained decoding can't
-        # compile it in time. The shape is checked here and Suggestions are sanitized per kind on ingest.
-        chat = RubyLLM.chat(model: llm_model, provider: llm_provider.to_sym, assume_model_exists: true)
-          # The instructions and schema are stable per flow, so cache them (OpenRouter passes cache_control through).
-          .with_instructions("#{instructions}\nJSON schema:\n#{JSON.generate(schema)}", cache_until_here: true)
-          # Providers default to the model's full output window, which is slow and can exceed account credit.
-          .with_max_output_tokens(4_000)
-        # The first card has no answers to weigh, so it skips the reasoning pass (about 40-50% of output tokens).
-        answered = context["questions_answered"] || context[:questions_answered] || 1
-        chat = chat.with_thinking(effort: :low) if version.in?([ 2, 3 ]) && answered.to_i.zero?
-        message = stream_message(chat, JSON.generate(context), on_partial)
-        log_usage(message, version)
-        parsed = JSON.parse(message.content.to_s[/\{.*\}/m] || raise(ArgumentError, "Planner response had no JSON"))
-        card = parsed.fetch("card")
-        finished = parsed.fetch("finished")
-        raise ArgumentError, "Finished Planner responses must have no card" unless finished == card.nil?
-        raise ArgumentError, "Cards need 3 to 5 options" if card && !card.fetch("options").size.between?(3, 5)
-
-        Planner::Response.new(
-          card:,
-          finished:,
-          added: parsed.fetch("added"),
-          removed_ids: parsed.fetch("removed_ids")
-        ).validate!
+        Timeout.timeout(budget_seconds, BudgetExceeded) { complete(context, &on_partial) }
       end
 
       def llm_provider
@@ -168,6 +146,42 @@ module Planner
       end
 
       private
+        def budget_seconds
+          ENV.fetch("PLANNER_LLM_BUDGET_SECONDS", "20").to_f
+        end
+
+        def complete(context, &on_partial)
+          version = context["flow_version"] || context[:flow_version]
+          instructions = version == 2 ? MEAL_PROMPT : (version == 3 ? GENERAL_PROMPT : SYSTEM_PROMPT)
+          schema = version == 2 ? MEAL_SCHEMA : (version == 3 ? GENERAL_SCHEMA : RESPONSE_SCHEMA)
+          # The schema goes in the prompt, not as a response format: Anthropic's constrained decoding can't
+          # compile it in time. The shape is checked here and Suggestions are sanitized per kind on ingest.
+          # One request can't outlive the step budget, so a retry never starts after the budget is spent either.
+          chat = RubyLLM.context { |config| config.request_timeout = budget_seconds }
+            .chat(model: llm_model, provider: llm_provider.to_sym, assume_model_exists: true)
+            # The instructions and schema are stable per flow, so cache them (OpenRouter passes cache_control through).
+            .with_instructions("#{instructions}\nJSON schema:\n#{JSON.generate(schema)}", cache_until_here: true)
+            # Providers default to the model's full output window, which is slow and can exceed account credit.
+            .with_max_output_tokens(4_000)
+          # The first card has no answers to weigh, so it skips the reasoning pass (about 40-50% of output tokens).
+          answered = context["questions_answered"] || context[:questions_answered] || 1
+          chat = chat.with_thinking(effort: :low) if version.in?([ 2, 3 ]) && answered.to_i.zero?
+          message = stream_message(chat, JSON.generate(context), on_partial)
+          log_usage(message, version)
+          parsed = JSON.parse(message.content.to_s[/\{.*\}/m] || raise(ArgumentError, "Planner response had no JSON"))
+          card = parsed.fetch("card")
+          finished = parsed.fetch("finished")
+          raise ArgumentError, "Finished Planner responses must have no card" unless finished == card.nil?
+          raise ArgumentError, "Cards need 3 to 5 options" if card && !card.fetch("options").size.between?(3, 5)
+
+          Planner::Response.new(
+            card:,
+            finished:,
+            added: parsed.fetch("added"),
+            removed_ids: parsed.fetch("removed_ids")
+          ).validate!
+        end
+
         # Yields a snapshot only when a complete card or item changes, so callers can throttle without diffing.
         def stream_message(chat, prompt, on_partial)
           return chat.ask(prompt) unless on_partial

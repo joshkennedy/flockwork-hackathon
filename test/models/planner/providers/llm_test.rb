@@ -56,6 +56,18 @@ class PlannerProvidersLlmTest < ActiveSupport::TestCase
     end
   end
 
+  test "a provider call that outlives the step budget fails instead of waiting" do
+    content = JSON.generate(card: nil, finished: true, added: [], removed_ids: [])
+
+    with_planner_llm_env("PLANNER_LLM_BUDGET_SECONDS" => "0.05") do
+      with_ruby_llm_chat(SlowChat.new(content)) do
+        assert_raises(Planner::Providers::Llm::BudgetExceeded) do
+          Planner::Providers::Llm.new.call("flow_version" => 2, "questions_answered" => 1)
+        end
+      end
+    end
+  end
+
   test "streams complete card and items to the caller before the final parse" do
     card = { "question" => "Which meals?", "options" => %w[Dinner Lunch Brunch] }
     item = { "kind" => "slot_run", "source_key" => "meal-slots", "fields" => { "label" => "Dinner" } }
@@ -124,16 +136,27 @@ class PlannerProvidersLlmTest < ActiveSupport::TestCase
 
   def with_ruby_llm_chat(chat)
     singleton = RubyLLM.singleton_class
-    singleton.alias_method(:original_chat_for_test, :chat)
-    singleton.define_method(:chat) { |**| chat }
+    singleton.alias_method(:original_context_for_test, :context)
+    singleton.define_method(:context) { |&| ChatContext.new(chat) }
     yield
   ensure
-    singleton.alias_method(:chat, :original_chat_for_test)
-    singleton.remove_method(:original_chat_for_test)
+    singleton.alias_method(:context, :original_context_for_test)
+    singleton.remove_method(:original_context_for_test)
+  end
+
+  ChatContext = Struct.new(:chat_double) do
+    def chat(**) = chat_double
+  end
+
+  class SlowChat < RecordingChat
+    def ask(_, &)
+      sleep 1
+      super
+    end
   end
 
   def with_planner_llm_env(changes)
-    keys = %w[PLANNER_LLM_PROVIDER PLANNER_LLM_MODEL]
+    keys = %w[PLANNER_LLM_PROVIDER PLANNER_LLM_MODEL PLANNER_LLM_BUDGET_SECONDS]
     saved = keys.index_with { |key| ENV.key?(key) ? ENV[key] : :absent }
     changes.each do |key, value|
       key = key.to_s

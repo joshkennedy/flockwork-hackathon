@@ -32,8 +32,9 @@
         <% end %>
       </div>
 
-      <div class="mt-6 text-meta font-semibold">
-        <%= link_to "Set up manually", new_project_path(manual: true), class: "inline-flex min-h-11 items-center text-ink-2 hover:text-ink" %>
+      <div class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
+        <%= link_to "Build it myself", new_project_path(manual: true), class: "btn btn-secondary" %>
+        <p class="text-meta text-ink-2">Set up the Project and its Tools yourself, with the same fields.</p>
       </div>
     </section>
   <% end %>
