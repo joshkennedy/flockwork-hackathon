@@ -21,7 +21,7 @@
                 </ul>
                 <%= render "check_in", person: person, last: @last_check_ins[person.id], summary: @summaries[person.id] %>
               </div>
-              <% if Current.person.admin? %><%= link_to "View person", edit_person_path(person), class: "btn btn-secondary shrink-0" %><% end %>
+              <% if Current.person.admin? %><%= link_to "View person", person_path(person), class: "btn btn-secondary shrink-0" %><% end %>
             </li>
           <% end %>
         </ul>
@@ -114,7 +114,7 @@
                 data-tasks="<%= entry[:tasks] %>"
                 data-slots="<%= entry[:slots] %>">
               <th scope="row" class="py-4 pr-4 font-semibold text-ink">
-                <%= link_to entry[:person].name, edit_person_path(entry[:person]), class: "hover:text-ink" %>
+                <%= link_to entry[:person].name, person_path(entry[:person]), class: "hover:text-ink" %>
               </th>
               <td class="px-2 py-4 text-right tabular-nums text-ink-2"><%= entry[:projects] %></td>
               <td class="px-2 py-4 text-right tabular-nums text-ink-2"><%= entry[:tasks] %></td>

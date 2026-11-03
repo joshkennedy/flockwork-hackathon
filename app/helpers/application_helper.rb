@@ -94,7 +94,7 @@ module ApplicationHelper
   def person_name_link(person, **options)
     content = safe_join([ avatar(person), tag.span(person.name, class: "min-w-0") ])
     if Current.person.admin?
-      link_to content, edit_person_path(person), **options
+      link_to content, person_path(person), **options
     else
       tag.span content, **options
     end

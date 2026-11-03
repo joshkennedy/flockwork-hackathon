@@ -27,7 +27,7 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
 
     follow_redirect!
     assert_select "li", /No Email Pat/
-    assert_select "li", /Can't sign in \(no email\)/
+    assert_select "li", /Can't sign in/
 
     delete session_path
     assert_no_emails do
@@ -163,18 +163,16 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     get people_path
 
     assert_response :success
-    names = css_select("ul li").map do |li|
-      li.at_css("p.font-medium").text.sub(/\s+Admin\z/, "").strip
-    end
+    names = css_select("turbo-frame#people-results li a.font-semibold").map { |link| link.text.strip }
     assert_equal names.sort, names
   end
 
-  test "each directory row links the Person's name to their edit page" do
+  test "each directory row links the Person's name to their person page" do
     sign_in_as_admin
 
     get people_path
 
-    assert_select "a[href=?]", edit_person_path(people(:volunteer)), text: people(:volunteer).name
+    assert_select "a[href=?]", person_path(people(:volunteer)), text: people(:volunteer).name
     assert_select "a", text: "Edit", count: 0
   end
 

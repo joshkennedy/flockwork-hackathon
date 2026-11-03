@@ -7,9 +7,20 @@
     <%= link_to "Add person", new_person_path, class: "btn btn-primary" %>
   <% end %>
 
-  <%= form_with url: people_path, method: :get, class: "mt-7 max-w-xl", data: { controller: "live-search", turbo_frame: "people-results", turbo_action: "replace" } do |form| %>
+  <%# Plain links, so a filter is a URL that can be shared and still works with the live search. %>
+  <nav class="tab-bar mt-7" aria-label="Filter People">
+    <% @filter_tabs.each do |key, label, count| %>
+      <%= link_to people_path(filter: (key unless key == "everyone"), query: params[:query].presence),
+        class: "tab-link", aria: { current: ("page" if key == @filter) } do %>
+        <%= label %> <span class="ml-1 text-ink-2"><%= count %></span>
+      <% end %>
+    <% end %>
+  </nav>
+
+  <%= form_with url: people_path, method: :get, class: "mt-5 max-w-xl", data: { controller: "live-search", turbo_frame: "people-results", turbo_action: "replace" } do |form| %>
     <%= form.label :query, "Search by name", class: "sr-only" %>
     <%= form.search_field :query, value: params[:query], placeholder: "Search by name", autocomplete: "off", class: "w-full field", data: { action: "input->live-search#search" } %>
+    <%= hidden_field_tag :filter, params[:filter], id: nil if params[:filter].present? %>
   <% end %>
 
   <%# target _top so the name links and Clear search leave the frame for the person's page. %>
@@ -17,31 +28,26 @@
     <% if @people.any? %>
       <ul class="mt-5 divide-y divide-hairline border-b border-hairline">
         <% @people.each do |person| %>
-          <li class="relative flex items-center gap-3 py-3">
+          <li class="relative flex items-start gap-3 py-3">
             <%= avatar(person) %>
-            <div class="min-w-0 break-words">
-              <p class="font-medium text-ink">
-                <%= link_to person.name, edit_person_path(person), class: "after:absolute after:inset-0" %>
-                <% if person.admin? %>
-                  <span class="ml-2 text-label font-normal text-ink-2">Admin</span>
-                <% end %>
+            <div class="min-w-0 flex-1">
+              <p class="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                <%= link_to person.name, person_path(person), class: "font-semibold text-ink after:absolute after:inset-0" %>
+                <%= person_chips(person, leader: @leader_ids.include?(person.id), away_until: @away_until[person.id], never_asked: @never_asked_ids.include?(person.id)) %>
               </p>
-              <p class="text-meta text-ink-2">
-                <% if person.email.present? %>
-                  <%= person.email %>
-                <% else %>
-                  Can't sign in (no email)
-                <% end %>
-                <% if person.phone.present? %>
-                  <span class="whitespace-nowrap">· <%= person.phone %></span>
-                <% end %>
-              </p>
+              <p class="mt-0.5 truncate text-meta text-ink-2"><%= serving_line(@serving_names.fetch(person.id, [])) %></p>
+              <p class="mt-0.5 hidden truncate text-meta text-ink-2 sm:block"><%= [ person.email, person.phone ].compact_blank.join(" · ") %></p>
             </div>
+            <% if @last_served[person.id] %>
+              <p class="hidden w-32 shrink-0 text-right text-meta text-ink-2 sm:block">Last served <%= short_date(@last_served[person.id]) %></p>
+            <% end %>
           </li>
         <% end %>
       </ul>
     <% elsif params[:query].present? %>
-      <p class="mt-7 text-ink-2">No people match "<%= params[:query] %>". <%= link_to "Clear search", people_path, class: "font-medium text-ink underline decoration-border-strong underline-offset-4 hover:decoration-ink" %></p>
+      <p class="mt-7 text-ink-2">No people match "<%= params[:query] %>". <%= link_to "Clear search", people_path(filter: params[:filter].presence), class: "font-medium text-ink underline decoration-border-strong underline-offset-4 hover:decoration-ink" %></p>
+    <% elsif @filter != "everyone" %>
+      <p class="mt-7 text-ink-2">Nobody is in this list right now. <%= link_to "Show everyone", people_path, class: "font-medium text-ink underline decoration-border-strong underline-offset-4 hover:decoration-ink" %></p>
     <% else %>
       <p class="mt-7 text-ink-2">No people yet. Add one, or import a CSV to bring in a whole list.</p>
     <% end %>

@@ -26,7 +26,7 @@ class NotesController < ApplicationController
         author: Current.person
       ))
       authorize_note(note)
-      save_note(note, edit_person_path(person))
+      save_note(note, person_path(person))
     end
 
     def find_project_notable(project)

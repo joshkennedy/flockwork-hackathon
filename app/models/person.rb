@@ -38,6 +38,16 @@ class Person < ApplicationRecord
     query.to_s.split.first(5).reduce(all) { |people, word| people.where("people.name ILIKE ?", "%#{sanitize_sql_like(word)}%") }
   }
 
+  # Quick filters on the People directory. Oversight shares never_asked, so both use one rule.
+  scope :serving_now, -> { where(id: Membership.joins(:project).merge(Project.active).select(:person_id)) }
+  scope :leading, -> { where(id: Membership.leader.joins(:project).merge(Project.active).select(:person_id)) }
+  scope :away_on, ->(date = Date.current) { where(id: Unavailability.covering(date).select(:person_id)) }
+  scope :without_email, -> { where(email: [ nil, "" ]) }
+  # Invitations and ownership preserve Team history after Membership deletion; soft-deleted Projects retain Memberships.
+  # Admins already lead the church, so listing them as not yet invited would misstate their involvement.
+  # Recipients are being cared for by a Project, even on deleted Projects and without Team history.
+  scope :never_asked, -> { where(admin: false).where.missing(:invitations, :memberships, :owned_projects, :recipients) }
+
   normalizes :email, with: ->(email) { email.strip.downcase.presence }
 
   validates :name, presence: true

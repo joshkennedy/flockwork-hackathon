@@ -293,6 +293,9 @@
   .page-subtitle { @apply mt-2 text-ink-2; text-wrap: pretty; }
   .page-actions { @apply flex flex-wrap gap-2 sm:shrink-0; }
   .badge-need { @apply inline-flex items-center rounded-badge bg-sunlit-soft px-2 py-1 text-label text-ink; }
+  /* Status chips on People: a 4px badge, never a pill. "Never asked" is an open need, so it takes the sunlit fill. */
+  .status-chip { @apply inline-flex items-center whitespace-nowrap rounded-badge bg-hairline px-1.5 py-0.5 text-label text-ink; }
+  .status-chip-need { @apply bg-sunlit-soft; }
   .field { @apply min-h-input-h-phone min-w-0 rounded-control border border-border bg-panel px-3 py-2 text-body-phone text-ink sm:min-h-input-h sm:py-1.5 sm:text-body; }
   :is(textarea, trix-editor).field { min-height: 112px; }
   .nav-item { @apply flex min-h-control-h items-center gap-3 rounded-nav px-3 py-1.5 text-meta text-ink-2; transition: background-color var(--duration-hover), color var(--duration-hover); }

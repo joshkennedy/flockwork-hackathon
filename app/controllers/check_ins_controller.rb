@@ -11,10 +11,12 @@ class CheckInsController < ApplicationController
       note: attributes[:note].presence
     )
 
+    # The person page logs from its own Check-ins section; Oversight is the default.
+    redirect_path = params[:return_to] == "person" ? person_path(person) : oversight_path
     if check_in.save
-      redirect_to oversight_path, notice: "Logged a check-in with #{person.name}. They leave this list for #{CheckIn::RECENT_DAYS} days."
+      redirect_to redirect_path, notice: "Logged a check-in with #{person.name}. They leave this list for #{CheckIn::RECENT_DAYS} days."
     else
-      redirect_to oversight_path, alert: check_in.errors.full_messages.to_sentence
+      redirect_to redirect_path, alert: check_in.errors.full_messages.to_sentence
     end
   end
 end

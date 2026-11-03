@@ -41,7 +41,7 @@ class OversightAwayTest < ActionDispatch::IntegrationTest
     assert_no_match "Private trip details", response.body
     assert_select "input[name='organization[overextended_limit]']", 0
     assert_select "[data-involvement-person]", 0
-    assert_select "a[href='#{edit_person_path(@volunteer)}']", 0
+    assert_select "a[href='#{person_path(@volunteer)}']", 0
   end
 
   test "the person sees their own note on Profile" do

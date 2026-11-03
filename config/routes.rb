@@ -128,7 +128,7 @@ Rails.application.routes.draw do
   get "directory/planning_center", to: "directory/planning_center#show", as: :planning_center_directory
   patch "directory/planning_center", to: "directory/planning_center#update"
   post "directory/planning_center/sync", to: "directory/planning_center#sync", as: :sync_planning_center_directory
-  resources :people, only: %i[index new create edit update] do
+  resources :people, only: %i[index new create show edit update] do
     resources :notes, only: :create
     resources :check_ins, only: :create
   end

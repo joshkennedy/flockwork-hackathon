@@ -126,14 +126,14 @@ class OversightTest < ActionDispatch::IntegrationTest
     ], rows
   end
 
-  test "Admin sees a Person's Involvement timeline on their edit page" do
+  test "Admin sees a Person's History on their person page" do
     sign_in_as_admin
     involved_person = create_involvement_history
 
-    get edit_person_path(involved_person)
+    get person_path(involved_person)
 
     assert_response :success
-    assert_select "h2", "Involvement"
+    assert_select "h2", "History"
     assert_equal [ [ 2026, 1, 1, 2 ], [ 2025, 1, 2, 3 ] ], involvement_timeline_rows
   end
 

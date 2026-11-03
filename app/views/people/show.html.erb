@@ -1,0 +1,112 @@
+<% content_for :title, @person.name %>
+<% content_for :breadcrumbs do %>
+  <%= link_to "People", people_path, class: "shrink-0 whitespace-nowrap hover:text-ink" %>
+  <span aria-hidden="true" class="shrink-0 text-ink-3">/</span>
+  <span class="min-w-0 truncate text-ink" aria-current="page"><%= @person.name %></span>
+<% end %>
+
+<div class="w-full max-w-3xl">
+  <header class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+    <div class="flex min-w-0 items-start gap-4">
+      <%= avatar(@person, size: :lg) %>
+      <div class="min-w-0">
+        <h1 class="text-ink"><%= @person.name %></h1>
+        <p class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-meta text-ink-2">
+          <% if @person.email.present? %>
+            <%= link_to @person.email, "mailto:#{@person.email}", class: "break-all hover:text-ink" %>
+          <% end %>
+          <% if @person.phone.present? %>
+            <%= link_to @person.phone, "tel:#{@person.phone.gsub(/[^\d+]/, "")}", class: "whitespace-nowrap hover:text-ink" %>
+          <% end %>
+        </p>
+        <div class="mt-3">
+          <%= person_chips(@person, leader: @leads_active_project, away_until: @away_until, never_asked: @never_asked) %>
+        </div>
+      </div>
+    </div>
+    <%= link_to "Edit details", edit_person_path(@person), class: "btn btn-secondary shrink-0 self-start sm:self-auto" %>
+  </header>
+
+  <section class="tool-section mt-7" aria-labelledby="serving-heading">
+    <h2 id="serving-heading" class="text-ink">Serving now</h2>
+    <% if @serving_memberships.any? %>
+      <ul class="mt-3 divide-y divide-hairline">
+        <% @serving_memberships.each do |membership| %>
+          <li class="flex items-center justify-between gap-4 py-3">
+            <%= link_to membership.project.name, project_path(membership.project), class: "font-semibold text-ink" %>
+            <span class="shrink-0 text-meta text-ink-2"><%= membership.role.humanize %></span>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="mt-3 text-ink-2">Not serving on an Active Project right now.</p>
+    <% end %>
+  </section>
+
+  <%= render "shared/involvement_timeline", involvement: @involvement, title: "History", section_class: "tool-section mt-7" %>
+
+  <% if @past_memberships.any? %>
+    <section class="mt-7" aria-labelledby="past-projects-heading">
+      <h3 id="past-projects-heading" class="text-ink">Past Projects</h3>
+      <ul class="mt-3 divide-y divide-hairline">
+        <% @past_memberships.each do |membership| %>
+          <li class="flex items-center justify-between gap-4 py-3">
+            <%= link_to membership.project.name, project_path(membership.project), class: "font-semibold text-ink" %>
+            <span class="shrink-0 text-meta text-ink-2"><%= membership.role.humanize %></span>
+          </li>
+        <% end %>
+      </ul>
+    </section>
+  <% end %>
+
+  <section class="tool-section mt-7" aria-labelledby="check-ins-heading">
+    <h2 id="check-ins-heading" class="text-ink">Check-ins</h2>
+    <% if @last_check_in %>
+      <p class="mt-3 text-ink-2">Checked in <%= short_date(@last_check_in.on) %> by <%= person_pill(@last_check_in.checked_in_by, fallback: "a former Leader") %></p>
+      <% if @last_check_in.note.present? && Policy.can?(Current.person, :view_note, @last_check_in) %>
+        <p class="mt-2 text-meta text-ink-2">Admin note: <%= @last_check_in.note %></p>
+      <% end %>
+    <% else %>
+      <p class="mt-3 text-ink-2">No check-in logged yet.</p>
+    <% end %>
+
+    <% if Policy.can?(Current.person, :log_check_in, @person) %>
+      <%= form_with url: person_check_ins_path(@person), class: "mt-4 flex flex-wrap items-center gap-2" do %>
+        <%= hidden_field_tag :return_to, "person", id: nil %>
+        <%= submit_tag "Log a check-in", class: "btn btn-secondary" %>
+        <details>
+          <summary class="cursor-pointer text-meta text-ink-2 hover:text-ink">Date or note</summary>
+          <div class="mt-2 flex flex-wrap gap-2">
+            <%= date_field_tag "check_in[on]", Date.current, max: Date.current, aria: { label: "Date of check-in" }, class: "field" %>
+            <% if Policy.can?(Current.person, :view_note, CheckIn.new(organization: Current.organization, person: @person)) %>
+              <%= text_field_tag "check_in[note]", nil, maxlength: CheckIn::NOTE_LIMIT, placeholder: "Private note, Admins only", aria: { label: "Note" }, class: "field" %>
+            <% end %>
+          </div>
+        </details>
+      <% end %>
+    <% end %>
+  </section>
+
+  <section class="tool-section mt-7" aria-labelledby="away-heading">
+    <h2 id="away-heading" class="text-ink">Away dates</h2>
+    <p class="mt-2 text-meta text-ink-2">Dates only. A note the person wrote stays with them.</p>
+    <% if @away_dates.any? %>
+      <ul class="mt-3 divide-y divide-hairline">
+        <% @away_dates.each do |away| %>
+          <li class="py-3 text-ink" data-away-range><%= away.away_label %></li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="mt-3 text-ink-2">No away dates coming up.</p>
+    <% end %>
+  </section>
+
+  <section class="tool-section mt-7" aria-labelledby="person-notes-heading">
+    <h2 id="person-notes-heading" class="text-ink">Notes</h2>
+    <%= render "notes/list", notes: @person_notes %>
+    <%= render "notes/form",
+      notable: @person,
+      visibilities: @note_visibilities,
+      form_url: person_notes_path(@person) %>
+  </section>
+</div>
