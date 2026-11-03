@@ -13,5 +13,7 @@
     <div class="min-w-0 flex-1"><%= page_header @person.name, subtitle: "Edit details" %></div>
   </div>
 
-  <%= render "form", person: @person, submit_label: "Save changes" %>
+  <%= turbo_frame_tag "edit-person" do %>
+    <%= render "form", person: @person, submit_label: "Save changes" %>
+  <% end %>
 </div>

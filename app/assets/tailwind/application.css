@@ -223,6 +223,13 @@
   .avatar-stack > .avatar { box-shadow: var(--shadow-avatar), 0 0 0 2px var(--avatar-ring, var(--color-panel)); }
   /* Person pill: the avatar sits flush at the left end with a 2px inset, the name in meta. Soft fill, no border, so it reads as a label, not a button. */
   /* Corner radius is the avatar's squircle radius plus the 2px inset, so the two curves stay concentric. */
+  /* Slideout: a right-edge panel on a native modal <dialog>; full width on phones. */
+  dialog.slideout { @apply m-0 ml-auto h-dvh max-h-none w-full max-w-md bg-transparent p-0; }
+  dialog.slideout::backdrop { background: rgb(20 20 19 / .32); }
+  .slideout-panel { @apply h-full overflow-y-auto border-l border-border bg-panel p-6 shadow-float; }
+  @media (prefers-reduced-motion: no-preference) {
+    dialog.slideout[open] .slideout-panel { animation: slideout-in 220ms var(--ease-enter); }
+  }
   .person-pill { @apply inline-flex h-6 max-w-full min-w-0 items-center gap-1.5 rounded-nav pl-0.5 pr-2.5 align-middle text-meta text-ink; --pill-fill: color-mix(in oklab, var(--color-hairline) 55%, var(--color-panel)); background-color: var(--pill-fill); --avatar-ring: var(--pill-fill); }
   .account-menu > summary { list-style: none; }
   .account-menu > summary::-webkit-details-marker { display: none; }
@@ -426,6 +433,7 @@
 @property --wash-b-y { syntax: "<length-percentage>"; inherits: true; initial-value: -180px; }
 
 @keyframes keep-check { from { transform: scale(.7); } to { transform: scale(1); } }
+@keyframes slideout-in { from { transform: translateX(24px); opacity: 0; } }
 @keyframes popover-in { from { opacity: 0; transform: scale(.97); } }
 @keyframes disclose { from { opacity: 0; translate: 0 -4px; } }
 @keyframes meal-shimmer { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }

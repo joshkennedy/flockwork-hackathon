@@ -37,6 +37,17 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "saving from the Edit details slideout refreshes the person page" do
+    sign_in_as_admin
+
+    patch person_path(people(:volunteer)), params: { person: { name: "Victor Volunteer" } }, headers: { "Turbo-Frame" => "edit-person" }
+
+    assert_response :success
+    assert_equal "text/vnd.turbo-stream.html", response.media_type
+    assert_includes response.body, %(<turbo-stream action="refresh">)
+    assert_equal "Victor Volunteer", people(:volunteer).reload.name
+  end
+
   test "Admin edits another Person's name, email and phone" do
     sign_in_as_admin
 
@@ -44,7 +55,7 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
       person: { name: "Victor Volunteer", email: "victor@st-example.test", phone: "555-0199", admin: "0" }
     }
 
-    assert_redirected_to people_path
+    assert_redirected_to person_path(people(:volunteer))
     people(:volunteer).reload
     assert_equal "Victor Volunteer", people(:volunteer).name
     assert_equal "victor@st-example.test", people(:volunteer).email

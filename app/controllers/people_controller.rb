@@ -54,7 +54,14 @@ class PeopleController < ApplicationController
     @person = Current.organization.people.find(params[:id])
 
     if @person.update(person_params)
-      redirect_to people_path, notice: "Saved #{@person.name}."
+      flash[:notice] = "Saved #{@person.name}."
+      # From the slideout, refresh the person page underneath; errors re-render inside the panel.
+      # request_id: nil, because Turbo ignores a refresh stamped with the request that caused it.
+      if turbo_frame_request?
+        render turbo_stream: turbo_stream.refresh(request_id: nil)
+      else
+        redirect_to person_path(@person)
+      end
     else
       render :edit, status: :unprocessable_entity
     end

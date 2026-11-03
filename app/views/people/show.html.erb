@@ -6,6 +6,9 @@
 <% end %>
 
 <div class="w-full max-w-3xl">
+  <% if flash[:notice].present? %>
+    <p role="status" class="flash-notice mb-5 rounded-control bg-sunlit-soft px-4 py-3 text-ink"><%= flash[:notice] %></p>
+  <% end %>
   <header class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
     <div class="flex min-w-0 items-start gap-4">
       <%= avatar(@person, size: :lg) %>
@@ -24,7 +27,21 @@
         </div>
       </div>
     </div>
-    <%= link_to "Edit details", edit_person_path(@person), class: "btn btn-secondary shrink-0 self-start sm:self-auto" %>
+    <div data-controller="slideout" class="shrink-0 self-start sm:self-auto">
+      <%= link_to "Edit details", edit_person_path(@person), class: "btn btn-secondary", data: { action: "slideout#open" } %>
+      <dialog class="slideout" aria-labelledby="edit-person-heading" data-slideout-target="dialog" data-action="click->slideout#backdrop">
+        <div class="slideout-panel">
+          <div class="flex items-center justify-between gap-4">
+            <h2 id="edit-person-heading" class="text-ink">Edit details</h2>
+            <button type="button" class="btn btn-icon" aria-label="Close" data-action="slideout#close"><%= icon(:close) %></button>
+          </div>
+          <%# Lazy: the form loads the first time the panel opens. %>
+          <%= turbo_frame_tag "edit-person", src: edit_person_path(@person), loading: :lazy do %>
+            <p class="mt-6 text-meta text-ink-2">Loading…</p>
+          <% end %>
+        </div>
+      </dialog>
+    </div>
   </header>
 
   <section class="tool-section mt-7" aria-labelledby="serving-heading">
