@@ -42,7 +42,8 @@ class AwayDateParser
     message = RubyLLM.context { |config| config.request_timeout = 20 }
       .chat(model: model, provider: :openrouter, assume_model_exists: true)
       .with_instructions(format(PROMPT, today: @today.iso8601))
-      .with_max_output_tokens(400)
+      # The model reasons before it answers, and a small cap leaves no room for the JSON; the Planner uses 4,000 for the same reason.
+      .with_max_output_tokens(4_000)
       .ask(@text.to_s.squish.first(500))
     self.class.from_reply(message.content)
   rescue Unavailable

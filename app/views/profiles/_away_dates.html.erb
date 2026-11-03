@@ -6,7 +6,8 @@
     <p role="alert" class="mt-4 rounded-control bg-danger-soft px-4 py-3 text-meta text-danger"><%= @away_alert %></p>
   <% end %>
 
-  <%= form_with url: suggest_away_profile_path, method: :post, class: "mt-5 space-y-2" do %>
+  <%# Turbo ignores a 200 reply to a form post, so the suggestion needs a full page load to show. %>
+  <%= form_with url: suggest_away_profile_path, method: :post, class: "mt-5 space-y-2", data: { turbo: false } do %>
     <%= label_tag :away_text, "In your own words", class: "block text-label font-medium text-ink-2" %>
     <%= text_area_tag :away_text, nil, rows: 2, maxlength: 500, placeholder: "Out most of July, back the first Sunday of August", class: "block w-full field" %>
     <%= submit_tag "Suggest dates", class: "btn btn-secondary", data: { disable_with: "Reading…" } %>

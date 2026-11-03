@@ -13,6 +13,7 @@ class OversightSummary
     You write one plain sentence for a church Oversight card that summarizes how many Active Projects one volunteer serves on and when they last checked in.
     Use only the facts in the JSON. You may quote only the numbers and dates in the facts. Do not add other numbers.
     Do not describe feelings, wellbeing, faith or spiritual state, and do not judge or advise. Do not name anyone.
+    Follow this style: "Serving on <count> Active Projects since <Month>, <last check-in phrase>." Write dates as month and day, never as 2026-09-20.
     Reply with only one JSON object and no prose: {"sentence": "..."}
   PROMPT
 
@@ -65,7 +66,7 @@ class OversightSummary
       sentence = json.fetch("sentence").to_s.squish
       raise Rejected, "Empty or too long" if sentence.blank? || sentence.length > MAX_LENGTH
       raise Rejected, "Contains an address" if sentence.include?("@")
-      raise Rejected, "Quotes a number that was not passed in" unless sentence.scan(/\d+/).all? { |number| allowed_numbers(facts).include?(number) }
+      raise Rejected, "Quotes a number that was not passed in" unless sentence.scan(/\d+/).all? { |number| allowed_numbers(facts).include?(number.to_i) }
       raise Rejected, "Judges the person" if sentence.match?(JUDGMENT_WORDS)
 
       sentence
@@ -80,7 +81,7 @@ class OversightSummary
       message = RubyLLM.context { |config| config.request_timeout = 20 }
         .chat(model: model, provider: :openrouter, assume_model_exists: true)
         .with_instructions(INSTRUCTIONS)
-        .with_max_output_tokens(120)
+        .with_max_output_tokens(4_000)
         .ask(payload(facts))
       from_reply(message.content, facts)
     rescue StandardError => error
@@ -95,7 +96,7 @@ class OversightSummary
 
       def allowed_numbers(facts)
         dates = [ parse_date(facts["serving_since"]), parse_date(facts["last_check_in_on"]) ].compact
-        ([ facts["serving_load"] ] + dates.flat_map { |date| [ date.day, date.year ] }).map(&:to_s)
+        ([ facts["serving_load"].to_i ] + dates.flat_map { |date| [ date.day, date.month, date.year ] })
       end
 
       def parse_date(value)

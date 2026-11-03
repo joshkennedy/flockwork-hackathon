@@ -41,9 +41,16 @@ class OversightSummaryTest < ActiveSupport::TestCase
     assert_equal "Serving on 4 Active Projects since September, no check-in logged.", OversightSummary.from_reply(reply, @facts)
   end
 
+  test "a date may be written in any form, since its parts were passed in" do
+    facts = @facts.merge("last_check_in_on" => "2026-09-20")
+    reply = %({"sentence": "Serving on 4 Active Projects, last checked in on 2026-09-20."})
+
+    assert_equal "Serving on 4 Active Projects, last checked in on 2026-09-20.", OversightSummary.from_reply(reply, facts)
+  end
+
   test "a reply with a number that was not passed in, a judgment, an address or no JSON is rejected" do
     [
-      %({"sentence": "Serving on 9 Active Projects."}),
+      %({"sentence": "Serving on 12 Active Projects."}),
       %({"sentence": "Serving on 4 Active Projects and seems tired."}),
       %({"sentence": "Serving on 4 Active Projects, reach out to them at volunteer@example.com."}),
       %({"sentence": "#{"x" * 300}"}),
