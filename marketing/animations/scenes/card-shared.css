@@ -1,0 +1,6 @@
+/* Shared by the bento card scenes: a transparent stage on a colored plate (Plate in flockwork.tsx),
+   the product panel hung from the top-left gutter and running off the right and bottom edges. */
+.fw-cards .fc-panel { position: absolute; left: 32px; top: 32px; background: var(--color-panel); border-radius: var(--radius-panel); box-shadow: 0 0 0 1px rgba(20,20,19,.08), 0 24px 48px -16px rgba(60,30,10,.35); }
+.fw-cards .fc-meta { font-size: 13px; line-height: 18px; color: var(--color-ink-2); }
+.fw-cards .fc-name { font-weight: 600; }
+.fw-cards .fc-ease { transition: opacity 320ms cubic-bezier(0.25, 0.8, 0.25, 1), transform 420ms cubic-bezier(0.25, 0.8, 0.25, 1); }

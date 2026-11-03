@@ -1,0 +1,8 @@
+.fw-tour-schedule .ftc-day { padding-bottom: 10px; }
+.fw-tour-schedule .ftc-date { padding: 10px 0 4px; font-weight: 600; }
+.fw-tour-schedule .ftc-item { padding: 8px 0; }
+.fw-tour-schedule .ftc-title { font-size: 15px; line-height: 20px; font-weight: 600; }
+/* The one tonal emphasis DESIGN.md allows: a short sunlit wash on what just changed */
+.fw-tour-schedule .ftc-new { margin: 0 -10px; padding: 0 10px; border-radius: var(--radius-tile); background: transparent; transition: background-color 1200ms ease 900ms; }
+.fw-tour-schedule .ftc-new[data-on] { background: var(--color-sunlit-soft); animation: ftc-glow 2600ms ease forwards; }
+@keyframes ftc-glow { 0%, 35% { background: var(--color-sunlit-soft); } 100% { background: transparent; } }

@@ -64,10 +64,18 @@
         <%= render "layouts/tab_bar" %>
       </div>
     <% else %>
-      <div class="mx-auto max-w-xl px-4 py-7 sm:py-10">
-        <%= render "layouts/wordmark", path: root_path, class: "mb-10" %>
-        <main id="main-content"><%= yield %></main>
-      </div>
+      <header class="public-header">
+        <%= render "layouts/wordmark", path: root_path %>
+        <nav aria-label="Main navigation">
+          <%= link_to "Explore the demo", new_demo_session_path %>
+          <%= link_to "Sign in", new_sign_in_request_path %>
+        </nav>
+      </header>
+      <main id="main-content" class="<%= controller_name == 'landing' ? 'marketing' : 'auth-page' %>">
+        <% if flash[:alert] %><p class="auth-error" role="alert"><%= flash[:alert] %></p><% end %>
+        <%= yield %>
+      </main>
+      <footer class="public-footer"><span>A shared space for the work of church.</span><%= link_to "Flockwork", root_path %></footer>
     <% end %>
   </body>
 </html>

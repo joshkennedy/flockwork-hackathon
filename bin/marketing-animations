@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Re-records the landing page animations from marketing/animations/scenes.
+#   bin/marketing-animations          every scene
+#   bin/marketing-animations hero     only the named scenes
+# Needs Google Chrome and libwebp (brew install webp) for img2webp and cwebp.
+set -euo pipefail
+cd "$(dirname "$0")/../marketing/animations"
+command -v img2webp >/dev/null || { echo "img2webp is missing: brew install webp" >&2; exit 1; }
+npm install --silent --no-audit --no-fund
+node scripts/make.mjs "$@"

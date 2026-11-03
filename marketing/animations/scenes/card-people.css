@@ -1,0 +1,11 @@
+.fw-card-people .cp-panel { width: 680px; height: 300px; padding: 8px 24px 0; }
+.fw-card-people .cp-tabs { position: relative; gap: 20px; }
+.fw-card-people .cp-tab { gap: 6px; font-size: 13px; border-bottom-color: transparent; transition: color 150ms; }
+.fw-card-people .cp-tab[data-on] { color: var(--color-ink); }
+.fw-card-people .cp-count { color: var(--color-ink-2); font-weight: 450; }
+.fw-card-people .cp-underline { position: absolute; bottom: 0; height: 2px; background: var(--color-ink); transition: left 420ms cubic-bezier(0.45, 0, 0.1, 1), width 420ms cubic-bezier(0.45, 0, 0.1, 1); }
+.fw-card-people .cp-lists { display: grid; margin-top: 4px; }
+.fw-card-people .cp-list { grid-area: 1 / 1; }
+.fw-card-people .cp-row { display: flex; align-items: center; gap: 12px; height: 60px; border-bottom: 1px solid var(--color-hairline); }
+.fw-card-people .cp-row .status-chip { margin-left: 6px; vertical-align: 1px; }
+.fw-card-people .cp-list:not([data-shown]) .cp-row { opacity: 0; transform: translateY(4px); }

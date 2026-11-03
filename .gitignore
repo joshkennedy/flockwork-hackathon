@@ -49,3 +49,7 @@
 # Lavish review artifacts
 /.lavish/
 .design-audit/
+
+# Scene tooling for the landing page animations (bin/marketing-animations)
+/marketing/animations/node_modules
+/marketing/animations/tmp

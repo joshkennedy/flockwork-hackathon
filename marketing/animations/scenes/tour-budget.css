@@ -1,0 +1,11 @@
+.fw-tour-budget .ftb-totals { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 6px 0 14px; }
+.fw-tour-budget .ftb-total { margin-top: 2px; font-size: 17px; line-height: 24px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.fw-tour-budget .ftb-group { display: flex; justify-content: space-between; align-items: baseline; padding: 16px 0 6px; border-bottom: 1px solid var(--color-hairline); font-weight: 600; }
+.fw-tour-budget .ftb-line { padding: 10px 0; border-bottom: 1px solid var(--color-hairline); }
+.fw-tour-budget .ftb-title { font-size: 15px; line-height: 20px; font-weight: 600; }
+.fw-tour-budget .ftb-line .ft-meta { margin-top: 4px; }
+.fw-tour-budget .ftb-paid { color: var(--color-ink); font-weight: 600; }
+.fw-tour-budget .ftb-focus { margin: 0 -10px; padding: 0 10px; border-radius: var(--radius-tile); }
+.fw-tour-budget .ftb-focus .ftb-line { border-bottom-color: transparent; }
+.fw-tour-budget .ftb-focus[data-on] { animation: ftb-glow 2600ms ease forwards; }
+@keyframes ftb-glow { 0%, 35% { background: var(--color-sunlit-soft); } 100% { background: transparent; } }

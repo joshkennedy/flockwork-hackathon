@@ -1,28 +1,81 @@
-<% content_for :title, "Flockwork" %>
+<% content_for :title, "Flockwork · Ministry, together" %>
+<% content_for :head do %>
+  <meta name="description" content="A shared space where church teams plan and run ministry together. Organize projects, volunteer sign-ups and your people in Flockwork.">
+<% end %>
+<% tour = [
+  [ "signup_sheet", "Sign-ups", "tour-signup", "Each spot shows who's in and how many are still needed.", "The Vacation Bible School sign-up sheet: Ana Torres takes a check-in helper spot on Tuesday, December 29, and its spots left go from 3 to 2" ],
+  [ "tasks", "Tasks", "tour-tasks", "Tasks have an owner and a due date. Nobody wonders whose job it was.", "Vacation Bible School tasks: an unassigned task gets someone on it, then another is checked off and moves to Done" ],
+  [ "schedule", "Schedule", "tour-schedule", "The week's plan by day, with times and rooms.", "The Vacation Bible School schedule by day, where a snack break at 10:15 AM in Fellowship Hall slots into Monday in time order" ],
+  [ "budget", "Budget", "tour-budget", "Estimates and actual spending, side by side.", "The Vacation Bible School budget: the actual cost of craft supplies is entered and the actual total updates beside the estimate" ]
+] %>
 
-<div class="w-full max-w-xl mx-auto">
-  <h1 class="text-ink">Flockwork</h1>
-  <p class="mt-2 text-ink-2">A shared space where church teams plan and run ministry together.</p>
-  <p class="mt-4 text-meta text-ink-2"><%= link_to "Sign in", new_sign_in_request_path, class: "font-medium text-ink hover:text-ink-hover" %> or <%= link_to "explore the demo", new_demo_session_path, class: "font-medium text-ink hover:text-ink-hover" %></p>
-
-  <h2 class="mt-7 text-ink">Create an Organization</h2>
-
-  <%= form_with url: organizations_path, class: "mt-4 space-y-4" do |f| %>
-    <div>
-      <%= f.label :church_name, "Church name", class: "block text-label font-medium text-ink-2" %>
-      <%= f.text_field :church_name, required: true, class: "mt-1 block w-full field" %>
+<section class="lp-hero" aria-labelledby="landing-title">
+  <div class="header-wash" aria-hidden="true" data-controller="wash">
+    <svg><filter id="wash-grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .08 0 0 0 0 .08 0 0 0 0 .07 0 0 0 .1 0"/></filter><rect width="100%" height="100%" filter="url(#wash-grain)"/></svg>
+  </div>
+  <div class="lp-hero-copy">
+    <h1 id="landing-title">Ministry,<br>together.</h1>
+    <p>Meal trains, workdays, VBS and next Sunday. Flockwork gives your church one place to plan the work and fill the spots.</p>
+    <div class="lp-actions">
+      <%= link_to "Create your church", sign_up_path, class: "btn btn-primary" %>
+      <%= link_to "Explore the demo", new_demo_session_path, class: "btn btn-secondary" %>
     </div>
+  </div>
+  <%= render "landing/scene", name: "hero", width: 1110, height: 640, class: "lp-hero-scene", loading: "eager", fetchpriority: "high",
+        alt: "Daniel’s Home lists Grace Fellowship’s active projects: a meal train, Vacation Bible School, a church workday and a women’s retreat. On her phone, Ruth signs up to bring dinner for the meal train, and its row on Home goes from 15 to 14 dinners still needing someone" %>
+</section>
 
-    <div>
-      <%= f.label :your_name, "Your name", class: "block text-label font-medium text-ink-2" %>
-      <%= f.text_field :your_name, required: true, autocomplete: "name", class: "mt-1 block w-full field" %>
-    </div>
-
-    <div>
-      <%= f.label :email, "Your email", class: "block text-label font-medium text-ink-2" %>
-      <%= f.email_field :email, required: true, autocomplete: "email", class: "mt-1 block w-full field" %>
-    </div>
-
-    <%= f.submit "Create an Organization", class: "w-full btn btn-primary" %>
+<section class="lp-section lp-tour" aria-labelledby="tour-title" data-controller="product-tour">
+  <div class="lp-intro">
+    <h2 id="tour-title">One project holds the whole thing.</h2>
+    <p>The sign-ups, tasks, schedule and budget sit together in the project they belong to. Messages, notes and lists go there too.</p>
+  </div>
+  <div class="tab-bar lp-tabs" role="group" aria-label="Show a project tool">
+    <% tour.each do |tool, label, *| %>
+      <button type="button" class="tab-link" data-product-tour-target="button" data-action="product-tour#select" data-screen="<%= tool %>" aria-pressed="false"><%= planner_tool_icon(tool) %><%= label %></button>
+    <% end %>
+  </div>
+  <% tour.each do |tool, _label, image, caption, alt| %>
+    <figure class="lp-tour-screen" data-product-tour-target="screen" data-screen="<%= tool %>">
+      <%= render "landing/scene", name: image, width: 1100, height: 560, class: "lp-scene", alt: %>
+      <figcaption><%= caption %></figcaption>
+    </figure>
   <% end %>
-</div>
+</section>
+
+<section class="lp-section" aria-labelledby="people-title">
+  <div class="lp-intro">
+    <h2 id="people-title">Made for the people who show up.</h2>
+    <p>Flockwork keeps track of the work, so leaders have more time for the people doing it.</p>
+  </div>
+  <div class="lp-bento">
+    <article class="lp-card lp-card-tall">
+      <div class="lp-card-copy"><h3>Anyone can pick a spot</h3><p>Send one link. People see what's still open and choose the day that works for them.</p></div>
+      <%= render "landing/scene", name: "card-signup", width: 456, height: 720, class: "lp-scene", alt: "The public sign-up page for the Alvarez family meal train on a phone, where someone picks a dinner that had one spot left" %>
+    </article>
+    <article class="lp-card">
+      <div class="lp-card-copy"><h3>Know your people</h3><p>See who's serving, who's away and who hasn't been asked yet. Bring them in from Planning Center or a CSV.</p></div>
+      <%= render "landing/scene", name: "card-people", width: 640, height: 280, class: "lp-scene", alt: "The People directory switching from Everyone to Not yet asked, which lists the people no one has invited yet" %>
+    </article>
+    <article class="lp-card">
+      <div class="lp-card-copy"><h3>Notice who's carrying too much</h3><p>See who's serving on too many projects and who could use a check-in. Plain counts, never scores.</p></div>
+      <%= render "landing/scene", name: "card-oversight", width: 640, height: 280, class: "lp-scene", alt: "Maria Lopez serves on four active projects with no check-in logged. A check-in is logged, and the card reads Checked in today by Daniel Okafor" %>
+    </article>
+  </div>
+</section>
+
+<section class="lp-section lp-steps" aria-labelledby="steps-title">
+  <h2 id="steps-title">From a first idea to the day itself.</h2>
+  <ol>
+    <li><h3>Start a project</h3><p>Name it and add what it needs. Or tell the AI planner what you're organizing and keep only the suggestions you want. It never sees your people.</p></li>
+    <li><h3>Bring your team</h3><p>Invite leaders and helpers. Everyone works from the same plan, not a dozen text threads.</p></li>
+    <li><h3>Share the sign-ups</h3><p>Send the public link. Spots fill up, and you can see what's still uncovered.</p></li>
+  </ol>
+</section>
+
+<section class="lp-close" aria-labelledby="close-title">
+  <h2 id="close-title">Let's bring it together.</h2>
+  <p>Start with one project, then invite the people who make it happen.</p>
+  <%= link_to "Create your church", sign_up_path, class: "btn btn-primary" %>
+  <p class="lp-returning">Already part of a church here? <%= link_to "Sign in", new_sign_in_request_path %></p>
+</section>

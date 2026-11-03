@@ -1,0 +1,69 @@
+/* Flockwork's look for the stageshow kit. Colors come from the app's own Tailwind theme
+   (loaded before this file), so a token change in the app shows up on the next remake. */
+@font-face { font-family: "Mattone"; src: url("./fonts/Mattone-Regular.woff2") format("woff2"); font-weight: 400; }
+@font-face { font-family: "Mattone"; src: url("./fonts/Mattone-Bold.woff2") format("woff2"); font-weight: 700; }
+@font-face { font-family: "Mona Sans"; src: url("./fonts/MonaSans.woff2") format("woff2"); font-weight: 200 900; font-stretch: 75% 125%; }
+
+body { margin: 0; background: var(--color-page); }
+.scene { padding: 24px; }
+
+.fw .ss-stage {
+  --ss-canvas: var(--color-frame);
+  --ss-surface: var(--color-panel);
+  --ss-chrome: var(--color-panel);
+  --ss-well: var(--color-frame);
+  --ss-raised: var(--color-panel);
+  --ss-line: var(--color-border);
+  --ss-line-faint: var(--color-hairline);
+  --ss-text-strong: var(--color-ink);
+  --ss-text: var(--color-ink-2);
+  --ss-text-faint: var(--color-ink-3);
+  --ss-icon: var(--color-ink-2);
+  --ss-icon-faint: var(--color-ink-3);
+  --ss-accent: var(--color-ink);
+  --ss-accent-soft: var(--color-hairline);
+  --ss-success: var(--color-success);
+  --ss-warning: var(--color-sunlit);
+  --ss-warning-soft: var(--color-sunlit-soft);
+  --ss-font: "Mona Sans", system-ui, sans-serif;
+  --ss-radius-sm: var(--radius-control);
+  --ss-radius-md: var(--radius-control);
+  --ss-radius-lg: var(--radius-panel);
+  --ss-radius-window: var(--radius-panel);
+  --ss-control: 36px;
+  --ss-row: 32px;
+  font-family: var(--ss-font);
+  font-weight: 450;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--color-ink);
+}
+.fw .fw-display { font-family: "Mattone", sans-serif; font-weight: 400; letter-spacing: -.01em; }
+.fw .fw-icon { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Shared app pieces (scenes/flockwork.tsx) */
+.fw .fw-wordmark { display: inline-flex; align-items: center; gap: 8px; font-family: "Mattone", sans-serif; font-weight: 700; font-size: 17px; line-height: 24px; letter-spacing: -.01em; color: var(--color-ink); }
+.fw .fw-wordmark svg { height: 14px; width: auto; }
+.fw .fw-sidebar { display: flex; flex-direction: column; gap: 18px; padding: 6px 12px 12px; }
+.fw .fw-sidebar nav { display: flex; flex-direction: column; gap: 2px; }
+.fw .fw-church { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
+.fw .fw-crumbs { height: 44px; display: flex; align-items: center; gap: 6px; padding: 0 24px; border-bottom: 1px solid var(--color-hairline); font-size: 12px; color: var(--color-ink-2); }
+.fw .fw-crumbs span { color: var(--color-ink-3); }
+
+/* Plate: the stage's colored ground. Put <Plate /> first in a Stage and give the stage
+   .fw-plated so its corners round and the plate clips. Three soft color fields, a halftone
+   dot screen and grain, after conduit.ai's product plates. */
+.fw.fw-plated .ss-stage { overflow: hidden; border-radius: 16px; background: transparent; isolation: isolate; }
+.fw .fw-plate { position: absolute; inset: 0; z-index: -1; overflow: hidden; border-radius: 16px; background: var(--plate-base); }
+.fw .fw-plate::before, .fw .fw-plate::after, .fw .fw-plate__c { content: ""; position: absolute; border-radius: 50%; filter: blur(70px); }
+.fw .fw-plate::before { width: 70%; height: 95%; left: -14%; top: -28%; background: var(--plate-a); }
+.fw .fw-plate::after { width: 75%; height: 90%; right: -18%; bottom: -38%; background: var(--plate-b); }
+.fw .fw-plate__c { width: 55%; height: 75%; right: -6%; top: -30%; background: var(--plate-c); opacity: .9; }
+.fw .fw-plate__dots { position: absolute; inset: 0; z-index: 2; background-image: radial-gradient(rgba(255,255,255,.7) 1px, transparent 1.6px); background-size: 6px 6px; mix-blend-mode: overlay; opacity: .55; }
+.fw .fw-plate__grain { position: absolute; inset: 0; z-index: 3; width: 100%; height: 100%; mix-blend-mode: multiply; }
+/* Palettes from the app's own sunlit, tool and avatar colors, pushed brighter for marketing */
+.fw .fw-plate--sunrise { --plate-base: #F2B77C; --plate-a: #FFE9A8; --plate-b: #E4683F; --plate-c: #9CCDEB; }
+.fw .fw-plate--meadow { --plate-base: #A9D2A4; --plate-a: #EEF3B8; --plate-b: #3F9E87; --plate-c: #F5C66B; }
+.fw .fw-plate--lake { --plate-base: #94C7E3; --plate-a: #E3F3F7; --plate-b: #4F86D1; --plate-c: #9FDCC8; }
+.fw .fw-plate--clay { --plate-base: #E5A98F; --plate-a: #FBE2C9; --plate-b: #B8553B; --plate-c: #F4C46A; }
+.fw .fw-plate--dusk { --plate-base: #BDB6DF; --plate-a: #F5D9C6; --plate-b: #7385C4; --plate-c: #E9A6B8; }

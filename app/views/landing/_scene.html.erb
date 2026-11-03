@@ -1,0 +1,5 @@
+<%# An animated webp recorded from marketing/animations (bin/marketing-animations), with its still for reduced motion. %>
+<picture class="<%= local_assigns[:class] %>">
+  <source media="(prefers-reduced-motion: reduce)" srcset="<%= asset_path("marketing/#{name}-still.webp") %>">
+  <%= image_tag "marketing/#{name}.webp", width:, height:, alt:, loading: local_assigns.fetch(:loading, "lazy"), fetchpriority: local_assigns[:fetchpriority] %>
+</picture>

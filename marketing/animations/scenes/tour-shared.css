@@ -1,0 +1,22 @@
+.fw .ft-window { will-change: transform; position: absolute; left: 48px; top: 48px; right: 48px; height: 640px; box-shadow: 0 0 0 1px rgba(20,20,19,.08), 0 24px 48px -16px rgba(60,30,10,.35); }
+.fw .ft-window .ss-window__main > .ss-window__bar { display: none; }
+.fw .ft-body { padding: 24px 28px; }
+.fw .ft-title { font-size: 28px; line-height: 34px; }
+.fw .ft-lede { margin-top: 6px; color: var(--color-ink-2); }
+.fw .ft-tabs { margin-top: 18px; }
+.fw .ft-tabs .tab-link { gap: 6px; font-size: 13px; }
+.fw .ft-columns { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; padding-top: 8px; }
+.fw .ft-aside { display: flex; flex-direction: column; gap: 12px; padding-top: 8px; }
+.fw .ft-card { display: flex; align-items: center; gap: 8px; padding: 14px 16px; border: 1px solid var(--color-border); border-radius: var(--radius-panel); font-weight: 600; }
+.fw .ft-caret { width: 0; height: 0; border-left: 6px solid var(--color-ink-2); border-top: 4px solid transparent; border-bottom: 4px solid transparent; }
+.fw .ft-team { flex-direction: column; align-items: flex-start; gap: 10px; }
+.fw .ft-head { display: flex; align-items: center; justify-content: space-between; height: 48px; }
+.fw .ft-head-title { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; }
+.fw .ft-meta { font-size: 13px; line-height: 18px; color: var(--color-ink-2); }
+/* Two states in one grid cell, so a crossfade never re-lays out the row */
+.fw .ft-swap { display: inline-grid; align-items: center; }
+.fw .ft-swap > * { grid-area: 1 / 1; transition: opacity 260ms cubic-bezier(0.25, 0.8, 0.25, 1), transform 360ms cubic-bezier(0.25, 0.8, 0.25, 1); }
+.fw .ft-swap > :last-child { opacity: 0; transform: translateY(4px); }
+.fw .ft-swap[data-on] > :first-child { opacity: 0; transform: translateY(-4px); }
+.fw .ft-swap[data-on] > :last-child { opacity: 1; transform: none; transition-delay: 100ms; }
+.fw .ft-columns[data-aside] { grid-template-columns: minmax(0, 1fr) 220px; }
