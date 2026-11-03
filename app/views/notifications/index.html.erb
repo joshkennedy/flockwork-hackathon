@@ -2,28 +2,69 @@
 
 <div class="w-full max-w-2xl">
   <%= page_header "Notifications" do %>
-    <% if @notifications.any?(&:unread?) %>
+    <% if @any_unread %>
       <%= button_to "Mark all read", mark_all_read_notifications_path, method: :patch, class: "btn btn-text" %>
     <% end %>
   <% end %>
 
-  <% if @notifications.any? %>
-    <ol class="mt-7 space-y-3">
-      <% @notifications.each do |notification| %>
-        <li data-notification-id="<%= notification.id %>" class="border-b border-hairline py-4 <%="font-semibold" if notification.unread? %>">
-          <div class="flex flex-wrap items-start justify-between gap-5">
-            <div class="min-w-0">
-              <%= link_to notification.message, project_path(notification.project), class: "text-ink hover:text-ink-hover" %>
-              <p class="mt-1 text-label font-normal text-ink-2"><%= time_ago_in_words(notification.created_at) %> ago</p>
+  <section class="mt-7" aria-labelledby="needs-you-heading">
+    <h2 id="needs-you-heading" class="text-ink">Needs you</h2>
+    <% if @needs_you.any? %>
+      <ol class="mt-5 divide-y divide-hairline border-y border-hairline">
+        <% @needs_you.each do |notification| %>
+          <li data-notification-id="<%= notification.id %>" class="py-4 <%= "font-semibold" if notification.unread? %>">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+              <div class="min-w-0">
+                <%= link_to notification.message, project_path(notification.project), class: "text-ink hover:text-ink-hover" %>
+                <p class="mt-1 text-label font-normal text-ink-2"><%= time_ago_in_words(notification.created_at) %> ago</p>
+              </div>
+              <div class="flex shrink-0 flex-wrap items-center gap-2">
+                <% case notification.kind %>
+                <% when "invitation" %>
+                  <%= link_to "Respond", invitation_path(notification.notifiable.generate_token_for(:access)), class: "btn btn-secondary" %>
+                <% when "task_assigned" %>
+                  <%= button_to "Mark done", mark_done_project_task_path(notification.project, notification.notifiable), class: "btn btn-secondary" %>
+                <% else %>
+                  <%= link_to "Open", project_path(notification.project), class: "btn btn-secondary" %>
+                <% end %>
+                <% if notification.unread? %>
+                  <%= button_to "Mark read", mark_read_notification_path(notification), method: :patch, class: "btn btn-text" %>
+                <% end %>
+              </div>
             </div>
-            <% if notification.unread? %>
-              <%= button_to "Mark read", mark_read_notification_path(notification), method: :patch, class: "shrink-0 btn btn-text" %>
+          </li>
+        <% end %>
+      </ol>
+    <% else %>
+      <p class="mt-3 text-ink-2">You’re all caught up. Mentions, tasks you’re assigned, Invitations and Slots you’ve claimed wait here until they’re done.</p>
+    <% end %>
+  </section>
+
+  <section class="mt-10" aria-labelledby="for-information-heading">
+    <h2 id="for-information-heading" class="text-ink">For your information</h2>
+    <% if @for_information.any? %>
+      <% @for_information.each do |project, notifications| %>
+        <div class="mt-5">
+          <h3 class="text-label text-ink-2"><%= link_to project.name, project_path(project), class: "hover:text-ink" %></h3>
+          <ol class="mt-2 divide-y divide-hairline border-y border-hairline">
+            <% notifications.each do |notification| %>
+              <li data-notification-id="<%= notification.id %>" class="py-3 <%= "font-semibold" if notification.unread? %>">
+                <div class="flex flex-wrap items-start justify-between gap-4">
+                  <div class="min-w-0">
+                    <%= link_to notification.message, project_path(project), class: "text-ink hover:text-ink-hover" %>
+                    <p class="mt-1 text-label font-normal text-ink-2"><%= time_ago_in_words(notification.created_at) %> ago</p>
+                  </div>
+                  <% if notification.unread? %>
+                    <%= button_to "Mark read", mark_read_notification_path(notification), method: :patch, class: "shrink-0 btn btn-text" %>
+                  <% end %>
+                </div>
+              </li>
             <% end %>
-          </div>
-        </li>
+          </ol>
+        </div>
       <% end %>
-    </ol>
-  <% else %>
-    <p class="mt-7 text-ink-2">You have no notifications yet.</p>
-  <% end %>
+    <% else %>
+      <p class="mt-3 text-ink-2">Nothing else to report. Replies on things you follow and changes to your Teams will show up here.</p>
+    <% end %>
+  </section>
 </div>

@@ -2,9 +2,13 @@ class NotificationsController < ApplicationController
   before_action :authorize_notifications
 
   def index
-    @notifications = Policy.visible_notifications(Current.person)
+    visible = Policy.visible_notifications(Current.person)
+    @needs_you = visible.needs_you.includes(:actor, :notifiable).order(created_at: :desc, id: :desc)
+    @for_information = visible.where.not(id: visible.needs_you.select(:id))
       .includes(:actor, :notifiable)
       .order(created_at: :desc, id: :desc)
+      .group_by(&:project)
+    @any_unread = visible.unread.exists?
   end
 
   def mark_read

@@ -10,6 +10,6 @@ class ApplicationController < ActionController::Base
 
   private
     def unread_notification_count
-      @unread_notification_count ||= Policy.visible_notifications(Current.person).unread.count
+      @unread_notification_count ||= Policy.visible_notifications(Current.person).unread.needs_you.count
     end
 end

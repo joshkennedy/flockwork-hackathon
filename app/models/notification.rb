@@ -16,6 +16,16 @@ class Notification < ApplicationRecord
 
   scope :unread, -> { where(read_at: nil) }
 
+  # "Needs you": still asks something of the reader. A mention clears when read;
+  # the others clear when the task, Invitation or Slot is done or has passed.
+  scope :needs_you, -> {
+    where(kind: "mention", read_at: nil)
+      .or(where(kind: "invitation", notifiable_type: "Invitation", notifiable_id: Invitation.pending.select(:id)))
+      .or(where(kind: "task_assigned", notifiable_type: "Task", notifiable_id: Task.open.select(:id)))
+      .or(where(kind: "slot_reminder", notifiable_type: "Slot", notifiable_id: Slot.where(date: Date.current..).select(:id))
+        .where("EXISTS (SELECT 1 FROM slot_claims WHERE slot_claims.slot_id = notifications.notifiable_id AND slot_claims.person_id = notifications.recipient_id)"))
+  }
+
   def unread?
     read_at.nil?
   end

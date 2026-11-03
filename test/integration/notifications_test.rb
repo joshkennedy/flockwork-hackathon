@@ -342,44 +342,84 @@ class NotificationsTest < ActionDispatch::IntegrationTest
     assert_not leader.notifications.exists?(kind: "team_departure", notifiable: project)
   end
 
-  test "a Person sees newest notifications first and marks one or all read" do
+  test "Notifications splits Needs you from the rest, grouped by Project, and the bell counts only Needs you" do
     person = sign_in_as_volunteer
     project = projects(:community_meal)
-    older = Notifier.notify(
-      recipient: person,
-      kind: "slot_reminder",
-      notifiable: project.slots.create!(date: "2027-02-11", label: "Bring dessert"),
-      email: false
-    )
-    newer = Notifier.notify(
+    welcome_team = project.organization.projects.create!(name: "Welcome Team", owner: people(:leader))
+    assigned = Notifier.notify(
       recipient: person,
       kind: "task_assigned",
       notifiable: project.tasks.create!(title: "Set out chairs", assignee: person),
       actor: people(:leader),
       email: false
     )
-    older.update_columns(created_at: 2.hours.ago, updated_at: 2.hours.ago)
-    newer.update_columns(created_at: 1.hour.ago, updated_at: 1.hour.ago)
+    slot = project.slots.create!(date: Date.tomorrow, label: "Bring dessert", capacity: 2)
+    slot.slot_claims.create!(person: person)
+    claimed = Notifier.notify(recipient: person, kind: "slot_reminder", notifiable: slot, email: false)
+    claimed.update!(read_at: Time.current)
+    mention = Notifier.notify(recipient: person, kind: "mention", notifiable: project, actor: people(:leader), email: false)
+    mention.update!(read_at: Time.current)
+    departure = Notifier.notify(recipient: person, kind: "team_departure", notifiable: welcome_team, actor: people(:leader), email: false)
+    reply = Notifier.notify(recipient: person, kind: "followed_reply", notifiable: project, actor: people(:leader), email: false)
 
     get notifications_path
 
     assert_response :success
-    assert_select "nav[aria-label='Main navigation']", count: 2
-    assert_select "a[href='#{notifications_path}'][aria-label='Notifications, 2 unread']", count: 2
-    assert_equal [ newer.id.to_s, older.id.to_s ], css_select("[data-notification-id]").map { |node| node["data-notification-id"] }
-    assert_select "[data-notification-id='#{newer.id}'].font-semibold", count: 1
-    assert_select "a[href='#{project_path(project)}']", text: /Set out chairs/
+    needs_you = "section[aria-labelledby='needs-you-heading']"
+    for_information = "section[aria-labelledby='for-information-heading']"
+    assert_select "#{needs_you} [data-notification-id]", count: 2
+    assert_select "#{needs_you} [data-notification-id='#{assigned.id}']"
+    assert_select "#{needs_you} [data-notification-id='#{claimed.id}']"
+    assert_select "#{for_information} [data-notification-id]", count: 3
+    assert_select "#{for_information} h3 a", text: "Community Meal"
+    assert_select "#{for_information} h3 a", text: "Welcome Team"
+    assert_select "#{for_information} [data-notification-id='#{mention.id}']"
+    assert_select "#{for_information} [data-notification-id='#{departure.id}'] form[action='#{mark_read_notification_path(departure)}']"
+    assert_select "#{for_information} [data-notification-id='#{reply.id}']"
+    assert_select "a[href='#{notifications_path}'][aria-label='Notifications, 1 unread']", minimum: 1
 
-    patch mark_read_notification_path(newer)
+    patch mark_read_notification_path(departure)
 
     assert_redirected_to notifications_path
-    assert_not_nil newer.reload.read_at
-    assert_nil older.reload.read_at
+    assert_not_nil departure.reload.read_at
+    get notifications_path
+    assert_select "a[href='#{notifications_path}'][aria-label='Notifications, 1 unread']", minimum: 1
+
+    patch mark_read_notification_path(assigned)
+    get notifications_path
+    assert_select "a[href='#{notifications_path}'][aria-label='Notifications']", minimum: 1
+    assert_select "#{needs_you} [data-notification-id='#{assigned.id}'] form[action='#{mark_read_notification_path(assigned)}']", count: 0
 
     patch mark_all_read_notifications_path
 
     assert_redirected_to notifications_path
-    assert_not_nil older.reload.read_at
+    assert_not_nil reply.reload.read_at
+  end
+
+  test "Needs you rows offer the action that resolves them" do
+    person = sign_in_as_volunteer
+    project = projects(:community_meal)
+    task = project.tasks.create!(title: "Set out chairs", assignee: person)
+    Notifier.notify(recipient: person, kind: "task_assigned", notifiable: task, actor: people(:leader), email: false)
+    welcome_team = project.organization.projects.create!(name: "Welcome Team", owner: people(:leader))
+    invitation = project.organization.invitations.create!(project: welcome_team, person: person, inviter: people(:leader), role: :volunteer)
+    Notifier.notify(recipient: person, kind: "invitation", notifiable: invitation, actor: people(:leader), email: false)
+
+    get notifications_path
+
+    assert_select "form[action='#{mark_done_project_task_path(project, task)}']", text: /Mark done/
+    assert_select "a[href='#{invitation_path(invitation.generate_token_for(:access))}']", text: "Respond"
+  end
+
+  test "a Person with nothing to act on or report sees warm empty states" do
+    sign_in_as_volunteer
+
+    get notifications_path
+
+    assert_response :success
+    assert_select "section[aria-labelledby='needs-you-heading'] p", text: /You’re all caught up/
+    assert_select "section[aria-labelledby='for-information-heading'] p", text: /Nothing else to report/
+    assert_select "[data-notification-id]", count: 0
   end
 
   test "a Person gets 404 for another Person's notification" do

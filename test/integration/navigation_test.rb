@@ -33,12 +33,9 @@ class NavigationTest < ActionDispatch::IntegrationTest
 
   test "the phone bell carries the unread count in its label" do
     person = sign_in_as_volunteer
-    Notifier.notify(
-      recipient: person,
-      kind: "slot_reminder",
-      notifiable: projects(:community_meal).slots.create!(date: "2027-02-11", label: "Bring dessert"),
-      email: false
-    )
+    slot = projects(:community_meal).slots.create!(date: "2027-02-11", label: "Bring dessert")
+    slot.slot_claims.create!(person: person)
+    Notifier.notify(recipient: person, kind: "slot_reminder", notifiable: slot, email: false)
     get home_path
 
     assert_select "header a[href='#{notifications_path}'][aria-label='Notifications, 1 unread']"
