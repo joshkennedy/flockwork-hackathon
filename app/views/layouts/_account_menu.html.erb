@@ -1,0 +1,40 @@
+<%# One account menu, two placements: the sidebar row (opens upward) and the phone avatar (opens as a sheet). %>
+<% sidebar = local_assigns.fetch(:sidebar, true) %>
+<% name = Current.person.name %>
+<details class="account-menu <%= "relative mt-auto" if sidebar %>">
+  <% if sidebar %>
+    <summary class="flex min-h-11 w-full cursor-pointer items-center gap-2.5 rounded-tile px-2 py-1.5 text-left text-ink hover:bg-nav-active">
+      <span class="avatar"><%= person_initials(name) %></span>
+      <span class="min-w-0 flex-1">
+        <span class="block truncate text-meta font-semibold" data-signed-in-as><%= name %></span>
+        <span class="block truncate text-label text-ink-2"><%= Current.organization.name %></span>
+      </span>
+      <%= icon(:updown, class: "text-ink-2") %>
+    </summary>
+  <% else %>
+    <summary class="grid size-11 cursor-pointer place-items-center rounded-nav" aria-label="Account, <%= name %>" title="Account">
+      <span class="avatar"><%= person_initials(name) %></span>
+    </summary>
+  <% end %>
+  <div class="popover-in <%= sidebar ? "account-menu-panel" : "account-sheet" %>">
+    <div class="flex items-center gap-2.5 px-2 pb-2.5 pt-2">
+      <span class="avatar size-9 text-meta"><%= person_initials(name) %></span>
+      <span class="min-w-0">
+        <span class="block truncate text-meta font-semibold"><%= name %></span>
+        <span class="block truncate text-label text-ink-2"><%= Current.organization.name %></span>
+      </span>
+    </div>
+    <%= link_to edit_profile_path, class: "account-item" do %>
+      <%= icon(:user) %><span>Profile</span>
+    <% end %>
+    <% if Policy.can?(Current.person, :manage_settings, Current.organization) %>
+      <%= link_to settings_path, class: "account-item" do %>
+        <%= icon(:settings) %><span>Settings</span>
+      <% end %>
+    <% end %>
+    <hr class="my-1 border-hairline">
+    <%= button_to session_path, method: :delete, class: "account-item" do %>
+      <%= icon(:sign_out) %><span>Sign out</span>
+    <% end %>
+  </div>
+</details>

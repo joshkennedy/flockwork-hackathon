@@ -174,6 +174,21 @@
   .actions-menu-panel :is(a, button) { @apply flex min-h-control-h w-full items-center rounded-badge px-3 text-left text-button text-ink no-underline; transition: background-color var(--duration-hover); }
   .actions-menu-panel .menu-danger { @apply text-danger; }
   .actions-menu-panel form { @apply w-full; }
+  /* Account menu: the sidebar row opens upward; the phone avatar opens a sheet above the tab bar. */
+  .avatar { @apply inline-grid size-7 shrink-0 place-items-center rounded-badge bg-nav-active text-label font-semibold text-ink; }
+  .avatar.sm { @apply size-6 text-[11px]; }
+  .account-menu > summary { list-style: none; }
+  .account-menu > summary::-webkit-details-marker { display: none; }
+  .account-menu[open] > summary { background-color: var(--color-nav-active); }
+  .account-menu-panel, .account-sheet { @apply z-30 flex flex-col rounded-panel border border-border bg-panel p-1.5 shadow-float; }
+  .account-menu-panel { @apply absolute bottom-full left-0 right-0 mb-2; }
+  .account-sheet { position: fixed; left: 8px; right: 8px; bottom: max(8px, env(safe-area-inset-bottom)); z-index: 40; }
+  .account-item { @apply flex min-h-control-h w-full items-center gap-3 rounded-badge px-2.5 text-left text-button text-ink no-underline; transition: background-color var(--duration-hover); }
+  .account-item:hover { @apply bg-hairline; }
+  .account-item svg { @apply text-ink-2; }
+  .account-menu form { @apply w-full; }
+  .app-tab { @apply flex min-h-11 min-w-0 flex-col items-center justify-center gap-0.5 rounded-nav text-[11px] leading-3.5 text-ink-2 no-underline; }
+  .app-tab[aria-current="page"] { @apply font-semibold text-ink; }
   .actions-menu-panel hr { @apply my-1 border-hairline; }
   /* Task check: a 20px ring with a 44px hit area. Hover previews the check; done is the kept check in sunlit. */
   .task-check { @apply relative grid size-5 shrink-0 place-items-center rounded-full border border-border-strong bg-panel text-ink; transition: background-color var(--duration-hover), border-color var(--duration-hover); }

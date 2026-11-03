@@ -19,7 +19,9 @@ module ApplicationHelper
     more: "M5 11.2a.8.8 0 1 0 0 1.6.8.8 0 1 0 0-1.6Z M12 11.2a.8.8 0 1 0 0 1.6.8.8 0 1 0 0-1.6Z M19 11.2a.8.8 0 1 0 0 1.6.8.8 0 1 0 0-1.6Z",
     plus: "M12 5v14 M5 12h14",
     sign_out: "M9 3H3v18h6 M9 12h12 m-5-5 5 5-5 5",
-    settings: "M4 6h16 M4 12h16 M4 18h16 M15 4v4 M9 10v4 M17 16v4"
+    settings: "M4 6h16 M4 12h16 M4 18h16 M15 4v4 M9 10v4 M17 16v4",
+    user: "M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1",
+    updown: "m7.5 9.5 4.5-4.5 4.5 4.5 M7.5 14.5l4.5 4.5 4.5-4.5"
   }.freeze
 
   def icon(name, **options)
@@ -46,8 +48,17 @@ module ApplicationHelper
     items << [ "People", people_path, :people ] if Policy.can?(Current.person, :manage_people, Current.organization)
     items << [ "Oversight", oversight_path, :oversight ] if Policy.can?(Current.person, :view_oversight, Current.organization)
     items << [ "Notifications", notifications_path, :notifications ]
-    items << [ "Settings", settings_path, :settings ] if Policy.can?(Current.person, :manage_settings, Current.organization)
     items
+  end
+
+  # Settings and Profile live in the account menu, not the nav.
+  # Only a Person whose email belongs to several Organizations gets the church switcher.
+  def other_churches?
+    Current.person.email.present? && Person.where(email: Current.person.email).many?
+  end
+
+  def person_initials(name)
+    name.split.first(2).filter_map { |word| word[0] }.join.upcase
   end
 
   # The "Manage it" tier of the button grammar: a ⋯ button opening a menu of

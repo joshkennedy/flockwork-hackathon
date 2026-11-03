@@ -14,7 +14,7 @@
     <title><%= content_for(:title) || "Flockwork" %></title>
     <meta name="theme-color" content="<%= appearance == "dark" ? "#141413" : "#F3F2EF" %>"<%= ' media="(prefers-color-scheme: light)"'.html_safe if appearance == "system" %>>
     <% if appearance == "system" %><meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)"><% end %>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="application-name" content="Flockwork">
     <meta name="mobile-web-app-capable" content="yes">
@@ -31,19 +31,24 @@
   <body style="<%= mark_color_style %>" class="min-h-screen <%="bg-frame" if authenticated? %>">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-panel focus:p-3">Skip to content</a>
     <% if authenticated? %>
-      <div class="min-h-screen p-2 md:grid md:grid-cols-[232px_minmax(0,1fr)]">
+      <div class="min-h-screen p-2 pb-[calc(64px+env(safe-area-inset-bottom))] md:grid md:grid-cols-[232px_minmax(0,1fr)] md:pb-2">
         <aside class="sticky top-2 hidden h-[calc(100dvh-16px)] min-w-0 flex-col px-4 pb-3 pt-3.5 md:flex" aria-label="Organization">
           <%= render "layouts/wordmark", path: home_path, class: "mb-6 px-2" %>
+          <%= render "layouts/church_switcher" %>
           <%= render "layouts/navigation" %>
+          <%= render "layouts/account_menu" %>
         </aside>
         <header class="relative flex min-h-14 items-center justify-between px-2 md:hidden">
           <%= render "layouts/wordmark", path: home_path %>
-          <details class="group">
-            <summary class="btn btn-text list-none [&::-webkit-details-marker]:hidden"><%= icon(:menu) %><span>Menu</span></summary>
-            <div class="popover-in absolute inset-x-0 top-full z-30 flex flex-col rounded-panel border border-border bg-panel p-4 shadow-float">
-              <%= render "layouts/navigation" %>
-            </div>
-          </details>
+          <div class="flex items-center">
+            <%= link_to notifications_path, class: "relative grid size-11 place-items-center rounded-nav text-ink", aria: { label: (unread_notification_count.positive? ? "Notifications, #{unread_notification_count} unread" : "Notifications") } do %>
+              <%= icon(:notifications, class: "size-5") %>
+              <% if unread_notification_count.positive? %>
+                <span class="absolute right-0 top-1 min-w-4 rounded-badge bg-ink px-1 text-center text-[10px] font-semibold leading-4 text-panel tabular-nums" aria-hidden="true"><%= unread_notification_count %></span>
+              <% end %>
+            <% end %>
+            <%= render "layouts/account_menu", sidebar: false %>
+          </div>
         </header>
         <div class="panel relative min-h-[calc(100dvh-72px)] min-w-0 md:min-h-0">
           <div class="header-wash <%= content_for(:wash) %>" aria-hidden="true" data-controller="wash">
@@ -56,6 +61,7 @@
             <%= yield %>
           </main>
         </div>
+        <%= render "layouts/tab_bar" %>
       </div>
     <% else %>
       <div class="mx-auto max-w-xl px-4 py-7 sm:py-10">
