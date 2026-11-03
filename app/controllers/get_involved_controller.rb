@@ -1,6 +1,6 @@
 class GetInvolvedController < ApplicationController
   def show
-    @projects = Current.organization.projects.active.where(open_team: true).order(:name)
+    @projects = Current.organization.projects.active.where(open_team: true).with_attached_banner.order(:name)
     @joined_ids = Membership.where(person: Current.person, project: @projects).pluck(:project_id)
     slots = Slot.where(project: @projects).where(date: Date.current..).chronological.includes(:project, slot_claims: :person).to_a
     @slots_by_project = slots.group_by(&:project_id)

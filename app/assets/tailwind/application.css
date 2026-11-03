@@ -222,7 +222,8 @@
   /* The ring is a spread shadow, so it follows the squircle; inside a pill it matches the pill's fill. */
   .avatar-stack > .avatar { box-shadow: var(--shadow-avatar), 0 0 0 2px var(--avatar-ring, var(--color-panel)); }
   /* Person pill: the avatar sits flush at the left end with a 2px inset, the name in meta. Soft fill, no border, so it reads as a label, not a button. */
-  .person-pill { @apply inline-flex h-6 max-w-full min-w-0 items-center gap-1.5 rounded-full bg-hairline pl-0.5 pr-2.5 align-middle text-meta text-ink; --avatar-ring: var(--color-hairline); }
+  /* Corner radius is the avatar's squircle radius plus the 2px inset, so the two curves stay concentric. */
+  .person-pill { @apply inline-flex h-6 max-w-full min-w-0 items-center gap-1.5 rounded-nav pl-0.5 pr-2.5 align-middle text-meta text-ink; --pill-fill: color-mix(in oklab, var(--color-hairline) 55%, var(--color-panel)); background-color: var(--pill-fill); --avatar-ring: var(--pill-fill); }
   .account-menu > summary { list-style: none; }
   .account-menu > summary::-webkit-details-marker { display: none; }
   .account-menu[open] > summary { background-color: var(--color-nav-active); }

@@ -1,23 +1,17 @@
 <% field_prefix = "#{dom_id(notable)}_note" %>
-<details class="mt-4">
-<summary class="btn btn-secondary list-none [&::-webkit-details-marker]:hidden">Add note</summary>
-<%= form_with url: form_url, scope: :note, class: "mt-4 space-y-3", data: { note_form: true } do |form| %>
+<%# Always open: a note is one thought, so the field is there to type into instead of behind an "Add note" button. %>
+<%= form_with url: form_url, scope: :note, class: "mt-4 space-y-2", data: { note_form: true } do |form| %>
   <%= form.hidden_field :notable_type, value: notable.class.name, id: nil %>
   <%= form.hidden_field :notable_id, value: notable.id, id: nil %>
 
-  <div>
-    <%= form.label :body, "New note", for: "#{field_prefix}_body", class: "block text-label font-medium text-ink" %>
-    <%= form.text_area :body, id: "#{field_prefix}_body", required: true, rows: 3, class: "mt-1 block w-full field" %>
-  </div>
+  <%= form.label :body, "New note", for: "#{field_prefix}_body", class: "sr-only" %>
+  <%= form.text_area :body, id: "#{field_prefix}_body", required: true, rows: 2, placeholder: "Add a note…", class: "block w-full field" %>
 
-  <div class="flex flex-wrap items-end gap-3">
-    <div>
-      <%= form.label :visibility, for: "#{field_prefix}_visibility", class: "block text-label font-medium text-ink" %>
-      <%= form.select :visibility,
-        visibilities.map { |visibility| [ Note::VISIBILITY_LABELS.fetch(visibility), visibility ] },
-        {}, id: "#{field_prefix}_visibility", class: "mt-1 field" %>
-    </div>
+  <div class="flex flex-wrap items-center justify-end gap-2">
+    <%= form.label :visibility, "Visible to", for: "#{field_prefix}_visibility", class: "text-meta text-ink-2" %>
+    <%= form.select :visibility,
+      visibilities.map { |visibility| [ Note::VISIBILITY_LABELS.fetch(visibility), visibility ] },
+      {}, id: "#{field_prefix}_visibility", class: "field" %>
     <%= form.submit "Save note", class: "btn btn-secondary" %>
   </div>
 <% end %>
-</details>

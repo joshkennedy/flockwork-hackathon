@@ -29,7 +29,10 @@
           <% open.each do |project| %>
             <% slots = @slots_by_project.fetch(project.id, []) %>
             <% guidance = project_guidance(project, Current.person) %>
-            <li class="panel flex flex-col gap-3 p-4">
+            <li class="panel flex flex-col gap-3 overflow-hidden p-4">
+              <% if project.banner_ready? %>
+                <%= image_tag project.banner_variant(:phone), alt: "", loading: "lazy", class: "-mx-4 -mt-4 aspect-[2/1] w-[calc(100%+2rem)] max-w-none object-cover" %>
+              <% end %>
               <div class="min-w-0 flex-1">
                 <% if project.starts_on || project.ends_on %>
                   <p class="text-label text-ink-2"><%= project_date_range(project.starts_on, project.ends_on) %></p>
@@ -61,11 +64,16 @@
           <% joined.each do |project| %>
             <li>
               <%= link_to project_path(project), class: "flex items-center justify-between gap-4 border-b border-hairline px-1 py-3 hover:bg-ghost-fill" do %>
-                <span class="min-w-0">
-                  <span class="block font-semibold text-ink"><%= project.name %></span>
-                  <% if (momentum = momentum_line(@slots_by_project.fetch(project.id, []))) %>
-                    <span class="block text-meta text-ink-2"><%= momentum %></span>
+                <span class="flex min-w-0 items-center gap-3">
+                  <% if project.banner_ready? %>
+                    <%= image_tag project.banner_variant(:phone), alt: "", loading: "lazy", class: "aspect-[2/1] w-16 shrink-0 rounded-control object-cover" %>
                   <% end %>
+                  <span class="min-w-0">
+                    <span class="block font-semibold text-ink"><%= project.name %></span>
+                    <% if (momentum = momentum_line(@slots_by_project.fetch(project.id, []))) %>
+                      <span class="block text-meta text-ink-2"><%= momentum %></span>
+                    <% end %>
+                  </span>
                 </span>
                 <span class="flex shrink-0 items-center gap-1.5 text-meta text-ink-2"><%= icon(:check, class: "text-sunlit") %>On the Team</span>
               <% end %>
