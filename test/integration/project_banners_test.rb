@@ -70,6 +70,49 @@ class ProjectBannersTest < ActionDispatch::IntegrationTest
     assert_in_delta 0.2, project.reload.banner_focus_x
   end
 
+  test "a focal point save keeps the alt text, and an alt text save keeps the focal point" do
+    sign_in_as_leader
+    project = attach_banner!(projects(:community_meal))
+
+    patch project_banner_path(project), params: { project: { banner_alt_text: "Chairs in rows" } }
+    project.reload
+    assert_equal "Chairs in rows", project.banner_alt_text
+    assert_not project.banner_focus_manual?
+
+    patch project_banner_path(project), params: { project: { banner_focus_x: "0.3", banner_focus_y: "0.6" } }
+    project.reload
+    assert_in_delta 0.3, project.banner_focus_x
+    assert_equal "Chairs in rows", project.banner_alt_text
+    assert project.banner_focus_manual?
+
+    patch project_banner_path(project), params: { project: { banner_alt_text: "" } }
+    project.reload
+    assert_nil project.banner_alt_text
+    assert_in_delta 0.3, project.banner_focus_x
+  end
+
+  test "the Project page keeps banner controls on the photo, not in a disclosure below it" do
+    sign_in_as_leader
+    project = attach_banner!(projects(:community_meal))
+
+    get project_path(project)
+
+    assert_select "figure[data-controller~=banner-focus] button", text: "Reposition"
+    assert_select "figure[data-controller~=banner-focus] button", text: "Remove"
+    assert_select "[data-banner-focus-target=edit] input[name='project[banner_focus_x]']"
+    assert_select "#banner-alt-popover input[name='project[banner_alt_text]']"
+    assert_select "details summary", text: /focal point/, count: 0
+  end
+
+  test "a Project with no banner offers the add dropzone to editors" do
+    sign_in_as_leader
+
+    get project_path(projects(:community_meal))
+
+    assert_select "[data-controller=banner-upload] input[type=file][name='project[banner]']"
+    assert_match "Add a banner image", response.body
+  end
+
   test "removing the banner purges it and resets focus and alt text" do
     sign_in_as_leader
     project = attach_banner!(projects(:community_meal))
@@ -92,6 +135,8 @@ class ProjectBannersTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match "alt=\"#{project.name} banner\"", response.body
+    assert_select "figure[data-controller]", count: 0
+    assert_no_match "Reposition", response.body
   end
 
   private

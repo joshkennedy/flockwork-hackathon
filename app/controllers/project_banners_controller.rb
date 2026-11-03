@@ -42,8 +42,11 @@ class ProjectBannersController < ApplicationController
     def update_focus
       raise ActiveRecord::RecordNotFound unless @project.banner.attached?
 
+      # Alt text and focus save separately: a save that only sends one of them leaves the other alone.
       attributes = params.expect(project: [ :banner_focus_x, :banner_focus_y, :banner_alt_text ])
-      @project.assign_attributes(attributes.merge(banner_focus_manual: true, banner_alt_text: attributes[:banner_alt_text].presence))
+      attributes[:banner_focus_manual] = true if attributes.key?(:banner_focus_x) || attributes.key?(:banner_focus_y)
+      attributes[:banner_alt_text] = attributes[:banner_alt_text].presence if attributes.key?(:banner_alt_text)
+      @project.assign_attributes(attributes)
       if @project.save
         redirect_to @project
       else
