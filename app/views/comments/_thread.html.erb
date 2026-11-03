@@ -5,8 +5,8 @@
 
 <% if comments.any? || can_comment || follow %>
 <details class="<%= comments.any? ? "mt-4" : "mt-1" %> min-w-0 text-left" data-commentable-type="<%= commentable.class.name %>" data-commentable-id="<%= commentable.id %>">
-  <summary class="cursor-pointer py-2 text-meta <%= comments.any? ? "font-semibold" : "font-medium" %> text-ink-2 hover:text-ink">
-    <%= comments.any? ? "Comments (#{comments.length})" : "Comment" %>
+  <summary class="comment-toggle cursor-pointer py-2 text-meta <%= comments.any? ? "font-semibold" : "font-medium" %> text-ink-2 hover:text-ink">
+    <%= comments.any? ? pluralize(comments.length, "comment") : "Comment" %>
   </summary>
 
   <div class="space-y-4 pb-2 pt-2">

@@ -52,11 +52,12 @@ module ApplicationHelper
 
   # The "Manage it" tier of the button grammar: a ⋯ button opening a menu of
   # links and button_tos. Mark destructive items with class "menu-danger".
-  def actions_menu(label, &items)
+  # align: :start opens the panel to the right, for a menu at the left edge of a scrolling table.
+  def actions_menu(label, align: :end, &items)
     tag.details(class: "actions-menu relative") do
       safe_join([
         tag.summary(icon(:more), class: "btn btn-icon", aria: { label: label }, title: label),
-        tag.div(capture(&items), class: "actions-menu-panel popover-in")
+        tag.div(capture(&items), class: class_names("actions-menu-panel popover-in", "actions-menu-panel-start": align == :start))
       ])
     end
   end

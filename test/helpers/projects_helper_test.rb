@@ -21,6 +21,18 @@ class ProjectsHelperTest < ActionView::TestCase
     assert_equal "Jan 2, 2028", project_date_range(Date.new(2028, 1, 2), nil)
   end
 
+  test "due labels are relative near today and fall back to the calendar date" do
+    today = Date.new(2027, 2, 10)
+
+    assert_equal "Overdue by 2 days", task_due_label(Date.new(2027, 2, 8), today: today)
+    assert_equal "Due today", task_due_label(today, today: today)
+    assert_equal "Due tomorrow", task_due_label(Date.new(2027, 2, 11), today: today)
+    assert_equal "Due in 13 days", task_due_label(Date.new(2027, 2, 23), today: today)
+    assert_equal "Due in 2 weeks", task_due_label(Date.new(2027, 2, 24), today: today)
+    assert_equal "Due Apr 9", task_due_label(Date.new(2027, 4, 9), today: today)
+    assert_equal "Due Jan 4, 2028", task_due_label(Date.new(2028, 1, 4), today: today)
+  end
+
   test "status counts covered Slots by their shared label and names the next open one" do
     @project.slots.create!(date: Date.new(2027, 2, 9), label: "Dinner", capacity: 1).claim(people(:volunteer))
     @project.slots.create!(date: Date.new(2027, 2, 12), label: "Dinner", capacity: 1)

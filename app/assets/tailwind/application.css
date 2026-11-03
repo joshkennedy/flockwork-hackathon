@@ -170,10 +170,24 @@
   .actions-menu > summary { list-style: none; }
   .actions-menu > summary::-webkit-details-marker { display: none; }
   .actions-menu-panel { @apply absolute right-0 top-full z-30 mt-1 flex w-56 flex-col rounded-panel border border-border bg-panel p-1 shadow-float; }
+  .actions-menu-panel-start { @apply left-0 right-auto; }
   .actions-menu-panel :is(a, button) { @apply flex min-h-control-h w-full items-center rounded-badge px-3 text-left text-button text-ink no-underline; transition: background-color var(--duration-hover); }
   .actions-menu-panel .menu-danger { @apply text-danger; }
   .actions-menu-panel form { @apply w-full; }
   .actions-menu-panel hr { @apply my-1 border-hairline; }
+  /* Task check: a 20px ring with a 44px hit area. Hover previews the check; done is the kept check in sunlit. */
+  .task-check { @apply relative grid size-5 shrink-0 place-items-center rounded-full border border-border-strong bg-panel text-ink; transition: background-color var(--duration-hover), border-color var(--duration-hover); }
+  .task-check::after { content: ""; @apply absolute -inset-3; }
+  .task-check-glyph { @apply size-3 opacity-0; transition: opacity var(--duration-hover); }
+  .task-check-done { @apply border-sunlit bg-sunlit; }
+  .task-check-done .task-check-glyph { @apply opacity-100; }
+  @media (hover: hover) {
+    .task-check:hover { @apply border-ink; }
+    .task-check:hover .task-check-glyph { @apply opacity-40; }
+    .task-check-done:hover { @apply border-sunlit bg-sunlit; }
+  }
+  .comment-toggle { list-style: none; }
+  .comment-toggle::-webkit-details-marker { display: none; }
   .guidance-strip { @apply flex flex-col gap-3 rounded-tile bg-sunlit-soft px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between; }
   .status-strip { @apply grid grid-cols-2 rounded-tile border border-border bg-panel/75 sm:grid-cols-4; }
   .status-strip > div { @apply border-hairline px-4 py-3 max-sm:odd:border-r sm:not-last:border-r; }

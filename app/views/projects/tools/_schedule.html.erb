@@ -17,19 +17,13 @@
             <% items.each do |item| %>
               <li class="text-ink">
                 <div class="flex items-start justify-between gap-3">
-                  <div>
-                  <% if item.starts_at_time.present? %>
-                    <span class="text-meta font-medium text-ink-2">
-                      <%= item.starts_at_time.strftime("%-l:%M %p") %>
-                      <% if item.ends_at_time.present? %>
-                        – <%= item.ends_at_time.strftime("%-l:%M %p") %>
-                      <% end %>
-                    </span>
-                  <% end %>
-                  <span class="block font-semibold"><%= item.title %></span>
-                  <% if item.location.present? %>
-                    <span class="block text-meta text-ink-2"><%= item.location %></span>
-                  <% end %>
+                  <% time_label = item.starts_at_time && [ item.starts_at_time, item.ends_at_time ].compact.map { |time| time.strftime("%-l:%M %p") }.join(" – ") %>
+                  <% meta = [ time_label, item.location.presence ].compact.join(" · ") %>
+                  <div class="min-w-0">
+                    <p class="text-heading text-ink"><%= item.title %></p>
+                    <% if meta.present? %>
+                      <p class="mt-0.5 text-meta text-ink-2"><%= meta %></p>
+                    <% end %>
                   </div>
                   <% if Policy.can?(Current.person, :manage_schedule, project) %>
                     <%= actions_menu("Actions for #{item.title}") do %>

@@ -56,7 +56,7 @@ class ScheduleItemsTest < ActionDispatch::IntegrationTest
     assert_select "section[aria-labelledby='tool-schedule'] h3", text: "Saturday, February 13"
 
     assert_select "section[aria-labelledby='tool-schedule']" do
-      titles = css_select("section[aria-labelledby='tool-schedule'] span.font-semibold").map(&:text)
+      titles = css_select("section[aria-labelledby='tool-schedule'] p.text-heading").map(&:text)
       assert_equal [
         "Arrival",
         "Opening Session",
@@ -74,7 +74,7 @@ class ScheduleItemsTest < ActionDispatch::IntegrationTest
     get project_path(project)
 
     assert_response :success
-    assert_select "span.font-semibold", text: "Opening Session"
+    assert_select "p.text-heading", text: "Opening Session"
     assert_select "a", text: "Add item", count: 0
     assert_select "a", text: "Edit", count: 0
 

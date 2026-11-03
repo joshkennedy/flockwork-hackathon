@@ -33,16 +33,19 @@
                     <th class="min-w-40 border-b border-hairline px-3 py-2 text-ink">
                       <span class="column-name block font-semibold"><%= column.name %></span>
                       <% if manage_lists %>
-                        <span class="mt-0.5 block text-label font-normal text-ink-2"><%= column.column_type.humanize %></span>
-                        <div class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-label font-semibold">
-                          <%= link_to "Edit", edit_project_list_list_column_path(project, list, column), class: "inline-flex min-h-6 items-center text-ink-2 hover:text-ink" %>
-                          <% if index.positive? %>
-                            <%= button_to "Move up", move_up_project_list_list_column_path(project, list, column), method: :patch, class: "btn btn-text" %>
+                        <div class="mt-0.5 flex items-center justify-between gap-2">
+                          <span class="text-label font-normal text-ink-2"><%= column.column_type.humanize %></span>
+                          <%= actions_menu("Actions for #{column.name} column", align: index.zero? ? :start : :end) do %>
+                            <%= link_to "Edit column", edit_project_list_list_column_path(project, list, column) %>
+                            <% if index.positive? %>
+                              <%= button_to "Move up", move_up_project_list_list_column_path(project, list, column), method: :patch %>
+                            <% end %>
+                            <% if index < list.columns.length - 1 %>
+                              <%= button_to "Move down", move_down_project_list_list_column_path(project, list, column), method: :patch %>
+                            <% end %>
+                            <hr>
+                            <%= button_to "Remove column", project_list_list_column_path(project, list, column), method: :delete, class: "menu-danger" %>
                           <% end %>
-                          <% if index < list.columns.length - 1 %>
-                            <%= button_to "Move down", move_down_project_list_list_column_path(project, list, column), method: :patch, class: "btn btn-text" %>
-                          <% end %>
-                          <%= button_to "Remove", project_list_list_column_path(project, list, column), method: :delete, class: "btn btn-danger" %>
                         </div>
                       <% end %>
                     </th>

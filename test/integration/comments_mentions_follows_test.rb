@@ -231,12 +231,12 @@ class CommentsMentionsFollowsTest < ActionDispatch::IntegrationTest
     get project_path(project)
 
     assert_response :success
-    assert_select "details[data-commentable-type='Task'][data-commentable-id='#{task.id}'] summary", "Comments (1)"
-    assert_select "details[data-commentable-type='ScheduleItem'][data-commentable-id='#{schedule_item.id}'] summary", "Comments (1)"
-    assert_select "details[data-commentable-type='Slot'][data-commentable-id='#{slot.id}'] summary", "Comments (1)"
-    assert_select "details[data-commentable-type='BudgetLine'][data-commentable-id='#{budget_line.id}'] summary", "Comments (1)"
-    assert_select "details[data-commentable-type='DocItem'][data-commentable-id='#{doc_item.id}'] summary", "Comments (1)"
-    assert_select "details[data-commentable-type='ListRow'][data-commentable-id='#{list_row.id}'] summary", "Comments (1)"
+    assert_select "details[data-commentable-type='Task'][data-commentable-id='#{task.id}'] summary", "1 comment"
+    assert_select "details[data-commentable-type='ScheduleItem'][data-commentable-id='#{schedule_item.id}'] summary", "1 comment"
+    assert_select "details[data-commentable-type='Slot'][data-commentable-id='#{slot.id}'] summary", "1 comment"
+    assert_select "details[data-commentable-type='BudgetLine'][data-commentable-id='#{budget_line.id}'] summary", "1 comment"
+    assert_select "details[data-commentable-type='DocItem'][data-commentable-id='#{doc_item.id}'] summary", "1 comment"
+    assert_select "details[data-commentable-type='ListRow'][data-commentable-id='#{list_row.id}'] summary", "1 comment"
     assert_select "[data-message-id='#{message.id}']"
     assert_select "details[data-commentable-type='Message']", count: 0
     assert_select "[data-controller='mention-picker']", minimum: 7

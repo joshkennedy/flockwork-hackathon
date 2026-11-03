@@ -42,6 +42,19 @@ module ProjectsHelper
     items
   end
 
+  # Relative labels read faster than calendar dates; the exact day stays in the <time> title.
+  def task_due_label(date, today: Date.current)
+    days = (date - today).to_i
+    case days
+    when ...0 then "Overdue by #{pluralize(-days, "day")}"
+    when 0 then "Due today"
+    when 1 then "Due tomorrow"
+    when 2..13 then "Due in #{days} days"
+    when 14..55 then "Due in #{pluralize((days / 7.0).round, "week")}"
+    else "Due #{date.strftime(date.year == today.year ? "%b %-d" : "%b %-d, %Y")}"
+    end
+  end
+
   # The one open need worth saying out loud, or nil. :slot is the next open Slot
   # this person hasn't claimed, for a Volunteer's one-tap claim.
   def project_guidance(project, person)
