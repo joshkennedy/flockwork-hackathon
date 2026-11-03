@@ -109,7 +109,8 @@ class PlannerSessionsController < ApplicationController
 
   def select_answer
     require_build_as_you_go
-    revision = @planner_session.select_answer!(params.expect(:answer), expected_revision: expected_revision,
+    # A blank answer is a validation alert from select_answer!, not a 400 the frame cannot show.
+    revision = @planner_session.select_answer!(params.fetch(:answer, "").to_s, expected_revision: expected_revision,
       step_index: params[:step_index].presence&.to_i)
     enqueue_generation(revision)
     planning_redirect

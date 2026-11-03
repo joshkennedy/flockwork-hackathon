@@ -6,7 +6,7 @@
   <div class="meal-slot-summary">
     <div class="min-w-0 flex-1">
       <p class="font-semibold text-ink"><%= fields.fetch("label", "Meal") %></p>
-      <p class="mt-1 text-meta text-ink-2"><%= date ? date.to_fs(:long) : "Day #{provisional_day.to_i + 1} · Choose first date" %> · <%= time ? time.strftime("%-I:%M %p") : "Time to choose" %> · <%= pluralize(fields.fetch("capacity", 1), "person") %></p>
+      <p class="mt-1 text-meta text-ink-2"><%= date ? date.to_fs(:long) : "Day #{provisional_day.to_i + 1} · Needs a date" %> · <%= time ? time.strftime("%-I:%M %p") : "Time open" %> · <%= pluralize(fields.fetch("capacity", 1), "person") %></p>
     </div>
     <% unless planner_session.generation_busy? %>
     <details class="meal-slot-editor">

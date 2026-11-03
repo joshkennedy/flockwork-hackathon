@@ -134,11 +134,15 @@ module Planner
         schema = version == 2 ? MEAL_SCHEMA : (version == 3 ? GENERAL_SCHEMA : RESPONSE_SCHEMA)
         # The schema goes in the prompt, not as a response format: Anthropic's constrained decoding can't
         # compile it in time. The shape is checked here and Suggestions are sanitized per kind on ingest.
-        message = RubyLLM.chat(model: llm_model, provider: llm_provider.to_sym, assume_model_exists: true)
-          .with_instructions("#{instructions}\nJSON schema:\n#{JSON.generate(schema)}")
+        chat = RubyLLM.chat(model: llm_model, provider: llm_provider.to_sym, assume_model_exists: true)
+          # The instructions and schema are stable per flow, so cache them (OpenRouter passes cache_control through).
+          .with_instructions("#{instructions}\nJSON schema:\n#{JSON.generate(schema)}", cache_until_here: true)
           # Providers default to the model's full output window, which is slow and can exceed account credit.
           .with_max_output_tokens(4_000)
-          .ask(JSON.generate(context))
+        # The first card has no answers to weigh, so it skips the reasoning pass (about 40-50% of output tokens).
+        answered = context["questions_answered"] || context[:questions_answered] || 1
+        chat = chat.with_thinking(effort: :low) if version.in?([ 2, 3 ]) && answered.to_i.zero?
+        message = chat.ask(JSON.generate(context))
         parsed = JSON.parse(message.content.to_s[/\{.*\}/m] || raise(ArgumentError, "Planner response had no JSON"))
         card = parsed.fetch("card")
         finished = parsed.fetch("finished")

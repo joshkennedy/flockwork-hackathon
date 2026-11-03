@@ -1,5 +1,10 @@
 import { Controller } from "@hotwired/stimulus"
 
+// Turbo broadcasts deliver results. A render that is busy before the cable subscription is live can miss its
+// broadcast, so two one-shot checks cover that window: one for a quick finish, one at the stall threshold.
+const QUICK_CHECK_MS = 4_000
+const STALL_CHECK_MS = 90_000
+
 export default class extends Controller {
   static targets = ["status"]
   static values = { busy: Boolean, url: String }
@@ -11,21 +16,26 @@ export default class extends Controller {
   }
 
   connect() {
-    if (this.busyValue) this.timer = window.setTimeout(() => this.refresh(), 3000)
+    if (!this.busyValue || document.querySelector("turbo-cable-stream-source[connected]")) return
+    this.timers = [
+      window.setTimeout(() => this.refresh(false), QUICK_CHECK_MS),
+      window.setTimeout(() => this.refresh(true), STALL_CHECK_MS)
+    ]
   }
 
   disconnect() {
-    window.clearTimeout(this.timer)
+    this.timers?.forEach(window.clearTimeout)
   }
 
-  async refresh() {
-    if (!this.element.isConnected || !this.busyValue) return
+  // Replaces the frame only when there is news: a finished answer, or (when forced) a stalled job to show Retry.
+  async refresh(force) {
+    if (!this.element.isConnected) return
     try {
       const response = await fetch(this.urlValue, {
         headers: { "Turbo-Frame": this.element.id, "Accept": "text/html" },
         credentials: "same-origin"
       })
-      if (!response.ok) throw new Error("Could not refresh planning")
+      if (!response.ok) return
       const document = new DOMParser().parseFromString(await response.text(), "text/html")
       const frame = document.getElementById(this.element.id)
       if (!this.element.isConnected) return
@@ -33,14 +43,9 @@ export default class extends Controller {
         window.location.assign(response.url)
         return
       }
-      if (frame) {
-        // Replace the frame itself so the new persisted busy state controls the next poll.
-        this.element.replaceWith(frame)
-        return
-      }
+      if (frame && (force || frame.dataset.mealPlannerBusyValue !== "true")) this.element.replaceWith(frame)
     } catch (_error) {
-      // A dropped connection leaves the current preview readable while polling retries.
+      // A dropped connection leaves the current preview readable; the broadcast can still arrive.
     }
-    if (this.element.isConnected) this.timer = window.setTimeout(() => this.refresh(), 3000)
   }
 }

@@ -31,6 +31,14 @@
       </div>
     <% end %>
 
+    <% if planner_session.generation_busy? %>
+      <div class="meal-building" aria-hidden="true">
+        <p class="text-meta text-ink-2">Building the Project preview…</p>
+        <div class="meal-skeleton"></div>
+        <div class="meal-skeleton meal-skeleton-short"></div>
+      </div>
+    <% end %>
+
     <% if removed_item.present? %>
       <div class="mt-4 flex flex-wrap items-center gap-3 rounded-control bg-ghost-fill px-3 py-2 text-meta text-ink-2">
         <span>Item removed.</span>

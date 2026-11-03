@@ -79,7 +79,7 @@ class MealPlannerSystemTest < ApplicationSystemTestCase
     assert_operator section_top, :<, page.evaluate_script("window.innerHeight")
   end
 
-  test "polling replaces a busy frame after generation finishes without a broadcast" do
+  test "a busy frame recovers after generation finishes without a broadcast" do
     Rails.configuration.x.planner_provider = Planner::Providers::Fake.new([
       response(card: card("Which meals should people bring?", "Dinner", "Lunch"))
     ])

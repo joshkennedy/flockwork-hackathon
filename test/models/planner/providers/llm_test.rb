@@ -39,7 +39,53 @@ class PlannerProvidersLlmTest < ActiveSupport::TestCase
     end
   end
 
+  test "only the first card of a build-as-you-go Planner skips the reasoning pass" do
+    card = { "question" => "Which meals?", "options" => %w[Dinner Lunch Brunch] }
+    content = JSON.generate(card:, finished: false, added: [], removed_ids: [])
+    chat = RecordingChat.new(content)
+    llm = Planner::Providers::Llm.new
+
+    with_ruby_llm_chat(chat) do
+      llm.call("flow_version" => 2, "questions_answered" => 0)
+      assert_equal :low, chat.effort
+      assert_equal 1, chat.calls
+
+      chat.effort = nil
+      llm.call("flow_version" => 2, "questions_answered" => 1)
+      assert_nil chat.effort
+    end
+  end
+
   private
+
+  class RecordingChat
+    attr_accessor :effort
+    attr_reader :calls
+
+    def initialize(content)
+      @content = content
+      @calls = 0
+    end
+
+    def with_instructions(*, **) = self
+    def with_max_output_tokens(_) = self
+    def with_thinking(effort:) = tap { @effort = effort }
+
+    def ask(_)
+      @calls += 1
+      Struct.new(:content).new(@content)
+    end
+  end
+
+  def with_ruby_llm_chat(chat)
+    singleton = RubyLLM.singleton_class
+    singleton.alias_method(:original_chat_for_test, :chat)
+    singleton.define_method(:chat) { |**| chat }
+    yield
+  ensure
+    singleton.alias_method(:chat, :original_chat_for_test)
+    singleton.remove_method(:original_chat_for_test)
+  end
 
   def with_planner_llm_env(changes)
     keys = %w[PLANNER_LLM_PROVIDER PLANNER_LLM_MODEL]

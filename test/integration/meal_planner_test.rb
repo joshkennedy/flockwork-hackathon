@@ -295,6 +295,70 @@ class MealPlannerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "a typed answer is the selected answer in the question and prepares the next step like a tile pick" do
+    use_provider(
+      response(card: card("Which meals?", "Dinner", "Lunch")),
+      response(card: card("How long?"), added: [ slot_run(label: "Breakfast burritos") ])
+    )
+    sign_in_as_leader
+    project, planner_session = start_and_generate
+
+    select_and_generate(project, planner_session, "Breakfast burritos on Saturdays")
+    planner_session.reload
+    assert_equal "Breakfast burritos on Saturdays", planner_session.pending_answer.fetch("text")
+    assert_predicate planner_session, :ready_to_continue?
+
+    get project_planner_session_path(project, planner_session)
+    assert_select "p", text: "Your answer: Breakfast burritos on Saturdays"
+    assert_select "details[open] textarea, details[open] input[name='answer'][value=?]", "Breakfast burritos on Saturdays"
+    assert_select "button[aria-pressed=true]", count: 0
+    assert_select "p", text: "Question 1 of 3"
+
+    post continue_planning_project_planner_session_path(project, planner_session), params: {
+      expected_revision: planner_session.generation_revision
+    }
+    planner_session.reload
+    assert_equal "How long?", planner_session.current_card.fetch("question")
+    assert_nil planner_session.pending_answer
+  end
+
+  test "a blank typed answer is a visible alert, not a silent failure" do
+    use_provider(response(card: card("Which meals?", "Dinner", "Lunch")))
+    sign_in_as_leader
+    project, planner_session = start_and_generate
+
+    assert_no_enqueued_jobs only: PlannerStepJob do
+      post select_answer_project_planner_session_path(project, planner_session), params: {
+        answer: "   ", expected_revision: planner_session.generation_revision
+      }
+    end
+    assert_redirected_to project_planner_session_path(project, planner_session)
+    assert_equal "Answer can't be blank", flash[:alert]
+    assert_nil planner_session.reload.pending_answer
+  end
+
+  test "the meal review asks for the first meal date inline and Add to Project is described by its hint" do
+    use_provider(response(card: nil, finished: true, added: [ undated_slot_run ]))
+    sign_in_as_leader
+    project, planner_session = start_and_generate
+    planner_session.finish_preview!(expected_revision: planner_session.generation_revision)
+
+    get project_planner_session_path(project, planner_session)
+    hint_id = ActionView::RecordIdentifier.dom_id(planner_session, :add_note)
+    assert_select "section.meal-builder-guide form[action=?] input[name='project[starts_on]'][required]",
+      planning_details_project_planner_session_path(project, planner_session)
+    assert_select "button[disabled][aria-describedby=?]", hint_id, text: "Add to Project"
+    assert_select "p##{hint_id}", text: "Set the first meal date above to add these slots."
+
+    patch planning_details_project_planner_session_path(project, planner_session), params: {
+      project: { starts_on: "2027-02-14" }, expected_revision: planner_session.generation_revision
+    }
+    assert_redirected_to project_planner_session_path(project, planner_session)
+    get project_planner_session_path(project, planner_session)
+    assert_select "section.meal-builder-guide form[action=?]", accept_project_planner_session_path(project, planner_session), count: 1
+    assert_select "section.meal-builder-guide button[disabled]", count: 0
+  end
+
   test "legacy Planner sessions keep their original HTTP completion path" do
     use_provider(response(card: nil, finished: true, added: [ task_suggestion ]))
     sign_in_as_leader
