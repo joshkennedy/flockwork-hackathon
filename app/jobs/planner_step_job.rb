@@ -15,7 +15,8 @@ class PlannerStepJob < ApplicationJob
       if planner_session.build_as_you_go?
         return unless revision
         return unless Policy.can?(Current.person, :plan, project)
-        planner_session.generate!(revision: revision)
+        stream = Planner::PreviewStream.new(planner_session)
+        planner_session.generate!(revision: revision) { |partial| stream.push(partial) }
       else
         planner_session.run_step!
       end

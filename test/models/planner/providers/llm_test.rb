@@ -56,6 +56,37 @@ class PlannerProvidersLlmTest < ActiveSupport::TestCase
     end
   end
 
+  test "streams complete card and items to the caller before the final parse" do
+    card = { "question" => "Which meals?", "options" => %w[Dinner Lunch Brunch] }
+    item = { "kind" => "slot_run", "source_key" => "meal-slots", "fields" => { "label" => "Dinner" } }
+    content = JSON.generate(card:, finished: false, added: [ item ], removed_ids: [])
+    partials = []
+
+    response = with_ruby_llm_chat(StreamingChat.new(content, chunk_size: 9)) do
+      Planner::Providers::Llm.new.call("flow_version" => 2, "questions_answered" => 1) { |partial| partials << partial }
+    end
+
+    assert_operator partials.size, :>, 2
+    assert_equal({ card:, added: [ item ] }, partials.last)
+    assert_equal "Which meals?", response.card.fetch("question")
+  end
+
+  test "logs the per-call usage at debug level, including cache reads and writes" do
+    tokens = Struct.new(:input, :output, :cache_read, :cache_write, :thinking).new(1200, 300, 900, 0, 40)
+    content = JSON.generate(card: nil, finished: true, added: [], removed_ids: [])
+    io = StringIO.new
+    original_logger = Rails.logger
+    Rails.logger = ActiveSupport::Logger.new(io).tap { |logger| logger.level = Logger::DEBUG }
+
+    with_ruby_llm_chat(StreamingChat.new(content, chunk_size: 40, tokens:)) do
+      Planner::Providers::Llm.new.call("flow_version" => 2, "questions_answered" => 2) { |_| }
+    end
+
+    assert_includes io.string, "input=1200 output=300 cache_read=900 cache_write=0"
+  ensure
+    Rails.logger = original_logger
+  end
+
   private
 
   class RecordingChat
@@ -73,7 +104,21 @@ class PlannerProvidersLlmTest < ActiveSupport::TestCase
 
     def ask(_)
       @calls += 1
-      Struct.new(:content).new(@content)
+      Struct.new(:content, :tokens).new(@content, nil)
+    end
+  end
+
+  class StreamingChat < RecordingChat
+    def initialize(content, chunk_size:, tokens: nil)
+      super(content)
+      @chunk_size = chunk_size
+      @tokens = tokens
+    end
+
+    def ask(_, &block)
+      @calls += 1
+      @content.scan(/.{1,#{@chunk_size}}/m).each { |text| block.call(Struct.new(:content).new(text)) } if block
+      Struct.new(:content, :tokens).new(@content, @tokens)
     end
   end
 

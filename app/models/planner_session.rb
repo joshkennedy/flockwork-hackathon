@@ -140,14 +140,14 @@ class PlannerSession < ApplicationRecord
     end
   end
 
-  def generate!(revision:)
+  def generate!(revision:, &on_partial)
     with_lock do
       return false unless generation_revision == revision && generation_state == "queued" && asking?
 
       update!(generation_state: "running")
     end
 
-    response = Planner::ContextBuilder.new(self).ask
+    response = Planner::ContextBuilder.new(self).ask(&on_partial)
     apply_generation!(revision:, response:)
   rescue StandardError => error
     with_lock do

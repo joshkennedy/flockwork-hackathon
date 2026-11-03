@@ -8,8 +8,8 @@ module Planner
       @session = session
     end
 
-    def ask
-      Rails.configuration.x.planner_provider.call(context)
+    def ask(&on_partial)
+      Rails.configuration.x.planner_provider.call(context, &on_partial)
     end
 
     def voice_instructions

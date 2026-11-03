@@ -17,6 +17,17 @@ class PlannerMealSessionTest < ActiveSupport::TestCase
     Current.reset
   end
 
+  test "generation yields streamed snapshots before the final preview is saved" do
+    use_provider(response(card: card("Which meals?"), added: [ slot_run ]))
+    snapshots = []
+
+    revision = @planner_session.queue_generation!
+    assert current { @planner_session.generate!(revision:) { |partial| snapshots << partial } }
+
+    assert_equal "Which meals?", snapshots.last.fetch(:card).fetch("question")
+    assert_predicate @planner_session.reload.visible_pending_items, :any?
+  end
+
   test "initial generation publishes the first card and answer generation waits for Continue" do
     provider = use_provider(
       response(card: card("Which meals?")),

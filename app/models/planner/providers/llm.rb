@@ -128,7 +128,8 @@ module Planner
         }
       )).freeze
 
-      def call(context)
+      # With a block, complete card and added items are yielded as the model streams; the final parse still decides.
+      def call(context, &on_partial)
         version = context["flow_version"] || context[:flow_version]
         instructions = version == 2 ? MEAL_PROMPT : (version == 3 ? GENERAL_PROMPT : SYSTEM_PROMPT)
         schema = version == 2 ? MEAL_SCHEMA : (version == 3 ? GENERAL_SCHEMA : RESPONSE_SCHEMA)
@@ -142,7 +143,8 @@ module Planner
         # The first card has no answers to weigh, so it skips the reasoning pass (about 40-50% of output tokens).
         answered = context["questions_answered"] || context[:questions_answered] || 1
         chat = chat.with_thinking(effort: :low) if version.in?([ 2, 3 ]) && answered.to_i.zero?
-        message = chat.ask(JSON.generate(context))
+        message = stream_message(chat, JSON.generate(context), on_partial)
+        log_usage(message, version)
         parsed = JSON.parse(message.content.to_s[/\{.*\}/m] || raise(ArgumentError, "Planner response had no JSON"))
         card = parsed.fetch("card")
         finished = parsed.fetch("finished")
@@ -164,6 +166,34 @@ module Planner
       def llm_model
         ENV.fetch("PLANNER_LLM_MODEL", "anthropic/claude-sonnet-5.5")
       end
+
+      private
+        # Yields a snapshot only when a complete card or item changes, so callers can throttle without diffing.
+        def stream_message(chat, prompt, on_partial)
+          return chat.ask(prompt) unless on_partial
+
+          partial = Planner::PartialResponse.new
+          shown = nil
+          chat.ask(prompt) do |chunk|
+            next if chunk.content.blank?
+
+            partial << chunk.content
+            snapshot = [ partial.card, partial.added ]
+            next if snapshot == shown
+
+            shown = snapshot
+            on_partial.call(card: partial.card, added: partial.added)
+          end
+        end
+
+        # Cache hits show up as cache_read; check them here before trusting the prompt cache.
+        def log_usage(message, version)
+          tokens = message.tokens
+          Rails.logger.debug do
+            "[Planner] usage flow=#{version} model=#{llm_model} input=#{tokens&.input} output=#{tokens&.output} " \
+              "cache_read=#{tokens&.cache_read} cache_write=#{tokens&.cache_write} thinking=#{tokens&.thinking}"
+          end
+        end
     end
   end
 end
