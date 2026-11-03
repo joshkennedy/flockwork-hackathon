@@ -131,5 +131,8 @@ Rails.application.routes.draw do
   resources :people, only: %i[index new create edit update] do
     resources :notes, only: :create
   end
-  resource :profile, only: %i[edit update]
+  resource :profile, only: %i[edit update] do
+    post :suggest_away
+    resources :unavailabilities, only: %i[create destroy]
+  end
 end

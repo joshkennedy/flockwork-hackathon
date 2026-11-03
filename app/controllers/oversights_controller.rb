@@ -21,10 +21,13 @@ class OversightsController < ApplicationController
     end
 
     def load_oversight
-      @overextended_people = Oversight.overextended(Current.organization).load
+      today = Date.current
+      @overextended_people = Oversight.overextended(Current.organization, on: today).load
       @never_asked_people = Oversight.never_asked(Current.organization).load
+      @away_ranges = Oversight.upcoming_away(Current.organization, today: today).to_a
       @involvement_year = Time.current.year
-      @involvement = Oversight.involvement_list(Current.organization, @involvement_year)
+      # Settings and the cross-church involvement table are Admin-only; Leaders see the urgent lists.
+      @involvement = Oversight.involvement_list(Current.organization, @involvement_year) if Current.person.admin?
     end
 
     def oversight_params

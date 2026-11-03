@@ -90,6 +90,16 @@ module ApplicationHelper
     end
   end
 
+  # A person's name and avatar, linking to their page only for Admins, who may open People.
+  def person_name_link(person, **options)
+    content = safe_join([ avatar(person), tag.span(person.name, class: "min-w-0") ])
+    if Current.person.admin?
+      link_to content, edit_person_path(person), **options
+    else
+      tag.span content, **options
+    end
+  end
+
   # Several people in one pill: an overlapping stack, then the names (or a label that already includes them).
   def people_pill(people, label: people.map(&:name).to_sentence)
     tag.span(class: "person-pill") do

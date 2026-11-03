@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_03_012640) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_03_024957) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -524,6 +524,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_012640) do
     t.index ["project_id"], name: "index_tasks_on_project_id"
   end
 
+  create_table "unavailabilities", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.bigint "person_id", null: false
+    t.date "starts_on", null: false
+    t.date "ends_on", null: false
+    t.string "note"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_unavailabilities_on_organization_id"
+    t.index ["person_id"], name: "index_unavailabilities_on_person_id"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "budget_lines", "people", column: "responsible_person_id"
@@ -572,4 +584,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_012640) do
   add_foreign_key "tasks", "people", column: "assignee_id"
   add_foreign_key "tasks", "people", column: "completed_by_id"
   add_foreign_key "tasks", "projects"
+  add_foreign_key "unavailabilities", "organizations"
+  add_foreign_key "unavailabilities", "people"
 end

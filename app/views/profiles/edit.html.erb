@@ -45,6 +45,8 @@
     <%= form.submit "Save changes", class: "btn btn-primary" %>
   <% end %>
 
+  <%= render "away_dates" %>
+
   <fieldset class="mt-10 space-y-3" data-controller="appearance" data-action="change->appearance#pick">
     <legend class="text-body-phone font-semibold text-ink sm:text-body">Appearance on this device</legend>
     <p class="text-meta text-ink-2">Only this browser changes. Your church's theme color stays the same.</p>

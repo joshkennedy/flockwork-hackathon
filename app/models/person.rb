@@ -9,6 +9,7 @@ class Person < ApplicationRecord
   has_many :recipients, dependent: :destroy
   has_many :slot_claims, dependent: :destroy
   has_many :notes, as: :notable, dependent: :destroy
+  has_many :unavailabilities, dependent: :destroy
   has_many :authored_notes, class_name: "Note", foreign_key: :author_id, inverse_of: :author,
     dependent: :restrict_with_exception
   has_many :projects, through: :memberships

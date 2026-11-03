@@ -64,6 +64,10 @@ module Policy
       return task_can?(person, action, record)
     end
 
+    if record.is_a?(::Unavailability)
+      return record.organization_id == person.organization_id && record.person_id == person.id
+    end
+
     if record.is_a?(::Note)
       return note_can?(person, action, record)
     end
@@ -74,7 +78,8 @@ module Policy
     if record.is_a?(::Organization)
       return false unless record.id == person.organization_id
 
-      return person.admin? if action.in?([ :view_oversight, :update_oversight ])
+      return person.admin? || leader_somewhere?(person) if action == :view_oversight
+      return person.admin? if action == :update_oversight
       return person.admin? if action == :manage_people
       return person.admin? if action == :manage_directory_source
       return person.admin? if action == :manage_settings
@@ -220,6 +225,12 @@ module Policy
     end
   end
   private :message_can?
+
+  # A Leader of any active Project may use Oversight; the Projects they lead are what the page reads from.
+  def leader_somewhere?(person)
+    person.memberships.leader.joins(:project).merge(Project.active).exists?
+  end
+  private :leader_somewhere?
 
   def project_leader_or_admin?(person, record)
     person.admin? || record.memberships.leader.exists?(person: person)

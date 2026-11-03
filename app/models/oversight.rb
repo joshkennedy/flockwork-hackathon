@@ -5,14 +5,24 @@ module Oversight
     person.memberships.joins(:project).merge(Project.active).distinct.count(:project_id)
   end
 
-  def overextended(organization)
+  # Someone away on the date is not overextended; they appear under away_until instead.
+  def overextended(organization, on: Date.current)
     organization.people
+      .where.not(id: Unavailability.where(organization: organization).covering(on).select(:person_id))
       .joins(memberships: :project)
       .merge(Project.active)
       .select("people.*, COUNT(DISTINCT projects.id) AS serving_load")
       .group("people.id")
       .having("COUNT(DISTINCT projects.id) >= ?", organization.overextended_limit)
       .order(Arel.sql("COUNT(DISTINCT projects.id) DESC"), :name)
+  end
+
+  def away_until(organization, on: Date.current)
+    Unavailability.where(organization: organization).covering(on).group(:person_id).maximum(:ends_on)
+  end
+
+  def upcoming_away(organization, today: Date.current, limit: 10)
+    Unavailability.where(organization: organization).upcoming(today).includes(:person).limit(limit)
   end
 
   def never_asked(organization)

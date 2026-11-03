@@ -1,0 +1,14 @@
+<div class="grid gap-3 sm:grid-cols-2">
+  <div>
+    <%= label_tag "unavailabilities_starts_#{range.object_id}", "From", class: "block text-meta font-medium text-ink-2" %>
+    <%= date_field_tag "unavailabilities[][starts_on]", range.starts_on&.iso8601, id: "unavailabilities_starts_#{range.object_id}", required: true, class: "mt-1 block w-full field" %>
+  </div>
+  <div>
+    <%= label_tag "unavailabilities_ends_#{range.object_id}", "Until", class: "block text-meta font-medium text-ink-2" %>
+    <%= date_field_tag "unavailabilities[][ends_on]", range.ends_on&.iso8601, id: "unavailabilities_ends_#{range.object_id}", required: true, class: "mt-1 block w-full field" %>
+  </div>
+</div>
+<div>
+  <%= label_tag "unavailabilities_note_#{range.object_id}", "Note (only you see it)", class: "block text-meta font-medium text-ink-2" %>
+  <%= text_field_tag "unavailabilities[][note]", range.note, id: "unavailabilities_note_#{range.object_id}", maxlength: Unavailability::NOTE_LIMIT, class: "mt-1 block w-full field" %>
+</div>

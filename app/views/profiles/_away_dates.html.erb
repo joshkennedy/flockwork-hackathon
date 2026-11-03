@@ -1,0 +1,46 @@
+<section class="tool-section mt-10" aria-labelledby="away-dates-heading">
+  <h2 id="away-dates-heading" class="text-ink">When you're away</h2>
+  <p class="mt-2 text-meta text-ink-2">Say when you're away or can't serve. Leaders and Admins see only the dates, never your note.</p>
+
+  <% if @away_alert %>
+    <p role="alert" class="mt-4 rounded-control bg-danger-soft px-4 py-3 text-meta text-danger"><%= @away_alert %></p>
+  <% end %>
+
+  <%= form_with url: suggest_away_profile_path, method: :post, class: "mt-5 space-y-2" do %>
+    <%= label_tag :away_text, "In your own words", class: "block text-label font-medium text-ink-2" %>
+    <%= text_area_tag :away_text, nil, rows: 2, maxlength: 500, placeholder: "Out most of July, back the first Sunday of August", class: "block w-full field" %>
+    <%= submit_tag "Suggest dates", class: "btn btn-secondary", data: { disable_with: "Reading…" } %>
+  <% end %>
+
+  <% if @away_drafts %>
+    <div class="ghost mt-6">
+      <span class="ghost-label">Suggested · not saved yet</span>
+      <% if @away_notice %><p class="mt-1 text-meta text-ink-2"><%= @away_notice %></p><% end %>
+      <%= form_with url: profile_unavailabilities_path, method: :post, class: "mt-3 space-y-4" do %>
+        <% @away_drafts.each do |range| %>
+          <%= render "away_range_fields", range: range %>
+        <% end %>
+        <%= submit_tag "Save these dates", class: "btn btn-secondary" %>
+      <% end %>
+    </div>
+  <% else %>
+    <%= form_with url: profile_unavailabilities_path, method: :post, class: "mt-6 space-y-4" do %>
+      <%= render "away_range_fields", range: Unavailability.new %>
+      <%= submit_tag "Add dates", class: "btn btn-secondary" %>
+    <% end %>
+  <% end %>
+
+  <% if @away_dates.any? %>
+    <ul class="mt-6 divide-y divide-hairline">
+      <% @away_dates.each do |away| %>
+        <li class="flex items-start justify-between gap-4 py-3" data-away-range>
+          <div class="min-w-0">
+            <p class="font-semibold text-ink">Away <%= away.range_label %></p>
+            <% if away.note.present? %><p class="mt-1 text-meta text-ink-2"><%= away.note %></p><% end %>
+          </div>
+          <%= button_to "Remove", profile_unavailability_path(away), method: :delete, class: "btn btn-text shrink-0" %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>
