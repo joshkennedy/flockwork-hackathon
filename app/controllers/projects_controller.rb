@@ -21,6 +21,7 @@ class ProjectsController < ApplicationController
   end
 
   def show
+    load_team if Policy.can?(Current.person, :view_team, @project)
     if Policy.can?(Current.person, :plan, @project)
       @resumable_planner_session = @project.planner_sessions.where(flow_version: [ 2, 3 ], started_by: Current.person, status: %i[asking reviewing]).order(updated_at: :desc).first
       @completed_planner_session = @project.planner_sessions.where(flow_version: [ 2, 3 ], status: :accepted).find_by(id: params[:added_plan]) if params[:added_plan].present?
@@ -35,19 +36,11 @@ class ProjectsController < ApplicationController
     @note_visibilities = Policy.writable_note_visibilities(Current.person, @project)
   end
 
+  # Team is a tab on the project page; this URL opens the page with that tab selected.
   def team
-    @memberships = @project.memberships.includes(:person).order(:role, :created_at)
-    @can_manage_team = Policy.can?(Current.person, :manage_team, @project)
-    return unless @can_manage_team
-
-    @invitations = Current.organization.invitations.where(project: @project).includes(:person).order(created_at: :desc)
-    return unless params[:query].present?
-
-    member_ids = @project.memberships.select(:person_id)
-    @directory_people = Current.organization.people
-      .matching(params[:query])
-      .where.not(id: member_ids)
-      .order(:name)
+    @selected_tab = "team"
+    show
+    render :show
   end
 
   def new
@@ -165,6 +158,22 @@ class ProjectsController < ApplicationController
   end
 
   private
+
+    def load_team
+      @memberships = @project.memberships.includes(:person).order(:role, :created_at)
+      @can_manage_team = Policy.can?(Current.person, :manage_team, @project)
+      return unless @can_manage_team
+
+      @invitations = Current.organization.invitations.where(project: @project).includes(:person).order(created_at: :desc)
+      return unless params[:query].present?
+
+      member_ids = @project.memberships.select(:person_id)
+      @directory_people = Current.organization.people
+        .matching(params[:query])
+        .where.not(id: member_ids)
+        .order(:name)
+    end
+
     def start_planning(kind)
       starter = Planner::ProjectKinds::CHOICES.fetch(kind)
       Project.transaction do

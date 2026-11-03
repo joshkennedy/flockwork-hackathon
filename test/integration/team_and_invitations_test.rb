@@ -9,7 +9,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", "Community Meal"
-    assert_select "a.tab-link[aria-current=page]", "Team"
+    assert_select "a.tab-link[aria-current=true]", "Team"
     assert_select "li", text: /Leo Leader.*Leader/
     assert_select "li", text: /Vic Volunteer.*Volunteer/
   end
@@ -28,7 +28,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     get team_project_path(project), params: { query: "Vic" }
 
     assert_response :success
-    assert_select "li", text: /Vic Volunteer/, count: 1
+    assert_select "section[aria-labelledby='members-heading'] li", text: /Vic Volunteer/, count: 1
     assert_select "section[aria-labelledby='directory-heading'] li", text: /Vic Volunteer/, count: 0
   end
 

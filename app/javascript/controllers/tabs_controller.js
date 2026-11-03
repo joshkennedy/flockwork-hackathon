@@ -4,11 +4,13 @@ import { Controller } from "@hotwired/stimulus"
 // and the last tab is remembered per page because form redirects land on the bare URL.
 export default class extends Controller {
   static targets = ["tab", "panel"]
+  // Set when the URL itself picks the tab (e.g. /team), so a remembered tab must not override it.
+  static values = { explicit: Boolean }
 
   connect() {
     const anchored = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)))
     const fromHash = anchored && this.panelTargets.find((panel) => panel.contains(anchored))
-    const stored = this.panelTargets.find((panel) => panel.dataset.tabsName === this.remembered)
+    const stored = !this.explicitValue && this.panelTargets.find((panel) => panel.dataset.tabsName === this.remembered)
     const panel = fromHash || stored
     if (panel) this.show(panel.dataset.tabsName)
   }
