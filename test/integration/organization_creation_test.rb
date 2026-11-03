@@ -19,7 +19,8 @@ class OrganizationCreationTest < ActionDispatch::IntegrationTest
       post organizations_path, params: { church_name: "Hope Church", your_name: "Casey Creator", email: "" }
     end
 
-    assert_redirected_to root_path
-    assert_equal "Email can't be blank", flash[:alert]
+    assert_response :unprocessable_content
+    assert_select "[role=alert]", "Email can't be blank"
+    assert_select "input[name=church_name][value='Hope Church']"
   end
 end

@@ -1,0 +1,20 @@
+<% content_for :title, "Create your church · Flockwork" %>
+<h1>A place for your church.</h1>
+<p class="mt-3 text-ink-2">Bring your projects, plans and people together. You’ll be the first admin of your church’s space.</p>
+<%= form_with url: organizations_path, class: "mt-7 space-y-5" do |f| %>
+  <div>
+    <%= f.label :church_name, "Church name", class: "block font-medium" %>
+    <%= f.text_field :church_name, value: params[:church_name], required: true, autocomplete: "organization", class: "field mt-2 w-full" %>
+  </div>
+  <div>
+    <%= f.label :your_name, "Your name", class: "block font-medium" %>
+    <%= f.text_field :your_name, value: params[:your_name], required: true, autocomplete: "name", class: "field mt-2 w-full" %>
+  </div>
+  <div>
+    <%= f.label :email, "Your email", class: "block font-medium" %>
+    <%= f.email_field :email, value: params[:email], required: true, autocomplete: "email", class: "field mt-2 w-full" %>
+  </div>
+  <p class="text-meta text-ink-2">No password to remember. Next time, we’ll email you a sign-in link.</p>
+  <%= f.submit "Create your church", class: "btn btn-primary w-full" %>
+<% end %>
+<p class="mt-7 text-ink-2">Already part of a church on Flockwork? <%= link_to "Sign in", new_sign_in_request_path, class: "font-medium underline" %></p>

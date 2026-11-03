@@ -2,6 +2,7 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
   root "landing#show"
+  get "sign_up", to: "organizations#new", as: :sign_up
 
   get "p/:token", to: "public_projects#show", as: :public_project
 
@@ -118,6 +119,7 @@ Rails.application.routes.draw do
 
   get "home", to: "organizations#show", as: :home
   get "sign_in", to: "sign_in_requests#new", as: :new_sign_in_request
+  get "check_email", to: "sign_in_requests#check_email", as: :check_email
   post "sign_in", to: "sign_in_requests#create", as: :sign_in_requests
   get "choose_organization", to: "organization_choices#new", as: :new_organization_choice
   post "choose_organization", to: "organization_choices#create", as: :organization_choice

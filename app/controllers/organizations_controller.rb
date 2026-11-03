@@ -1,5 +1,9 @@
 class OrganizationsController < ApplicationController
-  allow_unauthenticated_access only: :create
+  allow_unauthenticated_access only: %i[ new create ]
+
+  def new
+    redirect_to home_path if authenticated?
+  end
 
   def show
     @organization = Current.organization
@@ -39,7 +43,8 @@ class OrganizationsController < ApplicationController
       start_new_session_for @admin
       redirect_to home_path
     else
-      redirect_to root_path, alert: (@organization.errors.full_messages + @admin.errors.full_messages).to_sentence
+      flash.now[:alert] = (@organization.errors.full_messages + @admin.errors.full_messages).to_sentence
+      render :new, status: :unprocessable_content
     end
   end
 

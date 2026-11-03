@@ -56,7 +56,8 @@ class SignInTest < ActionDispatch::IntegrationTest
         post sign_in_requests_path, params: { email: "" }
       end
     end
-    assert_response :success
+    assert_redirected_to check_email_path
+    follow_redirect!
     assert_select "h1", "Check your email"
   end
 
@@ -66,7 +67,8 @@ class SignInTest < ActionDispatch::IntegrationTest
         post sign_in_requests_path, params: { email: "nobody@st-example.test" }
       end
     end
-    assert_response :success
+    assert_redirected_to check_email_path
+    follow_redirect!
     assert_select "h1", "Check your email"
   end
 

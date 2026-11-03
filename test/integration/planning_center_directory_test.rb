@@ -96,6 +96,7 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
         post sign_in_requests_path, params: { email: "" }
       end
     end
+    follow_redirect!
     assert_select "h1", "Check your email"
   end
 
