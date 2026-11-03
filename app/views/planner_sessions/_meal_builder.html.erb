@@ -27,6 +27,9 @@
   <% end %>
 
   <section class="meal-builder" aria-labelledby="meal-project-heading">
+    <% if planner_session.generation_busy? %>
+      <span data-meal-planner-target="busy" hidden></span>
+    <% end %>
     <header class="meal-builder-header">
       <div class="min-w-0">
         <p class="text-meta text-ink-2">Suggestions · not added yet</p>

@@ -232,8 +232,8 @@ Badges 4px, buttons and inputs 6px, nav items 8px, tiles 10px, panels and popove
 
 - **Approach:** minimal-functional.
 - **Easing:** enter ease-out, exit ease-in, move ease-in-out.
-- **Duration:** press 100ms, hover/border/background 150ms, preview-update emphasis 180ms. Nothing longer than 300ms, with one exception: the header wash drifts for 1600ms (`cubic-bezier(0.45, 0, 0.25, 1)`) from the previous page's blob layout and tint to the new page's. Each page's layout comes from its path, the drift never delays content, and `prefers-reduced-motion` skips it.
-- **Building state:** the only loop is the skeleton shimmer in the Planner preview (1600ms, opacity only), shown while a step is being prepared. It stops under `prefers-reduced-motion`, and the text label carries the state without it.
+- **Duration:** press 100ms, hover/border/background 150ms, preview-update emphasis 180ms. Nothing longer than 300ms, with two exceptions: the header wash drifts for 1600ms (`cubic-bezier(0.45, 0, 0.25, 1)`) from the previous page's blob layout and tint to the new page's. Each page's layout comes from its path, the drift never delays content, and `prefers-reduced-motion` skips it.
+- **Building state:** the only loop is the skeleton shimmer in the Planner preview (1600ms, opacity only), shown while a step is being prepared, and it is a second exception to the 300ms rule. It stops under `prefers-reduced-motion`, and the text label carries the state without it.
 - **The authored moment:** a changed choice produces a short tonal emphasis on the affected preview row after the new content is already visible. Content is never hidden waiting for an entrance animation. `prefers-reduced-motion` removes transforms and makes the tonal change instant.
 
 ## Decisions Log

@@ -32,10 +32,10 @@
     <% end %>
 
     <% if planner_session.generation_busy? %>
-      <div class="meal-building" aria-hidden="true">
+      <div class="meal-building">
         <p class="text-meta text-ink-2">Building the Project preview…</p>
-        <div class="meal-skeleton"></div>
-        <div class="meal-skeleton meal-skeleton-short"></div>
+        <div class="meal-skeleton" aria-hidden="true"></div>
+        <div class="meal-skeleton meal-skeleton-short" aria-hidden="true"></div>
       </div>
     <% end %>
 
