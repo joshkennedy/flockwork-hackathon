@@ -14,7 +14,10 @@
         <% recipients.each do |recipient| %>
           <li class="py-4">
             <div class="flex items-center justify-between gap-4">
-              <span class="font-semibold text-ink"><%= recipient.person.name %></span>
+              <div class="flex min-w-0 items-center gap-3">
+                <%= avatar(recipient.person) %>
+                <span class="font-semibold text-ink"><%= recipient.person.name %></span>
+              </div>
               <% if Policy.can?(Current.person, :manage_recipients, project) %>
                 <%= actions_menu("Actions for #{recipient.person.name}") do %>
                   <%= button_to "Remove", project_recipient_path(project, recipient), method: :delete, class: "menu-danger" %>

@@ -7,6 +7,6 @@ class MentionablePeopleController < ApplicationController
       .order(:name)
       .select { |person| Policy.can?(person, :show, project) }
 
-    render json: { people: people.map { |person| { id: person.id, name: person.name } } }
+    render json: { people: people.map { |person| { id: person.id, name: person.name, initials: helpers.person_initials(person.name), hue: helpers.avatar_hue(person) } } }
   end
 end

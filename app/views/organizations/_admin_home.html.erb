@@ -16,7 +16,8 @@
         <%= link_to project_path(project), class: "grid gap-x-5 gap-y-1 border-b border-hairline px-1 py-3.5 hover:bg-ghost-fill sm:grid-cols-[minmax(0,1fr)_8rem_13rem] sm:items-center" do %>
           <span class="min-w-0">
             <span class="block font-semibold text-ink"><%= project.name %></span>
-            <span class="block text-meta text-ink-2"><%= project.memberships.select(&:leader?).map { |membership| membership.person.name }.to_sentence.presence || "No Leader yet" %></span>
+            <% leaders = project.memberships.select(&:leader?).map(&:person) %>
+            <span class="flex items-center gap-2 text-meta text-ink-2"><%= avatar_stack(leaders) if leaders.any? %><span><%= leaders.map(&:name).to_sentence.presence || "No Leader yet" %></span></span>
           </span>
           <span class="text-meta text-ink-2"><%= project.starts_on || project.ends_on ? project_date_range(project.starts_on, project.ends_on) : "No dates" %></span>
           <span>

@@ -1,4 +1,10 @@
+require "zlib"
+
 module ApplicationHelper
+  # Matches the avatar-hue-N classes and --color-avatar-N tokens in application.css.
+  AVATAR_HUES = 10
+  AVATAR_SIZES = { sm: "avatar-sm", md: nil, lg: "avatar-lg" }.freeze
+
   ICON_PATHS = {
     home: "m3 10 9-7 9 7v10H3Z M9 20v-7h6v7",
     tasks: "M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z m3 9 3 3 5-6",
@@ -57,8 +63,40 @@ module ApplicationHelper
     Current.person.email.present? && Person.where(email: Current.person.email).many?
   end
 
+  # First letter of the first and last name ("Maria Lopez" → "ML"); one word gives one letter, a name with no letters gives "?".
   def person_initials(name)
-    name.split.first(2).filter_map { |word| word[0] }.join.upcase
+    words = name.to_s.split
+    letters = [ words.first, (words.last if words.size > 1) ].compact.filter_map { |word| word[/[[:alpha:]]/] }
+    letters.join.upcase.presence || "?"
+  end
+
+  # Stable across processes and restarts (String#hash is seeded per process). Email decides, name is the fallback.
+  def avatar_hue(person)
+    Zlib.crc32((person.email.presence || person.name).to_s.strip.downcase) % AVATAR_HUES
+  end
+
+  # Decorative (aria-hidden) when the name sits beside it; label: true names a bare avatar, like the phone top bar.
+  def avatar(person, size: :md, label: false)
+    tag.span(person_initials(person.name), class: class_names("avatar rounded-full", "avatar-hue-#{avatar_hue(person)}", AVATAR_SIZES.fetch(size)),
+      role: ("img" if label), aria: label ? { label: person.name } : { hidden: true })
+  end
+
+  # A name with a small avatar in front, for meta lines. Without a person, the fallback text ("Unassigned") shows alone.
+  def avatar_name(person, fallback: nil, size: :sm)
+    return fallback if person.blank?
+
+    tag.span(class: "inline-flex min-w-0 items-center gap-1.5 align-middle") do
+      safe_join([ avatar(person, size: size), person.name ])
+    end
+  end
+
+  # Up to three overlapping people, then "+N". The names sit in the text beside it, so the stack is decorative.
+  def avatar_stack(people, size: :md, max: 3)
+    shown = people.first(max)
+    extra = people.size - shown.size
+    tag.span(class: "avatar-stack", aria: { hidden: true }) do
+      safe_join(shown.map { |person| avatar(person, size: size) } + (extra.positive? ? [ tag.span("+#{extra}", class: class_names("avatar rounded-full bg-hairline text-ink-2", AVATAR_SIZES.fetch(size))) ] : []))
+    end
   end
 
   # The "Manage it" tier of the button grammar: a ⋯ button opening a menu of

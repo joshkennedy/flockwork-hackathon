@@ -1,7 +1,10 @@
 <% content_for :title, "My profile" %>
 
 <div class="w-full max-w-2xl">
-  <%= page_header "My profile" %>
+  <div class="flex items-center gap-4">
+    <%= avatar(@person, size: :lg) %>
+    <div class="min-w-0 flex-1"><%= page_header "My profile" %></div>
+  </div>
 
   <%= form_with model: @person, url: profile_path, method: :patch, class: "mt-7 space-y-4" do |form| %>
     <% if @person.errors.any? %>

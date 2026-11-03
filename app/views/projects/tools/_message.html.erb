@@ -1,6 +1,6 @@
 <article class="text-ink" data-message-id="<%= message.id %>">
   <header class="flex flex-wrap items-baseline justify-between gap-2">
-    <p class="text-meta font-semibold text-ink"><%= message.author.name %></p>
+    <p class="text-meta font-semibold text-ink"><%= avatar_name(message.author) %></p>
     <p class="text-meta text-ink-2"><%= time_ago_in_words(message.created_at) %> ago</p>
   </header>
   <div class="rich-content mt-2 max-w-none text-ink" data-message-body>

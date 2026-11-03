@@ -30,6 +30,17 @@
   --color-tool-messages: #E8590C;
   --color-tool-docs: #64748B;
   --color-tool-list: #A16207;
+  /* Avatar fills: the header wash family softened, one per person (ApplicationHelper#avatar_hue). Ink text clears 10:1 on each. */
+  --color-avatar-0: #FBE3A3;
+  --color-avatar-1: #F7C3A8;
+  --color-avatar-2: #EBC0B2;
+  --color-avatar-3: #EAB4C4;
+  --color-avatar-4: #A8DFDE;
+  --color-avatar-5: #B4D5C2;
+  --color-avatar-6: #B2DCF0;
+  --color-avatar-7: #B3C7F1;
+  --color-avatar-8: #DDC6A6;
+  --color-avatar-9: #C7CDD5;
   --radius-badge: 4px;
   --radius-control: 6px;
   --radius-nav: 8px;
@@ -120,6 +131,16 @@
   --color-nav-active: #2B2A27;
   --color-tool-docs: #94A3B8;
   --color-tool-list: #CA8A04;
+  --color-avatar-0: #5E4913;
+  --color-avatar-1: #5A2F16;
+  --color-avatar-2: #502C1F;
+  --color-avatar-3: #4F222F;
+  --color-avatar-4: #184644;
+  --color-avatar-5: #223E2C;
+  --color-avatar-6: #214453;
+  --color-avatar-7: #223254;
+  --color-avatar-8: #453215;
+  --color-avatar-9: #32373D;
   --shadow-raised: inset 0 1px 0 rgba(255,255,255,.04), 0 1px 2px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.22);
   --shadow-float: inset 0 1px 0 rgba(255,255,255,.05), 0 8px 24px rgba(0,0,0,.5), 0 2px 6px rgba(0,0,0,.3);
   --shadow-button: inset 0 1px 0 rgba(255,255,255,.6), 0 1px 1px rgba(0,0,0,.4), 0 2px 6px rgba(0,0,0,.3);
@@ -177,6 +198,22 @@
   /* Account menu: the sidebar row opens upward; the phone avatar opens a sheet above the tab bar. */
   .avatar { @apply inline-grid size-7 shrink-0 place-items-center rounded-badge bg-nav-active text-label font-semibold text-ink; }
   .avatar.sm { @apply size-6 text-[11px]; }
+  /* Person avatars (ApplicationHelper#avatar): round, initials in ink on a soft hue. */
+  .avatar.avatar-sm { @apply size-5 text-[10px] leading-none; }
+  .avatar.avatar-lg { @apply size-14 text-[20px] leading-none; }
+  .avatar-hue-0 { @apply bg-avatar-0; }
+  .avatar-hue-1 { @apply bg-avatar-1; }
+  .avatar-hue-2 { @apply bg-avatar-2; }
+  .avatar-hue-3 { @apply bg-avatar-3; }
+  .avatar-hue-4 { @apply bg-avatar-4; }
+  .avatar-hue-5 { @apply bg-avatar-5; }
+  .avatar-hue-6 { @apply bg-avatar-6; }
+  .avatar-hue-7 { @apply bg-avatar-7; }
+  .avatar-hue-8 { @apply bg-avatar-8; }
+  .avatar-hue-9 { @apply bg-avatar-9; }
+  .avatar-stack { @apply inline-flex shrink-0 items-center; }
+  .avatar-stack > * + * { @apply -ml-1; }
+  .avatar-stack > .avatar { @apply ring-2 ring-panel; }
   .account-menu > summary { list-style: none; }
   .account-menu > summary::-webkit-details-marker { display: none; }
   .account-menu[open] > summary { background-color: var(--color-nav-active); }

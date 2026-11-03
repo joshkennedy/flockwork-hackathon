@@ -22,9 +22,60 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_dom_equal(%(<details class="actions-menu relative"><summary class="btn btn-icon" aria-label="Slot actions" title="Slot actions">#{icon(:more)}</summary><div class="actions-menu-panel popover-in"><a href="/slots/1/edit">Edit slot</a></div></details>), html)
   end
 
-  test "person_initials uses the first letters of the first two names" do
+  test "person_initials uses the first letter of the first and last names" do
     assert_equal "JK", person_initials("Josh Kennedy")
+    assert_equal "ML", person_initials("Maria Lopez")
+    assert_equal "AH", person_initials("Ada Mary Hopper")
     assert_equal "M", person_initials("Maria")
-    assert_equal "AM", person_initials("Ada Mary Hopper")
+  end
+
+  test "person_initials handles blanks, punctuation and non-Latin names" do
+    assert_equal "?", person_initials(nil)
+    assert_equal "?", person_initials("   ")
+    assert_equal "?", person_initials("123")
+    assert_equal "JK", person_initials("(Josh) Kennedy")
+    assert_equal "M", person_initials("123 Maria")
+    assert_equal "李", person_initials("李明")
+    assert_equal "ÉÅ", person_initials("élodie Ångström")
+  end
+
+  test "avatar_hue is the same for the same email, whatever the name" do
+    first = Person.new(name: "Maria Lopez", email: "maria@example.com")
+    renamed = Person.new(name: "Mary L.", email: "maria@example.com")
+    assert_equal avatar_hue(first), avatar_hue(renamed)
+    assert_equal Zlib.crc32("maria@example.com") % ApplicationHelper::AVATAR_HUES, avatar_hue(first)
+  end
+
+  test "avatar_hue ignores email case" do
+    assert_equal avatar_hue(Person.new(name: "A", email: "maria@example.com")),
+      avatar_hue(Person.new(name: "A", email: "Maria@Example.com"))
+  end
+
+  test "avatar_hue falls back to the name when there is no email" do
+    person = Person.new(name: "Maria Lopez", email: nil)
+    assert_equal Zlib.crc32("maria lopez") % ApplicationHelper::AVATAR_HUES, avatar_hue(person)
+  end
+
+  test "avatar_hue stays inside the palette" do
+    hues = (1..200).map { |n| avatar_hue(Person.new(name: "Person #{n}")) }
+    assert hues.all? { |hue| hue.between?(0, ApplicationHelper::AVATAR_HUES - 1) }
+    assert_operator hues.uniq.size, :>=, 8
+  end
+
+  test "avatar is decorative beside a name and labelled when alone" do
+    person = Person.new(name: "Maria Lopez", email: "maria@example.com")
+    decorative = avatar(person)
+    assert_dom_equal %(<span class="avatar rounded-full avatar-hue-#{avatar_hue(person)}" aria-hidden="true">ML</span>), decorative
+
+    labelled = avatar(person, size: :lg, label: true)
+    assert_dom_equal %(<span class="avatar rounded-full avatar-hue-#{avatar_hue(person)} avatar-lg" role="img" aria-label="Maria Lopez">ML</span>), labelled
+  end
+
+  test "avatar_stack shows up to three people and a count for the rest" do
+    people = (1..5).map { |n| Person.new(name: "Person #{n}") }
+    html = avatar_stack(people)
+    assert_equal 3, html.scan("avatar-hue-").size
+    assert_includes html, "+2"
+    assert_no_match(/\+\d/, avatar_stack(people.first(3)))
   end
 end

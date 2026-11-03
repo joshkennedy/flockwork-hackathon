@@ -6,9 +6,12 @@
       <ul class="mt-3 border-t border-border">
         <% @memberships.each do |membership| %>
           <li class="flex min-h-14 items-center justify-between gap-4 border-b border-hairline px-1 py-2">
-            <div class="min-w-0">
-              <span class="font-semibold text-ink"><%= membership.person.name %></span><%= tag.span(" (you)", class: "text-ink-2") if membership.person_id == Current.person.id %>
-              <span class="ml-2 <%= membership.leader? ? "rounded-badge bg-frame px-2 py-0.5 text-label text-ink" : "text-meta text-ink-2" %>"><%= membership.role.humanize %></span>
+            <div class="flex min-w-0 items-center gap-3">
+              <%= avatar(membership.person) %>
+              <div class="min-w-0">
+                <span class="font-semibold text-ink"><%= membership.person.name %></span><%= tag.span(" (you)", class: "text-ink-2") if membership.person_id == Current.person.id %>
+                <span class="ml-2 <%= membership.leader? ? "rounded-badge bg-frame px-2 py-0.5 text-label text-ink" : "text-meta text-ink-2" %>"><%= membership.role.humanize %></span>
+              </div>
             </div>
             <% if Policy.can?(Current.person, :leave_team, membership) %>
               <%= actions_menu("Your membership") do %>
@@ -40,11 +43,14 @@
               <ul class="mt-3 divide-y divide-hairline">
                 <% @directory_people.each do |person| %>
                   <li class="grid gap-2 py-3">
-                    <div class="min-w-0">
-                      <p class="font-semibold text-ink"><%= person.name %></p>
-                      <% if person.email.blank? %>
-                        <p class="text-meta text-ink-2">No email, can't be invited</p>
-                      <% end %>
+                    <div class="flex min-w-0 items-center gap-3">
+                      <%= avatar(person) %>
+                      <div class="min-w-0">
+                        <p class="font-semibold text-ink"><%= person.name %></p>
+                        <% if person.email.blank? %>
+                          <p class="text-meta text-ink-2">No email, can't be invited</p>
+                        <% end %>
+                      </div>
                     </div>
                     <% if person.email.blank? %>
                       <button type="button" disabled class="btn btn-secondary btn-sm justify-self-start">Invite</button>
@@ -72,9 +78,12 @@
             <ul class="mt-3 border-t border-border">
               <% @invitations.each do |invitation| %>
                 <li class="grid gap-2 border-b border-hairline py-3">
-                  <div class="min-w-0">
-                    <p class="font-semibold text-ink"><%= invitation.person.name %></p>
-                    <p class="text-meta text-ink-2"><%= invitation.role.humanize %> · <%= invitation.status.humanize %></p>
+                  <div class="flex min-w-0 items-center gap-3">
+                    <%= avatar(invitation.person) %>
+                    <div class="min-w-0">
+                      <p class="font-semibold text-ink"><%= invitation.person.name %></p>
+                      <p class="text-meta text-ink-2"><%= invitation.role.humanize %> · <%= invitation.status.humanize %></p>
+                    </div>
                   </div>
                   <% if invitation.pending? %>
                     <% invitation_link = invitation_url(invitation.generate_token_for(:access)) %>

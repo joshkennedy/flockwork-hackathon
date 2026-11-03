@@ -10,7 +10,9 @@
   <ul class="mt-7 divide-y divide-hairline border-b border-hairline">
     <% @people.each do |person| %>
       <li class="flex items-center justify-between gap-4 py-3">
-        <div>
+        <div class="flex min-w-0 items-center gap-3">
+          <%= avatar(person) %>
+          <div class="min-w-0">
           <p class="font-medium text-ink">
             <%= person.name %>
             <% if person.admin? %>
@@ -27,6 +29,7 @@
               · <%= person.phone %>
             <% end %>
           </p>
+          </div>
         </div>
 
         <%= link_to "Edit", edit_person_path(person), class: "text-meta font-medium text-ink-2 hover:text-ink" %>

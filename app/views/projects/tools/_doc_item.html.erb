@@ -16,7 +16,7 @@
         <div class="rich-content mt-1 max-w-none text-ink-2"><%= item.body %></div>
       <% end %>
     <% end %>
-    <span class="mt-1 block text-meta text-ink-2"><%= item.author.name %></span>
+    <span class="mt-1 block text-meta text-ink-2"><%= avatar_name(item.author) %></span>
     </div>
     <% if Policy.can?(Current.person, :manage_docs, project) || Policy.can?(Current.person, :destroy, item) %>
       <%= actions_menu("Actions for #{item.title}") do %>

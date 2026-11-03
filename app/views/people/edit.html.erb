@@ -6,7 +6,10 @@
 <% end %>
 
 <div class="w-full max-w-2xl">
-  <%= page_header "Edit #{@person.name}" %>
+  <div class="flex items-center gap-4">
+    <%= avatar(@person, size: :lg) %>
+    <div class="min-w-0 flex-1"><%= page_header "Edit #{@person.name}" %></div>
+  </div>
 
   <%= render "form", person: @person, submit_label: "Save changes" %>
 

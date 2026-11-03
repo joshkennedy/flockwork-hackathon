@@ -12,7 +12,7 @@
           <% @overextended_people.each do |person| %>
             <li class="flex items-start justify-between gap-4 py-3" data-overextended-person="<%= person.name %>" data-serving-load="<%= person.serving_load %>">
               <div class="min-w-0">
-                <%= link_to person.name, edit_person_path(person), class: "font-semibold" %>
+                <%= link_to edit_person_path(person), class: "flex min-w-0 items-center gap-2.5 font-semibold" do %><%= avatar(person) %><span class="min-w-0"><%= person.name %></span><% end %>
                 <p class="mt-1 text-meta text-ink-2"><%= pluralize(person.serving_load, "Active Project") %></p>
                 <ul class="mt-1 text-meta text-ink-2">
                   <% Current.organization.projects.active.joins(:memberships).where(memberships: { person_id: person.id }).distinct.order(:name).each do |project| %>

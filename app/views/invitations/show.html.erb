@@ -4,7 +4,10 @@
   <h1 class="text-ink"><%= @invitation.project.name %></h1>
 
   <div class="mt-7 border-y border-hairline py-6 sm:grid sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-7">
-    <p class="text-body-phone sm:text-body leading-normal text-ink-2"><%= @invitation.inviter.name %> invited you to join this Team as a <%= @invitation.role.humanize %>.</p>
+    <div class="flex items-center gap-3">
+      <%= avatar(@invitation.inviter) %>
+      <p class="text-body-phone sm:text-body leading-normal text-ink-2"><%= @invitation.inviter.name %> invited you to join this Team as a <%= @invitation.role.humanize %>.</p>
+    </div>
     <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-4 sm:mt-0">
       <%= button_to "Accept", accept_invitation_path(params[:token]), method: :patch, class: "btn btn-primary" %>
       <%= button_to "Decline", decline_invitation_path(params[:token]), method: :patch, class: "btn btn-text" %>

@@ -11,7 +11,7 @@
       <% if own %>
         <p class="mt-1 flex items-center gap-1.5 text-meta text-ink"><%= icon(:check, class: "text-sunlit") %><%= slot.label.downcase == "dinner" ? "You’re bringing dinner" : "You’re signed up" %></p>
       <% elsif going %>
-        <p class="mt-1 flex items-center gap-1.5 text-meta text-ink-2"><%= icon(:check, class: "text-success") %><%= going %></p>
+        <p class="mt-1 flex items-center gap-1.5 text-meta text-ink-2"><%= icon(:check, class: "text-success") %><%= avatar_stack(slot.slot_claims.map(&:person), size: :sm) %><%= going %></p>
       <% end %>
     </div>
     <% unless own %>

@@ -15,7 +15,7 @@
         <% comments.each do |comment| %>
           <li>
             <div class="flex flex-wrap items-baseline justify-between gap-2">
-              <span class="text-meta font-semibold text-ink"><%= comment.author.name %></span>
+              <span class="text-meta font-semibold text-ink"><%= avatar_name(comment.author) %></span>
               <span class="text-label text-ink-2"><%= time_ago_in_words(comment.created_at) %> ago</span>
             </div>
             <div class="mt-1 text-meta leading-normal text-ink"><%= comment.body %></div>
