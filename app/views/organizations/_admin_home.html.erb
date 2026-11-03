@@ -17,7 +17,7 @@
           <span class="min-w-0">
             <span class="block font-semibold text-ink"><%= project.name %></span>
             <% leaders = project.memberships.select(&:leader?).map(&:person) %>
-            <span class="flex items-center gap-2 text-meta text-ink-2"><%= avatar_stack(leaders) if leaders.any? %><span><%= leaders.map(&:name).to_sentence.presence || "No Leader yet" %></span></span>
+            <span class="flex min-w-0 text-meta text-ink-2"><%= leaders.any? ? people_pill(leaders) : "No Leader yet" %></span>
           </span>
           <span class="text-meta text-ink-2"><%= project.starts_on || project.ends_on ? project_date_range(project.starts_on, project.ends_on) : "No dates" %></span>
           <span>

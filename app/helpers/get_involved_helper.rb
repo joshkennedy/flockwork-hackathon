@@ -14,12 +14,13 @@ module GetInvolvedHelper
     end
   end
 
+  # The names inside the claimers' pill; "signed up" sits beside it so the pill never truncates the verb.
   def who_is_going(slot)
     names = slot.slot_claims.map { |claim| claim.person.name }
     case names.size
     when 0 then nil
-    when 1, 2 then "#{names.to_sentence} signed up"
-    else "#{names.first} and #{names.size - 1} others signed up"
+    when 1, 2 then names.to_sentence
+    else "#{names.first} and #{names.size - 1} others"
     end
   end
 

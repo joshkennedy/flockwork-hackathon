@@ -65,10 +65,10 @@ class ApplicationHelperTest < ActionView::TestCase
   test "avatar is decorative beside a name and labelled when alone" do
     person = Person.new(name: "Maria Lopez", email: "maria@example.com")
     decorative = avatar(person)
-    assert_dom_equal %(<span class="avatar rounded-full avatar-hue-#{avatar_hue(person)}" aria-hidden="true">ML</span>), decorative
+    assert_dom_equal %(<span class="avatar avatar-person avatar-hue-#{avatar_hue(person)}" aria-hidden="true">ML</span>), decorative
 
     labelled = avatar(person, size: :lg, label: true)
-    assert_dom_equal %(<span class="avatar rounded-full avatar-hue-#{avatar_hue(person)} avatar-lg" role="img" aria-label="Maria Lopez">ML</span>), labelled
+    assert_dom_equal %(<span class="avatar avatar-person avatar-hue-#{avatar_hue(person)} avatar-lg" role="img" aria-label="Maria Lopez">ML</span>), labelled
   end
 
   test "avatar_stack shows up to three people and a count for the rest" do
@@ -77,5 +77,40 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_equal 3, html.scan("avatar-hue-").size
     assert_includes html, "+2"
     assert_no_match(/\+\d/, avatar_stack(people.first(3)))
+  end
+
+  test "person_pill puts a small avatar and the name in one pill" do
+    person = Person.new(name: "Maria Lopez", email: "maria@example.com")
+    html = person_pill(person)
+    assert_dom_equal %(<span class="person-pill"><span class="avatar avatar-person avatar-hue-#{avatar_hue(person)} avatar-sm" aria-hidden="true">ML</span><span class="min-w-0 truncate">Maria Lopez</span></span>), html
+  end
+
+  test "person_pill shows the fallback alone when there is no person" do
+    assert_equal "Unassigned", person_pill(nil, fallback: "Unassigned")
+    assert_nil person_pill(nil)
+  end
+
+  test "mention_pills swaps tokens for pills of this church's People only" do
+    leader = people(:leader)
+    Current.session = leader.sessions.create!(ip_address: "127.0.0.1", user_agent: "test")
+    outsider = organizations(:outsider_church).people.create!(name: "Outside Person")
+    body = ActionText::Content.new(%(<div>Hi @[#{leader.name}](person:#{leader.id}), not @[Outside Person](person:#{outsider.id}) or @[Gone](person:0)</div>))
+
+    html = mention_pills(body)
+
+    assert_equal 1, html.scan(%(class="person-pill")).size
+    assert_includes html, leader.name
+    assert_includes html, "@[Outside Person](person:#{outsider.id})"
+    assert_includes html, "@[Gone](person:0)"
+  end
+
+  test "people_pill is one pill with the stack and the names, or a label that includes them" do
+    people = [ Person.new(name: "Grace Kim"), Person.new(name: "Maria Lopez") ]
+    html = people_pill(people)
+    assert_includes html, %(class="person-pill")
+    assert_includes html, "Grace Kim and Maria Lopez"
+    assert_equal 2, html.scan("avatar-hue-").size
+
+    assert_includes people_pill(people, label: "Grace Kim and 2 others signed up"), "Grace Kim and 2 others signed up"
   end
 end

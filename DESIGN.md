@@ -85,6 +85,7 @@ rounded:
   tile: 10px
   panel: 12px
   device: 28px
+  pill: 9999px
 spacing:
   1: 4px
   2: 8px
@@ -153,6 +154,11 @@ components:
     backgroundColor: "{colors.nav-active}"
     textColor: "{colors.ink}"
     rounded: "{rounded.nav}"
+  person-pill:
+    backgroundColor: "{colors.hairline}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.pill}"
+    height: 24px
 ---
 
 # Flockwork
@@ -197,7 +203,7 @@ Three levels only. Flat: panels, lists, team notes (border or tint, no shadow). 
 
 ## Shapes
 
-Badges 4px, buttons and inputs 6px, nav items 8px, tiles 10px, panels and popovers 12px, phone device frame 28px. Only status dots are fully round. No pills.
+Badges 4px, buttons and inputs 6px, nav items 8px, tiles 10px, panels and popovers 12px, phone device frame 28px. Person avatars are 32% rounded squares (a squircle whose ring follows the shape). Only status dots and the Person pill are fully round. No other pills.
 
 ## Components
 
@@ -211,11 +217,12 @@ Badges 4px, buttons and inputs 6px, nav items 8px, tiles 10px, panels and popove
 - **Inputs:** 36px tall (44px phone), 6px radius, `border`, placeholder in `ink-2`; the dictation mic is an icon button inside the field.
 - **Button grammar:** four kinds of action, one look each. The view's next step: ink primary, one per view, in the header or guidance strip. Add to a section: small secondary with a plus, right of the section heading, always "Add …". Do the thing (Volunteer-facing): small secondary worded as the person would say it ("I can bring dinner"). Manage it: a ⋯ icon button opening a menu (Edit, Duplicate, Archive, then Delete last in `danger`). No inline Edit/Delete on rows, no bare-text section actions. List columns follow the same rule: one ⋯ menu per column header.
 - **Sidebar:** the church name sits at the top in a row with a 24px initials tile. It reads as a plain label until the Person's email belongs to several Organizations; then a chevron shows and the row links to the choice page. Below it, nav items in this order: Home, Projects, Get involved, People and Oversight (Admin only), then Notifications with its unread count in `ink`. Settings is not in the nav. The current page is `nav-active` with `aria-current="page"`.
-- **Avatar:** a person's initials (first letter of the first and last name, one letter for a one-word name, "?" for no letters) in a round tile: 20px `sm` inline in meta lines and stacks, 28px by default in lists, 56px `lg` on Profile and the person page. The fill is one of ten soft hues taken from the header wash family (`avatar-hue-0` to `9`, tokens `avatar-0` to `9`, flat, no gradient), chosen by `Zlib.crc32` of the person's email, or of their name when there is no email, so a person keeps one color everywhere and across restarts. Ink text clears 10:1 on every hue in both modes. Beside a visible name the avatar is `aria-hidden`; a bare avatar (the phone top bar) names itself with `role="img"`. Several people show as an overlapping stack of up to three plus a "+N" tile.
+- **Avatar:** a person's initials (first letter of the first and last name, one letter for a one-word name, "?" for no letters) on a 32% rounded square: 20px `sm` in meta lines, pills and stacks, 28px by default in lists, 56px `lg` on Profile and the person page. The fill is a 135-degree wash from one of ten hues in the header wash family (`avatar-hue-0` to `9`, tokens `avatar-0` to `9`) into the next hue around the wheel, using B's light and dark palettes. The hue is chosen by `Zlib.crc32` of the person's email, or of their name when there is no email, so a person keeps one color everywhere and across restarts. Ink initials clear 10.4:1 on the light wash, and `#F2F1ED` clears 7.6:1 on the dark wash, on every hue. A faint top highlight (`--shadow-avatar`) gives depth without a border. Static avatars never move; one inside a link or button lifts 1px on hover. Beside a visible name the avatar is `aria-hidden`; a bare avatar (the phone top bar) names itself with `role="img"`. Several people show as an overlapping stack of up to three plus a "+N" tile, and each avatar's ring follows the same shape in the surface behind it (2px, 1.5px in 20px stacks).
+- **Person pill:** a name in running text (task and comment authors, meta lines, Slot claimers, notifications, Invitations, Home leaders). A `hairline` pill, 24px tall, with the 20px avatar flush at its left end (a 2px inset) and the name in 13/18 `ink`. No border, so it reads as a label rather than a button. Several people share one pill: the overlapping stack, then their names. A pill that links to the person gets a gentle `nav-active` hover; a static pill never changes on hover. Where the row is already the container (Team members, People, Oversight, Invitations and Recipients lists, the sidebar account row) the avatar sits alone beside the name instead.
 - **Account menu:** one popover, used in two places. The sidebar row pins to the bottom (an avatar, name at 13/600, church at 12/16 `ink-2`, updown chevron) and its panel opens upward: identity head, Profile, Settings (only where the Person may manage Settings), a hairline, then Sign out. On phone the avatar in the top bar opens the same items as a sheet above the tab bar. It is a `details` disclosure, so Enter or Space opens it and Tab moves through the items; Escape or an outside click closes it and Escape returns focus to the trigger.
 - **Phone tab bar:** fixed to the bottom on `frame` with a hairline top border. It has one column per destination the Person can open (Volunteers see three). Each tab is at least 44px tall, with a 20px icon and an 11px label; the current tab is `ink` and 600. Notifications is not a tab. It is the bell in the top bar, and its count is an `ink` badge. Bottom padding follows `env(safe-area-inset-bottom)`, which needs `viewport-fit=cover` in the app's viewport meta.
 - **Tool rows:** the Tasks list is the model. A task is completed by a 20px ring at the left with a 44px hit area; hovering previews the check, and a completed task becomes a sunlit disc with the check, so no "Done" button appears. The title is `heading`, with one meta line of assignee and due date. Due dates read relatively near today ("Due in 3 days", "Overdue by 2 days", "Due Apr 9" beyond eight weeks), with the exact date in the `<time>` title. Comments show as a count ("2 comments", or "Comment" when there are none) without a disclosure marker. Claim stays a small secondary button; Unclaim, Edit and Delete live in the row's ⋯ menu. Schedule items follow the same title-then-meta order.
-- **Header wash:** the one decorative surface. Two or three blurred radial blobs (closest-side radial gradients, 24px blur) at 9–22% alpha in tool or accent colors, plus SVG `feTurbulence` grain at 10% alpha multiplied on top, masked to fade out by 300px from the top of the panel. The tint carries meaning: `sunlit` for sign-up work and Leader views, `tool-schedule` teal for the Admin overview, `tool-messages` orange for Volunteers. Header content sits above it; anything that sits on it (the status strip) gets a 75% white fill. Never behind rows, forms, the Planner, or text that needs 4.5:1.
+- **Header wash:** the decorative surface for pages. The avatar wash is the only other gradient. Two or three blurred radial blobs (closest-side radial gradients, 24px blur) at 9–22% alpha in tool or accent colors, plus SVG `feTurbulence` grain at 10% alpha multiplied on top, masked to fade out by 300px from the top of the panel. The tint carries meaning: `sunlit` for sign-up work and Leader views, `tool-schedule` teal for the Admin overview, `tool-messages` orange for Volunteers. Header content sits above it; anything that sits on it (the status strip) gets a 75% white fill. Never behind rows, forms, the Planner, or text that needs 4.5:1.
 - **Project banner:** an optional photo above the Project header, in a `rounded-panel` frame with a `border`. It crops to 3:1 on desktop and 2:1 on phones, around a focal point that defaults to center (an AI suggestion can move it, an editor can set it). A photo too small for the crop sits whole on a blurred copy of itself and is never upscaled. With no photo, editors see one dashed ghost tile to add one; the public page shows only the photo.
 - **Privacy line:** on every Planner screen, a lock icon and "The planner sees project details. It never sees your people." in 13/18 `ink-2`.
 - **Notification list:** two regions on one page. "Needs you" is the top section, newest first, with at most one small secondary action per row: Respond (an Invitation), Mark done (a Task), or Open. "For your information" groups the rest under their Project name (12/16 label in `ink-2`), with plain rows and Mark read. The bell and its sidebar count show unread "Needs you" items only. Both sections use plain rules, never AI copy.
@@ -227,7 +234,7 @@ Badges 4px, buttons and inputs 6px, nav items 8px, tiles 10px, panels and popove
 - Do show people by name with plain counts ("4 active Projects", "14 meals this year"); never bars, percentages, red flags or scores.
 - Do reserve Mattone for the wordmark and page-level headlines, and depth for things you can click.
 - Do keep exactly one primary (ink) button per view.
-- Don't use gradients (except the header wash), purple or indigo, glows, emoji, icon tiles above headings, kicker labels, pills, avatar walls (more than the three-avatar stack), chat bubbles for the Planner, or cards inside cards.
+- Don't use gradients (except the header wash and the avatar wash), purple or indigo, glows, emoji, icon tiles above headings, kicker labels, pills other than the Person pill, avatar walls (more than the three-avatar stack), chat bubbles for the Planner, or cards inside cards.
 - Don't set Mattone below 24px or on anything interactive.
 
 ## Motion
@@ -264,3 +271,4 @@ Badges 4px, buttons and inputs 6px, nav items 8px, tiles 10px, panels and popove
 | 2026-11-02 | Planner preview rows stream in as the model produces them (throttled to about 200ms); a prepared question still waits for Continue | Items are visible earlier without changing what Continue accepts; the final render is authoritative |
 | 2026-11-02 | Person avatars: initials on ten soft hues from the header wash, picked by a stable hash of email (name as fallback), shown wherever a name appears; stacks cap at three plus "+N" | Josh asked for initials avatars that echo the wash and are unique per person. `Zlib.crc32` keeps a color fixed across restarts (`String#hash` is seeded per process). The optional two-blob gradient was left out because DESIGN.md keeps gradients to the header wash |
 | 2026-11-02 | Build-as-you-go Planner is a fixed, centered stage (880px max, 340px question column) instead of about two thirds preview; the Planner question uses the ordinary heading scale, not Mattone; the skeleton shimmer is a second, looping motion exception | Owner approved in the Planner redesign review (claude.ai/artifact/UqHH6FmjAHSx2C5pQzFSha). The wide preview sat mostly empty beside a cramped question, and DESIGN.md contradicted itself on Mattone for the question |
+| 2026-11-02 | Avatars become 32% squircles on B's 135-degree wash with a faint top highlight; a Person pill carries names in running text; the avatar wash is a second sanctioned gradient | Owner picked the squircle with the washed gradient from the avatar directions review. The hash, the ten hues and the contrast are unchanged. Lists keep the avatar alone, since the row already holds the name. |

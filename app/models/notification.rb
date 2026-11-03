@@ -54,6 +54,13 @@ class Notification < ApplicationRecord
     end
   end
 
+  # The sentence after the actor's name, for rows that show the actor as a pill.
+  def message_after_actor
+    return message unless actor
+
+    message.delete_prefix(actor.name).strip
+  end
+
   private
     def actor_name
       actor&.name || "Someone"

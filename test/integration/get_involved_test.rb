@@ -21,7 +21,8 @@ class GetInvolvedTest < ActionDispatch::IntegrationTest
     assert_select "section[aria-labelledby='needs-heading'] h3", text: "This week"
     assert_select "section[aria-labelledby='needs-heading'] h3", text: "Next week"
     assert_select "section[aria-labelledby='needs-heading'] h3", text: "Later"
-    assert_select "section[aria-labelledby='needs-heading'] li", text: /Community Meal.*Dinner.*and 2 others signed up/m
+    assert_select "section[aria-labelledby='needs-heading'] li .person-pill", text: /and 2 others/
+    assert_select "section[aria-labelledby='needs-heading'] li", text: /Community Meal.*Dinner.*and 2 others.*signed up/m
     assert_select "section[aria-labelledby='needs-heading'] li", text: /1 spot left/
     assert_select "section[aria-labelledby='joined-teams-heading'] li", text: /3 of 7 spots filled/
   end

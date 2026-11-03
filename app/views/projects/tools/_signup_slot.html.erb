@@ -19,7 +19,7 @@
     </div>
     <div class="flex min-w-0 flex-wrap items-center gap-2.5 <%= "max-sm:w-full" if open %>">
       <% if slot.slot_claims.any? %>
-        <p class="flex items-center gap-1.5 text-meta text-ink-2"><%= icon(:check, class: "text-success") %><%= avatar_stack(slot.slot_claims.map(&:person), size: :sm) %><%= slot.slot_claims.map { |claim| claim.person.name }.to_sentence %></p>
+        <p class="flex items-center gap-1.5 text-meta text-ink-2"><%= icon(:check, class: "text-success") %><%= people_pill(slot.slot_claims.map(&:person)) %></p>
       <% end %>
       <% if open %>
         <span class="badge-need"><%= pluralize(slot.capacity - slot.claims_count, "spot") %> left</span>

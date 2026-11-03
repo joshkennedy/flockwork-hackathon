@@ -19,7 +19,7 @@
                 · Act. <%= line.actual_cents.nil? ? "" : BudgetLine.format_cents(line.actual_cents) %>
                 · <%= line.status.humanize %>
                 <% if line.responsible_person.present? %>
-                  · <%= avatar_name(line.responsible_person) %>
+                  · <%= person_pill(line.responsible_person) %>
                 <% end %>
               </span>
             </div>

@@ -77,17 +77,33 @@ module ApplicationHelper
 
   # Decorative (aria-hidden) when the name sits beside it; label: true names a bare avatar, like the phone top bar.
   def avatar(person, size: :md, label: false)
-    tag.span(person_initials(person.name), class: class_names("avatar rounded-full", "avatar-hue-#{avatar_hue(person)}", AVATAR_SIZES.fetch(size)),
+    tag.span(person_initials(person.name), class: class_names("avatar avatar-person", "avatar-hue-#{avatar_hue(person)}", AVATAR_SIZES.fetch(size)),
       role: ("img" if label), aria: label ? { label: person.name } : { hidden: true })
   end
 
-  # A name with a small avatar in front, for meta lines. Without a person, the fallback text ("Unassigned") shows alone.
-  def avatar_name(person, fallback: nil, size: :sm)
+  # One name in running text: a pill with the avatar flush at its left end. Without a person, the fallback ("Unassigned") shows alone.
+  def person_pill(person, fallback: nil)
     return fallback if person.blank?
 
-    tag.span(class: "inline-flex min-w-0 items-center gap-1.5 align-middle") do
-      safe_join([ avatar(person, size: size), person.name ])
+    tag.span(class: "person-pill") do
+      safe_join([ avatar(person, size: :sm), tag.span(person.name, class: "min-w-0 truncate") ])
     end
+  end
+
+  # Several people in one pill: an overlapping stack, then the names (or a label that already includes them).
+  def people_pill(people, label: people.map(&:name).to_sentence)
+    tag.span(class: "person-pill") do
+      safe_join([ avatar_stack(people, size: :sm), tag.span(label, class: "min-w-0 truncate") ])
+    end
+  end
+
+  # Mentions are stored as @[Name](person:ID) in the rich text; each one renders as a Person pill. Only the church's own People resolve.
+  def mention_pills(body)
+    people = Current.organization.people.where(id: body.to_plain_text.scan(MentionParser::TOKEN_PATTERN).flatten).index_by(&:id)
+    body.to_s.gsub(MentionParser::TOKEN_PATTERN) do |token|
+      person = people[Regexp.last_match(1).to_i]
+      person ? person_pill(person) : token
+    end.html_safe
   end
 
   # Up to three overlapping people, then "+N". The names sit in the text beside it, so the stack is decorative.
@@ -95,7 +111,7 @@ module ApplicationHelper
     shown = people.first(max)
     extra = people.size - shown.size
     tag.span(class: "avatar-stack", aria: { hidden: true }) do
-      safe_join(shown.map { |person| avatar(person, size: size) } + (extra.positive? ? [ tag.span("+#{extra}", class: class_names("avatar rounded-full bg-hairline text-ink-2", AVATAR_SIZES.fetch(size))) ] : []))
+      safe_join(shown.map { |person| avatar(person, size: size) } + (extra.positive? ? [ tag.span("+#{extra}", class: class_names("avatar avatar-person text-ink-2", AVATAR_SIZES.fetch(size))) ] : []))
     end
   end
 

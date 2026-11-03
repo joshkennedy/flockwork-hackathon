@@ -1,10 +1,10 @@
 <article class="text-ink" data-message-id="<%= message.id %>">
   <header class="flex flex-wrap items-baseline justify-between gap-2">
-    <p class="text-meta font-semibold text-ink"><%= avatar_name(message.author) %></p>
+    <p class="text-meta font-semibold text-ink"><%= person_pill(message.author) %></p>
     <p class="text-meta text-ink-2"><%= time_ago_in_words(message.created_at) %> ago</p>
   </header>
   <div class="rich-content mt-2 max-w-none text-ink" data-message-body>
-    <%= message.body %>
+    <%= mention_pills(message.body) %>
   </div>
   <% if Policy.can?(Current.person, :edit_message, message) || Policy.can?(Current.person, :delete_message, message) %>
     <div class="mt-2 flex justify-end">

@@ -61,7 +61,7 @@ export default class extends Controller {
       button.type = "button"
       button.className = "flex w-full items-center gap-2 rounded-control px-2 py-2 text-left text-meta font-medium text-ink hover:bg-hairline"
       const avatar = document.createElement("span")
-      avatar.className = `avatar avatar-sm rounded-full avatar-hue-${person.hue}`
+      avatar.className = `avatar avatar-person avatar-sm avatar-hue-${person.hue}`
       avatar.setAttribute("aria-hidden", "true")
       avatar.textContent = person.initials
       button.append(avatar, person.name)

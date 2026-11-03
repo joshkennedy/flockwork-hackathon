@@ -16,6 +16,12 @@ class NotificationTest < ActiveSupport::TestCase
     assert_not_includes Notification.needs_you, notification
   end
 
+  test "message_after_actor drops the actor's name, which the row shows as a pill" do
+    notification = Notifier.notify(recipient: @person, kind: "mention", notifiable: @project, actor: people(:leader), email: false)
+
+    assert_equal "mentioned you in #{@project.name}.", notification.message_after_actor
+  end
+
   test "an Invitation needs you only while it is pending" do
     invitee = people(:other_volunteer)
     invitation = @project.organization.invitations.create!(project: @project, person: invitee, inviter: people(:leader), role: :volunteer)

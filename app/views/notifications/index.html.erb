@@ -15,7 +15,7 @@
           <li data-notification-id="<%= notification.id %>" class="py-4 <%= "font-semibold" if notification.unread? %>">
             <div class="flex flex-wrap items-start justify-between gap-4">
               <div class="min-w-0">
-                <%= link_to project_path(notification.project), class: "flex items-center gap-2.5 text-ink hover:text-ink-hover" do %><%= avatar(notification.actor) if notification.actor %><span><%= notification.message %></span><% end %>
+                <%= link_to project_path(notification.project), class: "flex flex-wrap items-center gap-x-2 gap-y-1 text-ink hover:text-ink-hover" do %><%= person_pill(notification.actor) %><span><%= notification.message_after_actor %></span><% end %>
                 <p class="mt-1 text-label font-normal text-ink-2"><%= time_ago_in_words(notification.created_at) %> ago</p>
               </div>
               <div class="flex shrink-0 flex-wrap items-center gap-2">
@@ -51,7 +51,7 @@
               <li data-notification-id="<%= notification.id %>" class="py-3 <%= "font-semibold" if notification.unread? %>">
                 <div class="flex flex-wrap items-start justify-between gap-4">
                   <div class="min-w-0">
-                    <%= link_to project_path(project), class: "flex items-center gap-2.5 text-ink hover:text-ink-hover" do %><%= avatar(notification.actor) if notification.actor %><span><%= notification.message %></span><% end %>
+                    <%= link_to project_path(project), class: "flex flex-wrap items-center gap-x-2 gap-y-1 text-ink hover:text-ink-hover" do %><%= person_pill(notification.actor) %><span><%= notification.message_after_actor %></span><% end %>
                     <p class="mt-1 text-label font-normal text-ink-2"><%= time_ago_in_words(notification.created_at) %> ago</p>
                   </div>
                   <% if notification.unread? %>

@@ -99,6 +99,7 @@
   --shadow-button-active: inset 0 2px 3px rgba(0,0,0,.3), 0 1px 1px rgba(20,20,19,.08);
   --shadow-secondary: 0 1px 2px rgba(20,20,19,.06), inset 0 -1px 0 rgba(20,20,19,.04);
   --shadow-secondary-active: inset 0 1px 3px rgba(20,20,19,.2);
+  --shadow-avatar: inset 0 1px 0 rgba(255,255,255,.55);
   --ease-enter: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-exit: ease-in;
   --ease-move: cubic-bezier(0.77, 0, 0.175, 1);
@@ -141,6 +142,7 @@
   --color-avatar-7: #223254;
   --color-avatar-8: #453215;
   --color-avatar-9: #32373D;
+  --shadow-avatar: inset 0 1px 0 rgba(255,255,255,.14);
   --shadow-raised: inset 0 1px 0 rgba(255,255,255,.04), 0 1px 2px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.22);
   --shadow-float: inset 0 1px 0 rgba(255,255,255,.05), 0 8px 24px rgba(0,0,0,.5), 0 2px 6px rgba(0,0,0,.3);
   --shadow-button: inset 0 1px 0 rgba(255,255,255,.6), 0 1px 1px rgba(0,0,0,.4), 0 2px 6px rgba(0,0,0,.3);
@@ -198,22 +200,29 @@
   /* Account menu: the sidebar row opens upward; the phone avatar opens a sheet above the tab bar. */
   .avatar { @apply inline-grid size-7 shrink-0 place-items-center rounded-badge bg-nav-active text-label font-semibold text-ink; }
   .avatar.sm { @apply size-6 text-[11px]; }
-  /* Person avatars (ApplicationHelper#avatar): round, initials in ink on a soft hue. */
+  /* Person avatars (ApplicationHelper#avatar): a 32% rounded square, ink initials on a 135deg wash from each hue into the next. */
   .avatar.avatar-sm { @apply size-5 text-[10px] leading-none; }
   .avatar.avatar-lg { @apply size-14 text-[20px] leading-none; }
-  .avatar-hue-0 { @apply bg-avatar-0; }
-  .avatar-hue-1 { @apply bg-avatar-1; }
-  .avatar-hue-2 { @apply bg-avatar-2; }
-  .avatar-hue-3 { @apply bg-avatar-3; }
-  .avatar-hue-4 { @apply bg-avatar-4; }
-  .avatar-hue-5 { @apply bg-avatar-5; }
-  .avatar-hue-6 { @apply bg-avatar-6; }
-  .avatar-hue-7 { @apply bg-avatar-7; }
-  .avatar-hue-8 { @apply bg-avatar-8; }
-  .avatar-hue-9 { @apply bg-avatar-9; }
+  .avatar-person { border-radius: 32%; box-shadow: var(--shadow-avatar); transition: transform var(--duration-hover); }
+  .avatar-hue-0 { background: linear-gradient(135deg, var(--color-avatar-0), var(--color-avatar-1)); }
+  .avatar-hue-1 { background: linear-gradient(135deg, var(--color-avatar-1), var(--color-avatar-2)); }
+  .avatar-hue-2 { background: linear-gradient(135deg, var(--color-avatar-2), var(--color-avatar-3)); }
+  .avatar-hue-3 { background: linear-gradient(135deg, var(--color-avatar-3), var(--color-avatar-4)); }
+  .avatar-hue-4 { background: linear-gradient(135deg, var(--color-avatar-4), var(--color-avatar-5)); }
+  .avatar-hue-5 { background: linear-gradient(135deg, var(--color-avatar-5), var(--color-avatar-6)); }
+  .avatar-hue-6 { background: linear-gradient(135deg, var(--color-avatar-6), var(--color-avatar-7)); }
+  .avatar-hue-7 { background: linear-gradient(135deg, var(--color-avatar-7), var(--color-avatar-8)); }
+  .avatar-hue-8 { background: linear-gradient(135deg, var(--color-avatar-8), var(--color-avatar-9)); }
+  .avatar-hue-9 { background: linear-gradient(135deg, var(--color-avatar-9), var(--color-avatar-0)); }
   .avatar-stack { @apply inline-flex shrink-0 items-center; }
   .avatar-stack > * + * { @apply -ml-1; }
-  .avatar-stack > .avatar { @apply ring-2 ring-panel; }
+  /* At 20px a 4px overlap hides the second initial, so small stacks overlap 1px with a thinner ring. */
+  .avatar-stack > .avatar-sm + * { margin-left: -1px; }
+  .avatar-stack > .avatar-sm { box-shadow: var(--shadow-avatar), 0 0 0 1.5px var(--avatar-ring, var(--color-panel)); }
+  /* The ring is a spread shadow, so it follows the squircle; inside a pill it matches the pill's fill. */
+  .avatar-stack > .avatar { box-shadow: var(--shadow-avatar), 0 0 0 2px var(--avatar-ring, var(--color-panel)); }
+  /* Person pill: the avatar sits flush at the left end with a 2px inset, the name in meta. Soft fill, no border, so it reads as a label, not a button. */
+  .person-pill { @apply inline-flex h-6 max-w-full min-w-0 items-center gap-1.5 rounded-full bg-hairline pl-0.5 pr-2.5 align-middle text-meta text-ink; --avatar-ring: var(--color-hairline); }
   .account-menu > summary { list-style: none; }
   .account-menu > summary::-webkit-details-marker { display: none; }
   .account-menu[open] > summary { background-color: var(--color-nav-active); }
@@ -269,6 +278,9 @@
     .answer-tile:hover { @apply border-border-strong; }
     button.project-kind-tile:hover { @apply border-border-strong bg-ghost-fill; }
     .meal-builder-text-action:hover { @apply bg-hairline text-ink; }
+    /* Only a linked pill gets hover, and avatars lift only inside links and buttons; static avatars never move. */
+    a.person-pill:hover { @apply bg-nav-active; }
+    :is(a, button, summary):hover .avatar-person { transform: translateY(-1px); }
   }
   .btn:disabled { @apply bg-frame text-ink-2 shadow-none; cursor: not-allowed; transform: none; }
   /* frame is darker than panel in dark mode, so a frame-filled disabled button would vanish. */
@@ -418,4 +430,5 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   .btn:active, .answer-tile:active { transform: none; }
+  :is(a, button, summary):hover .avatar-person { transform: none; }
 }
