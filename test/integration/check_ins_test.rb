@@ -1,6 +1,9 @@
 require "test_helper"
+require_relative "../support/method_stubs"
 
 class CheckInsTest < ActionDispatch::IntegrationTest
+  include MethodStubs
+
   setup do
     @organization = organizations(:st_example)
     @volunteer = people(:volunteer)
@@ -72,5 +75,21 @@ class CheckInsTest < ActionDispatch::IntegrationTest
     assert_redirected_to oversight_path
     assert_equal "On cannot be in the future", flash[:alert]
     assert_equal 0, CheckIn.count
+  end
+
+  test "the card's summary line is labelled as a summary, shows the template until AI lands, then the AI sentence" do
+    store = ActiveSupport::Cache::MemoryStore.new
+    sign_in_as_admin
+
+    stub_method(Rails, :cache, -> { store }) do
+      get oversight_path
+      assert_select "p", text: "Summary · from counts"
+      assert_match "Serving on 3 Active Projects since", response.body
+
+      facts = OversightSummary.facts_for(@volunteer, last_check_in: nil)
+      store.write(OversightSummary.key_for(@volunteer, facts), "Serving on 3 Active Projects, with a check-in on file.")
+      get oversight_path
+      assert_match "Serving on 3 Active Projects, with a check-in on file.", response.body
+    end
   end
 end
