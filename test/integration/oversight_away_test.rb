@@ -57,4 +57,15 @@ class OversightAwayTest < ActionDispatch::IntegrationTest
 
     assert_response :not_found
   end
+
+  test "the highlight is a thank-you with plain counts, not a ranking" do
+    slot = projects(:community_meal).slots.create!(date: Date.current, label: "Sunday Lunch", capacity: 2)
+    SlotClaim.create!(slot: slot, person: @volunteer)
+    sign_in_as_admin
+
+    get oversight_path
+
+    assert_select "h2[data-thank-you]", text: "Thank you, Vic: 1 Slot this year."
+    assert_no_match(/has claimed|most Slots/i, response.body)
+  end
 end

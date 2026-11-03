@@ -19,7 +19,7 @@
                     <li><%= link_to project.name, project_path(project), class: "hover:text-ink" %></li>
                   <% end %>
                 </ul>
-                <%= render "check_in", person: person, last: @last_check_ins[person.id] %>
+                <%= render "check_in", person: person, last: @last_check_ins[person.id], summary: @summaries[person.id] %>
               </div>
               <% if Current.person.admin? %><%= link_to "View person", edit_person_path(person), class: "btn btn-secondary shrink-0" %><% end %>
             </li>
@@ -71,7 +71,7 @@
     <div class="tile-raised mt-7 flex items-start gap-3 px-6 py-5">
       <%= icon(:kept, class: "mt-0.5 text-sunlit") %>
       <div>
-        <h2><%= highlight[:person].name %> has claimed <%= pluralize(highlight[:slots], "Slot") %> this year</h2>
+        <h2 data-thank-you>Thank you, <%= highlight[:person].name.split.first %>: <%= pluralize(highlight[:slots], "Slot") %> this year.</h2>
         <p class="mt-2 text-meta text-ink-2"><%= @involvement_year %>: <%= pluralize(highlight[:projects], "Project") %> joined · <%= pluralize(highlight[:tasks], "Task") %> completed</p>
       </div>
     </div>
