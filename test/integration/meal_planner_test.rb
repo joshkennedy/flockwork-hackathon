@@ -404,7 +404,7 @@ class MealPlannerTest < ActionDispatch::IntegrationTest
     assert_select "[role='alert'] p", text: PlannerSession::ERROR_MESSAGE
     assert_select "button[aria-pressed='true']", text: "Dinner"
     assert_select "button", text: "Retry"
-    assert_select "button", text: "Keep going by hand"
+    assert_select "button", text: "Keep Going by Hand"
     assert_no_match(/Preparing Suggestions/, @response.body)
 
     post save_and_leave_project_planner_session_path(project, planner_session)
@@ -415,7 +415,7 @@ class MealPlannerTest < ActionDispatch::IntegrationTest
   test "Build it myself starts a Project by hand from the Planner's start" do
     sign_in_as_leader
     get new_project_path
-    assert_select "a[href=?]", new_project_path(manual: true), text: "Build it myself"
+    assert_select "a[href=?]", new_project_path(manual: true), text: "Build It Myself"
 
     assert_difference "Project.count", 1 do
       post projects_path, params: { project: { name: "Retreat by hand", description: "Built without the Planner.", starts_on: "2027-03-12", ends_on: "2027-03-13" } }

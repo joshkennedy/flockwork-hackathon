@@ -67,9 +67,9 @@ class ProjectBannerSystemTest < ApplicationSystemTestCase
     visit project_path(@project)
 
     hover_banner
-    click_on "Alt text"
+    click_on "Alt Text"
     fill_in "Alt text", with: "Volunteers stacking chairs"
-    click_on "Save alt text"
+    click_on "Save Alt Text"
 
     assert_selector "figure img[alt='Volunteers stacking chairs']", visible: :all
     assert_equal "Volunteers stacking chairs", @project.reload.banner_alt_text

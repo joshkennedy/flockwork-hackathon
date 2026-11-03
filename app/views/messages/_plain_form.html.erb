@@ -1,0 +1,25 @@
+<%= form_with model: [ project, message ], class: class_names("space-y-3", local_assigns[:class_name]) do |form| %>
+  <% if message.errors.any? %>
+    <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
+      <p class="font-semibold">Please fix the following:</p>
+      <ul class="mt-2 list-disc space-y-1 pl-5 text-meta">
+        <% message.errors.full_messages.each do |error_message| %>
+          <li><%= error_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= form.hidden_field :parent_id if message.parent_id.present? %>
+  <%= form.label :body, label, class: "sr-only" %>
+  <%= form.text_area :body,
+        value: message.body.to_plain_text,
+        rows: 3,
+        required: true,
+        autofocus: local_assigns[:autofocus],
+        placeholder: label,
+        class: "field w-full resize-y" %>
+  <div class="flex justify-end">
+    <%= form.submit submit_label, class: "btn btn-secondary" %>
+  </div>
+<% end %>

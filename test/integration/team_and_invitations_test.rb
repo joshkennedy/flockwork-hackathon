@@ -197,8 +197,8 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
 
     pending_url = invitation_url(pending_invitation.generate_token_for(:access))
     sms_body = ERB::Util.url_encode("You're invited to help with Community Meal on Flockwork: #{pending_url}")
-    assert_select "button[data-controller='clipboard'][data-clipboard-text-value=?]", pending_url, text: "Copy link"
-    assert_select "a[href=?]", "sms:?&body=#{sms_body}", text: "Send by text"
+    assert_select "button[data-controller='clipboard'][data-clipboard-text-value=?]", pending_url, text: "Copy Link"
+    assert_select "a[href=?]", "sms:?&body=#{sms_body}", text: "Send by Text"
     assert_select "li", text: /Lucy Leader.*Accepted/ do
       assert_select "button[data-controller='clipboard']", count: 0
       assert_select "a[href^='sms:']", count: 0

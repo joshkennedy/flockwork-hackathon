@@ -32,7 +32,7 @@
       <p class="mt-5 text-meta text-ink-2"><%= result.fetch("created") %> created, <%= result.fetch("updated") %> updated, <%= result.fetch("unchanged") %> unchanged.</p>
     <% end %>
 
-    <%= button_to "Sync now", sync_planning_center_directory_path, class: "mt-5 btn btn-primary" %>
+    <%= button_to "Sync Now", sync_planning_center_directory_path, class: "mt-5 btn btn-primary" %>
   <% end %>
 
   <%= form_with model: Current.organization, url: planning_center_directory_path, method: :patch, class: "mt-7 space-y-4" do |form| %>
@@ -44,6 +44,6 @@
       <%= form.label :pco_secret, "Secret", class: "block text-label font-medium text-ink" %>
       <%= form.password_field :pco_secret, value: nil, required: true, autocomplete: "off", class: "mt-1 block w-full field" %>
     </div>
-    <%= form.submit Current.organization.planning_center_connected? ? "Replace connection" : "Connect", class: Current.organization.planning_center_connected? ? "btn btn-secondary" : "btn btn-primary" %>
+    <%= form.submit Current.organization.planning_center_connected? ? "Replace Connection" : "Connect", class: Current.organization.planning_center_connected? ? "btn btn-secondary" : "btn btn-primary" %>
   <% end %>
 </div>

@@ -125,7 +125,7 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
     )
 
     visit project_planner_session_path(project, post_planner)
-    click_on "Talk it through"
+    click_on "Talk It Through"
 
     assert_text "Voice planning: talk about the work, not people."
     assert_text "How should the Team prepare?"
@@ -133,10 +133,10 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
     assert_text "What should happen after cooking?", wait: 5
     assert_text "Cook the meal together", wait: 5
 
-    click_on "End conversation"
+    click_on "End Conversation"
 
     assert_no_selector "[data-voice-planner-target='panel']", visible: true
-    assert_button "Talk it through"
+    assert_button "Talk It Through"
     assert_field "Or answer in your own words"
   end
 
@@ -145,7 +145,7 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
       leader = people(:leader)
       token = leader.generate_token_for(:sign_in)
       visit sign_in_link_path(token)
-      click_on "Sign in"
+      click_on "Sign In"
       assert_selector "[data-signed-in-as]", text: "Leo Leader"
     end
 

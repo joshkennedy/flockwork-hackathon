@@ -15,11 +15,11 @@
             </p>
           </div>
           <% if guidance&.dig(:kind) == :spots %>
-            <%= link_to "Fill spots", project_path(project), class: "btn btn-secondary btn-sm shrink-0" %>
+            <%= link_to "Fill Spots", project_path(project), class: "btn btn-secondary btn-sm shrink-0" %>
           <% elsif guidance&.dig(:kind) == :tasks %>
-            <%= link_to "Assign tasks", project_path(project, anchor: "tab-tasks"), class: "btn btn-secondary btn-sm shrink-0" %>
+            <%= link_to "Assign Tasks", project_path(project, anchor: "tab-tasks"), class: "btn btn-secondary btn-sm shrink-0" %>
           <% elsif !planned && Policy.can?(@person, :plan, project) %>
-            <%= link_to "Plan it", new_project_planner_session_path(project), class: "btn btn-secondary btn-sm shrink-0" %>
+            <%= link_to "Plan It", new_project_planner_session_path(project), class: "btn btn-secondary btn-sm shrink-0" %>
           <% end %>
         </li>
       <% end %>

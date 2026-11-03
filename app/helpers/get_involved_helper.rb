@@ -25,7 +25,7 @@ module GetInvolvedHelper
   end
 
   def claim_label(slot)
-    slot.label.downcase == "dinner" ? "I can bring dinner" : "I can help"
+    slot.label.downcase == "dinner" ? "I Can Bring Dinner" : "I Can Help"
   end
 
   # Plain counts only (DESIGN.md): "3 of 8 spots filled · next open Sat, Nov 8".

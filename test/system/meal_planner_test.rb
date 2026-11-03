@@ -21,7 +21,7 @@ class MealPlannerSystemTest < ApplicationSystemTestCase
     page.current_window.resize_to(1200, 700)
 
     visit new_project_path
-    click_button "Meal train"
+    click_button "Meal Train"
     assert_text "Which meals should people bring?"
     assert_text "The first meal will appear here"
 
@@ -38,7 +38,7 @@ class MealPlannerSystemTest < ApplicationSystemTestCase
       fill_in "Meal", with: "Bring soup"
       fill_in "Time", with: "18:30"
       fill_in "People needed", with: "2"
-      click_button "Save changes"
+      click_button "Save Changes"
     end
     assert_text "Bring soup"
     assert_text "6:30 PM"
@@ -46,7 +46,7 @@ class MealPlannerSystemTest < ApplicationSystemTestCase
 
     within all("article.meal-slot")[1] do
       find("summary", text: "Edit").click
-      click_button "Remove meal"
+      click_button "Remove Meal"
     end
     assert_text "2 meal slots"
     assert_text "Meal removed."
@@ -54,10 +54,10 @@ class MealPlannerSystemTest < ApplicationSystemTestCase
     assert_text "3 meal slots"
 
     planner_path = page.current_path
-    click_button "Save and leave"
+    click_button "Save and Leave"
     assert_no_current_path planner_path
     assert_text "Organize meals for a meal train."
-    click_on "Continue planning"
+    click_on "Continue Planning"
     assert_current_path planner_path
     assert_text "Bring soup"
     assert_text "3 meal slots"
@@ -87,7 +87,7 @@ class MealPlannerSystemTest < ApplicationSystemTestCase
     ActiveJob::Base.queue_adapter = :test
 
     visit new_project_path
-    click_button "Meal train"
+    click_button "Meal Train"
     assert_text "Preparing your first choice…"
     planner_session = PlannerSession.order(:id).last!
     revision = planner_session.generation_revision

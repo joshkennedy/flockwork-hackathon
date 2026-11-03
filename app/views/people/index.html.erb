@@ -4,7 +4,7 @@
   <%= page_header "People", subtitle: pluralize(@people_count, "person", plural: "people") do %>
     <%= link_to "Planning Center", planning_center_directory_path, class: "btn btn-secondary" %>
     <%= link_to "Import CSV", new_people_csv_import_path, class: "btn btn-secondary" %>
-    <%= link_to "Add person", new_person_path, class: "btn btn-primary" %>
+    <%= link_to "Add Person", new_person_path, class: "btn btn-primary" %>
   <% end %>
 
   <%# Plain links, so a filter is a URL that can be shared and still works with the live search. %>
@@ -36,18 +36,14 @@
                 <%= person_chips(person, leader: @leader_ids.include?(person.id), away_until: @away_until[person.id], never_asked: @never_asked_ids.include?(person.id)) %>
               </p>
               <p class="mt-0.5 truncate text-meta text-ink-2"><%= serving_line(@serving_names.fetch(person.id, [])) %></p>
-              <p class="mt-0.5 hidden truncate text-meta text-ink-2 sm:block"><%= [ person.email, person.phone ].compact_blank.join(" · ") %></p>
             </div>
-            <% if @last_served[person.id] %>
-              <p class="hidden w-32 shrink-0 text-right text-meta text-ink-2 sm:block">Last served <%= short_date(@last_served[person.id]) %></p>
-            <% end %>
           </li>
         <% end %>
       </ul>
     <% elsif params[:query].present? %>
-      <p class="mt-7 text-ink-2">No people match "<%= params[:query] %>". <%= link_to "Clear search", people_path(filter: params[:filter].presence), class: "font-medium text-ink underline decoration-border-strong underline-offset-4 hover:decoration-ink" %></p>
+      <p class="mt-7 text-ink-2">No people match "<%= params[:query] %>". <%= link_to "Clear search", people_path(filter: params[:filter].presence), class: "link font-medium" %></p>
     <% elsif @filter != "everyone" %>
-      <p class="mt-7 text-ink-2">Nobody is in this list right now. <%= link_to "Show everyone", people_path, class: "font-medium text-ink underline decoration-border-strong underline-offset-4 hover:decoration-ink" %></p>
+      <p class="mt-7 text-ink-2">Nobody is in this list right now. <%= link_to "Show everyone", people_path, class: "link font-medium" %></p>
     <% else %>
       <p class="mt-7 text-ink-2">No people yet. Add one, or import a CSV to bring in a whole list.</p>
     <% end %>

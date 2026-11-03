@@ -12,6 +12,6 @@
     <%= form.select :visibility,
       visibilities.map { |visibility| [ Note::VISIBILITY_LABELS.fetch(visibility), visibility ] },
       {}, id: "#{field_prefix}_visibility", class: "field" %>
-    <%= form.submit "Save note", class: "btn btn-secondary" %>
+    <%= form.submit "Save Note", class: "btn btn-secondary" %>
   </div>
 <% end %>

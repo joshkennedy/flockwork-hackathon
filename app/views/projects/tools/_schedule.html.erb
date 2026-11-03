@@ -4,7 +4,7 @@
   <div class="flex flex-wrap items-start justify-between gap-4">
     <h2 id="tool-schedule" class="text-ink"><%= icon(:schedule, class: "text-tool-schedule") %> <%= Project::TOOL_LABELS.fetch("schedule") %></h2>
     <% if Policy.can?(Current.person, :manage_schedule, project) %>
-      <%= link_to new_project_schedule_item_path(project), class: "btn btn-secondary btn-sm" do %><%= icon(:plus) %>Add item<% end %>
+      <%= link_to new_project_schedule_item_path(project), class: "btn btn-secondary btn-sm" do %><%= icon(:plus) %>Add Item<% end %>
     <% end %>
   </div>
 
@@ -27,9 +27,9 @@
                   </div>
                   <% if Policy.can?(Current.person, :manage_schedule, project) %>
                     <%= actions_menu("Actions for #{item.title}") do %>
-                      <%= link_to "Edit item", edit_project_schedule_item_path(project, item) %>
+                      <%= link_to "Edit Item", edit_project_schedule_item_path(project, item) %>
                       <hr>
-                      <%= button_to "Delete item", project_schedule_item_path(project, item), method: :delete, class: "menu-danger" %>
+                      <%= button_to "Delete Item", project_schedule_item_path(project, item), method: :delete, class: "menu-danger" %>
                     <% end %>
                   <% end %>
                 </div>

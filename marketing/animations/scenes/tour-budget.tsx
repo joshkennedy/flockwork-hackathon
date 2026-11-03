@@ -36,7 +36,7 @@ export default function TourBudget() {
         const actual = s.rolled ? 398.4 : 0
         return (
           <TourWindow tab="budget" tone="clay">
-            <ToolHead icon="budget" color="text-tool-budget" title="Budget" add="Add purchase" />
+            <ToolHead icon="budget" color="text-tool-budget" title="Budget" add="Add Purchase" />
             <div className="ftb-totals">
               <div><div className="ft-meta">Estimated total</div><div className="ftb-total">$1,825.00</div></div>
               <div><div className="ft-meta">Actual total</div><div className="ftb-total"><Count value={actual} format={money} duration={700} /></div></div>

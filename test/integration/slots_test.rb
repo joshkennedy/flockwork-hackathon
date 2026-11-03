@@ -121,15 +121,46 @@ class SlotsTest < ActionDispatch::IntegrationTest
     project = projects(:community_meal)
     project.update!(enabled_tools: project.enabled_tools + [ "signup_sheet" ])
     project.slots.create!(date: Date.current - 1, label: "Yesterday dinner", capacity: 1)
-    project.slots.create!(date: Date.current, label: "Tonight dinner", capacity: 1)
+    today = project.slots.create!(date: Date.current, label: "Tonight dinner", capacity: 1)
 
     get project_path(project)
 
-    assert_select "details[data-signup-past] summary", text: /Past · 1 slot/
+    assert_select "details[data-signup-past] summary.disclosure-bar", text: /Past Slots.*1 slot/
+    assert_select "details[data-signup-past] summary.disclosure-bar svg.disclosure-icon"
     assert_select "details[data-signup-past]", text: /Yesterday dinner/
     assert_select "details[data-signup-past]", text: /Tonight dinner/, count: 0
     assert_select "section[aria-labelledby='tool-signup-sheet']", text: /Tonight dinner/
-    assert_select "section[aria-labelledby='tool-signup-sheet'] .btn-primary", count: 0
+    assert_select "form[action=?] .btn-primary", project_slot_claim_path(project, today), count: 0
+  end
+
+  test "Slot actions combine Add Slot with an explained bulk-create dialog" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    project.update!(enabled_tools: project.enabled_tools + [ "signup_sheet" ])
+
+    get project_path(project)
+
+    assert_select ".split-button a[data-action='slideout#open'][data-slideout-title-param='Add Slot']", text: /Add Slot/
+    assert_select ".split-button summary[aria-label='More Slot options']"
+    assert_select ".actions-menu-panel a[data-action='dialog#open']", text: "Generate Multiple Slots"
+    assert_select "dialog.modal h2", text: "Generate Multiple Slots"
+    assert_select "dialog.modal", text: /one Slot for every day in a date range/
+    assert_select "dialog.modal form[action=?]", project_slot_run_path(project)
+    assert_select "dialog.slideout turbo-frame#slot-form[data-slideout-target='frame']"
+    assert_select "dialog.slideout turbo-frame#slot-form[data-action='turbo:submit-end->slideout#submitted']"
+  end
+
+  test "Slot forms keep validation inside the slideout frame but direct pages submit at the top" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+
+    get new_project_slot_path(project), headers: { "Turbo-Frame" => "slot-form" }
+    assert_response :success
+    assert_select "turbo-frame#slot-form form[data-turbo-frame]", count: 0
+
+    get new_project_slot_path(project)
+    assert_response :success
+    assert_select "turbo-frame#slot-form form[data-turbo-frame='_top']"
   end
 
   test "a run longer than sixty days is refused" do

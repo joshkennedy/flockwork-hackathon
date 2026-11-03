@@ -5,7 +5,7 @@
     <div class="flex flex-wrap items-center justify-between gap-4">
       <h2 id="tool-recipients" class="text-ink"><%= icon(:heart, class: "text-tool-messages") %> <%= Project::TOOL_LABELS.fetch("recipients") %></h2>
       <% if Policy.can?(Current.person, :manage_recipients, project) %>
-        <%= link_to new_project_recipient_path(project), class: "btn btn-secondary btn-sm" do %><%= icon(:plus) %>Add recipient<% end %>
+        <%= link_to new_project_recipient_path(project), class: "btn btn-secondary btn-sm" do %><%= icon(:plus) %>Add Recipient<% end %>
       <% end %>
     </div>
 

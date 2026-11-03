@@ -34,7 +34,7 @@
       <div hidden data-voice-planner-target="launcher" class="mt-5">
         <button type="button" class="btn btn-secondary" data-action="voice-planner#start" data-voice-planner-target="startButton">
           <%= icon(:mic) %>
-          <span>Talk it through</span>
+          <span>Talk It Through</span>
         </button>
         <p class="mt-2 text-meta text-ink-2">Voice planning: talk about the work, not people.</p>
       </div>
@@ -52,7 +52,7 @@
 
     <% if planner_session.asking? %>
       <div class="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-meta font-semibold">
-        <%= link_to "Skip to review", skip_to_review_project_planner_session_path(project, planner_session), data: { turbo_method: :post, turbo_frame: "_top" }, class: "btn btn-secondary" %>
+        <%= link_to "Skip to Review", skip_to_review_project_planner_session_path(project, planner_session), data: { turbo_method: :post, turbo_frame: "_top" }, class: "btn btn-secondary" %>
         <%= link_to "Leave Planner", abandon_project_planner_session_path(project, planner_session), data: { turbo_method: :post, turbo_frame: "_top" }, class: "text-ink-2 hover:text-ink" %>
       </div>
     <% end %>

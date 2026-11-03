@@ -34,5 +34,5 @@
     </div>
   <% end %>
 
-  <%= form.submit class: "btn btn-primary" %>
+  <%= form.submit doc_item.persisted? ? "Update Document" : "Create Document", class: "btn btn-primary" %>
 <% end %>

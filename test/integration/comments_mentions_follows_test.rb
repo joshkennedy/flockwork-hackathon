@@ -231,18 +231,21 @@ class CommentsMentionsFollowsTest < ActionDispatch::IntegrationTest
     get project_path(project)
 
     assert_response :success
-    assert_select "details[data-commentable-type='Task'][data-commentable-id='#{task.id}'] summary", "1 comment"
-    assert_select "details[data-commentable-type='ScheduleItem'][data-commentable-id='#{schedule_item.id}'] summary", "1 comment"
-    assert_select "details[data-commentable-type='Slot'][data-commentable-id='#{slot.id}'] summary", "1 comment"
-    assert_select "details[data-commentable-type='BudgetLine'][data-commentable-id='#{budget_line.id}'] summary", "1 comment"
-    assert_select "details[data-commentable-type='DocItem'][data-commentable-id='#{doc_item.id}'] summary", "1 comment"
-    assert_select "details[data-commentable-type='ListRow'][data-commentable-id='#{list_row.id}'] summary", "1 comment"
+    assert_select "details[data-commentable-type='Task'][data-commentable-id='#{task.id}'] summary", text: /1 Comment/
+    assert_select "details[data-commentable-type='ScheduleItem'][data-commentable-id='#{schedule_item.id}'] summary", text: /1 Comment/
+    assert_select "button[data-action='comment-thread#toggle']", text: /View 1 Comment/
+    assert_select "section[data-commentable-type='Slot'][data-commentable-id='#{slot.id}'][hidden]"
+    assert_select "details[data-commentable-type='BudgetLine'][data-commentable-id='#{budget_line.id}'] summary", text: /1 Comment/
+    assert_select "details[data-commentable-type='DocItem'][data-commentable-id='#{doc_item.id}'] summary", text: /1 Comment/
+    assert_select "details[data-commentable-type='ListRow'][data-commentable-id='#{list_row.id}'] summary", text: /1 Comment/
     assert_select "[data-message-id='#{message.id}']"
     assert_select "details[data-commentable-type='Message']", count: 0
-    assert_select "[data-controller='mention-picker']", minimum: 7
+    assert_select "[data-controller='mention-picker']", minimum: 6
+    assert_select "section[aria-labelledby='tool-messages'] textarea[name='message[body]']"
+    assert_select "section[aria-labelledby='tool-messages'] trix-editor", count: 0
   end
 
-  test "an item with no comments shows a quiet Comment link" do
+  test "an item with no comments shows an actionable Add Comment control" do
     sign_in_as_volunteer
     project = projects(:community_meal)
     project.update!(enabled_tools: project.enabled_tools + [ "signup_sheet" ])
@@ -250,7 +253,9 @@ class CommentsMentionsFollowsTest < ActionDispatch::IntegrationTest
 
     get project_path(project)
 
-    assert_select "details[data-commentable-type='Slot'][data-commentable-id='#{slot.id}'] summary", "Comment"
+    assert_select "button[data-action='comment-thread#toggle']", text: /Add Comment/
+    assert_select "section[data-commentable-type='Slot'][data-commentable-id='#{slot.id}'][hidden]"
+    assert_select "li[data-controller='comment-thread'] > div > details.actions-menu summary svg", count: 1
     assert_no_match "No comments yet", response.body
   end
 end

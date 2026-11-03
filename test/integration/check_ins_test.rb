@@ -46,14 +46,14 @@ class CheckInsTest < ActionDispatch::IntegrationTest
     assert_equal 0, CheckIn.count
   end
 
-  test "a Leader sees when someone was checked in and by whom, but not the Admin note" do
+  test "a Leader sees the latest check-in in the summary, but not the Admin note" do
     CheckIn.create!(organization: @organization, person: @volunteer, checked_in_by: people(:admin), on: Date.current - 40, note: "Admin-only remark")
     sign_in_as_leader
 
     get oversight_path
 
     assert_select "[data-overextended-person='Vic Volunteer']" do
-      assert_select "p", text: /Checked in #{(Date.current - 40).strftime("%b %-d")} by/
+      assert_select "p", text: /last check-in #{(Date.current - 40).strftime("%b %-d")}/
     end
     assert_no_match "Admin-only remark", response.body
   end
@@ -77,13 +77,13 @@ class CheckInsTest < ActionDispatch::IntegrationTest
     assert_equal 0, CheckIn.count
   end
 
-  test "the card's summary line is labelled as a summary, shows the template until AI lands, then the AI sentence" do
+  test "the card shows one concise summary sentence until AI lands, then the AI sentence" do
     store = ActiveSupport::Cache::MemoryStore.new
     sign_in_as_admin
 
     stub_method(Rails, :cache, -> { store }) do
       get oversight_path
-      assert_select "p", text: "Summary · from counts"
+      assert_select "p", text: /Serving on 3 Active Projects since/
       assert_match "Serving on 3 Active Projects since", response.body
 
       facts = OversightSummary.facts_for(@volunteer, last_check_in: nil)

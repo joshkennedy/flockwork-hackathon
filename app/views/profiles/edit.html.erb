@@ -1,64 +1,90 @@
 <% content_for :title, "My profile" %>
 
-<div class="w-full max-w-2xl">
+<div class="w-full max-w-4xl">
   <div class="flex items-center gap-4">
     <%= avatar(@person, size: :lg) %>
     <div class="min-w-0 flex-1"><%= page_header "My profile" %></div>
   </div>
 
-  <%= form_with model: @person, url: profile_path, method: :patch, class: "mt-7 space-y-4" do |form| %>
-    <% if @person.errors.any? %>
-      <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-meta text-danger">
-        <%= @person.errors.full_messages.to_sentence %>
-      </div>
-    <% end %>
+  <%# Vertical tabs, one section in view at a time. Details and Notifications share one form, so either Save keeps both. %>
+  <% sections = [ [ "details", "Details", :user ], [ "notifications", "Notifications", :notifications ], [ "away", "When you're away", :schedule ], [ "appearance", "Appearance", :settings ], [ "involvement", "Your Involvement", :heart ] ] %>
+  <div class="mt-7 grid gap-6 md:grid-cols-[200px_minmax(0,1fr)] md:gap-10" data-controller="tabs">
+    <nav class="flex gap-1 overflow-x-auto md:flex-col md:gap-0.5" aria-label="Profile sections">
+      <% sections.each_with_index do |(name, label, symbol), index| %>
+        <%= link_to "#profile-#{name}", class: "nav-item shrink-0", aria: { current: index.zero? }, data: { tabs_target: "tab", tabs_name: name, action: "tabs#select" } do %>
+          <%= icon(symbol) %><span><%= label %></span>
+        <% end %>
+      <% end %>
+    </nav>
 
-    <div>
-      <%= form.label :name, class: "block text-label font-medium text-ink-2" %>
-      <%= form.text_field :name, required: true, class: "mt-1 block w-full field" %>
-    </div>
-
-    <div>
-      <p class="block text-meta font-medium text-ink-2">Email</p>
-      <p class="mt-1 text-meta text-ink-2"><%= @person.email.presence || "Can't sign in (no email)" %></p>
-    </div>
-
-    <div>
-      <%= form.label :phone, class: "block text-label font-medium text-ink-2" %>
-      <%= form.telephone_field :phone, class: "mt-1 block w-full field" %>
-    </div>
-
-    <fieldset class="pt-3">
-      <legend class="text-body-phone sm:text-body font-semibold text-ink">Email notifications</legend>
-      <p class="mt-1 text-meta text-ink-2">In-app notifications are always on.</p>
-      <div class="mt-4 space-y-3">
-        <% Notification::KINDS.each do |kind, settings| %>
-          <div class="flex items-start gap-3">
-            <%= hidden_field_tag "person[email_preferences][#{kind}]", "0", id: nil %>
-            <%= check_box_tag "person[email_preferences][#{kind}]", "1", @person.email_for?(kind), id: "person_email_preferences_#{kind}", class: "mt-0.5 size-4 rounded border-hairline text-ink focus:border-ink" %>
-            <%= label_tag "person_email_preferences_#{kind}", settings.fetch(:label), class: "text-label text-ink-2" %>
+    <div class="min-w-0 max-w-xl">
+      <%= form_with model: @person, url: profile_path, method: :patch do |form| %>
+        <% if @person.errors.any? %>
+          <div role="alert" class="mb-4 rounded-control bg-danger-soft px-4 py-3 text-meta text-danger">
+            <%= @person.errors.full_messages.to_sentence %>
           </div>
         <% end %>
-      </div>
-    </fieldset>
 
-    <%= form.submit "Save changes", class: "btn btn-primary" %>
-  <% end %>
+        <section id="profile-details" class="space-y-4" data-tabs-target="panel" data-tabs-name="details" aria-label="Details">
+          <div>
+            <%= form.label :name, class: "block text-label font-medium text-ink-2" %>
+            <%= form.text_field :name, required: true, class: "mt-1 block w-full field" %>
+          </div>
 
-  <%= render "away_dates" %>
+          <div>
+            <p class="block text-meta font-medium text-ink-2">Email</p>
+            <p class="mt-1 text-meta text-ink-2"><%= @person.email.presence || "Can't sign in (no email)" %></p>
+          </div>
 
-  <fieldset class="mt-10 space-y-3" data-controller="appearance" data-action="change->appearance#pick">
-    <legend class="text-body-phone font-semibold text-ink sm:text-body">Appearance on this device</legend>
-    <p class="text-meta text-ink-2">Only this browser changes. Your church's theme color stays the same.</p>
-    <div class="grid grid-cols-3 gap-2 sm:max-w-md">
-      <% [["Light", "light"], ["Dark", "dark"], ["Match device", "system"]].each do |label, value| %>
-        <label class="tile-raised flex cursor-pointer items-center justify-center px-3 py-2.5 text-button has-[:checked]:border-ink has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ink">
-          <%= radio_button_tag :appearance, value, appearance == value, class: "sr-only" %>
-          <%= label %>
-        </label>
+          <div>
+            <%= form.label :phone, class: "block text-label font-medium text-ink-2" %>
+            <%= form.telephone_field :phone, class: "mt-1 block w-full field" %>
+          </div>
+
+          <%= form.submit "Save Changes", class: "btn btn-primary" %>
+        </section>
+
+        <section id="profile-notifications" class="space-y-4" data-tabs-target="panel" data-tabs-name="notifications" aria-label="Notifications" hidden>
+          <fieldset>
+            <legend class="text-body-phone sm:text-body font-semibold text-ink">Email notifications</legend>
+            <p class="mt-1 text-meta text-ink-2">In-app notifications are always on.</p>
+            <div class="mt-4 space-y-3">
+              <% Notification::KINDS.each do |kind, settings| %>
+                <div class="flex items-start gap-3">
+                  <%= hidden_field_tag "person[email_preferences][#{kind}]", "0", id: nil %>
+                  <%= check_box_tag "person[email_preferences][#{kind}]", "1", @person.email_for?(kind), id: "person_email_preferences_#{kind}", class: "mt-0.5 size-4 rounded border-hairline text-ink focus:border-ink" %>
+                  <%= label_tag "person_email_preferences_#{kind}", settings.fetch(:label), class: "text-label text-ink-2" %>
+                </div>
+              <% end %>
+            </div>
+          </fieldset>
+
+          <%= form.submit "Save Changes", class: "btn btn-primary" %>
+        </section>
       <% end %>
-    </div>
-  </fieldset>
 
-  <%= render "shared/involvement_timeline", involvement: @involvement, title: "Your Involvement" %>
+      <div id="profile-away" data-tabs-target="panel" data-tabs-name="away" hidden>
+        <%= render "away_dates", section_class: "" %>
+      </div>
+
+      <div id="profile-appearance" data-tabs-target="panel" data-tabs-name="appearance" hidden>
+        <fieldset class="space-y-3" data-controller="appearance" data-action="change->appearance#pick">
+          <legend class="text-body-phone font-semibold text-ink sm:text-body">Appearance on this device</legend>
+          <p class="text-meta text-ink-2">Only this browser changes. Your church's theme color stays the same.</p>
+          <div class="grid grid-cols-3 gap-2 sm:max-w-md">
+            <% [["Light", "light"], ["Dark", "dark"], ["Match device", "system"]].each do |label, value| %>
+              <label class="tile-raised flex cursor-pointer items-center justify-center px-3 py-2.5 text-button has-[:checked]:border-ink has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ink">
+                <%= radio_button_tag :appearance, value, appearance == value, class: "sr-only" %>
+                <%= label %>
+              </label>
+            <% end %>
+          </div>
+        </fieldset>
+      </div>
+
+      <div id="profile-involvement" data-tabs-target="panel" data-tabs-name="involvement" hidden>
+        <%= render "shared/involvement_timeline", involvement: @involvement, title: "Your Involvement", section_class: "" %>
+      </div>
+    </div>
+  </div>
 </div>

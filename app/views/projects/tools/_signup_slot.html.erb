@@ -2,8 +2,11 @@
 <% open = !slot.full? && !own_claim %>
 <% manage = Policy.can?(Current.person, :manage_slots, project) %>
 <% dinner = slot.label.downcase == "dinner" %>
+<% comment_count = slot.comments.size %>
+<% can_comment = Policy.can?(Current.person, :comment, project) %>
+<% has_comment_thread = comment_count.positive? || can_comment || slot.follows.exists?(person: Current.person) %>
 <%# Phones keep DESIGN.md's raised tile for an open Slot; wider screens show every Slot as a flat row. %>
-<li class="signup-row<%= " signup-open" if open %>">
+<li class="signup-row<%= " signup-open" if open %>" data-controller="<%= "comment-thread" if has_comment_thread %>">
   <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
     <p class="w-28 shrink-0">
       <span class="block font-semibold"><%= slot.date.strftime(slot.date.year == Date.current.year ? "%a, %b %-d" : "%a, %b %-d, %Y") %></span>
@@ -25,7 +28,7 @@
         <span class="badge-need"><%= pluralize(slot.capacity - slot.claims_count, "spot") %> left</span>
         <% if Policy.can?(Current.person, :claim_slot, project) %>
           <%# Leaders see the whole sheet, so a primary per slot would drown the page; volunteers get the phone action DESIGN.md specifies. %>
-          <%= button_to (dinner ? "I can bring dinner" : "I can help"), project_slot_claim_path(project, slot),
+          <%= button_to (dinner ? "I Can Bring Dinner" : "I Can Help"), project_slot_claim_path(project, slot),
                 class: manage ? "btn btn-secondary btn-sm" : "btn btn-primary",
                 form_class: "button_to max-sm:w-full",
                 aria: { label: "Claim: #{slot.label}" } %>
@@ -34,18 +37,21 @@
         <span class="text-meta text-ink-2"><%= "#{slot.claims_count} of #{slot.capacity} filled" %></span>
       <% end %>
     </div>
-    <% if manage || own_claim %>
+    <% if manage || own_claim || has_comment_thread %>
       <%= actions_menu("Actions for #{slot.label} on #{slot.date.strftime("%B %-d")}") do %>
+        <% if has_comment_thread %>
+          <button type="button" aria-expanded="false" data-comment-thread-target="trigger" data-action="comment-thread#toggle"><%= comment_count.positive? ? "View #{pluralize(comment_count, "Comment")}" : "Add Comment" %></button>
+        <% end %>
         <% if own_claim %>
           <%= button_to "Release", project_slot_claim_path(project, slot), method: :delete %>
         <% end %>
         <% if manage %>
-          <%= link_to "Edit slot", edit_project_slot_path(project, slot) %>
+          <%= link_to "Edit Slot", edit_project_slot_path(project, slot), data: { action: "slideout#open", slideout_title_param: "Edit Slot" } %>
           <hr>
-          <%= button_to "Delete slot", project_slot_path(project, slot), method: :delete, class: "menu-danger" %>
+          <%= button_to "Delete Slot", project_slot_path(project, slot), method: :delete, class: "menu-danger" %>
         <% end %>
       <% end %>
     <% end %>
   </div>
-  <%= render "comments/thread", commentable: slot %>
+  <%= render "comments/thread", commentable: slot, external: true if has_comment_thread %>
 </li>

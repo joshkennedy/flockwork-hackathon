@@ -14,11 +14,11 @@
         onclick="this.select()"
       >
       <div class="mt-4 flex flex-wrap gap-3">
-        <%= button_to "Reset link", reset_public_link_project_path(project), class: "btn btn-secondary" %>
-        <%= button_to "Turn off", disable_public_link_project_path(project), class: "btn btn-danger" %>
+        <%= button_to "Reset Link", reset_public_link_project_path(project), class: "btn btn-secondary" %>
+        <%= button_to "Turn Off", disable_public_link_project_path(project), class: "btn btn-danger" %>
       </div>
     <% else %>
-      <%= button_to "Turn on Public link", enable_public_link_project_path(project), class: "mt-4 btn btn-secondary" %>
+      <%= button_to "Turn On Public Link", enable_public_link_project_path(project), class: "mt-4 btn btn-secondary" %>
     <% end %>
   </section>
 <% end %>

@@ -6,7 +6,7 @@ class GetInvolvedTest < ActionDispatch::IntegrationTest
     @project.update!(open_team: true, enabled_tools: @project.enabled_tools + [ "signup_sheet" ])
   end
 
-  test "Get involved leads with open Slots grouped by when, with who is going and spots left" do
+  test "Get involved leads with a Needs a hand card of the Projects short on people" do
     this_week = @project.slots.create!(date: Date.current, label: "Dinner", capacity: 4)
     @project.slots.create!(date: Date.current.next_week + 1, label: "Setup", capacity: 2)
     @project.slots.create!(date: Date.current.next_week.end_of_week + 1, label: "Cleanup", capacity: 1)
@@ -18,53 +18,50 @@ class GetInvolvedTest < ActionDispatch::IntegrationTest
     get get_involved_path
 
     assert_response :success
-    assert_select "section[aria-labelledby='needs-heading'] h3", text: "This week"
-    assert_select "section[aria-labelledby='needs-heading'] h3", text: "Next week"
-    assert_select "section[aria-labelledby='needs-heading'] h3", text: "Later"
-    assert_select "section[aria-labelledby='needs-heading'] li .person-pill", text: /and 2 others/
-    assert_select "section[aria-labelledby='needs-heading'] li", text: /Community Meal.*Dinner.*and 2 others.*signed up/m
-    assert_select "section[aria-labelledby='needs-heading'] li", text: /1 spot left/
+    assert_select "section[aria-labelledby='needs-heading'] a[href=?]", project_path(@project), text: /Community Meal.*4 spots still open/m
+    assert_select "section[aria-labelledby='needs-heading'] .status-chip", text: "This week"
     assert_select "section[aria-labelledby='joined-teams-heading'] li", text: /3 of 7 spots filled/
   end
 
-  test "a Volunteer claims an open Slot from Get involved and lands back there" do
+  test "Needs a hand sends a Volunteer through to the Project to sign up" do
     slot = @project.slots.create!(date: Date.current + 1, label: "Dinner", capacity: 1)
-    later_slot = @project.slots.create!(date: Date.current + 2, label: "Dinner", capacity: 2)
     volunteer = sign_in_as_volunteer
 
     get get_involved_path
-    assert_select "form[action=?]", project_slot_claim_path(@project, slot), count: 1
+    assert_select "section[aria-labelledby='needs-heading'] a[href=?]", project_path(@project)
+    assert_select "form[action=?]", project_slot_claim_path(@project, slot), count: 0
 
-    post project_slot_claim_path(@project, slot), params: { from: "get_involved" }
-    assert_redirected_to get_involved_path
+    get project_path(@project)
+    assert_select "form[action=?]", project_slot_claim_path(@project, slot)
+
+    post project_slot_claim_path(@project, slot)
     assert_includes slot.reload.people, volunteer
 
     get get_involved_path
-    assert_select "section[aria-labelledby='needs-heading'] li", text: /You’re bringing dinner/
-    assert_select "form[action=?]", project_slot_claim_path(@project, slot), count: 0
-    assert_select "section[aria-labelledby='needs-heading'] li", text: /1 spot left/, count: 0
-
-    post project_slot_claim_path(@project, later_slot)
-    assert_redirected_to project_path(@project)
+    assert_select "section[aria-labelledby='needs-heading'] p", text: /Every spot is covered for now/
   end
 
-  test "a Volunteer who is not on the Team sees Join, not a claim button, and joins from Get involved" do
+  test "a Volunteer who is not on the Team can browse open spots without joining first" do
     project = projects(:building_cleanup)
     project.update!(open_team: true, enabled_tools: [ "signup_sheet" ])
-    slot = project.slots.create!(date: Date.current + 1, label: "Setup", capacity: 2)
-    sign_in_as_volunteer
+    project.slots.create!(date: Date.current + 1, label: "Setup", capacity: 2)
+    sign_in_as(:other_volunteer)
 
     get get_involved_path
 
-    assert_select "section[aria-labelledby='needs-heading']", text: /Join the Team to sign up/
-    assert_select "form[action=?]", project_slot_claim_path(project, slot), count: 0
-    assert_select "section[aria-labelledby='open-teams-heading'] form[action=?]", join_project_path(project)
+    assert_select "section[aria-labelledby='needs-heading'] a[href=?]", project_path(project), text: /2 spots still open · next/
+    assert_select "section[aria-labelledby='open-teams-heading'] a.btn[href=?]", project_path(project), text: "View Open Spots"
+    assert_select "section[aria-labelledby='open-teams-heading'] form[action=?]", join_project_path(project), count: 0
+  end
 
-    post join_project_path(project), params: { from: "get_involved" }
-    assert_redirected_to get_involved_path
+  test "Project card images link through to the Project" do
+    @project.banner.attach(io: file_fixture("banner_wide.jpg").open, filename: "banner.jpg", content_type: "image/jpeg")
+    @project.reload.banner_ready?
+    sign_in_as(:other_volunteer)
 
     get get_involved_path
-    assert_select "form[action=?]", project_slot_claim_path(project, slot), count: 1
+
+    assert_select "section[aria-labelledby='open-teams-heading'] a[href=?] img", project_path(@project), minimum: 1
   end
 
   test "Get involved says so warmly when no Team is open" do

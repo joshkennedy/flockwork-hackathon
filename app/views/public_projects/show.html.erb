@@ -57,7 +57,7 @@
               <p class="mt-1 text-meta text-ink-2">Due <%= task.due_on.to_fs(:long) %></p>
             <% end %>
           </div>
-          <%= link_to "Sign in to help", @sign_in_path, class: "btn btn-primary" %>
+          <%= link_to "Sign In to Help", @sign_in_path, class: "btn btn-primary" %>
         </li>
       <% end %>
     </ul>
@@ -80,7 +80,7 @@
               <p class="font-semibold text-ink"><%= slot.label %></p>
               <p class="badge-need mt-2"><%= spots_left %> <%= "spot".pluralize(spots_left) %> left</p>
             </div>
-            <%= link_to "Sign in to help", @sign_in_path, class: "btn btn-primary" %>
+            <%= link_to "Sign In to Help", @sign_in_path, class: "btn btn-primary" %>
           </li>
         <% end %>
       <% end %>

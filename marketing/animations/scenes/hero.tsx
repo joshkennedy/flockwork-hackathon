@@ -5,7 +5,7 @@ import './hero.css'
 
 // The landing hero, a device pair telling one event across a whole church: the Admin's
 // Home lists every active Project (a meal train, VBS, a workday, a retreat), and Ruth,
-// on her phone in the meal train, taps "I can bring dinner" for Friday. A beat later
+// on her phone in the meal train, taps "I Can Bring Dinner" for Friday. A beat later
 // the meal train's row on Home rolls from 15 to 14 dinners still needing someone and
 // "Open spots this week" from 4 to 3. The phone straddles the window's empty right
 // margin, never the rows it explains.
@@ -101,7 +101,7 @@ export default function Hero() {
                 <Collapse open={!s.claimed}>
                   <div className="fp-open">
                     <span className="badge-need">1 spot left</span>
-                    <span className="btn btn-primary fp-claim" data-target="claim">I can bring dinner</span>
+                    <span className="btn btn-primary fp-claim" data-target="claim">I Can Bring Dinner</span>
                   </div>
                 </Collapse>
                 <Collapse open={s.claimed}>
@@ -111,7 +111,7 @@ export default function Hero() {
               <div className="fp-tile">
                 <div className="fp-day">Sat, Nov 7</div>
                 <div className="fp-label">Dinner · 6:00 PM</div>
-                <div className="fp-open"><span className="badge-need">1 spot left</span><span className="btn btn-primary fp-claim">I can bring dinner</span></div>
+                <div className="fp-open"><span className="badge-need">1 spot left</span><span className="btn btn-primary fp-claim">I Can Bring Dinner</span></div>
               </div>
             </div>
           </Phone>

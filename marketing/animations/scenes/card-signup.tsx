@@ -1,6 +1,6 @@
 import { Collapse, Phone, Stage, type Act } from '../kit'
 import family from '../assets/alvarez-family.jpg'
-import { Icon, Plate, Wordmark } from './flockwork'
+import { Icon, Plate, Wordmark, type PlateTone } from './flockwork'
 import './card-shared.css'
 import './card-signup.css'
 
@@ -11,7 +11,10 @@ import './card-signup.css'
 
 type S = { claimed: boolean }
 
-const script = async (a: Act<S>) => {
+// The finger rests near the stage's bottom-right corner between taps
+const restFor = (width: number, height: number) => ({ x: width - 56, y: height - 30 })
+
+const scriptFor = (rest: { x: number; y: number }) => async (a: Act<S>) => {
   await a.wait(1000)
   await a.click('claim', { x: 0.7, y: 0.55 })
   a.put({ claimed: true })
@@ -19,16 +22,18 @@ const script = async (a: Act<S>) => {
   a.put({ claimed: false })
   await a.wait(1600)
   // Back to the rest point, so every pass of the loop starts from the same place
-  await a.move({ x: 400, y: 690 })
+  await a.move(rest)
 }
 
-export default function CardSignup() {
+/** The scene at any size: the sign-in page's panel reuses it larger (scenes/auth.tsx). */
+export function SignupScene({ width = 456, height = 720, phone = 330, tone = 'sunrise', className = '' }: { width?: number; height?: number; phone?: number; tone?: PlateTone; className?: string }) {
+  const rest = restFor(width, height)
   return (
-    <Stage<S> width={456} height={720} initial={{ claimed: false }} poster={{ claimed: true }} script={script} cursor={{ at: { x: 400, y: 690 }, style: 'touch', idle: false }} fidelity="realistic" className="fw fw-plated fw-cards fw-card-signup">
+    <Stage<S> width={width} height={height} initial={{ claimed: false }} poster={{ claimed: true }} script={scriptFor(rest)} cursor={{ at: rest, style: 'touch', idle: false }} fidelity="realistic" className={`fw fw-plated fw-cards fw-card-signup ${className}`}>
       {(s) => (
         <>
-        <Plate tone="sunrise" />
-        <Phone width={330} frame="pro" className="cs-phone">
+        <Plate tone={tone} />
+        <Phone width={phone} frame="pro" className="cs-phone" style={{ left: (width - phone) / 2 }}>
           <div className="cs-screen">
             <Wordmark />
             <img className="cs-banner" src={family} alt="" />
@@ -42,7 +47,7 @@ export default function CardSignup() {
               <Collapse open={!s.claimed}>
                 <div className="cs-open">
                   <span className="badge-need">1 spot left</span>
-                  <span className="btn btn-primary cs-claim" data-target="claim">I can bring dinner</span>
+                  <span className="btn btn-primary cs-claim" data-target="claim">I Can Bring Dinner</span>
                 </div>
               </Collapse>
               <Collapse open={s.claimed}>
@@ -53,7 +58,7 @@ export default function CardSignup() {
             <div className="cs-tile cs-next">
               <div className="cs-when">Tuesday, November 10<br />6:00 PM</div>
               <div className="cs-label">Dinner</div>
-              <div className="cs-open"><span className="badge-need">1 spot left</span><span className="btn btn-primary cs-claim">I can bring dinner</span></div>
+              <div className="cs-open"><span className="badge-need">1 spot left</span><span className="btn btn-primary cs-claim">I Can Bring Dinner</span></div>
             </div>
           </div>
         </Phone>
@@ -61,6 +66,10 @@ export default function CardSignup() {
       )}
     </Stage>
   )
+}
+
+export default function CardSignup() {
+  return <SignupScene />
 }
 
 export const meta = { out: 'card-signup', seconds: 7, poster: 3000 }

@@ -36,5 +36,5 @@
     <%= form.text_field :location, class: "mt-2 block w-full field" %>
   </div>
 
-  <%= form.submit class: "btn btn-primary" %>
+  <%= form.submit schedule_item.persisted? ? "Update Schedule Item" : "Create Schedule Item", class: "btn btn-primary" %>
 <% end %>

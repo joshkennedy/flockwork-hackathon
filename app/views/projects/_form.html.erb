@@ -52,5 +52,5 @@
     </div>
   </fieldset>
 
-  <%= form.submit class: "btn btn-primary" %>
+  <%= form.submit project.persisted? ? "Update Project" : "Create Project", class: "btn btn-primary" %>
 <% end %>

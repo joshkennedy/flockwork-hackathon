@@ -8,9 +8,9 @@
     <h2 id="tool-docs" class="text-ink"><%= icon(:docs, class: "text-tool-docs") %> <%= Project::TOOL_LABELS.fetch("docs") %></h2>
     <% if Policy.can?(Current.person, :manage_docs, project) %>
       <div class="flex flex-wrap justify-end gap-2">
-        <%= link_to new_project_doc_item_path(project, kind: "document"), class: "btn btn-secondary btn-sm" do %><%= icon(:plus) %>Add document<% end %>
-        <%= link_to new_project_doc_item_path(project, kind: "file"), class: "btn btn-secondary btn-sm" do %><%= icon(:plus) %>Add file<% end %>
-        <%= link_to new_project_doc_item_path(project, kind: "link"), class: "btn btn-secondary btn-sm" do %><%= icon(:plus) %>Add link<% end %>
+        <%= link_to new_project_doc_item_path(project, kind: "document"), class: "btn btn-secondary btn-sm" do %><%= icon(:plus) %>Add Document<% end %>
+        <%= link_to new_project_doc_item_path(project, kind: "file"), class: "btn btn-secondary btn-sm" do %><%= icon(:plus) %>Add File<% end %>
+        <%= link_to new_project_doc_item_path(project, kind: "link"), class: "btn btn-secondary btn-sm" do %><%= icon(:plus) %>Add Link<% end %>
       </div>
     <% end %>
   </div>

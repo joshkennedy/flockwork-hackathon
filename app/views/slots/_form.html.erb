@@ -1,4 +1,6 @@
-<%= form_with model: [ project, slot ], class: "space-y-7" do |form| %>
+<%= form_with model: [ project, slot ],
+      class: "space-y-7",
+      data: { turbo_frame: ("_top" unless request.headers["Turbo-Frame"] == "slot-form") } do |form| %>
   <% if slot.errors.any? %>
     <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
       <p class="font-semibold">Please fix the following:</p>
@@ -30,5 +32,5 @@
     <%= form.number_field :capacity, min: 1, required: true, class: "mt-2 block w-full field" %>
   </div>
 
-  <%= form.submit class: "btn btn-primary" %>
+  <%= form.submit slot.persisted? ? "Update Slot" : "Create Slot", class: "btn btn-primary" %>
 <% end %>

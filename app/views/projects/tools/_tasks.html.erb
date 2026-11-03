@@ -5,7 +5,7 @@
   <div class="flex flex-wrap items-start justify-between gap-4">
     <h2 id="tool-tasks" class="text-ink"><%= icon(:tasks, class: "text-tool-tasks") %> <%= Project::TOOL_LABELS.fetch("tasks") %></h2>
     <% if Policy.can?(Current.person, :manage_tasks, project) %>
-      <%= link_to new_project_task_path(project), class: "btn btn-secondary btn-sm" do %><%= icon(:plus) %>Add task<% end %>
+      <%= link_to new_project_task_path(project), class: "btn btn-secondary btn-sm" do %><%= icon(:plus) %>Add Task<% end %>
     <% end %>
   </div>
 
@@ -42,19 +42,19 @@
               </div>
               <div class="flex shrink-0 items-center gap-1">
                 <% if can_claim %>
-                  <%= button_to "I’ll do it", claim_project_task_path(project, task), class: "btn btn-secondary btn-sm" %>
+                  <%= button_to "I’ll Do It", claim_project_task_path(project, task), class: "btn btn-secondary btn-sm" %>
                 <% end %>
                 <% if can_manage || can_unclaim %>
                   <%= actions_menu("Actions for #{task.title}") do %>
                     <% if can_manage %>
-                      <%= link_to "Edit task", edit_project_task_path(project, task) %>
+                      <%= link_to "Edit Task", edit_project_task_path(project, task) %>
                     <% end %>
                     <% if can_unclaim %>
                       <%= button_to "Unclaim", unclaim_project_task_path(project, task) %>
                     <% end %>
                     <% if can_manage %>
                       <hr>
-                      <%= button_to "Delete task", project_task_path(project, task), method: :delete, class: "menu-danger" %>
+                      <%= button_to "Delete Task", project_task_path(project, task), method: :delete, class: "menu-danger" %>
                     <% end %>
                   <% end %>
                 <% end %>
@@ -96,9 +96,9 @@
               <% if can_manage %>
                 <div class="flex shrink-0 items-center gap-1">
                   <%= actions_menu("Actions for #{task.title}") do %>
-                    <%= link_to "Edit task", edit_project_task_path(project, task) %>
+                    <%= link_to "Edit Task", edit_project_task_path(project, task) %>
                     <hr>
-                    <%= button_to "Delete task", project_task_path(project, task), method: :delete, class: "menu-danger" %>
+                    <%= button_to "Delete Task", project_task_path(project, task), method: :delete, class: "menu-danger" %>
                   <% end %>
                 </div>
               <% end %>

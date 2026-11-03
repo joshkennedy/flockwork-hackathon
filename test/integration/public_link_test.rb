@@ -22,17 +22,17 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
     assert_select "meta[name=robots][content=noindex]", count: 1
   end
 
-  test "the project header keeps occasional actions folded away" do
+  test "the project keeps sharing and ownership visible" do
     sign_in_as_leader
     project = projects(:community_meal)
 
     get project_path(project)
-    assert_select "details[data-project-settings]:not([open]) summary", text: /Sharing and ownership/
+    assert_select "section[data-project-settings] h2", text: /Sharing and ownership/
     assert_select "details.actions-menu form[action=?]", mark_done_project_path(project)
 
     post enable_public_link_project_path(project)
     get project_path(project)
-    assert_select "details[data-project-settings][open] summary", text: /Public link on/
+    assert_select "section[data-project-settings] h2", text: /Public link on/
   end
 
   test "resetting the Public link invalidates the old URL" do
@@ -144,8 +144,8 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
     get public_project_path(token)
     assert_response :success
 
-    assert_select "section[aria-labelledby='public-tasks'] a[href=?]", sign_in_path, text: "Sign in to help"
-    assert_select "section[aria-labelledby='public-slots'] a[href=?]", sign_in_path, text: "Sign in to help"
+    assert_select "section[aria-labelledby='public-tasks'] a[href=?]", sign_in_path, text: "Sign In to Help"
+    assert_select "section[aria-labelledby='public-slots'] a[href=?]", sign_in_path, text: "Sign In to Help"
   end
 
   test "a Volunteer cannot toggle the Public link" do

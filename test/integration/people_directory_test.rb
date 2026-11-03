@@ -73,32 +73,29 @@ class PeopleDirectoryTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "each row says what the Person serves on and when they last served" do
-    slot = projects(:community_meal).slots.create!(date: Date.current - 14, label: "Dinner", capacity: 4)
-    slot.slot_claims.create!(person: people(:volunteer))
+  test "each row says only what the Person serves on" do
     sign_in_as_admin
 
     get people_path
 
     assert_select "li", text: /Vic Volunteer/ do
       assert_select "p", text: "Serving on Community Meal"
-      assert_select "p", text: /Last served #{(Date.current - 14).strftime("%b %-d")}/
     end
     assert_select "li", text: /Lucy Leader/ do
       assert_select "p", text: "Serving on Building Cleanup and Community Meal"
     end
     assert_select "li", text: /Vera Volunteer/ do
       assert_select "p", text: "Not serving on an Active Project right now"
-      assert_select "p", text: /Last served/, count: 0
     end
   end
 
-  test "rows hide the secondary detail on phones" do
+  test "rows keep contact details on the Person page" do
     sign_in_as_admin
 
     get people_path
 
-    assert_select "li p.hidden.sm\\:block", minimum: 1
+    assert_no_match people(:volunteer).email, response.body
+    assert_no_match people(:volunteer).phone, response.body
   end
 
   test "a filter and a search combine, and the search keeps the filter" do

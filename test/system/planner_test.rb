@@ -91,9 +91,9 @@ class PlannerSystemTest < ApplicationSystemTestCase
 
     sign_in_as_leader_in_browser
     visit project_path(project)
-    click_on "Plan more"
+    click_on "Plan More"
     fill_in "Describe this plan in one sentence", with: "Finish the neighborhood meal plan."
-    click_on "Start planning"
+    click_on "Start Planning"
 
     assert_text "What should happen before guests arrive?"
     assert_text "Suggestions will appear here"
@@ -124,7 +124,7 @@ class PlannerSystemTest < ApplicationSystemTestCase
     click_on "Review Suggestions"
     assert_selector "h1", text: "Review Suggestions"
     assert_text "Currently dropped"
-    click_button "Accept all", exact: true
+    click_button "Accept All", exact: true
 
     assert_current_path project_path(project)
     assert_text "Meal delivery team", count: 2

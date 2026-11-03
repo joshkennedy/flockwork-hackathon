@@ -197,6 +197,14 @@
   .actions-menu-panel :is(a, button) { @apply flex min-h-control-h w-full items-center rounded-badge px-3 text-left text-button text-ink no-underline; transition: background-color var(--duration-hover); }
   .actions-menu-panel .menu-danger { @apply text-danger; }
   .actions-menu-panel form { @apply w-full; }
+  .split-button { @apply inline-flex items-stretch; }
+  .split-button-main { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+  .split-button-menu { @apply w-8 px-0; margin-left: -1px; border-top-left-radius: 0; border-bottom-left-radius: 0; }
+  .disclosure-summary { @apply inline-flex min-h-control-h items-center gap-2 rounded-control px-2 text-left; list-style: none; }
+  .disclosure-summary::-webkit-details-marker { display: none; }
+  .disclosure-icon { transition: transform var(--duration-hover); }
+  details[open] > .disclosure-summary .disclosure-icon { transform: rotate(45deg); }
+  .disclosure-bar { @apply w-full rounded-tile border border-border bg-ghost-fill px-4 py-3 font-semibold text-ink; }
   /* Account menu: the sidebar row opens upward; the phone avatar opens a sheet above the tab bar. */
   .avatar { @apply inline-grid size-7 shrink-0 place-items-center rounded-badge bg-nav-active text-label font-semibold text-ink; }
   .avatar.sm { @apply size-6 text-[11px]; }
@@ -227,8 +235,12 @@
   dialog.slideout { @apply m-0 ml-auto h-dvh max-h-none w-full max-w-md bg-transparent p-0; }
   dialog.slideout::backdrop { background: rgb(20 20 19 / .32); }
   .slideout-panel { @apply h-full overflow-y-auto border-l border-border bg-panel p-6 shadow-float; }
+  dialog.modal { @apply m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-2xl overflow-visible rounded-panel bg-transparent p-0; }
+  dialog.modal::backdrop { background: rgb(20 20 19 / .32); }
+  .modal-panel { @apply max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-panel border border-border bg-panel p-6 shadow-float; }
   @media (prefers-reduced-motion: no-preference) {
     dialog.slideout[open] .slideout-panel { animation: slideout-in 220ms var(--ease-enter); }
+    dialog.modal[open] .modal-panel { animation: popover-in 180ms var(--ease-enter); }
   }
   .person-pill { @apply inline-flex h-6 max-w-full min-w-0 items-center gap-1.5 rounded-nav pl-0.5 pr-2.5 align-middle text-meta text-ink; --pill-fill: color-mix(in oklab, var(--color-hairline) 55%, var(--color-panel)); background-color: var(--pill-fill); --avatar-ring: var(--pill-fill); }
   .account-menu > summary { list-style: none; }
@@ -281,6 +293,7 @@
     .btn-danger:hover { @apply bg-danger-soft; }
     .actions-menu-panel :is(a, button):hover { @apply bg-hairline; }
     .actions-menu-panel .menu-danger:hover { @apply bg-danger-soft; }
+    .disclosure-summary:hover { @apply bg-hairline text-ink; }
     .nav-item:hover { @apply bg-nav-active text-ink; }
     .tab-link:hover { @apply text-ink; }
     .answer-tile:hover { @apply border-border-strong; }
@@ -306,13 +319,20 @@
   .field { @apply min-h-input-h-phone min-w-0 rounded-control border border-border bg-panel px-3 py-2 text-body-phone text-ink sm:min-h-input-h sm:py-1.5 sm:text-body; }
   :is(textarea, trix-editor).field { min-height: 112px; }
   .nav-item { @apply flex min-h-control-h items-center gap-3 rounded-nav px-3 py-1.5 text-meta text-ink-2; transition: background-color var(--duration-hover), color var(--duration-hover); }
-  .nav-item[aria-current="page"] { @apply bg-nav-active font-semibold text-ink; }
+  .nav-item:is([aria-current="page"], [aria-current="true"]) { @apply bg-nav-active font-semibold text-ink; }
   /* Inset shadow, not border-b: a -mb-px tab inside overflow-x-auto makes the bar scroll vertically. */
   .tab-bar { @apply flex gap-6 overflow-x-auto overflow-y-hidden shadow-[inset_0_-1px_0_var(--color-border)]; }
+  /* A link in running text: a hairline underline set clear of the letters, so it never chops around descenders. */
+  .link { @apply text-ink; text-decoration-line: underline; text-decoration-thickness: 1px; text-underline-offset: 0.25em; text-decoration-color: var(--color-border-strong); transition: text-decoration-color var(--duration-hover); }
+  .link:hover { text-decoration-color: currentColor; }
   .tab-link { @apply inline-flex min-h-10 shrink-0 items-center border-b-2 border-transparent font-medium text-ink-2 no-underline; }
   .tab-link:is([aria-current="page"], [aria-current="true"]) { @apply border-ink text-ink; }
   .tab-panel > .tool-section { @apply border-t-0 pt-0; }
   .signup-row { @apply border-b border-hairline py-3; }
+  .comment-panel { @apply mt-3 rounded-tile bg-ghost-fill px-4 py-3; }
+  .message-composer textarea { @apply min-h-24 resize-y; }
+  .message-thread > li { @apply py-5; }
+  .message-thread > li + li { @apply mt-2; }
   .project-aside .tool-section { @apply rounded-panel border border-border p-4; }
   .popover-in { transform-origin: top right; }
   details[open] > .popover-in { animation: popover-in var(--duration-hover) var(--ease-enter); }

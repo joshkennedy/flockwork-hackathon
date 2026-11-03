@@ -20,7 +20,7 @@ class NavigationTest < ActionDispatch::IntegrationTest
     assert_select "details.account-menu a[href='#{settings_path}']", text: /Settings/, count: 2
   end
 
-  test "the church switcher links to the choice page only when the Person belongs to several Organizations" do
+  test "the account menu offers Switch church only when the Person belongs to several Organizations" do
     sign_in_as_leader
     get home_path
     assert_select "a[href='#{new_organization_choice_path}']", count: 0
@@ -28,7 +28,7 @@ class NavigationTest < ActionDispatch::IntegrationTest
     organizations(:outsider_church).people.create!(name: "Leo Elsewhere", email: "leo@st-example.test")
     get home_path
 
-    assert_select "a[href='#{new_organization_choice_path}']", count: 1
+    assert_select "details.account-menu a[href='#{new_organization_choice_path}']", text: /Switch Church/, count: 2
   end
 
   test "the phone bell carries the unread count in its label" do

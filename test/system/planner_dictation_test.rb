@@ -77,7 +77,7 @@ class PlannerDictationSystemTest < ApplicationSystemTestCase
       leader = people(:leader)
       token = leader.generate_token_for(:sign_in)
       visit sign_in_link_path(token)
-      click_on "Sign in"
+      click_on "Sign In"
       assert_selector "[data-signed-in-as]", text: "Leo Leader"
     end
 end

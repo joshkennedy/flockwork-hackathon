@@ -28,7 +28,7 @@
       </div>
     </div>
     <div data-controller="slideout" class="shrink-0 self-start sm:self-auto">
-      <%= link_to "Edit details", edit_person_path(@person), class: "btn btn-secondary", data: { action: "slideout#open" } %>
+      <%= link_to "Edit Details", edit_person_path(@person), class: "btn btn-secondary", data: { action: "slideout#open" } %>
       <dialog class="slideout" aria-labelledby="edit-person-heading" data-slideout-target="dialog" data-action="click->slideout#backdrop">
         <div class="slideout-panel">
           <div class="flex items-center justify-between gap-4">
@@ -90,9 +90,9 @@
     <% if Policy.can?(Current.person, :log_check_in, @person) %>
       <%= form_with url: person_check_ins_path(@person), class: "mt-4 flex flex-wrap items-center gap-2" do %>
         <%= hidden_field_tag :return_to, "person", id: nil %>
-        <%= submit_tag "Log a check-in", class: "btn btn-secondary" %>
+        <%= submit_tag "Log a Check-In", class: "btn btn-secondary" %>
         <details>
-          <summary class="cursor-pointer text-meta text-ink-2 hover:text-ink">Date or note</summary>
+          <%= disclosure_summary "Choose Date or Add Note", class: "text-meta text-ink-2" %>
           <div class="mt-2 flex flex-wrap gap-2">
             <%= date_field_tag "check_in[on]", Date.current, max: Date.current, aria: { label: "Date of check-in" }, class: "field" %>
             <% if Policy.can?(Current.person, :view_note, CheckIn.new(organization: Current.organization, person: @person)) %>

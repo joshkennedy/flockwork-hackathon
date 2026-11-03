@@ -25,6 +25,6 @@ class LandingTest < ActionDispatch::IntegrationTest
   test "invalid sign in link offers a direct retry" do
     get sign_in_link_path("invalid")
     assert_response :unprocessable_content
-    assert_select "a[href=?]", new_sign_in_request_path, text: "Request a new sign-in link"
+    assert_select "a[href=?]", new_sign_in_request_path, text: "Request a New Sign-In Link"
   end
 end

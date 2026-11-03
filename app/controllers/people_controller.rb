@@ -88,11 +88,6 @@ class PeopleController < ApplicationController
       @serving_names = serving.transform_values { |rows| rows.map(&:last) }
       @leader_ids = serving.filter_map { |person_id, rows| person_id if rows.any? { |row| row[1] == "leader" } }.to_set
 
-      slot_dates = SlotClaim.joins(:slot).where(person_id: ids, slots: { date: ..Date.current })
-        .group("slot_claims.person_id").maximum("slots.date")
-      task_dates = Task.where(completed_by_id: ids).group(:completed_by_id).maximum(:completed_at)
-      @last_served = ids.index_with { |id| [ slot_dates[id], task_dates[id]&.to_date ].compact.max }
-
       @never_asked_ids = Current.organization.people.never_asked.where(id: ids).ids.to_set
       @away_until = Oversight.away_until(Current.organization)
     end

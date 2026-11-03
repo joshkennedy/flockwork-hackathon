@@ -13,7 +13,7 @@
   align-items:center;
   font-weight:550
 }
-.public-header a:hover,.text-link:hover {
+.public-header a:hover {
   color:var(--color-ink-2)
 }
 .public-footer {
@@ -21,21 +21,6 @@
   padding-bottom:36px;
   color:var(--color-ink-2);
   font-size:13px
-}
-.auth-page {
-  max-width:480px;
-  margin:65px auto 100px;
-  padding:0 24px;
-  min-height:50vh
-}
-.auth-page h1 {
-  line-height:1.3
-}
-.auth-page .field {
-  min-height:46px
-}
-.auth-page .btn {
-  font-size:15px
 }
 .auth-error {
   background:var(--color-danger-soft);
@@ -47,7 +32,19 @@
 .public-header a:focus-visible,.public-footer a:focus-visible {
   outline-offset:6px
 }
-.auth-page .btn { min-height: 46px; padding: 12px 22px; height: auto; font-size: 15px; }
+
+/* Auth pages: the form on the left, the recorded sign-up scene on the right. */
+.auth-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: center; max-width: 1240px; min-height: calc(100dvh - 96px); margin: 0 auto; padding: 0 36px 36px; }
+.auth-form { width: 100%; max-width: 420px; justify-self: center; }
+.auth-form h1 { font-size: clamp(30px, 3vw, 40px); line-height: 1.15; }
+.auth-form .field { min-height: 44px; }
+.auth-form .btn { min-height: 44px; font-size: 15px; }
+.auth-art { display: flex; justify-content: center; }
+.auth-art img { display: block; width: auto; max-width: 100%; height: min(820px, calc(100dvh - 140px)); }
+@media (max-width: 900px) {
+  .auth-split { display: block; min-height: 0; padding: 24px 20px 64px; }
+  .auth-art { display: none; }
+}
 
 /* Landing. Layout borrows from product sites that lead with real UI; every color is a DESIGN.md token. */
 .marketing { --lp-max: 1160px; }
@@ -99,15 +96,14 @@
 .lp-close h2 { font-size: clamp(30px, 4vw, 44px); line-height: 1.15; }
 .lp-close > p:first-of-type { margin: 14px auto 28px; font-size: 17px; color: #4A3320; }
 .lp-returning { margin-top: 20px; font-size: 14px; color: #4A3320; }
-.lp-returning a { color: #2B1A0C; text-decoration: underline; text-underline-offset: 4px; }
+.lp-returning .link { color: #2B1A0C; text-decoration-color: rgba(43,26,12,.4); }
 
 @media (max-width: 760px) {
   .public-header, .public-footer { padding: 24px 16px; }
   .public-header nav { gap: 18px; font-size: 13px; }
   .public-header nav a:first-child { display: none; }
   .public-footer { align-items: start; font-size: 12px; }
-  .auth-page { margin-top: 35px; margin-bottom: 65px; }
-  .lp-hero { padding: 32px 16px 0; }
+    .lp-hero { padding: 32px 16px 0; }
   .lp-hero-copy p { font-size: 16px; }
   .lp-actions .btn { flex: 1 1 100%; min-height: 48px; font-size: 15px; }
   .lp-hero-scene { margin-top: 28px; }

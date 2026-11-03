@@ -9,7 +9,7 @@
 <% can_transfer = lifecycle_access && Policy.can?(Current.person, :transfer_ownership, @project) && @ownership_transfer_leaders.any? %>
 <% guidance = project_guidance(@project, Current.person) %>
 <% claim_slot = guidance&.dig(:slot) if Policy.can?(Current.person, :claim_slot, @project) %>
-<%# Exactly one ink button per view: a header action that must come first (resume, join) wins; then the guidance action; else Plan more. %>
+<%# Exactly one ink button per view: a header action that must come first (resume, join) wins; then the guidance action; else Plan More. %>
 <% header_primary = @resumable_planner_session.present? || can_join %>
 <% guidance_action = guidance && ((guidance[:kind] == :spots && (can_share || claim_slot)) || guidance[:kind] == :tasks) %>
 <% guidance_primary = guidance_action && !header_primary && guidance[:kind] == :spots %>
@@ -40,9 +40,9 @@
     <nav class="flex shrink-0 flex-wrap items-center gap-2" aria-label="Project actions">
       <% if can_plan %>
         <% if @resumable_planner_session.present? %>
-          <%= link_to "Continue planning", project_planner_session_path(@project, @resumable_planner_session), class: "btn btn-primary" %>
+          <%= link_to "Continue Planning", project_planner_session_path(@project, @resumable_planner_session), class: "btn btn-primary" %>
         <% else %>
-          <%= link_to "Plan more", new_project_planner_session_path(@project), class: "btn #{guidance_primary || can_join ? 'btn-secondary' : 'btn-primary'}" %>
+          <%= link_to "Plan More", new_project_planner_session_path(@project), class: "btn #{guidance_primary || can_join ? 'btn-secondary' : 'btn-primary'}" %>
         <% end %>
       <% end %>
       <% if can_join %>
@@ -52,7 +52,7 @@
         <%= actions_menu("More project actions") do %>
           <%= link_to "Edit Project", edit_project_path(@project) if can_update %>
           <%= link_to "Duplicate", new_project_duplicate_path(@project) if can_duplicate %>
-          <% { mark_done: [ "Mark done", mark_done_project_path(@project) ],
+          <% { mark_done: [ "Mark Done", mark_done_project_path(@project) ],
                reopen: [ "Reopen", reopen_project_path(@project) ],
                archive: [ "Archive", archive_project_path(@project) ],
                unarchive: [ "Unarchive", unarchive_project_path(@project) ] }.slice(*lifecycle_actions).each_value do |label, path| %>
@@ -74,7 +74,7 @@
         <div><dt><%= label %></dt><dd><%= value %></dd></div>
       <% end %>
       <% if Policy.can?(Current.person, :view_team, @project) %>
-        <div><dt>Team</dt><dd><%= link_to pluralize(@project.memberships.size, "person"), team_project_path(@project), class: "underline decoration-border-strong underline-offset-4 hover:decoration-ink" %></dd></div>
+        <div><dt>Team</dt><dd><%= link_to pluralize(@project.memberships.size, "person"), team_project_path(@project), class: "link" %></dd></div>
       <% end %>
     </dl>
   <% end %>
@@ -93,13 +93,13 @@
       <% if guidance_action %>
         <% button_class = "btn #{guidance_primary ? 'btn-primary' : 'btn-secondary'} shrink-0" %>
         <% if guidance[:kind] == :tasks %>
-          <%= link_to "See tasks", "#tab-tasks", class: "btn btn-secondary shrink-0", data: { action: "tabs#select", tabs_name: "tasks" } if tabs.include?("tasks") %>
+          <%= link_to "See Tasks", "#tab-tasks", class: "btn btn-secondary shrink-0", data: { action: "tabs#select", tabs_name: "tasks" } if tabs.include?("tasks") %>
         <% elsif can_share && @project.public_token.present? %>
-          <button type="button" class="<%= button_class %>" data-controller="clipboard" data-clipboard-text-value="<%= public_project_url(@project.public_token) %>" data-action="clipboard#copy">Copy public link</button>
+          <button type="button" class="<%= button_class %>" data-controller="clipboard" data-clipboard-text-value="<%= public_project_url(@project.public_token) %>" data-action="clipboard#copy">Copy Public Link</button>
         <% elsif can_share %>
-          <%= button_to "Turn on public link", enable_public_link_project_path(@project), class: button_class %>
+          <%= button_to "Turn On Public Link", enable_public_link_project_path(@project), class: button_class %>
         <% elsif claim_slot %>
-          <%= button_to (claim_slot.label.downcase == "dinner" ? "I can bring dinner" : "I can help"), project_slot_claim_path(@project, claim_slot), class: button_class, aria: { label: "Claim: #{claim_slot.label}, #{claim_slot.date.strftime("%A, %B %-d")}" } %>
+          <%= button_to (claim_slot.label.downcase == "dinner" ? "I Can Bring Dinner" : "I Can Help"), project_slot_claim_path(@project, claim_slot), class: button_class, aria: { label: "Claim: #{claim_slot.label}, #{claim_slot.date.strftime("%A, %B %-d")}" } %>
         <% end %>
       <% end %>
     </div>
@@ -143,11 +143,10 @@
           <%= render "projects/tools/recipients", project: @project if show_recipients %>
 
           <% if can_share || can_transfer %>
-            <%# Stays open while the Public link is on so the URL is in view. %>
-            <details class="rounded-panel border border-border p-4" data-project-settings <%= "open" if @project.public_token.present? %>>
-              <summary class="text-heading text-ink">
+            <section class="rounded-panel border border-border p-4" data-project-settings aria-labelledby="sharing-heading">
+              <h2 id="sharing-heading" class="text-heading text-ink">
                 Sharing and ownership<span class="font-normal text-ink-2"><%= " · Public link on" if @project.public_token.present? %></span>
-              </summary>
+              </h2>
               <%= render "public_link", project: @project if can_share %>
               <% if can_transfer %>
                 <%= form_with url: transfer_ownership_project_path(@project), method: :patch, class: "mt-5 flex flex-wrap items-end gap-3" do |form| %>
@@ -156,7 +155,7 @@
                   <%= form.submit "Transfer", class: "btn btn-secondary" %>
                 <% end %>
               <% end %>
-            </details>
+            </section>
           <% end %>
         </aside>
       <% end %>

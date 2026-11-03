@@ -13,7 +13,7 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     assert_redirected_to people_path
     follow_redirect!
     assert_select "li", /Pat Person/
-    assert_select "li", /pat@st-example\.test/
+    assert_no_match "pat@st-example.test", response.body
   end
 
   test "Admin adds a Person without email; they show as unable to sign in and cannot receive a link" do

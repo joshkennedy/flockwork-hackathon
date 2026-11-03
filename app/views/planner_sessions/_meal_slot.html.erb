@@ -10,7 +10,7 @@
     </div>
     <% unless planner_session.generation_busy? %>
     <details class="meal-slot-editor">
-      <summary class="btn btn-text">Edit</summary>
+      <%= disclosure_summary "Edit", class: "btn btn-text" %>
       <div class="meal-slot-edit-panel">
         <%= form_with url: pending_item_project_planner_session_path(project, planner_session), method: :patch, namespace: "meal_#{item.fetch('id')}", class: "grid gap-4" do |form| %>
           <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
@@ -34,8 +34,8 @@
             <%= form.number_field :capacity, name: "item[fields][capacity]", value: fields.fetch("capacity", 1), min: 1, required: true, class: "mt-2 block w-full field" %>
           </div>
           <div class="flex flex-wrap items-center justify-between gap-3">
-            <%= form.button "Save changes", name: "item[decision]", value: "edit", class: "btn btn-secondary", data: { turbo_submits_with: "Saving…" } %>
-            <%= form.button "Remove meal", name: "item[decision]", value: "remove", class: "btn btn-danger", formnovalidate: true %>
+            <%= form.button "Save Changes", name: "item[decision]", value: "edit", class: "btn btn-secondary", data: { turbo_submits_with: "Saving…" } %>
+            <%= form.button "Remove Meal", name: "item[decision]", value: "remove", class: "btn btn-danger", formnovalidate: true %>
           </div>
         <% end %>
       </div>
@@ -50,9 +50,9 @@
         <p class="font-semibold text-ink">The revised plan no longer includes this meal.</p>
         <p class="mt-1 text-meta text-ink-2">Your edit kept it visible. Keep it, or remove it from the pending Sign-up sheet.</p>
         <div class="mt-3 flex flex-wrap gap-3">
-          <%= button_to "Keep my edit", pending_item_project_planner_session_path(project, planner_session), method: :patch,
+          <%= button_to "Keep My Edit", pending_item_project_planner_session_path(project, planner_session), method: :patch,
             params: { item: { id: item.fetch("id"), decision: "resolve", resolution: "keep_edit" }, expected_revision: planner_session.generation_revision }, class: "btn btn-secondary" %>
-          <%= button_to "Remove meal", pending_item_project_planner_session_path(project, planner_session), method: :patch,
+          <%= button_to "Remove Meal", pending_item_project_planner_session_path(project, planner_session), method: :patch,
             params: { item: { id: item.fetch("id"), decision: "remove" }, expected_revision: planner_session.generation_revision }, class: "btn btn-danger" %>
         </div>
       <% else %>
@@ -66,9 +66,9 @@
           <% end %>
         </dl>
         <div class="mt-3 flex flex-wrap gap-3">
-          <%= button_to "Keep my edit", pending_item_project_planner_session_path(project, planner_session), method: :patch,
+          <%= button_to "Keep My Edit", pending_item_project_planner_session_path(project, planner_session), method: :patch,
             params: { item: { id: item.fetch("id"), decision: "resolve", resolution: "keep_edit" }, expected_revision: planner_session.generation_revision }, class: "btn btn-secondary" %>
-          <%= button_to "Use new suggestion", pending_item_project_planner_session_path(project, planner_session), method: :patch,
+          <%= button_to "Use New Suggestion", pending_item_project_planner_session_path(project, planner_session), method: :patch,
             params: { item: { id: item.fetch("id"), decision: "resolve", resolution: "use_suggestion" }, expected_revision: planner_session.generation_revision }, class: "btn btn-text" %>
         </div>
       <% end %>

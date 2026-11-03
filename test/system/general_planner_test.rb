@@ -52,7 +52,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
       assert_text "Supply checklist"
     end
 
-    click_button "Finish with this"
+    click_button "Finish with This"
     assert_text "Here’s what will be added"
     click_button "Add to Project"
 
@@ -80,9 +80,9 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     click_button "Preparation"
     assert_text "Preview updated. Change your choice or continue."
     assert_no_text "Choose a Project start date or a due date"
-    click_button "Finish with this"
+    click_button "Finish with This"
     fill_in "Project start date", with: "2027-04-10"
-    click_button "Set date"
+    click_button "Set Date"
     assert_text "Due April 9, 2027"
     click_button "Add to Project"
     assert_selector "#tool-tasks", focused: true

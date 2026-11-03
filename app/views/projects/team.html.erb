@@ -89,8 +89,8 @@
                     <% invitation_link = invitation_url(invitation.generate_token_for(:access)) %>
                     <% sms_body = ERB::Util.url_encode("You're invited to help with #{@project.name} on Flockwork: #{invitation_link}") %>
                     <div class="ml-auto flex flex-wrap justify-end gap-2">
-                      <button type="button" data-controller="clipboard" data-clipboard-text-value="<%= invitation_link %>" data-action="clipboard#copy" class="btn btn-secondary btn-sm">Copy link</button>
-                      <%= link_to "Send by text", "sms:?&body=#{sms_body}", class: "btn btn-secondary btn-sm" %>
+                      <button type="button" data-controller="clipboard" data-clipboard-text-value="<%= invitation_link %>" data-action="clipboard#copy" class="btn btn-secondary btn-sm">Copy Link</button>
+                      <%= link_to "Send by Text", "sms:?&body=#{sms_body}", class: "btn btn-secondary btn-sm" %>
                     </div>
                   <% end %>
                 </li>

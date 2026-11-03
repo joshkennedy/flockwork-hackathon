@@ -45,7 +45,7 @@
             <button type="button" class="<%= chip %> text-ink" data-action="banner-upload#pick">Replace</button>
             <% if show_banner %>
               <button type="button" class="<%= chip %> text-ink" data-banner-focus-target="repositionButton" data-action="banner-focus#reposition">Reposition</button>
-              <button type="button" class="<%= chip %> text-ink" data-banner-focus-target="altButton" popovertarget="banner-alt-popover">Alt text</button>
+              <button type="button" class="<%= chip %> text-ink" data-banner-focus-target="altButton" popovertarget="banner-alt-popover">Alt Text</button>
             <% end %>
             <%= button_to "Remove", project_banner_path(project), method: :delete, form_class: "contents",
                   class: "#{chip} text-danger", form: { data: { turbo_confirm: "Remove this banner photo? Its focal point and alt text go with it." } } %>
@@ -82,7 +82,7 @@
                 <p class="text-meta text-ink-2">Read aloud by screen readers. Describe the photo in a few words, or clear it to use the project name.</p>
                 <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
                   <button type="button" class="btn btn-text" data-action="banner-focus#clearAlt">Clear</button>
-                  <%= form.submit "Save alt text", class: "btn btn-secondary" %>
+                  <%= form.submit "Save Alt Text", class: "btn btn-secondary" %>
                 </div>
               <% end %>
             </div>

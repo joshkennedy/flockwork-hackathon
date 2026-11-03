@@ -20,5 +20,5 @@
     <%= form.select :column_type, ListColumn.column_types.keys.map { |type| [ type.humanize, type ] }, {}, class: "mt-2 block w-full field" %>
   </div>
 
-  <%= form.submit list_column.persisted? ? "Save column" : "Add column", class: "btn btn-primary" %>
+  <%= form.submit list_column.persisted? ? "Save Column" : "Add Column", class: "btn btn-primary" %>
 <% end %>

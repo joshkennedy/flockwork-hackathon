@@ -38,14 +38,14 @@
 
       <% unless planner_session.generation_busy? %>
       <details class="meal-builder-rename">
-        <summary class="btn btn-text">Project details</summary>
+        <%= disclosure_summary "Project Details", class: "btn btn-text" %>
         <%= form_with url: planning_details_project_planner_session_path(project, planner_session), method: :patch, class: "meal-builder-popover popover-in" do |form| %>
           <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
           <%= form.label :name, "Project name", class: "block text-label font-medium text-ink" %>
           <%= form.text_field :name, name: "project[name]", value: project.name, required: true, class: "mt-2 block w-full field" %>
           <%= form.label :starts_on, general_planner ? "Start date" : "First meal date", class: "mt-4 block text-label font-medium text-ink" %>
           <%= form.date_field :starts_on, name: "project[starts_on]", value: project.starts_on, class: "mt-2 block w-full field" %>
-          <%= form.submit "Save details", class: "mt-3 btn btn-secondary", data: { turbo_submits_with: "Saving…" } %>
+          <%= form.submit "Save Details", class: "mt-3 btn btn-secondary", data: { turbo_submits_with: "Saving…" } %>
         <% end %>
       </details>
       <% end %>
@@ -55,7 +55,7 @@
       <section class="meal-builder-guide" aria-labelledby="meal-guide-heading">
         <% if planner_session.generation_stalled? %>
           <p role="status" class="mb-3 text-ink-2">Planning is taking longer than usual. Your existing preview is saved.</p>
-          <%= button_to "Retry planning", retry_generation_project_planner_session_path(project, planner_session), params: { expected_revision: planner_session.generation_revision }, class: "mb-4 btn btn-secondary" %>
+          <%= button_to "Retry Planning", retry_generation_project_planner_session_path(project, planner_session), params: { expected_revision: planner_session.generation_revision }, class: "mb-4 btn btn-secondary" %>
         <% end %>
         <% if planner_session.reviewing? %>
           <p class="text-meta text-ink-2">Ready to finish</p>
@@ -71,7 +71,7 @@
               <%= form.label :starts_on, general_planner ? "Project start date" : "First meal date", class: "block text-label font-medium text-ink" %>
               <div class="mt-2 flex flex-col gap-3 sm:flex-row">
                 <%= form.date_field :starts_on, name: "project[starts_on]", required: true, class: "block min-w-0 flex-1 field", aria: { describedby: dom_id(planner_session, :start_date_hint) } %>
-                <%= form.submit "Set date", class: "btn btn-secondary", data: { turbo_submits_with: "Setting date…" } %>
+                <%= form.submit "Set Date", class: "btn btn-secondary", data: { turbo_submits_with: "Setting Date…" } %>
               </div>
               <p id="<%= dom_id(planner_session, :start_date_hint) %>" class="mt-2 text-meta text-ink-2"><%= general_planner ? "Items are dated from this day." : "Every meal slot is dated from this day." %></p>
             <% end %>
@@ -80,7 +80,7 @@
           <% if addable %>
             <%= button_to "Add to Project", accept_project_planner_session_path(project, planner_session),
               params: { expected_revision: planner_session.generation_revision }, class: "mt-6 btn btn-primary",
-              form: { data: { turbo_frame: "_top" } }, data: { turbo_submits_with: "Adding #{pluralize(planner_session.pending_item_count, "item")}…" } %>
+              form: { data: { turbo_frame: "_top" } }, data: { turbo_submits_with: "Adding #{pluralize(planner_session.pending_item_count, "Item")}…" } %>
           <% else %>
             <% add_note_id = dom_id(planner_session, :add_note) %>
             <button class="mt-6 btn btn-primary" disabled aria-describedby="<%= add_note_id %>">Add to Project</button>
@@ -127,7 +127,7 @@
               <%= form.label :answer, "Your answer", class: "block text-label font-medium text-ink" %>
               <div class="mt-2 flex flex-col gap-3 sm:flex-row">
                 <%= form.text_field :answer, required: true, value: pending_answer, disabled: planner_session.generation_busy?, class: "block min-w-0 flex-1 field" %>
-                <%= form.submit "Use answer", disabled: planner_session.generation_busy?, class: "btn btn-secondary", data: { turbo_submits_with: "Preparing…" } %>
+                <%= form.submit "Use Answer", disabled: planner_session.generation_busy?, class: "btn btn-secondary", data: { turbo_submits_with: "Preparing…" } %>
               </div>
             <% end %>
           </details>
@@ -167,7 +167,7 @@
           <div class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
             <%= button_to "Continue", continue_planning_project_planner_session_path(project, planner_session), params: { expected_revision: planner_session.generation_revision }, class: "btn btn-primary", disabled: !planner_session.ready_to_continue?, data: { turbo_submits_with: "Continuing…" } %>
             <% if visible_items.any? && !planner_session.generation_busy? %>
-              <%= button_to "Finish with this", finish_planning_project_planner_session_path(project, planner_session), params: { expected_revision: planner_session.generation_revision }, class: "btn btn-text" %>
+              <%= button_to "Finish with This", finish_planning_project_planner_session_path(project, planner_session), params: { expected_revision: planner_session.generation_revision }, class: "btn btn-text" %>
             <% end %>
           </div>
         <% else %>
@@ -187,7 +187,7 @@
               <%= render "planner_sessions/meal_answers", project:, planner_session:, previous_only: true %>
             </details>
           <% end %>
-          <%= button_to "Save and leave", save_and_leave_project_planner_session_path(project, planner_session), class: "-ms-3 mt-7 btn btn-text",
+          <%= button_to "Save and Leave", save_and_leave_project_planner_session_path(project, planner_session), class: "-ms-3 mt-7 btn btn-text",
             form: { data: { turbo_frame: "_top" } } %>
         <% end %>
         <%= render "planner_sessions/privacy" %>

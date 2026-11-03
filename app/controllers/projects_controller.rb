@@ -9,7 +9,7 @@ class ProjectsController < ApplicationController
   before_action :authorize_project_team, only: :team
 
   def index
-    @projects = Policy.listed_projects(Current.person).order(:name)
+    @projects = Policy.listed_projects(Current.person).with_attached_banner.order(:name)
   end
 
   def archived

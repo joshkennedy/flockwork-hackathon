@@ -1,4 +1,4 @@
-<section class="tool-section mt-10" aria-labelledby="away-dates-heading">
+<section class="<%= local_assigns.fetch(:section_class, "tool-section mt-10") %>" aria-labelledby="away-dates-heading">
   <h2 id="away-dates-heading" class="text-ink">When you're away</h2>
   <p class="mt-2 text-meta text-ink-2">Say when you're away or can't serve. Leaders and Admins see only the dates, never your note.</p>
 
@@ -10,7 +10,7 @@
   <%= form_with url: suggest_away_profile_path, method: :post, class: "mt-5 space-y-2", data: { turbo: false } do %>
     <%= label_tag :away_text, "In your own words", class: "block text-label font-medium text-ink-2" %>
     <%= text_area_tag :away_text, nil, rows: 2, maxlength: 500, placeholder: "Out most of July, back the first Sunday of August", class: "block w-full field" %>
-    <%= submit_tag "Suggest dates", class: "btn btn-secondary", data: { disable_with: "Reading…" } %>
+    <%= submit_tag "Suggest Dates", class: "btn btn-secondary", data: { disable_with: "Reading…" } %>
   <% end %>
 
   <% if @away_drafts %>
@@ -21,13 +21,13 @@
         <% @away_drafts.each do |range| %>
           <%= render "away_range_fields", range: range %>
         <% end %>
-        <%= submit_tag "Save these dates", class: "btn btn-secondary" %>
+        <%= submit_tag "Save These Dates", class: "btn btn-secondary" %>
       <% end %>
     </div>
   <% else %>
     <%= form_with url: profile_unavailabilities_path, method: :post, class: "mt-6 space-y-4" do %>
       <%= render "away_range_fields", range: Unavailability.new %>
-      <%= submit_tag "Add dates", class: "btn btn-secondary" %>
+      <%= submit_tag "Add Dates", class: "btn btn-secondary" %>
     <% end %>
   <% end %>
 

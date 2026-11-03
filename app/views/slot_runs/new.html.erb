@@ -1,46 +1,6 @@
-<% content_for :title, "Generate Slot run" %>
+<% content_for :title, "Generate Multiple Slots" %>
 
 <div class="w-full max-w-2xl">
-  <%= page_header "Generate Slot run", subtitle: "Create one Slot per day, up to 60 days." %>
-
-  <%= form_with model: @slot_run, url: project_slot_run_path(@project), class: "mt-7 space-y-7" do |form| %>
-    <% if @slot_run.errors.any? %>
-      <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
-        <p class="font-semibold">Please fix the following:</p>
-        <ul class="mt-2 list-disc space-y-1 pl-5 text-meta">
-          <% @slot_run.errors.full_messages.each do |message| %>
-            <li><%= message %></li>
-          <% end %>
-        </ul>
-      </div>
-    <% end %>
-
-    <div class="grid gap-5 sm:grid-cols-2">
-      <div>
-        <%= form.label :start_date, class: "block text-label font-medium text-ink" %>
-        <%= form.date_field :start_date, required: true, autofocus: true, class: "mt-2 block w-full field" %>
-      </div>
-      <div>
-        <%= form.label :end_date, class: "block text-label font-medium text-ink" %>
-        <%= form.date_field :end_date, required: true, class: "mt-2 block w-full field" %>
-      </div>
-    </div>
-
-    <div>
-      <%= form.label :starts_at_time, "Start time", class: "block text-label font-medium text-ink" %>
-      <%= form.time_field :starts_at_time, class: "mt-2 block w-full field" %>
-    </div>
-
-    <div>
-      <%= form.label :label, class: "block text-label font-medium text-ink" %>
-      <%= form.text_field :label, required: true, class: "mt-2 block w-full field" %>
-    </div>
-
-    <div>
-      <%= form.label :capacity, class: "block text-label font-medium text-ink" %>
-      <%= form.number_field :capacity, min: 1, required: true, class: "mt-2 block w-full field" %>
-    </div>
-
-    <%= form.submit "Generate Slots", class: "btn btn-primary" %>
-  <% end %>
+  <%= page_header "Generate Multiple Slots", subtitle: "Create one Slot for every day in a date range, up to 60 days." %>
+  <%= render "form", slot_run: @slot_run, project: @project %>
 </div>

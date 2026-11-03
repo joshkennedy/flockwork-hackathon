@@ -1,0 +1,8 @@
+<%# A small banner for lists. Without a photo, a quiet tile keeps the rows aligned. %>
+<% size = local_assigns.fetch(:size, "w-20") %>
+<% flush = local_assigns.fetch(:flush, false) %>
+<% if project.banner_ready? %>
+  <%= image_tag project.banner_variant(:phone), alt: "", loading: "lazy", class: class_names(size, "aspect-[3/2] shrink-0 bg-frame object-cover", "rounded-control border border-border": !flush) %>
+<% else %>
+  <span class="<%= class_names(size, "grid aspect-[3/2] shrink-0 place-items-center bg-frame text-ink-3", "rounded-control": !flush) %>" aria-hidden="true"><%= icon(:projects) %></span>
+<% end %>

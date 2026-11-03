@@ -131,7 +131,7 @@ class OpenTeamTest < ActionDispatch::IntegrationTest
     get get_involved_path
 
     assert_select "section[aria-labelledby='open-teams-heading'] li", text: /Building Cleanup/
-    assert_select "section[aria-labelledby='open-teams-heading'] form[action=?] button", join_project_path(projects(:building_cleanup)), "Join the Team"
+    assert_select "section[aria-labelledby='open-teams-heading'] a.btn[href=?]", project_path(projects(:building_cleanup)), "View Project"
     assert_select "section[aria-labelledby='joined-teams-heading'] li", text: /Community Meal.*On the Team/m
     assert_select "section[aria-labelledby='open-teams-heading'] li", text: /Community Meal/, count: 0
   end

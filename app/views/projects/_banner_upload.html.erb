@@ -7,7 +7,7 @@
     <p class="text-meta text-ink-2">Drop an image here or choose one. JPEG, PNG, WebP or HEIC, up to 10 MB.</p>
   </div>
   <label class="btn btn-secondary cursor-pointer focus-within:outline-2 focus-within:outline-ink">
-    Choose image
+    Choose Image
     <%= form.file_field :banner, accept: Project::BANNER_TYPES.join(","), class: "sr-only", data: { banner_upload_target: "input", action: "change->banner-upload#submit" } %>
   </label>
 <% end %>

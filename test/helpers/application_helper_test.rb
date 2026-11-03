@@ -7,9 +7,9 @@ class ApplicationHelperTest < ActionView::TestCase
   end
 
   test "page_header renders subtitle and actions" do
-    html = page_header("People", subtitle: "Everyone in the directory") { tag.a("Add person", href: "/people/new") }
+    html = page_header("People", subtitle: "Everyone in the directory") { tag.a("Add Person", href: "/people/new") }
     assert_includes html, %(<p class="page-subtitle">Everyone in the directory</p>)
-    assert_includes html, %(<div class="page-actions"><a href="/people/new">Add person</a></div>)
+    assert_includes html, %(<div class="page-actions"><a href="/people/new">Add Person</a></div>)
   end
 
   test "page_header skips an empty actions block" do

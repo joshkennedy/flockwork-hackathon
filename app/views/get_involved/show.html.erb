@@ -6,19 +6,35 @@
   <%= page_header "Get involved", subtitle: "Teams at #{Current.organization.name} that welcome anyone." %>
 
   <% if @projects.any? %>
+    <%# Discovery first: the few Projects short on people soonest, each a click through to sign up there. %>
+    <% open_needs = @needs.reject(&:full?).group_by(&:project).first(3) %>
     <section class="mt-7" aria-labelledby="needs-heading">
       <h2 id="needs-heading" class="text-ink">Needs a hand</h2>
-      <% if @needs.any? %>
-        <% slots_by_window(@needs).each do |window, slots| %>
-          <div class="mt-5">
-            <h3 class="text-label text-ink-2"><%= window %></h3>
-            <ul class="mt-2 space-y-3">
-              <%= render partial: "get_involved/need", collection: slots, as: :slot, locals: { first_claim: @first_claim } %>
-            </ul>
-          </div>
-        <% end %>
+      <% if open_needs.any? %>
+        <p class="mt-1 text-meta text-ink-2">Coming up soon and short on people.</p>
+        <ul class="mt-3 grid gap-2">
+          <% open_needs.each do |project, slots| %>
+            <% open_spots = slots.sum { |slot| slot.capacity - slot.claims_count } %>
+            <li class="tile-raised overflow-hidden">
+              <%= link_to project_path(project), class: "group flex min-h-20 items-stretch text-ink no-underline" do %>
+                <span class="w-24 shrink-0 sm:w-32">
+                  <%= render "projects/thumbnail", project: project, size: "h-full w-full", flush: true %>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="flex h-full items-center gap-4 px-4 py-3">
+                    <span class="min-w-0 flex-1">
+                      <span class="block font-semibold text-ink"><%= project.name %></span>
+                      <span class="mt-0.5 block text-meta text-ink-2"><%= pluralize(open_spots, slot_noun(slots)) %> still open · next <%= slots.first.date.strftime("%a, %b %-d") %></span>
+                    </span>
+                    <span class="status-chip shrink-0 max-sm:hidden"><%= slot_window(slots.first.date) %></span>
+                  </span>
+                </span>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
       <% else %>
-        <p class="mt-3 text-ink-2">Every spot is covered for now. Thank you for being ready to help. New needs will show up here as soon as a Leader adds them.</p>
+        <p class="mt-2 text-ink-2">Every spot is covered for now. Thank you for being ready to help. New needs will show up here as soon as a Leader adds them.</p>
       <% end %>
     </section>
 
@@ -31,7 +47,9 @@
             <% guidance = project_guidance(project, Current.person) %>
             <li class="panel flex flex-col gap-3 overflow-hidden p-4">
               <% if project.banner_ready? %>
-                <%= image_tag project.banner_variant(:phone), alt: "", loading: "lazy", class: "-mx-4 -mt-4 aspect-[2/1] w-[calc(100%+2rem)] max-w-none object-cover" %>
+                <%= link_to project_path(project), class: "-mx-4 -mt-4 block overflow-hidden", aria: { label: "View #{project.name}" } do %>
+                  <%= image_tag project.banner_variant(:phone), alt: "", loading: "lazy", class: "aspect-[2/1] w-full object-cover" %>
+                <% end %>
               <% end %>
               <div class="min-w-0 flex-1">
                 <% if project.starts_on || project.ends_on %>
@@ -48,7 +66,8 @@
                   <p class="mt-2"><span class="badge-need"><%= guidance[:title] %></span></p>
                 <% end %>
               </div>
-              <%= button_to "Join the Team", join_project_path(project), params: { from: "get_involved" }, class: "btn btn-secondary", form_class: "button_to max-sm:w-full", aria: { label: "Join the #{project.name} Team" } %>
+              <% open_slots = slots.reject(&:full?) %>
+              <%= link_to(open_slots.any? ? "View Open Spots" : "View Project", project_path(project), class: "btn btn-secondary max-sm:w-full") %>
             </li>
           <% end %>
         </ul>
@@ -65,9 +84,7 @@
             <li>
               <%= link_to project_path(project), class: "flex items-center justify-between gap-4 border-b border-hairline px-1 py-3 hover:bg-ghost-fill" do %>
                 <span class="flex min-w-0 items-center gap-3">
-                  <% if project.banner_ready? %>
-                    <%= image_tag project.banner_variant(:phone), alt: "", loading: "lazy", class: "aspect-[2/1] w-16 shrink-0 rounded-control object-cover" %>
-                  <% end %>
+                  <%= render "projects/thumbnail", project: project, size: "w-16" %>
                   <span class="min-w-0">
                     <span class="block font-semibold text-ink"><%= project.name %></span>
                     <% if (momentum = momentum_line(@slots_by_project.fetch(project.id, []))) %>

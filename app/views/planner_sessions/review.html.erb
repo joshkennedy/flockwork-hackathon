@@ -22,13 +22,13 @@
           </p>
           <p class="mt-2 text-label text-ink-2"><%= Planner::SuggestionKinds.label(suggestion.fetch("kind")).singularize %> Suggestion · Currently <%= suggestion.fetch("status").humanize.downcase %></p>
           <details class="mt-2" <%= "open" unless kept %>>
-            <summary class="cursor-pointer text-label text-ink-2"><%= kept ? "Edit kept Suggestion" : "Edit Suggestion" %></summary>
+            <%= disclosure_summary(kept ? "Edit Kept Suggestion" : "Edit Suggestion", class: "text-label text-ink-2") %>
             <%= form_with url: suggestion_project_planner_session_path(@project, @planner_session), method: :patch, class: "mt-4 space-y-4" do |form| %>
               <%= form.hidden_field :id, name: "suggestion[id]", value: suggestion.fetch("id"), id: nil %>
               <%= render "suggestion_fields", suggestion: %>
               <div class="flex flex-wrap gap-2">
                 <%= form.button "Keep", name: "suggestion[decision]", value: "keep", class: "btn btn-text" %>
-                <%= form.button "Save edit", name: "suggestion[decision]", value: "edit", class: "btn btn-text" %>
+                <%= form.button "Save Edit", name: "suggestion[decision]", value: "edit", class: "btn btn-text" %>
                 <%= form.button "Drop", name: "suggestion[decision]", value: "drop", class: "btn btn-danger" %>
               </div>
             <% end %>
@@ -41,8 +41,8 @@
   <% end %>
 
   <div class="mt-7 flex flex-wrap items-center gap-3">
-    <%= button_to "Accept all kept and edited", accept_project_planner_session_path(@project, @planner_session), params: { mode: "kept" }, class: "btn btn-primary" %>
-    <%= button_to "Accept all", accept_project_planner_session_path(@project, @planner_session), params: { mode: "all" }, class: "btn btn-text" %>
+    <%= button_to "Accept All Kept and Edited", accept_project_planner_session_path(@project, @planner_session), params: { mode: "kept" }, class: "btn btn-primary" %>
+    <%= button_to "Accept All", accept_project_planner_session_path(@project, @planner_session), params: { mode: "all" }, class: "btn btn-text" %>
   </div>
   <%= render "privacy" %>
 </div>

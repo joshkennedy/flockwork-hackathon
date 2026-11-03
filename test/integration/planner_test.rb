@@ -274,7 +274,7 @@ class PlannerTest < ActionDispatch::IntegrationTest
     assert_redirected_to project_planner_session_path(project, planner_session)
     follow_redirect!
     assert_select "[role='alert']", text: PlannerSession::ERROR_MESSAGE
-    assert_select "a", text: "Skip to review"
+    assert_select "a", text: "Skip to Review"
     assert_select "a", text: "Leave Planner"
     assert_equal [
       {
@@ -596,7 +596,7 @@ class PlannerTest < ActionDispatch::IntegrationTest
     sign_in_as(:other_leader)
 
     get project_path(project)
-    assert_select "a", text: "Plan more"
+    assert_select "a", text: "Plan More"
     post project_planner_sessions_path(project), params: {
       planner_session: { description: "Add the final cleanup assignments." }
     }

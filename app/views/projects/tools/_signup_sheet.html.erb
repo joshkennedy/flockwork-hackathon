@@ -2,16 +2,34 @@
 <% past, upcoming = slots.partition { |slot| slot.date < Date.current } %>
 <% this_week, upcoming = upcoming.partition { |slot| slot.date <= Date.current.end_of_week } %>
 <% next_week, later = upcoming.partition { |slot| slot.date <= Date.current.next_week.end_of_week } %>
-<section class="tool-section" aria-labelledby="tool-signup-sheet">
+<section class="tool-section" aria-labelledby="tool-signup-sheet" data-controller="slideout">
   <%= render "projects/tools/planner_arrival", tool: "signup_sheet" %>
   <div class="flex flex-wrap items-center justify-between gap-4">
     <h2 id="tool-signup-sheet"><%= icon(:schedule, class: "text-tool-signup") %> <%= Project::TOOL_LABELS.fetch("signup_sheet") %></h2>
     <% if Policy.can?(Current.person, :manage_slots, project) %>
-      <div class="flex items-center gap-1">
-        <%= link_to new_project_slot_path(project), class: "btn btn-secondary btn-sm" do %><%= icon(:plus) %>Add slot<% end %>
-        <%= actions_menu("Sign-up sheet options") do %>
-          <%= link_to "Generate a run of slots", new_project_slot_run_path(project) %>
-        <% end %>
+      <div data-controller="dialog">
+        <div class="split-button">
+          <%= link_to new_project_slot_path(project), class: "btn btn-secondary btn-sm split-button-main", data: { action: "slideout#open", slideout_title_param: "Add Slot" } do %><%= icon(:plus) %>Add Slot<% end %>
+          <details class="actions-menu relative">
+            <summary class="btn btn-secondary btn-sm split-button-menu" aria-label="More Slot options" title="More Slot options"><%= icon(:more) %></summary>
+            <div class="actions-menu-panel popover-in">
+              <%= link_to "Generate Multiple Slots", new_project_slot_run_path(project), data: { action: "dialog#open" } %>
+            </div>
+          </details>
+        </div>
+
+        <dialog class="modal" data-dialog-target="dialog" data-action="click->dialog#backdrop">
+          <div class="modal-panel">
+            <div class="flex items-start justify-between gap-5">
+              <div>
+                <h2>Generate Multiple Slots</h2>
+                <p class="mt-2 text-meta text-ink-2">Create one Slot for every day in a date range. Each Slot will use the same time, label, and capacity.</p>
+              </div>
+              <button type="button" class="btn btn-icon shrink-0" aria-label="Close" data-action="dialog#close"><%= icon(:close) %></button>
+            </div>
+            <%= render "slot_runs/form", slot_run: SlotRun.new(project: project), project: project, autofocus: false, class_name: "mt-6 space-y-5" %>
+          </div>
+        </dialog>
       </div>
     <% end %>
   </div>
@@ -24,9 +42,7 @@
     <div class="mt-5 space-y-6">
       <% if past.any? %>
         <details data-signup-past>
-          <summary class="cursor-pointer py-2 text-meta font-semibold text-ink-2 hover:text-ink">
-            Past · <%= pluralize(past.size, "slot") %><%= ", all filled" if past.all?(&:full?) %>
-          </summary>
+          <%= disclosure_summary "Past Slots", meta: "#{pluralize(past.size, "slot")}#{", all filled" if past.all?(&:full?)}", class: "disclosure-bar" %>
           <ul class="mt-2"><%= render partial: "projects/tools/signup_slot", collection: past, as: :slot, locals: { project: } %></ul>
         </details>
       <% end %>
@@ -42,9 +58,7 @@
       <% if later.any? %>
         <%# Kept open when nothing nearer exists, so a far-off sheet is never hidden behind a click. %>
         <details data-signup-later <%= "open" if this_week.empty? && next_week.empty? %>>
-          <summary class="cursor-pointer py-2 text-meta font-semibold text-ink-2 hover:text-ink">
-            Later · <%= pluralize(later.size, "slot") %>, <%= later.count { |slot| !slot.full? } %> open
-          </summary>
+          <%= disclosure_summary "Later Slots", meta: "#{pluralize(later.size, "slot")}, #{later.count { |slot| !slot.full? }} open", class: "disclosure-bar" %>
           <ul class="mt-2"><%= render partial: "projects/tools/signup_slot", collection: later, as: :slot, locals: { project: } %></ul>
         </details>
       <% end %>
@@ -56,4 +70,16 @@
   <% else %>
     <p class="mt-5 text-meta text-ink-2">No Slots yet</p>
   <% end %>
+
+  <dialog class="slideout" aria-labelledby="slot-form-heading" data-slideout-target="dialog" data-action="click->slideout#backdrop">
+    <div class="slideout-panel">
+      <div class="flex items-center justify-between gap-4">
+        <h2 id="slot-form-heading" class="text-ink" data-slideout-target="title">Slot</h2>
+        <button type="button" class="btn btn-icon" aria-label="Close" data-action="slideout#close"><%= icon(:close) %></button>
+      </div>
+      <%= turbo_frame_tag "slot-form", data: { slideout_target: "frame", action: "turbo:submit-end->slideout#submitted" } do %>
+        <p class="mt-6 text-meta text-ink-2">Loading…</p>
+      <% end %>
+    </div>
+  </dialog>
 </section>

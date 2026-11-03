@@ -3,7 +3,7 @@
   <div><dt>Active Projects</dt><dd><%= @projects.size %></dd></div>
   <div><dt>Open spots this week</dt><dd><%= @open_spots_this_week %></dd></div>
   <div><dt>Tasks with no one on them</dt><dd><%= @unassigned_task_count %></dd></div>
-  <div><dt>People</dt><dd><%= Policy.can?(@person, :manage_people, @organization) ? link_to(@people_count, people_path, class: "underline decoration-border-strong underline-offset-4 hover:decoration-ink") : @people_count %></dd></div>
+  <div><dt>People</dt><dd><%= Policy.can?(@person, :manage_people, @organization) ? link_to(@people_count, people_path, class: "link") : @people_count %></dd></div>
 </dl>
 
 <section class="mt-7" aria-labelledby="needs-attention-heading" data-home-section="needs-attention">

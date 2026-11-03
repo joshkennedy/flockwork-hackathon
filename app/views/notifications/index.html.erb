@@ -3,7 +3,7 @@
 <div class="w-full max-w-2xl">
   <%= page_header "Notifications" do %>
     <% if @any_unread %>
-      <%= button_to "Mark all read", mark_all_read_notifications_path, method: :patch, class: "btn btn-text" %>
+      <%= button_to "Mark All Read", mark_all_read_notifications_path, method: :patch, class: "btn btn-text" %>
     <% end %>
   <% end %>
 
@@ -23,12 +23,12 @@
                 <% when "invitation" %>
                   <%= link_to "Respond", invitation_path(notification.notifiable.generate_token_for(:access)), class: "btn btn-secondary" %>
                 <% when "task_assigned" %>
-                  <%= button_to "Mark done", mark_done_project_task_path(notification.project, notification.notifiable), class: "btn btn-secondary" %>
+                  <%= button_to "Mark Done", mark_done_project_task_path(notification.project, notification.notifiable), class: "btn btn-secondary" %>
                 <% else %>
                   <%= link_to "Open", project_path(notification.project), class: "btn btn-secondary" %>
                 <% end %>
                 <% if notification.unread? %>
-                  <%= button_to "Mark read", mark_read_notification_path(notification), method: :patch, class: "btn btn-text" %>
+                  <%= button_to "Mark Read", mark_read_notification_path(notification), method: :patch, class: "btn btn-text" %>
                 <% end %>
               </div>
             </div>
@@ -55,7 +55,7 @@
                     <p class="mt-1 text-label font-normal text-ink-2"><%= time_ago_in_words(notification.created_at) %> ago</p>
                   </div>
                   <% if notification.unread? %>
-                    <%= button_to "Mark read", mark_read_notification_path(notification), method: :patch, class: "shrink-0 btn btn-text" %>
+                    <%= button_to "Mark Read", mark_read_notification_path(notification), method: :patch, class: "shrink-0 btn btn-text" %>
                   <% end %>
                 </div>
               </li>

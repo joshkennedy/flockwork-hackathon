@@ -227,10 +227,10 @@ class ListsTest < ActionDispatch::IntegrationTest
     get project_path(project)
 
     assert_response :success
-    assert_select "a", text: "Add row", count: 1
-    assert_select "a", text: "Add column", count: 0
+    assert_select "a", text: "Add Row", count: 1
+    assert_select "a", text: "Add Column", count: 0
     assert_select "a", text: "Edit", count: 0
-    assert_select "button", text: "Move up", count: 0
+    assert_select "button", text: "Move Up", count: 0
 
     assert_no_difference "ListColumn.count" do
       post project_list_list_columns_path(project, list), params: {

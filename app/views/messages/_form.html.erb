@@ -1,23 +1,6 @@
-<%= form_with model: [ project, message ], class: "space-y-7" do |form| %>
-  <% if message.errors.any? %>
-    <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
-      <p class="font-semibold">Please fix the following:</p>
-      <ul class="mt-2 list-disc space-y-1 pl-5 text-meta">
-        <% message.errors.full_messages.each do |error_message| %>
-          <li><%= error_message %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
-
-  <div>
-    <%= render "mentions/field",
-          form: form,
-          project: project,
-          label: "Body",
-          input_id: "message_#{message.id}_body",
-          autofocus: true %>
-  </div>
-
-  <%= form.submit "Save message", class: "btn btn-primary" %>
-<% end %>
+<%= render "messages/plain_form",
+      project: project,
+      message: message,
+      label: "Message",
+      submit_label: "Save Message",
+      autofocus: true %>

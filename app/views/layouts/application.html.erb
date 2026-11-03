@@ -34,7 +34,6 @@
       <div class="min-h-screen p-2 pb-[calc(64px+env(safe-area-inset-bottom))] md:grid md:grid-cols-[232px_minmax(0,1fr)] md:pb-2">
         <aside class="sticky top-2 hidden h-[calc(100dvh-16px)] min-w-0 flex-col px-4 pb-3 pt-3.5 md:flex" aria-label="Organization">
           <%= render "layouts/wordmark", path: home_path, class: "mb-6 px-2" %>
-          <%= render "layouts/church_switcher" %>
           <%= render "layouts/navigation" %>
           <%= render "layouts/account_menu" %>
         </aside>
@@ -71,11 +70,21 @@
           <%= link_to "Sign in", new_sign_in_request_path %>
         </nav>
       </header>
-      <main id="main-content" class="<%= controller_name == 'landing' ? 'marketing' : 'auth-page' %>">
-        <% if flash[:alert] %><p class="auth-error" role="alert"><%= flash[:alert] %></p><% end %>
-        <%= yield %>
-      </main>
-      <footer class="public-footer"><span>A shared space for the work of church.</span><%= link_to "Flockwork", root_path %></footer>
+      <% if controller_name == "landing" %>
+        <main id="main-content" class="marketing"><%= yield %></main>
+        <footer class="public-footer"><span>A shared space for the work of church.</span><%= link_to "Flockwork", root_path %></footer>
+      <% else %>
+        <%# Sign-in, sign-up and invitation pages: the form beside the recorded sign-up scene. %>
+        <main id="main-content" class="auth-split">
+          <div class="auth-form">
+            <% if flash[:alert] %><p class="auth-error" role="alert"><%= flash[:alert] %></p><% end %>
+            <%= yield %>
+          </div>
+          <div class="auth-art" aria-hidden="true">
+            <%= render "landing/scene", name: "auth", width: 600, height: 820, alt: "" %>
+          </div>
+        </main>
+      <% end %>
     <% end %>
   </body>
 </html>

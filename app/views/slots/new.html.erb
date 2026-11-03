@@ -3,7 +3,9 @@
 <div class="w-full max-w-2xl">
   <%= page_header "Add Slot" %>
 
-  <div class="mt-7">
-    <%= render "form", project: @project, slot: @slot %>
-  </div>
+  <%= turbo_frame_tag "slot-form" do %>
+    <div class="mt-7">
+      <%= render "form", project: @project, slot: @slot %>
+    </div>
+  <% end %>
 </div>

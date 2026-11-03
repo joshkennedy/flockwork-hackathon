@@ -1,4 +1,4 @@
 <li class="flex items-center justify-between gap-4 py-3" data-never-asked-person="<%= person.name %>">
   <%= person_name_link(person, class: "flex min-w-0 items-center gap-2.5 font-semibold") %>
-  <% if Current.person.admin? %><%= link_to "View person", person_path(person), class: "btn btn-secondary shrink-0" %><% end %>
+  <% if Current.person.admin? %><%= link_to "View Person", person_path(person), class: "btn btn-secondary shrink-0" %><% end %>
 </li>

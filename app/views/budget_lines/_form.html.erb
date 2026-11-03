@@ -42,5 +42,5 @@
     </div>
   </div>
 
-  <%= form.submit class: "btn btn-primary" %>
+  <%= form.submit budget_line.persisted? ? "Update Budget Line" : "Create Budget Line", class: "btn btn-primary" %>
 <% end %>

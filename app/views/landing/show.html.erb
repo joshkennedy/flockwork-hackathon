@@ -17,8 +17,8 @@
     <h1 id="landing-title">Ministry,<br>together.</h1>
     <p>Meal trains, workdays, VBS and next Sunday. Flockwork gives your church one place to plan the work and fill the spots.</p>
     <div class="lp-actions">
-      <%= link_to "Create your church", sign_up_path, class: "btn btn-primary" %>
-      <%= link_to "Explore the demo", new_demo_session_path, class: "btn btn-secondary" %>
+      <%= link_to "Create Your Church", sign_up_path, class: "btn btn-primary" %>
+      <%= link_to "Explore the Demo", new_demo_session_path, class: "btn btn-secondary" %>
     </div>
   </div>
   <%= render "landing/scene", name: "hero", width: 1110, height: 640, class: "lp-hero-scene", loading: "eager", fetchpriority: "high",
@@ -76,6 +76,6 @@
 <section class="lp-close" aria-labelledby="close-title">
   <h2 id="close-title">Let's bring it together.</h2>
   <p>Start with one project, then invite the people who make it happen.</p>
-  <%= link_to "Create your church", sign_up_path, class: "btn btn-primary" %>
-  <p class="lp-returning">Already part of a church here? <%= link_to "Sign in", new_sign_in_request_path %></p>
+  <%= link_to "Create Your Church", sign_up_path, class: "btn btn-primary" %>
+  <p class="lp-returning">Already part of a church here? <%= link_to "Sign in", new_sign_in_request_path, class: "link font-medium" %></p>
 </section>
