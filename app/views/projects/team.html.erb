@@ -5,7 +5,8 @@
 <% tabs << "notes" if Policy.can?(Current.person, :view_notes, @project) %>
 
 <div class="w-full max-w-6xl">
-  <%# Same header and tab bar as the project page, so Team reads as one more tab instead of a separate page. %>
+  <%# Same banner, header and tab bar as the project page, so Team reads as one more tab instead of a separate page. Banner editing stays on the project page. %>
+  <%= render "projects/banner", project: @project, editable: false %>
   <header class="min-w-0 max-w-4xl">
     <h1 class="text-ink"><%= @project.name %></h1>
     <p class="mt-2 text-ink-2"><%= pluralize(@memberships.size, "person") %> on the Team, <%= pluralize(leader_count, "Leader") %></p>
