@@ -106,16 +106,7 @@
 
   <div>
     <% if tabs.any? || Policy.can?(Current.person, :view_team, @project) %>
-      <nav class="mt-7 tab-bar" aria-label="Project sections">
-        <% tabs.each do |tab| %>
-          <%= link_to "#tab-#{tab}", class: "tab-link", aria: { current: tab == default_tab }, data: { tabs_target: "tab", tabs_name: tab, action: "tabs#select" } do %>
-            <%= tab == "notes" ? "Notes" : Project::TOOL_LABELS.fetch(tab) %>
-          <% end %>
-        <% end %>
-        <% if Policy.can?(Current.person, :view_team, @project) %>
-          <%= link_to "Team", team_project_path(@project), class: "tab-link" %>
-        <% end %>
-      </nav>
+      <%= render "projects/section_tabs", project: @project, tabs: tabs, current: default_tab %>
     <% end %>
 
     <div class="mt-6 grid gap-7 <%= 'lg:grid-cols-[minmax(0,1fr)_320px]' if show_recipients || can_share || can_transfer %>">

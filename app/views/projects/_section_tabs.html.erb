@@ -1,0 +1,15 @@
+<%# On the project page the tool tabs switch panels in place; on the Team page they link back to the panel. %>
+<% on_team = local_assigns[:current] == "team" %>
+<nav class="mt-7 tab-bar" aria-label="Project sections">
+  <% tabs.each do |tab| %>
+    <% label = tab == "notes" ? "Notes" : Project::TOOL_LABELS.fetch(tab) %>
+    <% if on_team %>
+      <%= link_to label, project_path(project, anchor: "tab-#{tab}"), class: "tab-link" %>
+    <% else %>
+      <%= link_to label, "#tab-#{tab}", class: "tab-link", aria: { current: tab == local_assigns[:current] }, data: { tabs_target: "tab", tabs_name: tab, action: "tabs#select" } %>
+    <% end %>
+  <% end %>
+  <% if Policy.can?(Current.person, :view_team, project) %>
+    <%= link_to "Team", team_project_path(project), class: "tab-link", aria: { current: ("page" if on_team) } %>
+  <% end %>
+</nav>

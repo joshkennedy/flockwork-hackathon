@@ -8,7 +8,8 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     get team_project_path(project)
 
     assert_response :success
-    assert_select "h1", "Community Meal Team"
+    assert_select "h1", "Community Meal"
+    assert_select "a.tab-link[aria-current=page]", "Team"
     assert_select "li", text: /Leo Leader.*Leader/
     assert_select "li", text: /Vic Volunteer.*Volunteer/
   end
