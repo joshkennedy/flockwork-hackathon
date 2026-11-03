@@ -27,6 +27,7 @@
   <% end %>
 
   <% if @any_projects %>
+    <%= render "organizations/your_stuff" %>
     <%= render "organizations/#{@home_role}_home" %>
   <% else %>
     <section class="mt-7 border-t border-hairline pt-7">

@@ -9,9 +9,9 @@ class OrganizationsController < ApplicationController
     visible_project_ids = Policy.visible_projects(@person).select(:id)
     @any_projects = visible_project_ids.exists?
     @my_slots = Slot.joins(:slot_claims).where(project_id: visible_project_ids, slot_claims: { person_id: @person.id })
-      .this_week.includes(:project).chronological
+      .where(date: Date.current..).includes(:project).chronological
     @my_tasks = @organization.tasks.where(project_id: visible_project_ids, assignee_id: @person.id, completed_at: nil)
-      .includes(:project).due_first.limit(5)
+      .includes(:project, :rich_text_details).due_first
     @home_role = if @person.admin? then :admin elsif @person.memberships.leader.exists? then :leader else :volunteer end
 
     case @home_role
@@ -25,6 +25,7 @@ class OrganizationsController < ApplicationController
       @projects = Current.organization.projects.active.where(id: @person.memberships.leader.select(:project_id)).order(:starts_on, :name)
     else
       member_project_ids = @person.memberships.select(:project_id)
+      @projects = Current.organization.projects.active.where(id: member_project_ids).order(:starts_on, :name)
       @open_slots_by_project = Slot.open_this_week_by_project(member_project_ids)
       @open_teams = Current.organization.projects.active.where(open_team: true).where.not(id: member_project_ids).order(:starts_on, :name)
     end

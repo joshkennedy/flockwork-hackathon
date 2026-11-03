@@ -1,0 +1,42 @@
+<section class="mt-7" aria-labelledby="your-tasks-heading" data-home-section="your-tasks">
+  <h2 id="your-tasks-heading">Your Tasks</h2>
+  <% if @my_tasks.any? %>
+    <ul class="mt-3 divide-y divide-hairline border-y border-hairline">
+      <% @my_tasks.each do |task| %>
+        <li data-task-title="<%= task.title %>" class="flex items-start justify-between gap-4 py-3">
+          <div class="min-w-0">
+            <p class="font-semibold text-ink"><%= task.title %></p>
+            <p class="text-meta text-ink-2"><%= task.project.name %><%= " · Due #{task.due_on.strftime("%B %-d")}" if task.due_on %></p>
+            <% if task.details.present? %>
+              <p class="mt-1 line-clamp-2 text-meta leading-normal text-ink-2"><%= task.details.to_plain_text %></p>
+            <% end %>
+          </div>
+          <%= button_to "Done", mark_done_project_task_path(task.project, task, return_to: "home"), class: "btn btn-secondary whitespace-nowrap", form: { class: "shrink-0" } %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="mt-2 text-meta text-ink-2">Nothing on your plate right now.</p>
+  <% end %>
+</section>
+
+<section class="mt-7" aria-labelledby="coming-up-heading" data-home-section="coming-up">
+  <h2 id="coming-up-heading">Coming up</h2>
+  <% if @my_slots.any? %>
+    <ul class="mt-3 divide-y divide-hairline border-y border-hairline">
+      <% @my_slots.each do |slot| %>
+        <li>
+          <%= link_to project_path(slot.project), class: "flex items-start gap-3 py-3 hover:bg-ghost-fill" do %>
+            <%= icon(:check, class: "mt-0.5 text-sunlit") %>
+            <span class="min-w-0">
+              <span class="block font-semibold text-ink"><%= slot.date == Date.current ? "Today" : slot.date.strftime("%A, %B %-d") %> · <%= slot.label %></span>
+              <span class="block text-meta text-ink-2"><%= slot.project.name %><%= " · #{slot.starts_at_time.strftime("%-l:%M %p")}" if slot.starts_at_time %></span>
+            </span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="mt-2 text-meta text-ink-2">No sign-up spots ahead for you.</p>
+  <% end %>
+</section>

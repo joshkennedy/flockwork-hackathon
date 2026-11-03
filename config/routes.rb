@@ -7,7 +7,7 @@ Rails.application.routes.draw do
 
   resources :organizations, only: :create
   get "get_involved", to: "get_involved#show"
-  get "my_tasks", to: "my_tasks#index"
+  get "my_tasks", to: redirect("/home", status: 301)
   resource :oversight, only: %i[ show update ]
   resource :settings, only: %i[ show update ]
   get "icon.svg", to: "icons#show", as: :icon

@@ -96,7 +96,7 @@ class TasksController < ApplicationController
     end
 
     def task_redirect_path
-      params[:return_to] == "my_tasks" ? my_tasks_path : @project
+      params[:return_to] == "home" ? home_path : @project
     end
 
     def notify_assignee

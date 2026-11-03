@@ -40,7 +40,6 @@ module ApplicationHelper
   def organization_navigation
     items = [
       [ "Home", home_path, :home ],
-      [ "My Tasks", my_tasks_path, :tasks ],
       [ "Projects", projects_path, :projects ],
       [ "Get involved", get_involved_path, :heart ]
     ]

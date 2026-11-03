@@ -15,7 +15,7 @@ class HomeTest < ActionDispatch::IntegrationTest
     get home_path
 
     assert_select "h1", "Hi Vic"
-    assert_select "[data-home-section='your-week']", text: /Bring salad/
+    assert_select "[data-home-section='coming-up']", text: /Bring salad/
     assert_select "[data-home-section='open-needs']", text: /Community Meal/
     # Bring salad has 1 open spot, Bring dessert 3; Full bread and Far off add none.
     assert_select "[data-home-section='open-needs'] .badge-need", text: "4 spots open"
@@ -35,7 +35,7 @@ class HomeTest < ActionDispatch::IntegrationTest
     assert_select "[data-home-section='your-projects'] li", count: 1
     assert_select "[data-home-section='your-projects'] .badge-need", text: "1 dinner still needs someone"
     assert_select "[data-home-section='your-projects'] a", text: "Fill spots"
-    assert_select "[data-home-section='your-week']"
+    assert_select "[data-home-section='coming-up']"
     assert_select "a.btn-primary", text: "Start a Project"
   end
 
@@ -52,14 +52,24 @@ class HomeTest < ActionDispatch::IntegrationTest
     assert_match projects(:community_meal).name, names.join
   end
 
-  test "an empty My Tasks points at open spots this week" do
+  test "an empty task list says so and still shows the Projects a volunteer is on" do
     sign_in_as_volunteer
     projects(:community_meal).slots.create!(date: Date.current + 1, label: "Bring rolls", capacity: 2)
 
-    get my_tasks_path
+    get home_path
 
-    assert_select "[data-my-tasks-empty]", text: /Nothing on your plate/
-    assert_select "[data-my-tasks-empty] a[href=?] .badge-need", project_path(projects(:community_meal)), text: "2 spots open"
+    assert_select "[data-home-section='your-tasks']", text: /Nothing on your plate/
+    assert_select "[data-home-section='your-projects'] a", text: /#{projects(:community_meal).name}/
+    assert_select "[data-home-section='open-needs'] .badge-need", text: "2 spots open"
+  end
+
+  test "the old My Tasks page redirects to Home" do
+    sign_in_as_volunteer
+
+    get "/my_tasks"
+
+    assert_response :moved_permanently
+    assert_redirected_to home_path
   end
 
   test "Home points a person with no Projects somewhere useful" do

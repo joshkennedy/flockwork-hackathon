@@ -150,7 +150,7 @@ class TasksTest < ActionDispatch::IntegrationTest
     assert_nil task.reload.assignee
   end
 
-  test "My Tasks shows visible open Tasks in due-date order with undated Tasks last" do
+  test "Home lists visible open Tasks in due-date order with undated Tasks last" do
     volunteer = sign_in_as_volunteer
     meal = projects(:community_meal)
     cleanup = projects(:building_cleanup)
@@ -173,21 +173,21 @@ class TasksTest < ActionDispatch::IntegrationTest
       updated_at: Time.current
     } ])
 
-    get my_tasks_path
+    get home_path
 
     assert_response :success
     titles = css_select("[data-task-title]").map { |node| node["data-task-title"] }
     assert_equal [ "Soon cleanup Task", "Later meal Task", "Undated meal Task" ], titles
     assert_select "[data-task-title='Soon cleanup Task']" do
-      assert_select "p", text: "Building Cleanup"
+      assert_select "p", text: /Building Cleanup/
       assert_select "button", text: "Done"
     end
     assert_no_match "Finished meal Task", response.body
     assert_no_match "Other Organization Task", response.body
 
-    post mark_done_project_task_path(cleanup, soon_task, return_to: "my_tasks")
+    post mark_done_project_task_path(cleanup, soon_task, return_to: "home")
 
-    assert_redirected_to my_tasks_path
+    assert_redirected_to home_path
     assert_not_nil soon_task.reload.completed_at
   end
 
