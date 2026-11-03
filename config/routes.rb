@@ -130,6 +130,7 @@ Rails.application.routes.draw do
   post "directory/planning_center/sync", to: "directory/planning_center#sync", as: :sync_planning_center_directory
   resources :people, only: %i[index new create edit update] do
     resources :notes, only: :create
+    resources :check_ins, only: :create
   end
   resource :profile, only: %i[edit update] do
     post :suggest_away

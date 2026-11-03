@@ -22,7 +22,8 @@ class OversightsController < ApplicationController
 
     def load_oversight
       today = Date.current
-      @overextended_people = Oversight.overextended(Current.organization, on: today).load
+      @overextended_people = Oversight.needs_check_in(Current.organization, on: today).load
+      @last_check_ins = CheckIn.where(organization: Current.organization).latest_by_person(@overextended_people.map(&:id))
       @never_asked_people = Oversight.never_asked(Current.organization).load
       @away_ranges = Oversight.upcoming_away(Current.organization, today: today).to_a
       @involvement_year = Time.current.year

@@ -25,6 +25,12 @@ module Oversight
     Unavailability.where(organization: organization).upcoming(today).includes(:person).limit(limit)
   end
 
+  # Overextended people, minus anyone who checked in within the last CheckIn::RECENT_DAYS.
+  def needs_check_in(organization, on: Date.current)
+    recent = CheckIn.where(organization: organization).where(on: (on - CheckIn::RECENT_DAYS)..on).select(:person_id)
+    overextended(organization, on: on).where.not(id: recent)
+  end
+
   def never_asked(organization)
     # Invitations and ownership preserve Team history after Membership deletion; soft-deleted Projects retain Memberships.
     # Admins already lead the church, so listing them as not yet invited would misstate their involvement.

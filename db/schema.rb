@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_03_024957) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_03_024958) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -64,6 +64,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_024957) do
     t.datetime "updated_at", null: false
     t.index ["project_id"], name: "index_budget_lines_on_project_id"
     t.index ["responsible_person_id"], name: "index_budget_lines_on_responsible_person_id"
+  end
+
+  create_table "check_ins", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.bigint "person_id", null: false
+    t.bigint "checked_in_by_id"
+    t.date "on", null: false
+    t.string "note"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["checked_in_by_id"], name: "index_check_ins_on_checked_in_by_id"
+    t.index ["organization_id"], name: "index_check_ins_on_organization_id"
+    t.index ["person_id"], name: "index_check_ins_on_person_id"
   end
 
   create_table "comments", force: :cascade do |t|
@@ -540,6 +553,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_024957) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "budget_lines", "people", column: "responsible_person_id"
   add_foreign_key "budget_lines", "projects"
+  add_foreign_key "check_ins", "organizations"
+  add_foreign_key "check_ins", "people"
+  add_foreign_key "check_ins", "people", column: "checked_in_by_id"
   add_foreign_key "comments", "people", column: "author_id"
   add_foreign_key "doc_items", "people", column: "author_id"
   add_foreign_key "doc_items", "projects"

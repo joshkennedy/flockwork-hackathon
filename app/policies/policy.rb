@@ -68,6 +68,13 @@ module Policy
       return record.organization_id == person.organization_id && record.person_id == person.id
     end
 
+    if record.is_a?(::CheckIn)
+      # The note is Admin-only; Leaders and Admins may see that a check-in happened, by whom and when.
+      return record.organization_id == person.organization_id && person.admin? if action == :view_note
+
+      return false
+    end
+
     if record.is_a?(::Note)
       return note_can?(person, action, record)
     end
@@ -91,6 +98,7 @@ module Policy
       return false unless record.organization_id == person.organization_id
 
       return person.admin? || record.id == person.id if action == :view_involvement
+      return person.admin? || leader_somewhere?(person) if action == :log_check_in
 
       return false
     end

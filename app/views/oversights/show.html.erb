@@ -19,6 +19,7 @@
                     <li><%= link_to project.name, project_path(project), class: "hover:text-ink" %></li>
                   <% end %>
                 </ul>
+                <%= render "check_in", person: person, last: @last_check_ins[person.id] %>
               </div>
               <% if Current.person.admin? %><%= link_to "View person", edit_person_path(person), class: "btn btn-secondary shrink-0" %><% end %>
             </li>

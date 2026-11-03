@@ -10,6 +10,8 @@ class Person < ApplicationRecord
   has_many :slot_claims, dependent: :destroy
   has_many :notes, as: :notable, dependent: :destroy
   has_many :unavailabilities, dependent: :destroy
+  has_many :check_ins, dependent: :destroy
+  has_many :logged_check_ins, class_name: "CheckIn", foreign_key: :checked_in_by_id, inverse_of: :checked_in_by, dependent: :nullify
   has_many :authored_notes, class_name: "Note", foreign_key: :author_id, inverse_of: :author,
     dependent: :restrict_with_exception
   has_many :projects, through: :memberships
