@@ -98,7 +98,7 @@ class ProjectsController < ApplicationController
     @project.memberships.find_or_create_by!(person: Current.person) do |membership|
       membership.role = :volunteer
     end
-    redirect_to @project
+    redirect_to params[:from] == "get_involved" ? get_involved_path : @project
   end
 
   def mark_done
