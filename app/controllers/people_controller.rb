@@ -2,7 +2,8 @@ class PeopleController < ApplicationController
   before_action :authorize_people_management
 
   def index
-    @people = Current.organization.people.order(:name)
+    @people = Current.organization.people.matching(params[:query]).order(:name)
+    @people_count = Current.organization.people.count
   end
 
   def new

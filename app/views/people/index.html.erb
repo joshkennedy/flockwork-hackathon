@@ -1,39 +1,49 @@
 <% content_for :title, "People · #{Current.organization.name}" %>
 
 <div class="w-full max-w-5xl">
-  <%= page_header "People" do %>
+  <%= page_header "People", subtitle: pluralize(@people_count, "person", plural: "people") do %>
     <%= link_to "Planning Center", planning_center_directory_path, class: "btn btn-secondary" %>
     <%= link_to "Import CSV", new_people_csv_import_path, class: "btn btn-secondary" %>
     <%= link_to "Add person", new_person_path, class: "btn btn-primary" %>
   <% end %>
 
-  <ul class="mt-7 divide-y divide-hairline border-b border-hairline">
-    <% @people.each do |person| %>
-      <li class="flex items-center justify-between gap-4 py-3">
-        <div class="flex min-w-0 items-center gap-3">
-          <%= avatar(person) %>
-          <div class="min-w-0">
-          <p class="font-medium text-ink">
-            <%= person.name %>
-            <% if person.admin? %>
-              <span class="ml-2 text-label font-normal text-ink-2">Admin</span>
-            <% end %>
-          </p>
-          <p class="text-meta text-ink-2">
-            <% if person.email.present? %>
-              <%= person.email %>
-            <% else %>
-              Can't sign in (no email)
-            <% end %>
-            <% if person.phone.present? %>
-              · <%= person.phone %>
-            <% end %>
-          </p>
-          </div>
-        </div>
+  <%= form_with url: people_path, method: :get, class: "mt-7 max-w-xl", data: { controller: "live-search", turbo_frame: "people-results", turbo_action: "replace" } do |form| %>
+    <%= form.label :query, "Search by name", class: "sr-only" %>
+    <%= form.search_field :query, value: params[:query], placeholder: "Search by name", autocomplete: "off", class: "w-full field", data: { action: "input->live-search#search" } %>
+  <% end %>
 
-        <%= link_to "Edit", edit_person_path(person), class: "text-meta font-medium text-ink-2 hover:text-ink" %>
-      </li>
+  <%# target _top so the name links and Clear search leave the frame for the person's page. %>
+  <%= turbo_frame_tag "people-results", target: "_top" do %>
+    <% if @people.any? %>
+      <ul class="mt-5 divide-y divide-hairline border-b border-hairline">
+        <% @people.each do |person| %>
+          <li class="relative flex items-center gap-3 py-3">
+            <%= avatar(person) %>
+            <div class="min-w-0 break-words">
+              <p class="font-medium text-ink">
+                <%= link_to person.name, edit_person_path(person), class: "after:absolute after:inset-0" %>
+                <% if person.admin? %>
+                  <span class="ml-2 text-label font-normal text-ink-2">Admin</span>
+                <% end %>
+              </p>
+              <p class="text-meta text-ink-2">
+                <% if person.email.present? %>
+                  <%= person.email %>
+                <% else %>
+                  Can't sign in (no email)
+                <% end %>
+                <% if person.phone.present? %>
+                  <span class="whitespace-nowrap">· <%= person.phone %></span>
+                <% end %>
+              </p>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% elsif params[:query].present? %>
+      <p class="mt-7 text-ink-2">No people match "<%= params[:query] %>". <%= link_to "Clear search", people_path, class: "font-medium text-ink underline decoration-border-strong underline-offset-4 hover:decoration-ink" %></p>
+    <% else %>
+      <p class="mt-7 text-ink-2">No people yet. Add one, or import a CSV to bring in a whole list.</p>
     <% end %>
-  </ul>
+  <% end %>
 </div>

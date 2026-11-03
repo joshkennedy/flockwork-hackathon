@@ -22,9 +22,12 @@
   </div>
 
   <% if person.persisted? %>
-    <div class="flex items-center gap-2">
-      <%= form.check_box :admin, class: "rounded border-hairline" %>
-      <%= form.label :admin, "Admin", class: "text-label font-medium text-ink-2" %>
+    <div>
+      <div class="flex items-center gap-2">
+        <%= form.check_box :admin, class: "rounded border-hairline" %>
+        <%= form.label :admin, "Admin", class: "text-label font-medium text-ink-2" %>
+      </div>
+      <p class="mt-1 text-label text-ink-2">Admins can manage People and Settings.</p>
     </div>
   <% end %>
 

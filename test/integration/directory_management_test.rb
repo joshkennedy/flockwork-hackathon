@@ -168,4 +168,49 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     end
     assert_equal names.sort, names
   end
+
+  test "each directory row links the Person's name to their edit page" do
+    sign_in_as_admin
+
+    get people_path
+
+    assert_select "a[href=?]", edit_person_path(people(:volunteer)), text: people(:volunteer).name
+    assert_select "a", text: "Edit", count: 0
+  end
+
+  test "searching the directory by name narrows the list" do
+    sign_in_as_admin
+
+    get people_path, params: { query: "vic" }
+
+    assert_response :success
+    assert_select "turbo-frame#people-results a", text: people(:volunteer).name
+    assert_select "turbo-frame#people-results a", text: people(:leader).name, count: 0
+  end
+
+  test "a search with no match says so and offers to clear it" do
+    sign_in_as_admin
+
+    get people_path, params: { query: "zzz no such person" }
+
+    assert_select "turbo-frame#people-results p", text: /No people match "zzz no such person"/
+    assert_select "turbo-frame#people-results a[href=?]", people_path, text: "Clear search"
+  end
+
+  test "the CSV file input has a visible label" do
+    sign_in_as_admin
+
+    get new_people_csv_import_path
+
+    assert_select "label[for=?]", "csv_file", text: "CSV file"
+    assert_select "input#csv_file[type=file]"
+  end
+
+  test "the Admin checkbox says what Admins can do" do
+    sign_in_as_admin
+
+    get edit_person_path(people(:leader))
+
+    assert_select "p", text: "Admins can manage People and Settings."
+  end
 end

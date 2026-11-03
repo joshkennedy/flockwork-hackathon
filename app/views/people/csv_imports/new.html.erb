@@ -13,7 +13,10 @@
   <% end %>
 
   <%= form_with url: people_csv_import_path, method: :post, multipart: true, class: "mt-6 space-y-4" do |form| %>
-    <%= form.file_field :csv_file, accept: ".csv,text/csv", required: true, class: "block w-full text-meta text-ink-2" %>
+    <div>
+      <%= form.label :csv_file, "CSV file", class: "block text-label font-medium text-ink-2" %>
+      <%= form.file_field :csv_file, accept: ".csv,text/csv", required: true, class: "mt-1 block w-full text-meta text-ink-2" %>
+    </div>
     <%= form.submit "Import", class: "btn btn-primary" %>
   <% end %>
 </div>
