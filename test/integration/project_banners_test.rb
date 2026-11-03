@@ -1,0 +1,102 @@
+require "test_helper"
+
+class ProjectBannersTest < ActionDispatch::IntegrationTest
+  test "a leader uploads a banner that starts centered and queues a focus suggestion" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    upload = fixture_file_upload("banner_wide.jpg", "image/jpeg")
+
+    assert_enqueued_with(job: ProjectBannerFocusJob) do
+      patch project_banner_path(project), params: { project: { banner: upload } }
+    end
+
+    assert_redirected_to project_path(project)
+    project.reload
+    assert project.banner.attached?
+    assert_equal 0.5, project.banner_focus_x
+    assert_equal 0.5, project.banner_focus_y
+  end
+
+  test "an upload is judged by its bytes, so a renamed text file is refused" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+
+    patch project_banner_path(project), params: { project: { banner: fixture_file_upload("sample_upload.txt", "image/jpeg") } }
+
+    assert_redirected_to project_path(project)
+    assert_match "must be a JPEG, PNG, WebP, or HEIC image", flash[:alert]
+    assert_not project.reload.banner.attached?
+  end
+
+  test "an image over 10 MB is refused" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    file = Tempfile.new([ "too-big", ".png" ], binmode: true)
+    file.write("\x89PNG\r\n\x1A\n".b + "\0".b * (Project::BANNER_MAX_BYTES + 1))
+    file.rewind
+
+    patch project_banner_path(project), params: { project: { banner: Rack::Test::UploadedFile.new(file.path, "image/png") } }
+
+    assert_match "must be 10 MB or smaller", flash[:alert]
+    assert_not project.reload.banner.attached?
+  ensure
+    file&.close!
+  end
+
+  test "people who cannot edit the Project get not found for every banner change" do
+    project = projects(:community_meal)
+    sign_in_as_volunteer
+
+    patch project_banner_path(project), params: { project: { banner_focus_x: "0.2" } }
+    assert_response :not_found
+
+    delete project_banner_path(project)
+    assert_response :not_found
+  end
+
+  test "a leader sets the focal point and alt text, and an out-of-range focus is refused" do
+    sign_in_as_leader
+    project = attach_banner!(projects(:community_meal))
+
+    patch project_banner_path(project), params: { project: { banner_focus_x: "0.2", banner_focus_y: "0.8", banner_alt_text: "Volunteers stacking chairs" } }
+    project.reload
+    assert_in_delta 0.2, project.banner_focus_x
+    assert_in_delta 0.8, project.banner_focus_y
+    assert project.banner_focus_manual?
+    assert_equal "Volunteers stacking chairs", project.banner_alt_text
+
+    patch project_banner_path(project), params: { project: { banner_focus_x: "1.5" } }
+    assert_match "couldn't be saved", flash[:alert]
+    assert_in_delta 0.2, project.reload.banner_focus_x
+  end
+
+  test "removing the banner purges it and resets focus and alt text" do
+    sign_in_as_leader
+    project = attach_banner!(projects(:community_meal))
+    patch project_banner_path(project), params: { project: { banner_focus_x: "0.1", banner_alt_text: "Chairs" } }
+
+    delete project_banner_path(project)
+
+    project.reload
+    assert_not project.banner.attached?
+    assert_equal 0.5, project.banner_focus_x
+    assert_nil project.banner_alt_text
+    assert_not project.banner_focus_manual?
+  end
+
+  test "the public Project page shows the banner with its alt text" do
+    project = attach_banner!(projects(:community_meal))
+    project.enable_public_link!
+
+    get public_project_path(project.public_token)
+
+    assert_response :success
+    assert_match "alt=\"#{project.name} banner\"", response.body
+  end
+
+  private
+    def attach_banner!(project)
+      project.banner.attach(io: file_fixture("banner_wide.jpg").open, filename: "banner.jpg", content_type: "image/jpeg")
+      project.reload
+    end
+end

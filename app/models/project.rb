@@ -25,6 +25,18 @@ class Project < ApplicationRecord
   has_many :notes, as: :notable, dependent: :destroy
   has_many :notifications, as: :notifiable, dependent: :destroy
 
+  BANNER_TYPES = %w[ image/jpeg image/png image/webp image/heic image/heif ].freeze
+  BANNER_MAX_BYTES = 10.megabytes
+  # Target pixel sizes for each crop; the phone crop is a 2:1 shape for narrow screens.
+  BANNER_SIZES = { wide: [ 1500, 500 ], phone: [ 800, 400 ] }.freeze
+  # shortcut: a crop narrower than this is shown on a blurred fill instead of upscaled, revisit if banners get wider than 1000px
+  BANNER_MIN_WIDTH = 1000
+
+  has_one_attached :banner
+  validates :banner_focus_x, :banner_focus_y, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 1 }
+  validates :banner_alt_text, length: { maximum: 200 }
+  validate :banner_is_an_image_within_limits
+
   def budget_lines_by_kind(kind)
     budget_lines.public_send(kind).order(:id)
   end
@@ -69,6 +81,41 @@ class Project < ApplicationRecord
     done_at.nil? && archived_at.nil? && deleted_at.nil?
   end
 
+  # [left, top, width, height] in source pixels: the largest crop at the target aspect that keeps the focal point in view.
+  def banner_crop(kind)
+    width, height = analyzed_banner_blob.metadata.values_at("width", "height")
+    aspect = BANNER_SIZES.fetch(kind).then { |w, h| w.fdiv(h) }
+    if width.fdiv(height) > aspect
+      crop_w = (height * aspect).round
+      [ (banner_focus_x * width - crop_w / 2.0).round.clamp(0, width - crop_w), 0, crop_w, height ]
+    else
+      crop_h = (width / aspect).round
+      [ 0, (banner_focus_y * height - crop_h / 2.0).round.clamp(0, height - crop_h), width, crop_h ]
+    end
+  end
+
+  # False when the photo could not be analyzed (no dimensions), so the page shows no banner instead of failing.
+  def banner_ready?
+    return false unless banner.attached?
+
+    analyzed_banner_blob.metadata["width"].present?
+  end
+
+  def reset_banner_focus
+    self.banner_focus_x = 0.5
+    self.banner_focus_y = 0.5
+    self.banner_focus_manual = false
+    self.banner_alt_text = nil
+  end
+
+  def banner_variant(kind)
+    banner.variant(crop: banner_crop(kind), resize_to_limit: BANNER_SIZES.fetch(kind), format: :webp, saver: { quality: 82 })
+  end
+
+  def banner_small?
+    banner_crop(:wide)[2] < BANNER_MIN_WIDTH
+  end
+
   def enable_public_link!
     update!(public_token: generate_public_token)
   end
@@ -101,6 +148,28 @@ class Project < ApplicationRecord
         token = SecureRandom.urlsafe_base64(24)
         break token unless self.class.exists?(public_token: token)
       end
+    end
+
+    def banner_is_an_image_within_limits
+      change = attachment_changes["banner"]
+      return unless change.is_a?(ActiveStorage::Attached::Changes::CreateOne)
+
+      errors.add(:banner, "must be a JPEG, PNG, WebP, or HEIC image") unless banner_bytes_type(change.attachable).in?(BANNER_TYPES)
+      errors.add(:banner, "must be 10 MB or smaller") if change.blob.byte_size > BANNER_MAX_BYTES
+    end
+
+    # Sniff the bytes ourselves: Active Storage keeps a declared type when it matches the file name, so a text file named .jpg would pass.
+    def analyzed_banner_blob
+      banner.blob.tap { |blob| blob.analyze unless blob.analyzed? }
+    end
+
+    def banner_bytes_type(attachable)
+      io = attachable.is_a?(Hash) ? attachable[:io] : attachable
+      io = io.tempfile if io.respond_to?(:tempfile)
+      return unless io.respond_to?(:read)
+
+      io.rewind
+      Marcel::MimeType.for(io).tap { io.rewind }
     end
 
     def ends_on_is_not_before_starts_on

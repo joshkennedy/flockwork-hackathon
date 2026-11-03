@@ -23,6 +23,8 @@
     <p role="status" class="flash-notice mb-5 rounded-control bg-sunlit-soft px-4 py-3 text-ink"><%= flash[:notice] %></p>
   <% end %>
 
+  <%= render "projects/banner", project: @project, editable: can_update %>
+
   <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div class="min-w-0 max-w-4xl">
       <h1 class="text-ink"><%= @project.name %></h1>

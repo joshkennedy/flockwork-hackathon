@@ -1,0 +1,84 @@
+<% has_banner = project.banner.attached? %>
+<% if has_banner || editable %>
+  <% show_banner = project.banner_ready? %>
+  <% small = show_banner && project.banner_small? %>
+  <% preview_url = url_for(project.banner.variant(resize_to_limit: [ 1000, 1000 ], format: :webp)) if has_banner %>
+  <div class="mb-6 space-y-3">
+    <% if editable && flash[:alert].present? %>
+      <p role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger"><%= flash[:alert] %></p>
+    <% end %>
+
+    <% if show_banner %>
+      <% wide = url_for(project.banner_variant(:wide)) %>
+      <% alt = project.banner_alt_text.presence || "#{project.name} banner" %>
+      <% if small %>
+        <%# Too small to crop up to banner size: show the photo whole on a blurred copy of itself instead of upscaling it. %>
+        <figure class="relative isolate flex aspect-[3/1] items-center justify-center overflow-hidden rounded-panel border border-border bg-frame">
+          <img src="<%= wide %>" alt="" aria-hidden="true" class="absolute inset-0 size-full scale-110 object-cover opacity-60 blur-2xl">
+          <img src="<%= wide %>" alt="<%= alt %>" class="relative max-h-full max-w-full object-contain">
+        </figure>
+      <% else %>
+        <figure class="overflow-hidden rounded-panel border border-border bg-frame">
+          <picture>
+            <source media="(max-width: 639px)" srcset="<%= url_for(project.banner_variant(:phone)) %>">
+            <img src="<%= wide %>" alt="<%= alt %>" class="block h-auto w-full">
+          </picture>
+        </figure>
+      <% end %>
+    <% end %>
+
+    <% if editable %>
+      <% if has_banner %>
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <%= render "projects/banner_upload", project: project, heading: "Replace the banner", choose: "Replace image" %>
+          <%= button_to "Remove", project_banner_path(project), method: :delete, class: "btn btn-text btn-danger" %>
+        </div>
+        <% if small %>
+          <p class="text-meta text-ink-2">This photo is small for a banner, so it sits on a soft blurred background. A larger photo fills the banner edge to edge.</p>
+        <% end %>
+        <details class="rounded-panel border border-border p-4">
+          <summary class="cursor-pointer text-heading text-ink">Adjust the focal point and alt text</summary>
+          <%= form_with model: project, url: project_banner_path(project), method: :patch, data: { controller: "banner-focus" },
+                class: "mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,16rem)]" do |form| %>
+            <div class="min-w-0">
+              <p class="text-meta text-ink-2">Click or drag on the photo to set the point the crop keeps in view. Arrow keys nudge it.</p>
+              <div data-banner-focus-target="picker" tabindex="0" aria-label="Focal point. Use the arrow keys to move it."
+                   class="relative mt-2 cursor-crosshair touch-none select-none overflow-hidden rounded-control border border-border"
+                   data-action="pointerdown->banner-focus#start pointermove->banner-focus#move pointerup->banner-focus#stop pointercancel->banner-focus#stop keydown->banner-focus#key">
+                <img src="<%= preview_url %>" alt="" draggable="false" class="block w-full">
+                <span data-banner-focus-target="marker" class="pointer-events-none absolute size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-panel bg-ink"></span>
+              </div>
+            </div>
+
+            <div class="grid content-start gap-5">
+              <div class="grid gap-4">
+                <% { wide: "aspect-[3/1]", phone: "aspect-[2/1] w-40" }.each do |name, shape| %>
+                  <figure class="grid gap-1.5">
+                    <div data-banner-focus-target="preview" class="relative <%= shape %> overflow-hidden rounded-tile border border-border bg-frame">
+                      <img src="<%= preview_url %>" alt="" draggable="false" class="absolute max-w-none">
+                    </div>
+                    <figcaption class="text-meta text-ink-2"><%= name == :wide ? "Desktop" : "Phone" %></figcaption>
+                  </figure>
+                <% end %>
+              </div>
+
+              <%= form.hidden_field :banner_focus_x, data: { banner_focus_target: "x" } %>
+              <%= form.hidden_field :banner_focus_y, data: { banner_focus_target: "y" } %>
+              <div>
+                <%= form.label :banner_alt_text, "Alt text", class: "block text-label font-medium text-ink" %>
+                <%= form.text_field :banner_alt_text, maxlength: 200, class: "field mt-1 w-full" %>
+                <p class="mt-1 text-meta text-ink-2">Read aloud by screen readers. Describe the photo in a few words.</p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <%= form.submit "Save", class: "btn btn-secondary" %>
+                <button type="button" class="btn btn-text" data-action="banner-focus#center">Center</button>
+              </div>
+            </div>
+          <% end %>
+        </details>
+      <% else %>
+        <%= render "projects/banner_upload", project: project, heading: "Add a banner image", choose: "Choose image" %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

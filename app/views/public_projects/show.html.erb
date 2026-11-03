@@ -1,5 +1,7 @@
 <% content_for :title, @project.name %>
 
+<%= render "projects/banner", project: @project, editable: false %>
+
 <header>
   <h1 class="text-ink"><%= @project.name %></h1>
   <% if @project.description.present? %>
