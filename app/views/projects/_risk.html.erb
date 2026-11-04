@@ -1,0 +1,11 @@
+<% risk = ProjectRisk.new(project) %>
+<% if risk.attention_needed? %>
+  <p class="mt-3 text-meta text-ink-2" data-project-risk>
+    <% facts = [] %>
+    <% facts << "#{pluralize(risk.open_spots, 'open spot')} in the next #{ProjectRisk::WINDOW_DAYS} days" if risk.open_spots.positive? %>
+    <% facts << (risk.days_until_start.zero? ? "Project starts today" : "Project starts in #{pluralize(risk.days_until_start, 'day')}") if risk.days_until_start %>
+    <% facts << "#{pluralize(risk.overdue_tasks, 'overdue task')}" if risk.overdue_tasks.positive? %>
+    <%= facts.join(" · ") %>.
+    <%= link_to risk.action_tool == "signup_sheet" ? "Review Open Spots" : "Review Overdue Tasks", "#tab-#{risk.action_tool}", class: "link", data: { action: "tabs#select", tabs_name: risk.action_tool } %>
+  </p>
+<% end %>

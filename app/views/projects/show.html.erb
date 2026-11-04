@@ -77,6 +77,8 @@
     </dl>
   <% end %>
 
+  <%= render "projects/risk", project: @project if can_plan %>
+
   <% if guidance %>
     <div class="guidance-strip mt-3" data-project-guidance>
       <div>
