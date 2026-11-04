@@ -3,490 +3,283 @@ require "test_helper"
 class MealPlannerTest < ActionDispatch::IntegrationTest
   setup do
     @original_provider = Rails.configuration.x.planner_provider
+    @provider = Planner::Providers::Fake.new([])
+    Rails.configuration.x.planner_provider = @provider
+    sign_in_as_leader
   end
 
   teardown do
     Rails.configuration.x.planner_provider = @original_provider
   end
 
-  test "a Leader starts meal planning asynchronously and a selection prepares the preview before Continue" do
-    provider = use_provider(
-      response(card: card("Which meals should people bring?", "Dinner", "Lunch")),
-      response(
-        card: card("How long should the meal train run?", "Three days", "One week"),
-        added: [ slot_run(label: "Bring dinner") ]
-      )
-    )
-    sign_in_as_leader
-
-    assert_enqueued_with(job: PlannerStepJob) do
+  test "starting a meal train opens one form without AI or creating slots" do
+    assert_no_enqueued_jobs only: PlannerStepJob do
       assert_difference [ "Project.count", "PlannerSession.count" ], 1 do
         post start_meal_planner_projects_path
       end
     end
-
-    planner_session = PlannerSession.order(:id).last!
-    project = planner_session.project
-    assert_response :see_other
-    assert_redirected_to project_planner_session_path(project, planner_session)
-    assert_equal "queued", planner_session.generation_state
-    assert_empty provider.contexts
-
-    perform_enqueued_jobs(only: PlannerStepJob)
-    planner_session.reload
-    assert_equal "Which meals should people bring?", planner_session.current_card.fetch("question")
-    assert_equal "idle", planner_session.generation_state
-
-    assert_enqueued_with(job: PlannerStepJob) do
-      post select_answer_project_planner_session_path(project, planner_session), params: {
-        answer: "Dinner",
-        expected_revision: planner_session.generation_revision
-      }
-    end
-    assert_response :see_other
-    assert_equal "Dinner", planner_session.reload.pending_answer.fetch("text")
-    assert_equal "queued", planner_session.generation_state
-
-    perform_enqueued_jobs(only: PlannerStepJob)
-    planner_session.reload
-    assert_equal 3, planner_session.visible_pending_items.size
-    assert_equal "Dinner", planner_session.pending_answer.fetch("text")
-    assert_equal "How long should the meal train run?", planner_session.prepared_card.fetch("question")
-    assert_equal 2, provider.contexts.size
-
-    assert_no_changes -> { provider.contexts.size } do
-      post continue_planning_project_planner_session_path(project, planner_session), params: {
-        expected_revision: planner_session.generation_revision
-      }
-    end
-    assert_response :see_other
-    assert_equal "How long should the meal train run?", planner_session.reload.current_card.fetch("question")
+    session = PlannerSession.order(:id).last!
+    assert_equal 4, session.flow_version
+    assert_empty session.project.slots
+    follow_redirect!
+    assert_select "input[name='meal_setup[label]'][value='Dinner']"
+    assert_select "input[name='meal_setup[start_date]'][required]"
+    assert_no_match(/Finish with This|Save and Leave|The planner sees|Answer in your own words|Project Details/, response.body)
+    assert_empty @provider.contexts
   end
 
-  test "replacing a selection keeps one answer and a stale generation cannot overwrite it" do
-    provider = use_provider(
-      response(card: card("Which meals?", "Dinner", "Lunch")),
-      response(card: card("How long?"), added: [ slot_run(label: "Dinner") ]),
-      response(card: card("How long?"), added: [ slot_run(label: "Lunch") ])
-    )
-    sign_in_as_leader
-    project, planner_session = start_and_generate
-
-    old_revision = select_and_generate(project, planner_session, "Dinner")
-    post select_answer_project_planner_session_path(project, planner_session), params: {
-      answer: "Lunch",
-      expected_revision: old_revision
-    }
-    new_revision = planner_session.reload.generation_revision
-
-    assert_not_equal old_revision, new_revision
-    assert_equal [ "Lunch" ], planner_session.steps.pluck("answer")
-    assert_not planner_session.generate!(revision: old_revision)
-    assert_equal 2, provider.contexts.size
-
-    perform_enqueued_jobs(only: PlannerStepJob)
-    planner_session.reload
-    assert_equal [ "Lunch" ], planner_session.steps.pluck("answer")
-    assert_equal [ "Lunch" ], planner_session.visible_pending_items.map { |item| item.dig("fields", "label") }.uniq
-    assert_equal 3, provider.contexts.size
-
-    post continue_planning_project_planner_session_path(project, planner_session), params: {
-      expected_revision: old_revision
-    }
-    assert_response :see_other
-    assert_equal "This plan changed in another request. Your latest plan is shown; please try that change again.", flash[:alert]
-  end
-
-  test "Continue advances the revision so an old tab cannot select from the previous step" do
-    use_provider(
-      response(card: card("Which meals?", "Dinner", "Lunch")),
-      response(card: card("How long?", "Three days", "One week"), added: [ slot_run(label: "Dinner") ])
-    )
-    sign_in_as_leader
-    project, planner_session = start_and_generate
-    old_revision = select_and_generate(project, planner_session, "Dinner")
-
-    post continue_planning_project_planner_session_path(project, planner_session), params: {
-      expected_revision: old_revision
-    }
-    planner_session.reload
-    assert_operator planner_session.generation_revision, :>, old_revision
-    assert_equal "How long?", planner_session.current_card.fetch("question")
-
-    assert_no_enqueued_jobs only: PlannerStepJob do
-      post select_answer_project_planner_session_path(project, planner_session), params: {
-        answer: "Lunch", expected_revision: old_revision
-      }
+  test "partial details save as a resumable draft and never create work" do
+    project, session = start_setup
+    assert_no_difference "Slot.count" do
+      save_setup(project, session, name: "Meals for November", start_date: "")
     end
-    assert_response :see_other
-    assert_equal "This plan changed in another request. Your latest plan is shown; please try that change again.", flash[:alert]
-    assert_equal [ "Dinner" ], planner_session.reload.steps.pluck("answer")
-  end
-
-  test "retrying stalled generation invalidates the abandoned job revision" do
-    provider = use_provider(
-      response(card: card("Which meals?", "Dinner", "Lunch")),
-      response(card: nil, finished: true, added: [ slot_run(label: "Dinner") ])
-    )
-    sign_in_as_leader
-    project, planner_session = start_and_generate
-
-    post select_answer_project_planner_session_path(project, planner_session), params: {
-      answer: "Dinner", expected_revision: planner_session.generation_revision
-    }
-    abandoned_revision = planner_session.reload.generation_revision
-    planner_session.update_column(:updated_at, 2.minutes.ago)
-    assert_predicate planner_session.reload, :generation_stalled?
-    clear_enqueued_jobs
-
-    assert_enqueued_with(job: PlannerStepJob) do
-      post retry_generation_project_planner_session_path(project, planner_session), params: {
-        expected_revision: abandoned_revision
-      }
-    end
-    retry_revision = planner_session.reload.generation_revision
-    assert_operator retry_revision, :>, abandoned_revision
-    assert_equal "queued", planner_session.generation_state
-    assert_not planner_session.generate!(revision: abandoned_revision)
-    assert_equal 1, provider.contexts.size
-
-    perform_enqueued_jobs(only: PlannerStepJob)
-    assert_equal "ready", planner_session.reload.generation_state
-    assert_equal 2, provider.contexts.size
-  end
-
-  test "occurrences can be edited removed restored saved resumed and accepted only once" do
-    use_provider(
-      response(card: card("Which meals?", "Dinner", "Lunch")),
-      response(card: nil, finished: true, added: [ slot_run(label: "Bring dinner") ])
-    )
-    sign_in_as_leader
-    project, planner_session = start_and_generate
-    select_and_generate(project, planner_session, "Dinner")
-    first, second, third = planner_session.reload.pending_items
-
-    patch pending_item_project_planner_session_path(project, planner_session), params: {
-      expected_revision: planner_session.generation_revision,
-      item: {
-        id: first.fetch("id"), decision: "edit",
-        fields: { label: "Bring soup", date: "2027-02-15", time: "18:30", capacity: 2 }
-      }
-    }
-    assert_response :see_other
-    assert_equal "Bring soup", planner_session.reload.pending_items.first.dig("fields", "label")
-
-    patch pending_item_project_planner_session_path(project, planner_session), params: {
-      expected_revision: planner_session.generation_revision,
-      item: { id: second.fetch("id"), decision: "remove" }
-    }
-    assert_equal 2, planner_session.reload.visible_pending_items.size
-
-    patch pending_item_project_planner_session_path(project, planner_session), params: {
-      expected_revision: planner_session.generation_revision,
-      item: { id: second.fetch("id"), decision: "restore" }
-    }
-    assert_equal 3, planner_session.reload.visible_pending_items.size
-    assert_equal third.fetch("id"), planner_session.pending_items.third.fetch("id")
-
-    post save_and_leave_project_planner_session_path(project, planner_session)
-    assert_response :see_other
-    assert_redirected_to project_path(project)
-    get project_planner_session_path(project, planner_session)
     assert_response :success
-    assert_select "input[value='Bring soup']"
+    assert_equal false, response.parsed_body.fetch("addable")
+    assert_equal "Meals for November", project.reload.name
+    assert_equal "", session.reload.meal_setup.fetch("start_date")
+    assert_empty session.pending_items
+    get project_path(project)
+    assert_select "a[href=?]", project_planner_session_path(project, session), text: "Finish Meal Setup"
+    get project_planner_session_path(project, session)
+    assert_select "input[name='meal_setup[name]'][value='Meals for November']"
+    assert_empty @provider.contexts
+  end
 
-    post finish_planning_project_planner_session_path(project, planner_session), params: {
-      expected_revision: planner_session.generation_revision
-    }
-    assert_predicate planner_session.reload, :reviewing?
+  test "clearing a name saves a quiet draft but still requires a name before adding meals" do
+    project, session = start_setup
+    original_name = project.name
+    save_setup(project, session, name: "", days: "5")
+    assert_response :success
+    assert_equal false, response.parsed_body.fetch("addable")
+    assert_equal "", session.reload.meal_setup.fetch("name")
+    assert_match "5 meal slots", response.parsed_body.fetch("preview")
+    assert_equal original_name, project.reload.name
+    assert_equal 5, session.pending_item_count
 
-    stale_accept_revision = planner_session.generation_revision
-    patch pending_item_project_planner_session_path(project, planner_session), params: {
-      expected_revision: stale_accept_revision,
-      item: {
-        id: first.fetch("id"), decision: "edit",
-        fields: { label: "Bring hearty soup", date: "2027-02-15", time: "18:30", capacity: 2 }
-      }
-    }
-    assert_no_difference "project.slots.count" do
-      post accept_project_planner_session_path(project, planner_session), params: {
-        expected_revision: stale_accept_revision
+    assert_no_difference "Slot.count" do
+      post accept_project_planner_session_path(project, session), params: {
+        meal_setup: details.merge(name: ""), expected_revision: session.generation_revision
       }
     end
-    assert_response :see_other
-    assert_equal "This plan changed in another request. Your latest plan is shown; please try that change again.", flash[:alert]
+    assert_response :unprocessable_content
+    assert_not_predicate session.reload, :accepted?
 
+    save_setup(project, session, name: "A new name", days: "5")
+    assert_response :success
+    assert_equal "A new name", project.reload.name
+    assert_equal true, response.parsed_body.fetch("addable")
+    assert_equal 5, session.reload.pending_item_count
+  end
+
+  test "structured fields produce dated alternate-day slots without AI" do
+    project, session = start_setup
+    save_setup(project, session, days: "7", every: "2", capacity: "2", time: "18:30")
+    assert_response :success
+    assert_equal true, response.parsed_body.fetch("addable")
+    assert_equal 4, response.parsed_body.fetch("count")
+    assert_match "6:30 PM", response.parsed_body.fetch("preview")
+    assert_equal %w[2027-02-15 2027-02-17 2027-02-19 2027-02-21], session.reload.visible_pending_items.map { |item| item.dig("fields", "date") }
+    assert_equal [ 2 ], session.visible_pending_items.map { |item| item.dig("fields", "capacity") }.uniq
+    assert_empty project.slots
+    assert_nil project.starts_on
+    assert_empty @provider.contexts
+  end
+
+  test "final Add accepts posted details once and arrives at the Sign-up sheet" do
+    project, session = start_setup
+    save_setup(project, session, name: "February meals")
+    values = { meal_setup: details.merge(name: "February meals"), expected_revision: session.generation_revision }
     assert_difference "project.slots.count", 3 do
-      post accept_project_planner_session_path(project, planner_session), params: {
-        expected_revision: planner_session.reload.generation_revision
-      }
+      post accept_project_planner_session_path(project, session), params: values
     end
-    assert_response :see_other
-    assert_redirected_to project_path(
-      project,
-      added_plan: planner_session.id,
-      anchor: "tool-signup-sheet"
-    )
-    assert_equal "Bring hearty soup", project.slots.find_by!(date: "2027-02-15").label
-    assert_equal "18:30", project.slots.find_by!(date: "2027-02-15").starts_at_time.strftime("%H:%M")
-
-    assert_no_difference "project.slots.count" do
-      post accept_project_planner_session_path(project, planner_session), params: {
-        expected_revision: planner_session.generation_revision
-      }
+    assert_redirected_to project_path(project, added_plan: session.id, anchor: "tool-signup-sheet")
+    assert_equal [ "Dinner" ], project.slots.pluck(:label).uniq
+    assert_equal Date.new(2027, 2, 15), project.reload.starts_on
+    assert_equal Date.new(2027, 2, 17), project.ends_on
+    assert_equal "February meals", project.name
+    assert_includes project.enabled_tools, "signup_sheet"
+    assert_predicate session.reload, :accepted?
+    assert_no_difference "Slot.count" do
+      post accept_project_planner_session_path(project, session), params: values
     end
-    assert_response :see_other
+    follow_redirect!
+    assert_select "[role='status']", text: "3 meals added to your Sign-up sheet."
+    assert_empty @provider.contexts
   end
 
-  test "Undo restores the most recently removed occurrence rather than array order" do
-    use_provider(
-      response(card: card("Which meals?", "Dinner", "Lunch")),
-      response(card: nil, finished: true, added: [ slot_run(label: "Bring dinner") ])
-    )
-    sign_in_as_leader
-    project, planner_session = start_and_generate
-    select_and_generate(project, planner_session, "Dinner")
-    first, _second, third = planner_session.reload.pending_items
+  test "invalid final submission creates no slots and keeps typed values visible" do
+    project, session = start_setup
+    assert_no_difference "Slot.count" do
+      post accept_project_planner_session_path(project, session), params: {
+        meal_setup: details.merge(start_date: "", label: "Soup and bread"), expected_revision: session.generation_revision
+      }
+    end
+    assert_response :unprocessable_content
+    assert_select "[role='alert']", text: /Start date can't be blank/
+    assert_select "input[name='meal_setup[label]'][value='Soup and bread']"
+    assert_not_predicate session.reload, :accepted?
+  end
 
-    patch pending_item_project_planner_session_path(project, planner_session), params: {
-      expected_revision: planner_session.generation_revision,
-      item: { id: third.fetch("id"), decision: "remove" }
-    }
-    patch pending_item_project_planner_session_path(project, planner_session), params: {
-      expected_revision: planner_session.reload.generation_revision,
-      item: { id: first.fetch("id"), decision: "remove" }
-    }
+  test "invalid structured values leave the saved draft untouched" do
+    project, session = start_setup
+    original = session.attributes
+    [ { days: "61" }, { days: "1.5" }, { every: "0" }, { capacity: "0" }, { time: "25:00" }, { start_date: "not-a-date" } ].each do |invalid|
+      save_setup(project, session, invalid)
+      assert_response :unprocessable_content
+      assert response.parsed_body.fetch("error").present?
+      assert_equal original, session.reload.attributes
+    end
+    assert_empty @provider.contexts
+  end
 
-    get project_planner_session_path(project, planner_session)
+  test "stale saves and final submissions cannot replace newer work" do
+    project, session = start_setup
+    revision = session.generation_revision
+    save_setup(project, session, label: "Lunch")
+    patch meal_setup_project_planner_session_path(project, session), params: {
+      meal_setup: details, expected_revision: revision
+    }, as: :json
+    assert_response :conflict
+    assert_match(/another tab/, response.parsed_body.fetch("error"))
+    assert_equal "Lunch", session.reload.meal_setup.fetch("label")
+    assert_no_difference "Slot.count" do
+      post accept_project_planner_session_path(project, session), params: { meal_setup: details, expected_revision: revision }
+    end
+    assert_response :see_other
+    assert_equal "Lunch", session.reload.meal_setup.fetch("label")
+  end
+
+  test "edits and removals survive bulk changes and conflicts block acceptance" do
+    project, session = start_setup
+    save_setup(project, session)
+    first, second = session.reload.visible_pending_items
+    session.edit_pending_item!(id: first.fetch("id"), fields: { label: "Soup" }, expected_revision: session.generation_revision)
+    session.remove_pending_item!(id: second.fetch("id"), expected_revision: session.generation_revision)
+    save_setup(project, session, label: "Lunch")
+    assert_equal false, response.parsed_body.fetch("addable")
+    assert_equal "Soup", session.reload.visible_pending_items.first.dig("fields", "label")
+    assert session.pending_items.second.fetch("removed")
+    session.resolve_pending_conflict!(id: first.fetch("id"), choice: "keep_edit", expected_revision: session.generation_revision)
+    assert_difference "project.slots.count", 2 do
+      post accept_project_planner_session_path(project, session), params: {
+        meal_setup: details.merge(label: "Lunch"), expected_revision: session.generation_revision
+      }
+    end
+    assert_equal %w[Soup Lunch], project.slots.order(:date).pluck(:label)
+  end
+
+  test "keeping an edited occurrence outside a shortened range remains accepted" do
+    project, session = start_setup
+    save_setup(project, session)
+    last = session.reload.visible_pending_items.last
+    session.edit_pending_item!(id: last.fetch("id"), fields: { label: "Soup" }, expected_revision: session.generation_revision)
+    save_setup(project, session, days: "1")
+    assert_equal "removed_by_revision", session.reload.pending_items.last.dig("conflict", "type")
+    session.resolve_pending_conflict!(id: last.fetch("id"), choice: "keep_edit", expected_revision: session.generation_revision)
+    assert_difference "project.slots.count", 2 do
+      post accept_project_planner_session_path(project, session), params: {
+        meal_setup: details.merge(days: "1"), expected_revision: session.generation_revision
+      }
+    end
+    assert_predicate session.reload, :accepted?
+  end
+
+  test "saving a row only records changed fields as overrides" do
+    project, session = start_setup
+    save_setup(project, session)
+    first = session.pending_items.first
+    session.edit_pending_item!(id: first.fetch("id"), fields: first.fetch("fields").merge("label" => "Soup"), expected_revision: session.generation_revision)
+    assert_equal({ "label" => "Soup" }, session.reload.pending_items.first.fetch("user_edits"))
+    save_setup(project, session, capacity: "2")
+    assert_equal true, response.parsed_body.fetch("addable")
+    assert_equal "Soup", session.reload.pending_items.first.dig("fields", "label")
+    assert_equal 2, session.pending_items.first.dig("fields", "capacity")
+  end
+
+  test "opening an old meal draft preserves edits and invalidates queued generation" do
+    project = projects(:community_meal)
+    item = Planner::PendingItems.candidate(source_key: "old-meals:0", fields: {
+      "label" => "Dinner", "date" => "2027-02-15", "time" => "17:30", "capacity" => 1
+    }, metadata: { "day_offset" => 0 }).to_h
+    item["fields"] = item.fetch("fields").merge("label" => "Soup")
+    item["user_edits"] = { "label" => "Soup" }
+    session = project.planner_sessions.create!(started_by: people(:leader), description: "Meal train", flow_version: 2,
+      generation_state: "queued", generation_revision: 2, pending_items: [ item ])
+    get project_planner_session_path(project, session)
     assert_response :success
-    assert_select "form[action='#{pending_item_project_planner_session_path(project, planner_session)}']" do
-      assert_select "input[name='item[id]'][value='#{first.fetch("id")}']"
-      assert_select "button", text: "Undo"
-    end
-
-    patch pending_item_project_planner_session_path(project, planner_session), params: {
-      expected_revision: planner_session.reload.generation_revision,
-      item: { id: first.fetch("id"), decision: "restore" }
-    }
-    items = planner_session.reload.pending_items.index_by { |item| item.fetch("id") }
-    assert_equal false, items.fetch(first.fetch("id")).fetch("removed")
-    assert_equal true, items.fetch(third.fetch("id")).fetch("removed")
+    assert_equal 4, session.reload.flow_version
+    assert_equal [ item ], session.pending_items
+    assert_equal "Dinner", session.meal_setup.fetch("label")
+    assert_equal "idle", session.generation_state
+    assert_not session.generate!(revision: 2)
+    assert_select "input[name='meal_setup[label]'][value='Dinner']"
+    assert_select ".meal-slot", text: /Soup/
+    assert_empty @provider.contexts
   end
 
-  test "acceptance requires dated visible work and only a Leader may plan" do
-    use_provider(response(card: nil, finished: true, added: [ undated_slot_run ]))
-    sign_in_as_leader
-    project, planner_session = start_and_generate
-    planner_session.finish_preview!(expected_revision: planner_session.generation_revision)
-
-    assert_no_difference "project.slots.count" do
-      post accept_project_planner_session_path(project, planner_session), params: {
-        expected_revision: planner_session.generation_revision
-      }
+  test "structured setup rejects generated-answer endpoints" do
+    project, session = start_setup
+    %i[select_answer continue_planning finish_planning retry_generation].each do |action|
+      assert_no_enqueued_jobs only: PlannerStepJob do
+        post public_send("#{action}_project_planner_session_path", project, session), params: { answer: "Lunch", expected_revision: session.generation_revision }
+      end
+      assert_response :not_found
     end
-    assert_response :see_other
-    assert_match(/Date can't be blank/, flash[:alert])
-    assert_predicate planner_session.reload, :reviewing?
+    assert_empty @provider.contexts
+  end
 
+  test "volunteers cannot modify or accept setup" do
+    project, session = start_setup
     sign_in_as_volunteer
-    post select_answer_project_planner_session_path(project, planner_session), params: {
-      answer: "Dinner", expected_revision: planner_session.generation_revision
-    }
+    save_setup(project, session)
+    assert_response :not_found
+    assert_no_difference "Slot.count" do
+      post accept_project_planner_session_path(project, session), params: { meal_setup: details, expected_revision: session.generation_revision }
+    end
     assert_response :not_found
   end
 
-  test "a typed answer is the selected answer in the question and prepares the next step like a tile pick" do
-    use_provider(
-      response(card: card("Which meals?", "Dinner", "Lunch")),
-      response(card: card("How long?"), added: [ slot_run(label: "Breakfast burritos") ])
-    )
-    sign_in_as_leader
-    project, planner_session = start_and_generate
-
-    select_and_generate(project, planner_session, "Breakfast burritos on Saturdays")
-    planner_session.reload
-    assert_equal "Breakfast burritos on Saturdays", planner_session.pending_answer.fetch("text")
-    assert_predicate planner_session, :ready_to_continue?
-
-    get project_planner_session_path(project, planner_session)
-    assert_select "p", text: "Your answer: Breakfast burritos on Saturdays"
-    assert_select "details[open] textarea, details[open] input[name='answer'][value=?]", "Breakfast burritos on Saturdays"
-    assert_select "button[aria-pressed=true]", count: 0
-    assert_select "p", text: "Question 1 of 3"
-
-    post continue_planning_project_planner_session_path(project, planner_session), params: {
-      expected_revision: planner_session.generation_revision
-    }
-    planner_session.reload
-    assert_equal "How long?", planner_session.current_card.fetch("question")
-    assert_nil planner_session.pending_answer
-  end
-
-  test "a blank typed answer is a visible alert, not a silent failure" do
-    use_provider(response(card: card("Which meals?", "Dinner", "Lunch")))
-    sign_in_as_leader
-    project, planner_session = start_and_generate
-
-    assert_no_enqueued_jobs only: PlannerStepJob do
-      post select_answer_project_planner_session_path(project, planner_session), params: {
-        answer: "   ", expected_revision: planner_session.generation_revision
+  test "no-JavaScript preview saves details without creating slots" do
+    project, session = start_setup
+    assert_no_difference "Slot.count" do
+      post accept_project_planner_session_path(project, session), params: {
+        meal_setup: details, expected_revision: session.generation_revision, preview: "true"
       }
     end
-    assert_redirected_to project_planner_session_path(project, planner_session)
-    assert_equal "Answer can't be blank", flash[:alert]
-    assert_nil planner_session.reload.pending_answer
+    follow_redirect!
+    assert_select ".meal-slot", count: 3
+    assert_select "input[type='submit'][value='Add 3 Meal Slots']:not([disabled])"
   end
 
-  test "the meal review asks for the first meal date inline and Add to Project is described by its hint" do
-    use_provider(response(card: nil, finished: true, added: [ undated_slot_run ]))
-    sign_in_as_leader
-    project, planner_session = start_and_generate
-    planner_session.finish_preview!(expected_revision: planner_session.generation_revision)
-
-    get project_planner_session_path(project, planner_session)
-    hint_id = ActionView::RecordIdentifier.dom_id(planner_session, :add_note)
-    assert_select "section.meal-builder-guide form[action=?] input[name='project[starts_on]'][required]",
-      planning_details_project_planner_session_path(project, planner_session)
-    assert_select "button[disabled][aria-describedby=?]", hint_id, text: "Add to Project"
-    assert_select "p##{hint_id}", text: "Set the first meal date above to add these slots."
-
-    patch planning_details_project_planner_session_path(project, planner_session), params: {
-      project: { starts_on: "2027-02-14" }, expected_revision: planner_session.generation_revision
-    }
-    assert_redirected_to project_planner_session_path(project, planner_session)
-    get project_planner_session_path(project, planner_session)
-    assert_select "section.meal-builder-guide form[action=?]", accept_project_planner_session_path(project, planner_session), count: 1
-    assert_select "section.meal-builder-guide button[disabled]", count: 0
-  end
-
-  test "legacy Planner sessions keep their original HTTP completion path" do
-    use_provider(response(card: nil, finished: true, added: [ task_suggestion ]))
-    sign_in_as_leader
-    project = projects(:community_meal)
-
-    post project_planner_sessions_path(project), params: {
-      planner_session: { description: "Prepare the room before dinner." }
-    }
-    planner_session = project.planner_sessions.order(:id).last!
-
-    assert_equal 1, planner_session.flow_version
-    assert_predicate planner_session, :reviewing?
-    assert_redirected_to review_project_planner_session_path(project, planner_session)
-
-    assert_difference "project.tasks.count", 1 do
-      post accept_project_planner_session_path(project, planner_session), params: { mode: "all" }
+  test "changing fields without autosave requires reviewing the new count before Add" do
+    project, session = start_setup
+    save_setup(project, session)
+    values = { meal_setup: details.merge(days: "5"), expected_revision: session.generation_revision }
+    assert_no_difference "Slot.count" do
+      post accept_project_planner_session_path(project, session), params: values
     end
-    assert_redirected_to project_path(project)
-    assert project.tasks.exists?(title: "Set the table")
-  end
-
-
-  test "a provider outage keeps the answers and offers a calm way to keep going by hand" do
-    use_provider(
-      response(card: card("Which meals should people bring?", "Dinner", "Lunch")),
-      RuntimeError.new("OpenRouter is unavailable")
-    )
-    sign_in_as_leader
-    post start_meal_planner_projects_path
-    planner_session = PlannerSession.order(:id).last!
-    project = planner_session.project
-    perform_enqueued_jobs(only: PlannerStepJob)
-
-    post select_answer_project_planner_session_path(project, planner_session),
-      params: { answer: "Dinner", expected_revision: planner_session.reload.generation_revision }
-    perform_enqueued_jobs(only: PlannerStepJob)
-
-    planner_session.reload
-    assert_equal "failed", planner_session.generation_state
-    assert_equal [ "Dinner" ], planner_session.steps.map { |step| step["answer"] }
-
-    get project_planner_session_path(project, planner_session)
-    assert_select "[role='alert'] p", text: PlannerSession::ERROR_MESSAGE
-    assert_select "button[aria-pressed='true']", text: "Dinner"
-    assert_select "button", text: "Retry"
-    assert_select "button", text: "Keep Going by Hand"
-    assert_no_match(/Preparing Suggestions/, @response.body)
-
-    post save_and_leave_project_planner_session_path(project, planner_session)
-    assert_redirected_to project_path(project)
-    assert_equal "asking", planner_session.reload.status
-  end
-
-  test "Build it myself starts a Project by hand from the Planner's start" do
-    sign_in_as_leader
-    get new_project_path
-    assert_select "a[href=?]", new_project_path(manual: true), text: "Build It Myself"
-
-    assert_difference "Project.count", 1 do
-      post projects_path, params: { project: { name: "Retreat by hand", description: "Built without the Planner.", starts_on: "2027-03-12", ends_on: "2027-03-13" } }
+    follow_redirect!
+    assert_select "input[type='submit'][value='Add 5 Meal Slots']:not([disabled])"
+    assert_difference "project.slots.count", 5 do
+      post accept_project_planner_session_path(project, session), params: values.merge(expected_revision: session.reload.generation_revision)
     end
-    assert_equal "Retreat by hand", Project.order(:id).last!.name
   end
 
   private
-    def start_and_generate
-      perform_enqueued_jobs(only: PlannerStepJob) { post start_meal_planner_projects_path }
-      planner_session = PlannerSession.order(:id).last!
-      [ planner_session.project, planner_session.reload ]
+    def start_setup
+      post start_meal_planner_projects_path
+      session = PlannerSession.order(:id).last!
+      [ session.project, session ]
     end
 
-    def select_and_generate(project, planner_session, answer)
-      perform_enqueued_jobs(only: PlannerStepJob) do
-        post select_answer_project_planner_session_path(project, planner_session), params: {
-          answer:, expected_revision: planner_session.reload.generation_revision
-        }
-      end
-      planner_session.reload.generation_revision
+    def details
+      { name: "Meal train", label: "Dinner", start_date: "2027-02-15", days: "3", every: "1", time: "17:30", capacity: "1" }
     end
 
-    def use_provider(*responses)
-      Planner::Providers::Fake.new(responses).tap do |provider|
-        Rails.configuration.x.planner_provider = provider
-      end
-    end
-
-    def response(card:, finished: false, added: [])
-      Planner::Response.new(card:, finished:, added:, removed_ids: [])
-    end
-
-    def card(question, *options)
-      choices = options.presence || [ "One", "Two", "Three" ]
-      choices << "Something else" while choices.size < 3
-      { "question" => question, "options" => choices }
-    end
-
-    def slot_run(label:, start_date: "2027-02-15")
-      {
-        "kind" => "slot_run",
-        "source_key" => "meal-slots",
-        "fields" => {
-          "label" => label,
-          "start_date" => start_date,
-          "end_date" => (Date.iso8601(start_date) + 2).iso8601,
-          "time" => "17:30",
-          "capacity" => 1
-        }
-      }
-    end
-
-    def undated_slot_run
-      {
-        "kind" => "slot_run",
-        "source_key" => "meal-slots",
-        "fields" => {
-          "label" => "Bring dinner",
-          "start_day_offset" => 0,
-          "end_day_offset" => 1,
-          "time" => "17:30",
-          "capacity" => 1
-        }
-      }
-    end
-
-    def task_suggestion
-      {
-        "kind" => "task",
-        "fields" => { "title" => "Set the table", "details" => "Put out plates." }
-      }
+    def save_setup(project, session, overrides = {})
+      patch meal_setup_project_planner_session_path(project, session), params: {
+        meal_setup: details.merge(overrides), expected_revision: session.reload.generation_revision
+      }, as: :json
+      session.reload
     end
 end

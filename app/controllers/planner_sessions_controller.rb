@@ -22,6 +22,11 @@ class PlannerSessionsController < ApplicationController
   end
 
   def show
+    @planner_session.upgrade_meal_setup! if @planner_session.flow_version == 2
+    if @planner_session.meal_setup?
+      return redirect_to planner_destination if @planner_session.accepted? || @planner_session.abandoned?
+      return render :meal_setup_show
+    end
     if @planner_session.build_as_you_go?
       return render :meal_show unless @planner_session.accepted? || @planner_session.abandoned?
       return redirect_to planner_destination
@@ -94,6 +99,7 @@ class PlannerSessionsController < ApplicationController
   end
 
   def accept
+    return accept_meal_setup if @planner_session.meal_setup?
     if @planner_session.build_as_you_go?
       @planner_session.accept_visible!(expected_revision: expected_revision)
       return redirect_to project_path(@project, added_plan: @planner_session.id, anchor: "tool-#{@planner_session.acceptance_tool.tr('_', '-')}"), status: :see_other
@@ -109,6 +115,7 @@ class PlannerSessionsController < ApplicationController
 
   def select_answer
     require_build_as_you_go
+    raise ActiveRecord::RecordNotFound if @planner_session.meal_setup?
     # A blank answer is a validation alert from select_answer!, not a 400 the frame cannot show.
     revision = @planner_session.select_answer!(params.fetch(:answer, "").to_s, expected_revision: expected_revision,
       step_index: params[:step_index].presence&.to_i)
@@ -120,6 +127,7 @@ class PlannerSessionsController < ApplicationController
 
   def continue_planning
     require_build_as_you_go
+    raise ActiveRecord::RecordNotFound if @planner_session.meal_setup?
     @planner_session.continue!(expected_revision: expected_revision)
     planning_redirect
   rescue ArgumentError => error
@@ -128,6 +136,7 @@ class PlannerSessionsController < ApplicationController
 
   def finish_planning
     require_build_as_you_go
+    raise ActiveRecord::RecordNotFound if @planner_session.meal_setup?
     @planner_session.finish_preview!(expected_revision: expected_revision)
     planning_redirect
   rescue ArgumentError => error
@@ -136,6 +145,7 @@ class PlannerSessionsController < ApplicationController
 
   def retry_generation
     require_build_as_you_go
+    raise ActiveRecord::RecordNotFound if @planner_session.meal_setup?
     enqueue_generation(@planner_session.queue_generation!(expected_revision: expected_revision))
     planning_redirect
   rescue ArgumentError => error
@@ -165,6 +175,7 @@ class PlannerSessionsController < ApplicationController
 
   def planning_details
     require_build_as_you_go
+    raise ActiveRecord::RecordNotFound if @planner_session.meal_setup?
     details = params.expect(project: [ :name, :starts_on ]).to_h.symbolize_keys
     @planner_session.update_planning_details!(**details, expected_revision: expected_revision)
     planning_redirect
@@ -172,7 +183,45 @@ class PlannerSessionsController < ApplicationController
     planning_error(error)
   end
 
+  def meal_setup
+    raise ActiveRecord::RecordNotFound unless @planner_session.meal_setup?
+
+    @planner_session.save_meal_setup!(meal_setup_params, expected_revision: expected_revision)
+    plan = MealTrainPlan.from_session(@planner_session)
+    render json: {
+      revision: @planner_session.generation_revision,
+      count: @planner_session.pending_item_count,
+      addable: plan.complete? && @planner_session.pending_item_errors.empty? &&
+        @planner_session.visible_pending_items.any? && @planner_session.visible_pending_items.none? { |item| item["conflict"].present? },
+      preview: render_to_string(partial: "planner_sessions/meal_setup_preview", formats: [ :html ],
+        locals: { project: @project, planner_session: @planner_session, plan: })
+    }
+  rescue ArgumentError, ActiveRecord::RecordInvalid => error
+    render json: { error: error.message }, status: :unprocessable_content
+  end
+
   private
+    def meal_setup_params
+      params.expect(meal_setup: %i[name label start_date days every time capacity]).to_h
+    end
+
+    def accept_meal_setup
+      preview = params[:preview].present?
+      submitted = MealTrainPlan.new(meal_setup_params)
+      # Without autosave, changed fields need a fresh preview so the Add count stays truthful.
+      preview ||= !@planner_session.accepted? && submitted.complete? && submitted.attributes != @planner_session.meal_setup
+      @planner_session.save_meal_setup!(meal_setup_params, expected_revision: expected_revision, accept: !preview)
+      return planning_redirect if preview
+
+      redirect_to project_path(@project, added_plan: @planner_session.id, anchor: "tool-signup-sheet"), status: :see_other
+    rescue ArgumentError, ActiveRecord::RecordInvalid => error
+      @planner_session.reload
+      @project.reload
+      @meal_setup = MealTrainPlan.new(meal_setup_params)
+      flash.now[:alert] = error.message
+      render :meal_setup_show, status: :unprocessable_content
+    end
+
     def require_build_as_you_go
       raise ActiveRecord::RecordNotFound unless @planner_session.build_as_you_go?
     end
@@ -194,6 +243,9 @@ class PlannerSessionsController < ApplicationController
     end
 
     def stale_planning_action
+      if request.format.json?
+        return render json: { error: "This setup changed in another tab. Reload the saved setup before editing." }, status: :conflict
+      end
       planning_error(ArgumentError.new("This plan changed in another request. Your latest plan is shown; please try that change again."))
     end
 

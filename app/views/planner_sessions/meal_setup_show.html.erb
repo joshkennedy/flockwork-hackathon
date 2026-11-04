@@ -1,0 +1,2 @@
+<% content_for :title, "Set up #{@project.name}" %>
+<%= render "meal_setup", project: @project, planner_session: @planner_session, plan: @meal_setup || MealTrainPlan.from_session(@planner_session) %>

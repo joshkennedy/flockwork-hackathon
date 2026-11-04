@@ -13,6 +13,7 @@ class PlannerStepJob < ApplicationJob
       project = Current.organization.projects.find(project_id)
       planner_session = project.planner_sessions.find(planner_session_id)
       if planner_session.build_as_you_go?
+        return if planner_session.meal_setup?
         return unless revision
         return unless Policy.can?(Current.person, :plan, project)
         stream = Planner::PreviewStream.new(planner_session)

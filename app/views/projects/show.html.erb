@@ -38,7 +38,7 @@
     <nav class="flex shrink-0 flex-wrap items-center gap-2" aria-label="Project actions">
       <% if can_plan %>
         <% if @resumable_planner_session.present? %>
-          <%= link_to "Continue Planning", project_planner_session_path(@project, @resumable_planner_session), class: "btn btn-primary" %>
+          <%= link_to @resumable_planner_session.meal_setup? ? "Finish Meal Setup" : "Continue Planning", project_planner_session_path(@project, @resumable_planner_session), class: "btn btn-primary" %>
         <% else %>
           <%= link_to "Plan More", new_project_planner_session_path(@project), class: "btn #{guidance_primary || can_join ? 'btn-secondary' : 'btn-primary'}" %>
         <% end %>

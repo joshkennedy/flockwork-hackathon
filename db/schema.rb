@@ -281,6 +281,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_220000) do
     t.jsonb "pending_items", default: [], null: false
     t.datetime "accepted_at"
     t.string "planning_kind", default: "meal_train", null: false
+    t.jsonb "meal_setup", default: {}, null: false
     t.index ["project_id"], name: "index_planner_sessions_on_project_id"
     t.index ["started_by_id"], name: "index_planner_sessions_on_started_by_id"
   end

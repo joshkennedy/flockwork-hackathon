@@ -1,0 +1,82 @@
+<%= turbo_frame_tag dom_id(planner_session, :meal_setup), data: {
+  controller: "meal-setup",
+  meal_setup_url_value: meal_setup_project_planner_session_path(project, planner_session),
+  meal_setup_revision_value: planner_session.generation_revision
+} do %>
+  <% alert = flash[:alert] %>
+  <% flash.delete(:alert) %>
+  <% form_id = dom_id(planner_session, :meal_setup_fields) %>
+  <section class="meal-setup" aria-label="Meal train setup">
+    <div class="meal-setup-toolbar">
+      <%= link_to "Back to Project", project_path(project), class: "btn btn-secondary", data: { action: "meal-setup#leave", turbo_frame: "_top" } %>
+      <p class="text-meta text-ink-2" data-meal-setup-target="status" role="status">Details saved</p>
+    </div>
+    <h1 class="sr-only">Meal train setup</h1>
+    <div class="meal-setup-identity">
+      <%= label_tag "#{form_id}_name", "Project name", class: "sr-only" %>
+      <%= text_field_tag "meal_setup[name]", plan.name, id: "#{form_id}_name", form: form_id, required: true, maxlength: 200,
+        placeholder: "Name your meal train", class: "meal-setup-name", data: { action: "input->meal-setup#change change->meal-setup#change keydown.enter->meal-setup#saveName" } %>
+    </div>
+
+    <div class="meal-setup-error mt-5" role="alert" data-meal-setup-target="error" <%= "hidden" if alert.blank? %>>
+      <p data-meal-setup-target="errorText"><%= alert %></p>
+      <button type="button" class="mt-2 btn btn-secondary" data-action="meal-setup#retry">Retry Saving</button>
+      <%= link_to "Reload Saved Setup", project_planner_session_path(project, planner_session), class: "mt-2 btn btn-text", data: { action: "meal-setup#reload", turbo_frame: "_top" } %>
+    </div>
+
+    <div class="meal-setup-layout" data-action="submit->meal-setup#submit">
+      <div class="meal-setup-controls">
+        <%= form_with url: accept_project_planner_session_path(project, planner_session), scope: :meal_setup, id: form_id,
+          data: { meal_setup_target: "form", turbo_frame: "_top", action: "input->meal-setup#change change->meal-setup#change" },
+          class: "meal-setup-form" do |form| %>
+          <%= hidden_field_tag :expected_revision, planner_session.generation_revision %>
+          <fieldset>
+            <legend>Meal</legend>
+            <%= form.label :label, "Meal", class: "sr-only" %>
+            <%= form.text_field :label, value: plan.label, required: true, maxlength: 200, placeholder: "Dinner, lunch, or another meal", class: "block w-full field" %>
+            <div class="meal-setup-fields mt-4">
+              <div>
+                <%= form.label :time, "Delivery time", class: "block text-label font-medium text-ink" %>
+                <%= form.time_field :time, value: plan.time, class: "mt-2 block w-full field", aria: { description: "Optional. Leave blank for no set time." } %>
+              </div>
+              <div>
+                <%= form.label :capacity, class: "block text-label font-medium text-ink" do %>
+                  Volunteers<span class="sr-only"> per meal</span>
+                <% end %>
+                <%= form.number_field :capacity, value: plan.capacity, min: 1, max: 100, required: true, class: "mt-2 block w-full field" %>
+              </div>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Schedule</legend>
+            <div>
+              <%= form.label :start_date, "First meal date", class: "block text-label font-medium text-ink" %>
+              <%= form.date_field :start_date, value: plan.start_date, required: true, class: "mt-2 block w-full field" %>
+            </div>
+            <div class="meal-setup-fields meal-setup-schedule-fields mt-4">
+              <div>
+                <%= form.label :days, "Days", class: "block text-label font-medium text-ink" %>
+                <%= form.number_field :days, value: plan.days, min: 1, max: 60, required: true, class: "mt-2 block w-full field" %>
+              </div>
+              <div>
+                <%= form.label :every, "Frequency", class: "block text-label font-medium text-ink" %>
+                <%= form.select :every, [["Every day", "1"], ["Every 2 days", "2"]], { selected: plan.every }, class: "mt-2 block w-full field" %>
+              </div>
+            </div>
+          </fieldset>
+        <% end %>
+        <% count = planner_session.pending_item_count %>
+        <% addable = plan.complete? && count.positive? && planner_session.pending_item_errors.empty? && planner_session.visible_pending_items.none? { |item| item["conflict"].present? } %>
+        <div class="meal-setup-actions">
+          <p class="mb-3 text-meta text-ink-2" data-meal-setup-target="editingHint" role="status" hidden></p>
+          <%= submit_tag count.positive? ? "Add #{pluralize(count, 'Meal Slot')}" : "Add Meal Slots", form: form_id, disabled: !addable,
+            class: "btn btn-primary meal-setup-add", data: { meal_setup_target: "add", turbo_submits_with: "Adding Meals…" } %>
+          <noscript><%= button_tag "Preview Meal Slots", form: form_id, name: "preview", value: "true", formnovalidate: true, class: "mt-3 btn btn-secondary" %></noscript>
+        </div>
+      </div>
+      <div class="meal-setup-preview" data-meal-setup-target="preview">
+        <%= render "meal_setup_preview", project:, planner_session:, plan: %>
+      </div>
+    </div>
+  </section>
+<% end %>

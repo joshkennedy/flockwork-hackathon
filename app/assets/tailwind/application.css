@@ -372,6 +372,45 @@
   .project-kind-grid { @apply grid max-w-3xl gap-3 sm:grid-cols-2; }
   button.project-kind-tile:active { transform: translateY(1px); box-shadow: var(--shadow-secondary-active); }
   .meal-builder { @apply w-full; width: min(880px, 100%); margin-inline: auto; }
+  .meal-setup { @apply w-full; max-width: 880px; margin-inline: auto; }
+  .meal-setup-toolbar { @apply flex flex-wrap items-center justify-between gap-3; }
+  .meal-setup-identity { @apply mt-4; }
+  .meal-setup-name { @apply w-full min-w-0 rounded-control border border-border bg-panel px-4 py-3 text-ink; font-family: var(--font-display); font-size: 24px; line-height: 36px; transition: border-color var(--duration-hover), background-color var(--duration-hover); }
+  .meal-setup-name:hover { @apply border-border-strong bg-ghost-fill; }
+  .meal-setup-name:focus { @apply border-ink bg-panel; }
+  .meal-setup-layout { @apply mt-7 min-w-0; }
+  .meal-setup-controls { display: contents; }
+  .meal-setup-form { @apply grid min-w-0 content-start gap-7; }
+  .meal-setup-form fieldset { @apply min-w-0 border-0 p-0; }
+  .meal-setup-form legend { @apply mb-3 text-heading text-ink; }
+  .meal-setup-form .field { @apply w-full min-w-0; min-height: 44px; }
+  .meal-setup-fields { @apply grid min-w-0 gap-3; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .meal-setup-fields > div { min-width: 0; }
+  .meal-setup-schedule-fields { grid-template-columns: minmax(72px, .75fr) minmax(0, 1.25fr); }
+  .meal-setup-actions { @apply sticky top-2 z-10 mt-5 bg-panel py-4; }
+  .meal-setup-add { @apply w-full; min-height: 44px; }
+  .meal-setup-preview { @apply mt-7 min-w-0 self-start rounded-panel bg-page p-5; }
+  .meal-setup-error { @apply rounded-control bg-danger-soft p-4 text-danger; }
+  .meal-setup-rows > .meal-slot { @apply border-0 px-0; }
+  .meal-setup-rows { @apply grid gap-1; }
+  .meal-setup-rows .meal-slot-edit-panel { @apply bg-panel; }
+  .meal-setup .meal-setup-slot-summary { display: grid; grid-template-columns: 72px minmax(0, 1fr) 32px; align-items: center; }
+  .meal-setup-slot-date { @apply text-body text-ink; }
+  .meal-setup-slot-date time { @apply block font-semibold; }
+  .meal-setup-slot-date span { @apply block text-label text-ink-2; }
+  .meal-setup .meal-slot-editor { @apply relative ms-0; grid-column: 3; }
+  .meal-setup .meal-slot-editor > summary { min-height: 44px; }
+  .meal-setup .meal-setup-slot-popover { @apply absolute end-0 z-30 m-0 overflow-y-auto rounded-panel border border-border bg-panel p-4 shadow-float; top: calc(100% + 4px); width: min(320px, calc(100vw - 32px)); }
+  .meal-setup-slot-popover .field { @apply w-full min-w-0; }
+  .meal-setup-slot-popover .meal-slot-actions { @apply mt-2 flex items-center justify-between gap-3; }
+  .meal-setup-slot-popover .meal-slot-actions .btn { min-height: 44px; }
+  @media (width >= 1024px) {
+    .meal-setup-name { font-size: 30px; line-height: 40px; }
+    .meal-setup-layout { @apply grid items-start gap-10; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .meal-setup-controls { display: block; position: sticky; top: 24px; }
+    .meal-setup-actions { position: static; }
+    .meal-setup-preview { margin-top: 0; }
+  }
   .meal-builder-header { @apply flex items-start justify-between gap-5 border-b border-hairline pb-6; }
   .meal-builder-rename { @apply relative shrink-0; }
   .meal-builder-rename > summary, .meal-slot-editor > summary { list-style: none; }

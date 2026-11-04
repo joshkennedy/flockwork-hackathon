@@ -11,16 +11,58 @@ class PlannerSession < ApplicationRecord
   validates :description, presence: true
   PLANNING_KINDS = %w[meal_train retreat workday children_program other].freeze
 
-  validates :flow_version, inclusion: { in: [ 1, 2, 3 ] }
+  validates :flow_version, inclusion: { in: [ 1, 2, 3, 4 ] }
   validates :planning_kind, inclusion: { in: PLANNING_KINDS }
   validates :generation_state, inclusion: { in: GENERATION_STATES }
 
   def meal_planner?
-    flow_version == 2
+    flow_version.in?([ 2, 4 ])
+  end
+
+  def meal_setup?
+    flow_version == 4
   end
 
   def build_as_you_go?
-    flow_version.in?([ 2, 3 ])
+    flow_version.in?([ 2, 3, 4 ])
+  end
+
+  def upgrade_meal_setup!
+    with_lock do
+      return if flow_version != 2 || accepted? || abandoned?
+
+      update!(flow_version: 4, meal_setup: MealTrainPlan.from_session(self).attributes,
+        generation_revision: generation_revision + 1, generation_state: "idle", status: :reviewing,
+        current_card: nil, prepared_card: nil, pending_answer: nil, last_error: nil)
+    end
+  end
+
+  def save_meal_setup!(attributes, expected_revision:, accept: false)
+    with_lock do
+      raise ArgumentError, "This is not a meal setup" unless meal_setup?
+      return acceptance_receipt if accept && accepted?
+      ensure_mutable_build_as_you_go!
+      raise ArgumentError, "This meal setup is closed" unless asking? || reviewing?
+      raise Planner::StaleRevision unless generation_revision == expected_revision
+
+      plan = MealTrainPlan.new(attributes)
+      raise ArgumentError, plan.errors.full_messages.to_sentence unless plan.valid?(accept ? :complete : :draft)
+
+      if plan.valid?(:schedule) && meal_setup.except("name") != plan.attributes.except("name")
+        series_key = pending_items.first&.fetch("source_key")&.sub(/:\d+\z/, "") || "meal-slots"
+        self.pending_items = Planner::PendingItems.reconcile_candidates(existing: pending_items, incoming: plan.candidates(series_key:))
+      end
+      self.meal_setup = plan.attributes
+      self.generation_revision += 1
+      self.status = :reviewing
+      project.update!(name: plan.name) if plan.name.present?
+      if accept
+        dates = visible_pending_items.map { |item| Date.iso8601(item.dig("fields", "date")) }
+        project.update!(starts_on: dates.min, ends_on: dates.max)
+      end
+      save!
+      accept ? accept_visible!(expected_revision: generation_revision) : generation_revision
+    end
   end
 
   def generation_busy?
@@ -129,6 +171,7 @@ class PlannerSession < ApplicationRecord
 
   def queue_generation!(expected_revision: nil)
     with_lock do
+      raise ArgumentError, "Meal setup does not use generation" if meal_setup?
       ensure_mutable_build_as_you_go!
       ensure_not_busy! unless generation_stalled?
       if expected_revision.present? && generation_revision != Integer(expected_revision)
@@ -144,6 +187,7 @@ class PlannerSession < ApplicationRecord
   end
 
   def generate!(revision:, &on_partial)
+    return false if meal_setup?
     with_lock do
       return false unless generation_revision == revision && generation_state == "queued" && asking?
 
@@ -243,6 +287,10 @@ class PlannerSession < ApplicationRecord
   def edit_pending_item!(id:, fields:, expected_revision:)
     change_pending_item!(id:, expected_revision:) do |item|
       sanitized = Planner::PendingItems.sanitize_fields(item.fetch("kind"), fields)
+      if meal_setup?
+        sanitized["time"] = sanitized["time"].presence if sanitized.key?("time")
+        sanitized = sanitized.reject { |field, value| item.fetch("fields")[field] == value }
+      end
       item.merge(
         "fields" => item.fetch("fields").merge(sanitized),
         "user_edits" => item.fetch("user_edits", {}).merge(sanitized),

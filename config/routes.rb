@@ -78,6 +78,7 @@ Rails.application.routes.draw do
         post :save_and_leave
         patch :pending_item
         patch :planning_details
+        patch :meal_setup
       end
     end
     resources :budget_lines, except: %i[ index show ] do

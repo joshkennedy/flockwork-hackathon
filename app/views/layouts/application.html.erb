@@ -57,7 +57,7 @@
           </div>
           <nav aria-label="Breadcrumbs" class="relative flex h-topbar-h min-w-0 items-center gap-2 border-b border-ink/6 px-4 text-label text-ink-2 md:px-7">
             <%= render "layouts/breadcrumbs" %>
-            <%= link_to "Search", search_path, class: "btn btn-text btn-sm ml-auto", data: { action: "global-search#open" }, aria: { label: "Search Flockwork" } %>
+            <%= link_to "Search", search_path, class: "btn btn-text btn-sm ml-auto shrink-0 whitespace-nowrap", data: { action: "global-search#open" }, aria: { label: "Search Flockwork" } %>
           </nav>
           <main id="main-content" class="relative min-w-0 p-4 pb-10 md:p-7 md:pb-10">
             <%= yield %>

@@ -3,15 +3,30 @@
 <% time = Time.strptime(fields["time"], "%H:%M") rescue nil %>
 <% provisional_day = item["day_offset"].presence || fields["day_offset"].presence || index %>
 <article id="pending-item-<%= item.fetch("id") %>" class="meal-slot <%= "meal-slot-conflict" if item["conflict"].present? %>">
-  <div class="meal-slot-summary">
-    <div class="min-w-0 flex-1">
-      <p class="font-semibold text-ink"><%= fields.fetch("label", "Meal") %></p>
-      <p class="mt-1 text-meta text-ink-2"><%= date ? date.to_fs(:long) : "Day #{provisional_day.to_i + 1} · Needs a date" %> · <%= time ? time.strftime("%-I:%M %p") : "Time open" %> · <%= pluralize(fields.fetch("capacity", 1), "person") %></p>
+  <div class="meal-slot-summary <%= "meal-setup-slot-summary" if planner_session.meal_setup? %>">
+    <% if planner_session.meal_setup? %>
+      <div class="meal-setup-slot-date">
+        <% if date %>
+          <time datetime="<%= date.iso8601 %>"><%= date.strftime("%b %-d") %></time>
+          <span><%= date.strftime("%A") %></span>
+        <% else %>
+          <span>Needs a date</span>
+        <% end %>
+      </div>
+    <% end %>
+    <div class="min-w-0 flex-1 break-words">
+      <p class="<%= planner_session.meal_setup? ? 'text-ink' : 'font-semibold text-ink' %>"><%= fields.fetch("label", "Meal") %></p>
+      <p class="mt-1 text-meta text-ink-2"><% unless planner_session.meal_setup? %><%= date ? date.to_fs(:long) : "Day #{provisional_day.to_i + 1} · Needs a date" %> · <% end %><%= time ? time.strftime("%-I:%M %p") : (planner_session.meal_setup? ? "No set time" : "Time open") %> · <%= pluralize(fields.fetch("capacity", 1), planner_session.meal_setup? ? "volunteer" : "person") %></p>
     </div>
     <% unless planner_session.generation_busy? %>
-    <details class="meal-slot-editor">
-      <%= disclosure_summary "Edit", class: "btn btn-text" %>
-      <div class="meal-slot-edit-panel">
+    <details class="meal-slot-editor <%= 'actions-menu' if planner_session.meal_setup? %>">
+      <% if planner_session.meal_setup? %>
+        <summary class="btn btn-icon" aria-label="Edit meal <%= index + 1 %>"><%= icon(:more) %></summary>
+      <% else %>
+        <%= disclosure_summary "Edit", class: "btn btn-text" %>
+      <% end %>
+      <div class="meal-slot-edit-panel <%= 'meal-setup-slot-popover popover-in' if planner_session.meal_setup? %>">
+        <% if planner_session.meal_setup? %><p class="mb-4 font-semibold text-ink">Edit <%= date ? date.strftime("%A, %b %-d") : "this meal" %></p><% end %>
         <%= form_with url: pending_item_project_planner_session_path(project, planner_session), method: :patch, namespace: "meal_#{item.fetch('id')}", class: "grid gap-4" do |form| %>
           <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
           <%= form.hidden_field :id, name: "item[id]", value: item.fetch("id") %>
@@ -33,10 +48,20 @@
             <%= form.label :capacity, "People needed", class: "block text-label font-medium text-ink" %>
             <%= form.number_field :capacity, name: "item[fields][capacity]", value: fields.fetch("capacity", 1), min: 1, required: true, class: "mt-2 block w-full field" %>
           </div>
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <%= form.button "Save Changes", name: "item[decision]", value: "edit", class: "btn btn-secondary", data: { turbo_submits_with: "Saving…" } %>
-            <%= form.button "Remove Meal", name: "item[decision]", value: "remove", class: "btn btn-danger", formnovalidate: true %>
-          </div>
+          <% if planner_session.meal_setup? %>
+            <div class="meal-slot-actions">
+              <%= form.button "Remove", name: "item[decision]", value: "remove", class: "btn btn-danger", formnovalidate: true %>
+              <div class="flex items-center gap-2">
+                <button type="button" class="btn btn-text" data-action="meal-setup#cancelEdit">Cancel</button>
+                <%= form.button "Save", name: "item[decision]", value: "edit", class: "btn btn-primary", data: { turbo_submits_with: "Saving…" } %>
+              </div>
+            </div>
+          <% else %>
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <%= form.button "Save Changes", name: "item[decision]", value: "edit", class: "btn btn-secondary", data: { turbo_submits_with: "Saving…" } %>
+              <%= form.button "Remove Meal", name: "item[decision]", value: "remove", class: "btn btn-danger", formnovalidate: true %>
+            </div>
+          <% end %>
         <% end %>
       </div>
     </details>

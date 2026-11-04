@@ -1,0 +1,31 @@
+<section aria-labelledby="meal-setup-preview-heading">
+  <h2 id="meal-setup-preview-heading" class="text-ink">Sign-up sheet</h2>
+  <% if plan.valid?(:schedule) %>
+    <p class="mt-1 text-meta text-ink-2"><%= pluralize(planner_session.pending_item_count, "meal slot") %> · not added yet</p>
+    <div class="mt-5 meal-setup-rows">
+      <% planner_session.visible_pending_items.each_with_index do |item, index| %>
+        <%= render "planner_sessions/meal_slot", project:, planner_session:, item:, index: %>
+        <% if (errors = Planner::PendingItems.errors(item, project:)).any? %>
+          <p class="mb-3 text-meta text-danger" role="alert"><%= errors.to_sentence %></p>
+        <% end %>
+      <% end %>
+    </div>
+    <% removed_item = planner_session.pending_items.select { |item| item["removed"] }.max_by { |item| item["removed_revision"].to_i } %>
+    <% if removed_item %>
+      <div class="mt-4 flex flex-wrap items-center gap-3 text-meta text-ink-2">
+        <span>Meal removed.</span>
+        <%= button_to "Undo", pending_item_project_planner_session_path(project, planner_session), method: :patch,
+          params: { item: { id: removed_item.fetch("id"), decision: "restore" }, expected_revision: planner_session.generation_revision }, class: "btn btn-text" %>
+      </div>
+    <% end %>
+    <% if planner_session.visible_pending_items.any? { |item| item["conflict"].present? } %>
+      <p class="mt-4 text-meta text-ink-2">Resolve the highlighted meal changes before adding.</p>
+    <% elsif planner_session.pending_item_errors.any? %>
+      <p class="mt-4 text-meta text-ink-2">Fix the highlighted meal details before adding.</p>
+    <% elsif planner_session.pending_item_count.zero? %>
+      <p class="mt-4 text-meta text-ink-2">Restore a meal before adding.</p>
+    <% end %>
+  <% else %>
+    <p class="mt-4 text-ink-2">Choose a meal and first date to preview the slots.</p>
+  <% end %>
+</section>

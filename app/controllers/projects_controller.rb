@@ -23,8 +23,8 @@ class ProjectsController < ApplicationController
   def show
     load_team if Policy.can?(Current.person, :view_team, @project)
     if Policy.can?(Current.person, :plan, @project)
-      @resumable_planner_session = @project.planner_sessions.where(flow_version: [ 2, 3 ], started_by: Current.person, status: %i[asking reviewing]).order(updated_at: :desc).first
-      @completed_planner_session = @project.planner_sessions.where(flow_version: [ 2, 3 ], status: :accepted).find_by(id: params[:added_plan]) if params[:added_plan].present?
+      @resumable_planner_session = @project.planner_sessions.where(flow_version: [ 2, 3, 4 ], started_by: Current.person, status: %i[asking reviewing]).order(updated_at: :desc).first
+      @completed_planner_session = @project.planner_sessions.where(flow_version: [ 2, 3, 4 ], status: :accepted).find_by(id: params[:added_plan]) if params[:added_plan].present?
     end
     @ownership_transfer_leaders = @project.memberships.leader.where.not(person_id: @project.owner_id).includes(:person)
     return unless Policy.can?(Current.person, :view_notes, @project)
@@ -181,12 +181,16 @@ class ProjectsController < ApplicationController
         @project = Project.create_for(creator: Current.person, attributes: starter.slice(:name, :description).merge(enabled_tools: []))
         @project.save!
         @planner_session = @project.planner_sessions.create!(
-          started_by: Current.person, flow_version: kind == "meal_train" ? 2 : 3,
+          started_by: Current.person, flow_version: kind == "meal_train" ? 4 : 3,
           planning_kind: kind, description: starter.fetch(:prompt)
         )
-        @revision = @planner_session.queue_generation!
+        if @planner_session.meal_setup?
+          @planner_session.save_meal_setup!(MealTrainPlan.new.attributes, expected_revision: 0)
+        else
+          @revision = @planner_session.queue_generation!
+        end
       end
-      PlannerStepJob.perform_later(@project.id, @planner_session.id, Current.session.id, @revision)
+      PlannerStepJob.perform_later(@project.id, @planner_session.id, Current.session.id, @revision) if @revision
       redirect_to project_planner_session_path(@project, @planner_session), status: :see_other
     end
 

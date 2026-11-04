@@ -19,8 +19,12 @@ module Planner
 
     def reconcile(existing:, added:, removed_ids:, project:)
       validate_snapshot!(added, existing:, project:)
-      prior = existing.index_by { |item| item.fetch("source_key") }
       incoming = expand(added, project:)
+      reconcile_candidates(existing:, incoming:, removed_ids:)
+    end
+
+    def reconcile_candidates(existing:, incoming:, removed_ids: [])
+      prior = existing.index_by { |item| item.fetch("source_key") }
       raise ArgumentError, "Planner preview is too large" if incoming.size > 200
       keys = incoming.to_set(&:source_key)
       result = incoming.map { |candidate| prior[candidate.source_key] ? merge(prior[candidate.source_key], candidate) : candidate.to_h }
