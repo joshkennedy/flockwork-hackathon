@@ -57,13 +57,15 @@ class CsvImport
       normalized_email = email.to_s.strip.downcase.presence
       person = @organization.people.find_by(email: normalized_email) if normalized_email
 
+      skills = row.headers.include?("skills") ? { skills: Skills.normalize(row["skills"]) } : {}
+
       if person
-        person.assign_attributes(name:, phone:)
+        person.assign_attributes(name:, phone:, **skills)
         return [ :updated ] if person.save
 
         [ :rejected, person.errors.full_messages.to_sentence ]
       else
-        person = @organization.people.build(name:, email:, phone:)
+        person = @organization.people.build(name:, email:, phone:, **skills)
         return [ :created ] if person.save
 
         [ :rejected, person.errors.full_messages.to_sentence ]

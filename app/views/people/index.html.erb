@@ -10,7 +10,7 @@
   <%# Plain links, so a filter is a URL that can be shared and still works with the live search. %>
   <nav class="tab-bar mt-7" aria-label="Filter People">
     <% @filter_tabs.each do |key, label, count| %>
-      <%= link_to people_path(filter: (key unless key == "everyone"), query: params[:query].presence),
+      <%= link_to people_path(filter: (key unless key == "everyone"), query: params[:query].presence, skill: @skill),
         class: "tab-link", aria: { current: ("page" if key == @filter) } do %>
         <%= label %> <span class="ml-1 text-ink-2"><%= count %></span>
       <% end %>
@@ -21,6 +21,11 @@
     <%= form.label :query, "Search by name", class: "sr-only" %>
     <%= form.search_field :query, value: params[:query], placeholder: "Search by name", autocomplete: "off", class: "w-full field", data: { action: "input->live-search#search" } %>
     <%= hidden_field_tag :filter, params[:filter], id: nil if params[:filter].present? %>
+    <div class="mt-3 flex items-center gap-3">
+      <%= form.label :skill, "Skill", class: "text-meta text-ink-2" %>
+      <%= form.select :skill, @skill_options.map { |skill| [ Skills.label(skill), skill ] }, { selected: @skill, include_blank: "All skills" }, class: "field" %>
+      <%= form.submit "Filter", class: "btn btn-secondary", data: { turbo_frame: "_top" } %>
+    </div>
   <% end %>
 
   <%# target _top so the name links and Clear search leave the frame for the person's page. %>
@@ -41,8 +46,8 @@
         <% end %>
       </ul>
     <% elsif params[:query].present? %>
-      <p class="mt-7 text-ink-2">No people match "<%= params[:query] %>". <%= link_to "Clear search", people_path(filter: params[:filter].presence), class: "link font-medium" %></p>
-    <% elsif @filter != "everyone" %>
+      <p class="mt-7 text-ink-2">No people match "<%= params[:query] %>". <%= link_to "Clear search", people_path(filter: params[:filter].presence, skill: @skill), class: "link font-medium" %></p>
+    <% elsif @filter != "everyone" || @skill %>
       <p class="mt-7 text-ink-2">Nobody is in this list right now. <%= link_to "Show everyone", people_path, class: "link font-medium" %></p>
     <% else %>
       <p class="mt-7 text-ink-2">No people yet. Add one, or import a CSV to bring in a whole list.</p>

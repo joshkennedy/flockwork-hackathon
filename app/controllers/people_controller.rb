@@ -18,7 +18,10 @@ class PeopleController < ApplicationController
     @people_count = @filter_counts.fetch("everyone")
     @filter_tabs = FILTERS.map { |key, (label, _scope)| [ key, label, @filter_counts.fetch(key) ] }
 
+    @skill = Skills.normalize(params[:skill]).first
+    @skill_options = (people.pluck(:skills).flatten + Array(@skill)).uniq.sort
     matches = people.matching(params[:query])
+    matches = matches.where("? = ANY(people.skills)", @skill) if @skill
     scope = FILTERS.fetch(@filter).last
     matches = matches.public_send(scope) if scope
     @people = matches.order(:name).to_a

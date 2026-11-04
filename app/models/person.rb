@@ -1,4 +1,5 @@
 class Person < ApplicationRecord
+  include RefreshesStaffingSuggestions
   include OrganizationScoped
 
   has_many :sessions, dependent: :destroy

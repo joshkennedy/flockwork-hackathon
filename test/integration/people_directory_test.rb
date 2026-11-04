@@ -6,6 +6,20 @@ class PeopleDirectoryTest < ActionDispatch::IntegrationTest
     @row_names = -> { css_select("turbo-frame#people-results li a.font-semibold").map { |link| link.text.strip } }
   end
 
+  test "Skills filter matches exact normalized skills within the current church and other filters" do
+    people(:leader).update!(skills: [ "driving" ])
+    people(:other_volunteer).update!(skills: [ "driving instructor" ])
+    people(:outsider).update!(skills: [ "driving" ])
+    sign_in_as_admin
+
+    get people_path, params: { skill: " DRIVING " }
+    assert_equal [ "Leo Leader" ], @row_names.call
+    get people_path, params: { skill: "driving", filter: "not_yet_asked" }
+    assert_empty @row_names.call
+    get people_path, params: { skill: "driving", query: "Leo" }
+    assert_equal [ "Leo Leader" ], @row_names.call
+  end
+
   test "each quick filter shows its people and the church-wide count" do
     sign_in_as_admin
 
