@@ -164,24 +164,26 @@ module Planner
             message = stream_message(build_chat(version:, instructions:, schema:, context:), prompt, on_partial)
             log_usage(message, version)
             content = message.content.to_s
-            parsed = begin
-              parse_json_object(content)
-            rescue JSON::ParserError, ArgumentError
+            response = begin
+              parsed = parse_json_object(content)
+              card = parsed.fetch("card")
+              finished = parsed.fetch("finished")
+              raise ArgumentError, "Finished Planner responses must have no card" unless finished == card.nil?
+              raise ArgumentError, "Cards need 3 to 5 options" if card && !card.fetch("options").size.between?(3, 5)
+
+              Planner::Response.new(
+                card:,
+                finished:,
+                added: parsed.fetch("added"),
+                removed_ids: parsed.fetch("removed_ids")
+              ).validate!
+            rescue JSON::ParserError, ArgumentError, KeyError
               log_parse_failure(content, attempt)
               raise if attempt == 1
               next
             end
-            card = parsed.fetch("card")
-            finished = parsed.fetch("finished")
-            raise ArgumentError, "Finished Planner responses must have no card" unless finished == card.nil?
-            raise ArgumentError, "Cards need 3 to 5 options" if card && !card.fetch("options").size.between?(3, 5)
 
-            return Planner::Response.new(
-              card:,
-              finished:,
-              added: parsed.fetch("added"),
-              removed_ids: parsed.fetch("removed_ids")
-            ).validate!
+            return response
           end
         end
 

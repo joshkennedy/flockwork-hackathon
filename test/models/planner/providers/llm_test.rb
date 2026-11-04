@@ -154,6 +154,31 @@ class PlannerProvidersLlmTest < ActiveSupport::TestCase
     Rails.logger = original_logger
   end
 
+  test "retries one parseable response missing a required field" do
+    invalid = JSON.generate(finished: true, added: [], removed_ids: [])
+    valid = JSON.generate(card: nil, finished: true, added: [], removed_ids: [])
+    chat = RecordingChat.new([ invalid, valid ])
+
+    response = with_ruby_llm_chat(chat) do
+      Planner::Providers::Llm.new.call("flow_version" => 2, "questions_answered" => 1)
+    end
+
+    assert response.finished
+    assert_equal 2, chat.calls
+  end
+
+  test "raises the second shape error after one retry" do
+    invalid = JSON.generate(finished: true, added: [], removed_ids: [])
+    chat = RecordingChat.new([ invalid, invalid ])
+
+    assert_raises(KeyError) do
+      with_ruby_llm_chat(chat) do
+        Planner::Providers::Llm.new.call("flow_version" => 2, "questions_answered" => 1)
+      end
+    end
+    assert_equal 2, chat.calls
+  end
+
   test "logs the per-call usage at debug level, including cache reads and writes" do
     tokens = Struct.new(:input, :output, :cache_read, :cache_write, :thinking).new(1200, 300, 900, 0, 40)
     content = JSON.generate(card: nil, finished: true, added: [], removed_ids: [])

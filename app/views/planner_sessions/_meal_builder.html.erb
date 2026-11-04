@@ -11,6 +11,7 @@
   <% visible_pending_errors = planner_session.reviewing? ? pending_errors : {} %>
   <% needs_start_date = planner_session.reviewing? && project.starts_on.blank? &&
     visible_items.any? { |item| item.key?("day_offset") && item.dig("fields", item["kind"] == "task" ? "due_on" : "date").blank? && !item.fetch("user_edits", {}).key?(item["kind"] == "task" ? "due_on" : "date") } %>
+  <% review_start_date_id = "review_date_starts_on" %>
   <% addable = if general_planner
     visible_items.any? && pending_errors.blank? && visible_items.none? { |item| item["conflict"].present? }
   else
@@ -73,7 +74,8 @@
               <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
               <%= form.label :starts_on, general_planner ? "Project start date" : "First meal date", class: "block text-label font-medium text-ink" %>
               <div class="mt-2 flex flex-col gap-3 sm:flex-row">
-                <%= form.date_field :starts_on, name: "project[starts_on]", required: true, class: "block min-w-0 flex-1 field", aria: { describedby: dom_id(planner_session, :start_date_hint) } %>
+                <%= form.date_field :starts_on, id: "starts_on", name: "project[starts_on]", required: true,
+                  class: "block min-w-0 flex-1 field field-error", aria: { invalid: true, describedby: dom_id(planner_session, :start_date_hint) } %>
                 <%= form.submit "Set Date", class: "btn btn-secondary", data: { turbo_submits_with: "Setting Date…" } %>
               </div>
               <p id="<%= dom_id(planner_session, :start_date_hint) %>" class="mt-2 text-meta text-ink-2"><%= general_planner ? "Items are dated from this day." : "Every meal slot is dated from this day." %></p>
@@ -98,7 +100,10 @@
               elsif visible_items.any? { |item| item["conflict"].present? }
                 "Resolve the highlighted change before adding."
               elsif needs_start_date
-                general_planner ? "Set the start date above to add these items." : "Set the first meal date above to add these slots."
+                link_to(
+                  general_planner ? "Set the start date above to add these items." : "Set the first meal date above to add these slots.",
+                  "##{review_start_date_id}", class: "link", data: { turbo: false }
+                )
               elsif general_planner
                 safe_join(planner_acceptance_blockers(visible_items, pending_errors).map { |blocker|
                   link_to(blocker.fetch(:text), "##{blocker.fetch(:id)}", class: "link", data: { turbo: false })

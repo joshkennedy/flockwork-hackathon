@@ -93,6 +93,47 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     assert_equal Date.new(2027, 4, 9), PlannerSession.order(:id).last!.project.tasks.sole.due_on
   end
 
+  test "Project Details stays within phone gutters and above review content" do
+    Rails.configuration.x.planner_provider = Planner::Providers::Fake.new([
+      response(card: card("What matters first?", "Preparation", "Supplies", "Schedule")),
+      response(finished: true, added: [ item("task", "prepare", title: "Prepare the room", details: "", due_on: "2027-04-09") ])
+    ])
+    sign_in_as_leader_in_browser
+    page.current_window.resize_to(390, 844)
+    visit new_project_path
+    click_button "Workday"
+    click_button "Preparation"
+    assert_text "Preview updated. Change your choice or continue."
+    click_button "Finish with This"
+    find("summary", text: "Project Details").click
+
+    popover = page.evaluate_script(<<~JS)
+      (() => {
+        const popover = document.querySelector(".meal-builder-popover");
+        const input = popover.querySelector("input[name='project[starts_on]']");
+        const rect = popover.getBoundingClientRect();
+        const inputRect = input.getBoundingClientRect();
+        const topElement = document.elementFromPoint(
+          inputRect.left + inputRect.width / 2,
+          inputRect.top + inputRect.height / 2
+        );
+        return {
+          left: rect.left,
+          right: rect.right,
+          inputWidth: inputRect.width,
+          inputIsTopmost: topElement === input,
+          zIndex: Number.parseInt(getComputedStyle(popover).zIndex, 10)
+        };
+      })()
+    JS
+
+    assert_operator popover.fetch("left"), :>=, 16
+    assert_operator popover.fetch("right"), :<=, 374
+    assert_operator popover.fetch("inputWidth"), :>=, 300
+    assert_operator popover.fetch("zIndex"), :>=, 40
+    assert popover.fetch("inputIsTopmost")
+  end
+
   private
     def sign_in_as_leader_in_browser
       visit new_demo_session_path

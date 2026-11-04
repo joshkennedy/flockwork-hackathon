@@ -276,6 +276,25 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_select "p##{schedule_error_id}", text: "Date can't be blank"
   end
 
+  test "review links the start-date blocker to its invalid field" do
+    sign_in_as_leader
+    project, planner_session = build_reviewing_session(
+      planning_kind: "workday",
+      items: [ item("task", "task-1", title: "Confirm crew", details: "", due_in_days: -1) ]
+    )
+    note_id = ActionView::RecordIdentifier.dom_id(planner_session, :add_note)
+    field_id = "review_date_starts_on"
+
+    get project_planner_session_path(project, planner_session)
+
+    assert_response :success
+    assert_select "button[disabled][aria-describedby=?]", note_id, text: "Add to Project"
+    assert_select "label[for='#{field_id}']", text: "Project start date"
+    assert_select "input##{field_id}.field-error[aria-invalid='true']"
+    assert_select "p##{note_id} a[href='##{field_id}'][data-turbo='false']",
+      text: "Set the start date above to add these items."
+  end
+
   test "setting the first Project start date preserves explicit item dates and a cleared due date" do
     sign_in_as_leader
     project, planner_session = build_reviewing_session(
