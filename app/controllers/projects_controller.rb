@@ -47,6 +47,7 @@ class ProjectsController < ApplicationController
     authorize_project_creation
     @project = Current.organization.projects.new
     @manual_project = params[:manual].present?
+    @custom_planning = params[:planning_kind] == "other"
   end
 
   def start_meal_planner
@@ -59,7 +60,15 @@ class ProjectsController < ApplicationController
     kind = params.expect(:planning_kind)
     raise ActionController::BadRequest, "Choose a Project type" unless Planner::ProjectKinds::CHOICES.key?(kind)
 
-    start_planning(kind)
+    description = params.expect(planner_session: [ :description ])[:description].to_s.strip if kind == "other"
+    if kind == "other" && description.blank?
+      @project = Current.organization.projects.new
+      @custom_planning = true
+      @description_error = "Describe what you're organizing in one sentence."
+      return render :new, status: :unprocessable_content
+    end
+
+    start_planning(kind, description:)
   end
 
   def create
@@ -175,14 +184,14 @@ class ProjectsController < ApplicationController
         .order(:name)
     end
 
-    def start_planning(kind)
+    def start_planning(kind, description: nil)
       starter = Planner::ProjectKinds::CHOICES.fetch(kind)
       Project.transaction do
         @project = Project.create_for(creator: Current.person, attributes: starter.slice(:name, :description).merge(enabled_tools: []))
         @project.save!
         @planner_session = @project.planner_sessions.create!(
           started_by: Current.person, flow_version: kind == "meal_train" ? 4 : 3,
-          planning_kind: kind, description: starter.fetch(:prompt)
+          planning_kind: kind, description: description.presence || starter.fetch(:prompt)
         )
         if @planner_session.meal_setup?
           @planner_session.save_meal_setup!(MealTrainPlan.new.attributes, expected_revision: 0)

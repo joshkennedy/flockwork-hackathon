@@ -16,10 +16,12 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
 
     %w[retreat workday children_program other].each do |planning_kind|
       use_provider(response(card: card("What matters most?")))
+      params = { planning_kind: }
+      params[:planner_session] = { description: "Organize an outreach project." } if planning_kind == "other"
 
       assert_enqueued_with(job: PlannerStepJob) do
         assert_difference [ "Project.count", "PlannerSession.count" ], 1 do
-          post start_planner_projects_path, params: { planning_kind: }
+          post start_planner_projects_path, params:
         end
       end
 
@@ -40,6 +42,37 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
       end
     end
     assert_response :bad_request
+  end
+
+  test "Something Else collects a description and redacts names before the first Planner card" do
+    provider = use_provider(response(card: card("What should the plan include?")))
+    sign_in_as_leader
+
+    get new_project_path(planning_kind: "other")
+    assert_response :success
+    assert_select "form[action='#{start_planner_projects_path}']" do
+      assert_select "input[name='planner_session[description]']"
+    end
+
+    assert_no_difference [ "Project.count", "PlannerSession.count" ] do
+      post start_planner_projects_path, params: {
+        planning_kind: "other", planner_session: { description: "" }
+      }
+    end
+    assert_response :unprocessable_content
+    assert_select "[role='alert']", text: /Describe what you're organizing/
+
+    perform_enqueued_jobs(only: PlannerStepJob) do
+      post start_planner_projects_path, params: {
+        planning_kind: "other",
+        planner_session: { description: "Leo Leader is organizing a neighborhood cleanup." }
+      }
+    end
+
+    planner_session = PlannerSession.order(:id).last!
+    assert_equal "Leo Leader is organizing a neighborhood cleanup.", planner_session.description
+    assert_equal "[name] is organizing a neighborhood cleanup.", provider.contexts.sole.fetch("project_intent")
+    assert_equal "What should the plan include?", planner_session.reload.current_card.fetch("question")
   end
 
   test "a full snapshot previews and atomically accepts every provider item kind with explicit dates" do

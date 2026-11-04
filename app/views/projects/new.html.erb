@@ -6,6 +6,25 @@
   <% if @manual_project %>
     <p class="mt-2 max-w-2xl text-ink-2">Set up the Project yourself. You can add or change its Tools later.</p>
     <div class="mt-7 max-w-2xl"><%= render "form", project: @project %></div>
+  <% elsif @custom_planning %>
+    <section class="mt-7 max-w-2xl" aria-labelledby="custom-project-heading">
+      <h2 id="custom-project-heading" class="text-ink">What are you organizing?</h2>
+      <p class="mt-2 text-ink-2">Give the Planner one short sentence. Its first question will build on what you share.</p>
+
+      <%= form_with url: start_planner_projects_path, method: :post, class: "mt-6 space-y-6" do |form| %>
+        <%= form.hidden_field :planning_kind, value: "other" %>
+        <% if @description_error %>
+          <p role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger"><%= @description_error %></p>
+        <% end %>
+        <div>
+          <%= form.label :description, "Describe it in one sentence", class: "block text-label font-medium text-ink" %>
+          <%= form.text_field :description, name: "planner_session[description]", value: params.dig(:planner_session, :description), required: true, maxlength: 280, autofocus: true, class: "mt-2 block w-full field", placeholder: "Organize a spring cleanup." %>
+        </div>
+        <%= form.submit "Start Planning", class: "btn btn-primary", data: { turbo_submits_with: "Creating Project…" } %>
+      <% end %>
+
+      <%= render "planner_sessions/privacy" %>
+    </section>
   <% else %>
     <section class="mt-7" aria-labelledby="project-kind-heading">
       <h2 id="project-kind-heading" class="text-ink">What are we organizing?</h2>
@@ -26,9 +45,9 @@
           <span class="font-semibold text-ink">Children’s Program</span>
           <span class="mt-1 block text-meta text-ink-2">Plan dates, volunteers, supplies, and details.</span>
         <% end %>
-        <%= button_to start_planner_projects_path, method: :post, params: { planning_kind: "other" }, class: "project-kind-tile", data: { turbo_submits_with: "Creating Project…" } do %>
+        <%= button_to new_project_path, method: :get, params: { planning_kind: "other" }, class: "project-kind-tile" do %>
           <span class="font-semibold text-ink">Something Else</span>
-          <span class="mt-1 block text-meta text-ink-2">Start with a few clear choices about your idea.</span>
+          <span class="mt-1 block text-meta text-ink-2">Describe your idea in one sentence.</span>
         <% end %>
       </div>
 
