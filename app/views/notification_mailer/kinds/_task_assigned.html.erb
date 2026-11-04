@@ -1,0 +1,15 @@
+<% task = @notification.notifiable %>
+<% content_for :preheader, task.title %>
+
+<%= mail_heading(@notification.actor ? "#{@notification.actor.name} assigned you a task" : "You have a new task") %>
+<%= mail_paragraph "Hi #{@notification.recipient.name}, this one's yours in #{@project.name}." %>
+
+<%= mail_details(
+  "Task" => task.title,
+  "Project" => @project.name,
+  "Due" => task.due_on ? mail_date(task.due_on) : "No due date",
+  "Details" => task.details.to_plain_text.squish.truncate(280).presence
+) %>
+
+<%= mail_button "Open #{@project.name}", project_url(@project) %>
+<%= mail_muted "Check it off there when it's done, so the Team can see." %>

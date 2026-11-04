@@ -1,5 +1,7 @@
-<p>Hi <%= @notification.recipient.name %>,</p>
+<%# Kinds with their own body live in kinds/; every other kind falls back to the generic one. %>
+<% partial = "notification_mailer/kinds/#{@notification.kind}" %>
+<%= render lookup_context.exists?(partial, [], true) ? partial : "notification_mailer/kinds/generic" %>
 
-<p><%= @notification.message %></p>
-
-<p><%= link_to "View the Project", project_url(@project) %></p>
+<% content_for :footer do %>
+  You get emails for <%= Notification::KINDS.fetch(@notification.kind).fetch(:label) %>. <%= link_to "Change your email preferences", edit_profile_url, style: "color:#9A9893;text-decoration:underline" %>
+<% end %>

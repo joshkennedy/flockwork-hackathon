@@ -1,7 +1,5 @@
-Hi <%= @notification.recipient.name %>,
-
-<%= @notification.message %>
-
-View the Project:
-
-<%= project_url(@project) %>
+<% partial = "notification_mailer/kinds/#{@notification.kind}" %>
+<%= render lookup_context.exists?(partial, [], true) ? partial : "notification_mailer/kinds/generic" %>
+<% content_for :footer_text do %>
+You get emails for <%= Notification::KINDS.fetch(@notification.kind).fetch(:label) %>. Change your email preferences: <%= edit_profile_url %>
+<% end %>

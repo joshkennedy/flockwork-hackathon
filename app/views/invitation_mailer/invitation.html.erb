@@ -1,0 +1,19 @@
+<% project = @invitation.project %>
+<% content_for :preheader, "#{@invitation.inviter.name} would like you on the Team." %>
+
+<%= mail_heading "Help with #{project.name}?" %>
+<%= mail_paragraph "Hi #{@invitation.person.name}, #{@invitation.inviter.name} invited you to join the #{project.name} Team as a #{@invitation.role.humanize}." %>
+
+<% if project.description.present? %>
+  <%= mail_paragraph project.description.truncate(240) %>
+<% end %>
+
+<%= mail_details(
+  "Project" => project.name,
+  "Role" => @invitation.role.humanize,
+  "When" => (project_date_range(project.starts_on, project.ends_on) if project.starts_on || project.ends_on),
+  "Invited by" => @invitation.inviter.name
+) %>
+
+<%= mail_button "View Invitation", @url %>
+<%= mail_muted "You can say yes or no from there." %>

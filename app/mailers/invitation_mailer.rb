@@ -1,4 +1,6 @@
 class InvitationMailer < ApplicationMailer
+  helper ProjectsHelper
+
   def invitation(invitation)
     @invitation = invitation
     @url = invitation_url(invitation.generate_token_for(:access))

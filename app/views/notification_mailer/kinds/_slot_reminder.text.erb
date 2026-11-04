@@ -1,0 +1,12 @@
+<% slot = @notification.notifiable %>
+Hi <%= @notification.recipient.name %>,
+
+You're on for tomorrow. Thanks for signing up.
+
+Slot: <%= slot.label %>
+Project: <%= @project.name %>
+When: <%= [ mail_date(slot.date), (mail_time(slot.starts_at_time) if slot.starts_at_time) ].compact.join(" at ") %>
+
+Can't make it anymore? Open the Project and give up your spot so someone else can take it:
+
+<%= project_url(@project) %>

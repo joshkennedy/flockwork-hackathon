@@ -1,13 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <style>
-      /* Email styles need to be inline */
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <meta name="supported-color-schemes" content="light">
+    <title><%= message.subject %></title>
   </head>
 
-  <body>
-    <%= yield %>
+  <body style="margin:0;padding:0;background:#F3F2EF;-webkit-text-size-adjust:100%">
+    <%# The preheader is the grey snippet inbox lists show after the subject; it never renders in the body. %>
+    <% if content_for?(:preheader) %>
+      <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;mso-hide:all"><%= yield :preheader %></div>
+    <% end %>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F3F2EF">
+      <tr>
+        <td align="center" style="padding:32px 16px">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px">
+            <tr>
+              <td style="padding:0 4px 16px;font-family:<%= MailerHelper::FONT %>;font-size:18px;line-height:24px;font-weight:800;letter-spacing:-0.01em;color:#141413">
+                Flockwork
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#FFFFFF;border:1px solid #E6E4E0;border-radius:12px;padding:28px 24px">
+                <%= yield %>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:20px 4px 0;font-family:<%= MailerHelper::FONT %>;font-size:12px;line-height:18px;color:#9A9893">
+                <% if content_for?(:footer) %>
+                  <%= yield :footer %><br>
+                <% end %>
+                Flockwork helps churches plan and staff the work of caring for people.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
   </body>
 </html>

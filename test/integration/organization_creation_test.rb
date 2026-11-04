@@ -14,6 +14,12 @@ class OrganizationCreationTest < ActionDispatch::IntegrationTest
     assert_equal "hope-church", creator.organization.slug
   end
 
+  test "creating an Organization emails the creator a welcome" do
+    assert_enqueued_email_with WelcomeMailer, :welcome, args: ->(args) { args.first.email == "casey@hope.test" } do
+      post organizations_path, params: { church_name: "Hope Church", your_name: "Casey Creator", email: "casey@hope.test" }
+    end
+  end
+
   test "creating an Organization without an email is refused and nothing is created" do
     assert_no_difference [ "Organization.count", "Person.count" ] do
       post organizations_path, params: { church_name: "Hope Church", your_name: "Casey Creator", email: "" }

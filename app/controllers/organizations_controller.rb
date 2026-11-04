@@ -41,6 +41,7 @@ class OrganizationsController < ApplicationController
 
     if @admin.valid?(:organization_creation) && @organization.save
       start_new_session_for @admin
+      WelcomeMailer.welcome(@admin).deliver_later
       redirect_to home_path
     else
       flash.now[:alert] = (@organization.errors.full_messages + @admin.errors.full_messages).to_sentence

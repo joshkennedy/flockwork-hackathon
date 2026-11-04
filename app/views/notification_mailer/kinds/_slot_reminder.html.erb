@@ -1,0 +1,15 @@
+<% slot = @notification.notifiable %>
+<% when_text = [ mail_date(slot.date), (mail_time(slot.starts_at_time) if slot.starts_at_time) ].compact.join(" at ") %>
+<% content_for :preheader, "#{slot.label}, #{when_text}." %>
+
+<%= mail_heading "You're on for tomorrow" %>
+<%= mail_paragraph "Hi #{@notification.recipient.name}, thanks for signing up. Here's your reminder." %>
+
+<%= mail_details(
+  "Slot" => slot.label,
+  "Project" => @project.name,
+  "When" => when_text
+) %>
+
+<%= mail_button "Open #{@project.name}", project_url(@project) %>
+<%= mail_muted "Can't make it anymore? Open the Project and give up your spot so someone else can take it." %>

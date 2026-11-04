@@ -1,0 +1,15 @@
+<% task = @notification.notifiable %>
+Hi <%= @notification.recipient.name %>,
+
+<%= @notification.message %>
+
+Task: <%= task.title %>
+Project: <%= @project.name %>
+Due: <%= task.due_on ? mail_date(task.due_on) : "No due date" %>
+<% if task.details.present? %>
+Details: <%= task.details.to_plain_text.squish.truncate(280) %>
+<% end %>
+
+Open <%= @project.name %> to check it off when it's done:
+
+<%= project_url(@project) %>
