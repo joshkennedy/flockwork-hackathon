@@ -1,11 +1,10 @@
 require "test_helper"
 
 class LandingTest < ActionDispatch::IntegrationTest
-  test "landing explains typed and voice planner privacy" do
+  test "landing explains the planner never reads the people directory" do
     get root_path
     assert_response :success
-    assert_select "p", text: /Typed planning uses Project details, not your people directory/
-    assert_select "p", text: /speech service/
+    assert_select "p", text: /plans from Project details, never your people directory/
   end
 
   test "public landing links to separate signup, sign in and demo" do
