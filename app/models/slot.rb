@@ -1,4 +1,5 @@
 class Slot < ApplicationRecord
+  include RefreshesDashboard
   belongs_to :project
   broadcasts_refreshes_to :project
   has_many :slot_claims, dependent: :destroy

@@ -1,4 +1,5 @@
 class Task < ApplicationRecord
+  include RefreshesDashboard
   belongs_to :project
   belongs_to :assignee, class_name: "Person", optional: true
   belongs_to :completed_by, class_name: "Person", optional: true

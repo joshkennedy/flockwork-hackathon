@@ -1,4 +1,5 @@
 class Project < ApplicationRecord
+  include RefreshesDashboard
   include OrganizationScoped
 
   TOOLS = %w[tasks schedule signup_sheet budget recipients messages docs list].freeze

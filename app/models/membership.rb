@@ -1,4 +1,5 @@
 class Membership < ApplicationRecord
+  include RefreshesDashboard
   belongs_to :project
   belongs_to :person
   broadcasts_refreshes_to :project
