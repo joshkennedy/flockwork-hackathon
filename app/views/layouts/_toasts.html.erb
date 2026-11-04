@@ -7,9 +7,10 @@
     <div class="toast" role="<%= kind == :alert ? "alert" : "status" %>"
       data-controller="toast" data-toast-dismiss-after-value="<%= kind == :alert ? 0 : 5000 %>"
       data-action="toast:pause->toast#pause toast:resume->toast#resume">
-      <% if kind == :alert %><span class="toast-dot" aria-hidden="true"></span><% end %>
+      <% if kind == :alert %><span class="toast-dot" aria-hidden="true"></span><% else %><%= icon(:check) %><% end %>
       <p class="min-w-0 flex-1"><%= message %></p>
       <button type="button" class="btn btn-icon -my-1 -me-2 shrink-0" aria-label="Dismiss" data-action="toast#dismiss"><%= icon(:close) %></button>
+      <% unless kind == :alert %><span class="toast-countdown" data-toast-target="progress" aria-hidden="true"></span><% end %>
     </div>
   <% end %>
 </div>

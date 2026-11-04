@@ -6,28 +6,43 @@ import { Controller } from "@hotwired/stimulus"
 // not restart the timer.
 export default class extends Controller {
   static values = { dismissAfter: Number }
+  static targets = ["progress"]
 
   connect() {
     const stack = this.element.parentElement
     if (stack?.id !== "toasts" || this.dismissAfterValue <= 0) return
 
     this.element.dataset.until ||= Date.now() + this.dismissAfterValue
+    if (this.hasProgressTarget) {
+      const remaining = Number(this.element.dataset.left || this.element.dataset.until - Date.now())
+      this.progressTarget.style.width = `${Math.max(0, Math.min(1, remaining / this.dismissAfterValue)) * 100}%`
+    }
     if (stack.hasAttribute("data-expanded")) this.pause()
     else this.start()
   }
 
   disconnect() {
     clearTimeout(this.timer)
+    this.progressAnimation?.cancel()
   }
 
   start() {
     clearTimeout(this.timer)
-    this.timer = setTimeout(() => this.dismiss(), this.element.dataset.until - Date.now())
+    const remaining = Math.max(0, this.element.dataset.until - Date.now())
+    this.timer = setTimeout(() => this.dismiss(), remaining)
+    this.progressAnimation?.cancel()
+    if (this.hasProgressTarget && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      this.progressAnimation = this.progressTarget.animate(
+        [{ width: `${Math.min(1, remaining / this.dismissAfterValue) * 100}%` }, { width: "0%" }],
+        { duration: remaining, easing: "linear", fill: "forwards" }
+      )
+    }
   }
 
   pause() {
     if (!this.element.dataset.until || this.element.dataset.left) return
     clearTimeout(this.timer)
+    this.progressAnimation?.pause()
     this.element.dataset.left = this.element.dataset.until - Date.now()
   }
 
