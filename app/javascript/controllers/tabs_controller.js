@@ -14,10 +14,21 @@ export default class extends Controller {
     const panel = fromHash || stored
     if (panel) this.show(panel.dataset.tabsName)
     this.element.addEventListener("turbo:before-morph-attribute", this.keepShownTab)
+    window.addEventListener("hashchange", this.selectHash)
   }
 
   disconnect() {
     this.element.removeEventListener("turbo:before-morph-attribute", this.keepShownTab)
+    window.removeEventListener("hashchange", this.selectHash)
+  }
+
+  selectHash = () => {
+    const anchored = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)))
+    const panel = anchored && this.panelTargets.find((panel) => panel.contains(anchored))
+    if (panel) {
+      this.show(panel.dataset.tabsName)
+      this.remembered = panel.dataset.tabsName
+    }
   }
 
   // A morph refresh keeps this element, so connect() never re-runs; keep the shown tab instead of the server default.

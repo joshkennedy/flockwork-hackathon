@@ -1,0 +1,33 @@
+<% content_for :title, "Search" %>
+<h1>Search</h1>
+<%= form_with url: search_path, method: :get, class: "mt-4 space-y-3", data: { turbo_frame: @results_frame } do |form| %>
+  <%= form.label :query, "Name or title", for: "search_query", class: "text-meta" %>
+  <%= form.search_field :query, id: "search_query", value: @query, class: "field w-full", maxlength: 100 %>
+  <%= form.hidden_field :project_id, value: @project.id if @project %>
+  <%= form.submit "Search", class: "btn btn-primary" %>
+<% end %>
+<%= turbo_frame_tag @results_frame, class: "block mt-5", role: "region", aria: { label: "Search results", live: "polite" } do %>
+  <% if @query.blank? %>
+    <p class="text-meta text-ink-2">Enter a name or title to find what you need.</p>
+  <% elsif @results.values.all?(&:empty?) %>
+    <p class="text-meta text-ink-2">No results for <%= @query %>.</p>
+  <% else %>
+    <% @results.each do |group, records| %>
+      <% next if records.empty? %>
+      <section class="mb-5" aria-label="<%= group %>">
+        <h2 class="text-meta font-semibold"><%= group %></h2>
+        <ul class="mt-2 space-y-2">
+          <% records.each do |record| %>
+            <% label, path = case record
+               when Project then [ record.name, project_path(record) ]
+               when Person then [ record.name, Current.person.admin? ? person_path(record) : oversight_path ]
+               when Task then [ record.title, project_path(@project, anchor: "tab-tasks") ]
+               when Slot then [ "#{record.label} · #{record.date.strftime('%b %-d, %Y')}", project_path(@project, anchor: "tab-signup_sheet") ]
+               end %>
+            <li><%= link_to label, path, class: "link break-words", data: { turbo_frame: "_top", action: "global-search#close" } %></li>
+          <% end %>
+        </ul>
+      </section>
+    <% end %>
+  <% end %>
+<% end %>

@@ -1,0 +1,17 @@
+<dialog class="modal" aria-labelledby="search-heading" data-global-search-target="dialog" data-action="click->global-search#backdrop">
+  <div class="modal-panel max-h-[80dvh] overflow-y-auto">
+    <div class="flex items-center justify-between gap-4">
+      <h2 id="search-heading">Search Flockwork</h2>
+      <button type="button" class="btn btn-text btn-sm" data-action="global-search#close">Close</button>
+    </div>
+    <%= form_with url: search_path, method: :get, class: "mt-4 space-y-3", data: { turbo_frame: "search-results" } do |form| %>
+      <%= form.label :query, "Projects, people and this Project’s work", for: "global_search_query", class: "text-meta text-ink-2" %>
+      <%= form.search_field :query, id: "global_search_query", class: "field w-full", data: { global_search_target: "query" }, autocomplete: "off", maxlength: 100 %>
+      <%= form.hidden_field :project_id, value: @project.id if @project.is_a?(Project) && @project.persisted? %>
+      <%= form.submit "Search", class: "btn btn-primary" %>
+    <% end %>
+    <%= turbo_frame_tag "search-results", class: "block mt-5", role: "region", aria: { label: "Search results", live: "polite" } do %>
+      <p class="text-meta text-ink-2">Enter a name or title to find what you need.</p>
+    <% end %>
+  </div>
+</dialog>

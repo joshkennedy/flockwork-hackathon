@@ -122,6 +122,7 @@ Rails.application.routes.draw do
   get "sign_in/:token", to: "sign_in_links#show", as: :sign_in_link, format: false
   post "sign_in/:token", to: "sign_in_links#create", format: false
 
+  get "search", to: "search#index"
   get "home", to: "organizations#show", as: :home
   get "sign_in", to: "sign_in_requests#new", as: :new_sign_in_request
   get "check_email", to: "sign_in_requests#check_email", as: :check_email
