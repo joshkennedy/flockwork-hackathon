@@ -5,7 +5,7 @@ module Planner
     KINDS = Planner::SuggestionKinds::KINDS.keys.freeze
     EDITABLE = {
       "shift_project_dates" => %w[days],
-      "slot" => %w[label date time capacity], "task" => %w[title details due_on],
+      "slot" => %w[label date time capacity schedule_item_source_key], "task" => %w[title details due_on],
       "schedule_item" => %w[title date starts_at ends_at location],
       "booking" => %w[description estimated_dollars], "purchase" => %w[description estimated_dollars],
       "list" => %w[name columns], "enable_tool" => %w[tool], "skill" => %w[name]
@@ -74,6 +74,7 @@ module Planner
       definitions = definitions.merge("due_on" => { label: "Due date", input: :date, schema: { type: [ "string", "null" ] } }) if kind.to_s == "task"
       definitions
     end
+    def existing_schedule_item_source_key(schedule_item) = "existing_schedule_item_#{schedule_item.id}"
     def editable_fields(kind) = EDITABLE.fetch(kind.to_s)
     def tool(item)
       item = item.deep_stringify_keys
@@ -121,7 +122,7 @@ module Planner
     def sanitize_fields(kind, fields)
       fields = fields.to_h.deep_stringify_keys
       if kind == SLOT_RUN_KIND
-        return fields.slice("label", "start_date", "end_date", "start_day_offset", "end_day_offset", "time", "capacity")
+        return fields.slice("label", "start_date", "end_date", "start_day_offset", "end_day_offset", "time", "capacity", "schedule_item_source_key")
       end
       result = fields.slice(*editable_fields(kind))
       %w[date due_on].each { |key| result[key] = Date.iso8601(result[key]).iso8601 if result[key].present? }
@@ -182,12 +183,12 @@ module Planner
       [ "Item fields are invalid" ]
     end
 
-    def create!(project, item)
+    def create!(project, item, schedule_item: nil)
       item = item.deep_stringify_keys
       fields = item.fetch("fields")
       case item.fetch("kind")
       when "shift_project_dates" then ProjectDateShift.new(project, days: fields.fetch("days")).call
-      when "slot" then project.slots.create!(label: fields["label"], date: fields["date"], starts_at_time: fields["time"].presence, capacity: fields["capacity"])
+      when "slot" then project.slots.create!(label: fields["label"], date: fields["date"], starts_at_time: fields["time"].presence, capacity: fields["capacity"], schedule_item:)
       when "task" then project.tasks.create!(title: fields["title"], details: fields["details"], due_on: fields["due_on"])
       when "schedule_item" then project.schedule_items.create!(title: fields["title"], date: fields["date"], starts_at_time: fields["starts_at"].presence, ends_at_time: fields["ends_at"].presence, location: fields["location"].presence)
       when "booking", "purchase" then project.budget_lines.create!(kind: item["kind"], description: fields["description"], estimated: fields["estimated_dollars"])
@@ -217,7 +218,8 @@ module Planner
       return [] unless count.between?(1, 60)
       count.times.map do |index|
         candidate(source_key: source_key(item, source_index, index), fields: sanitize_slot_fields(
-          "label" => fields["label"], "date" => start && (start + index).iso8601, "time" => fields["time"], "capacity" => fields.fetch("capacity", 1)
+          "label" => fields["label"], "date" => start && (start + index).iso8601, "time" => fields["time"], "capacity" => fields.fetch("capacity", 1),
+          "schedule_item_source_key" => fields["schedule_item_source_key"]
         ), metadata: { "day_offset" => fields.fetch("start_day_offset", 0) + index })
       end
     end
@@ -238,6 +240,8 @@ module Planner
       if kind == SLOT_RUN_KIND
         raise ArgumentError unless fields["label"].is_a?(String) && fields["label"].present? && fields.fetch("capacity", 1).is_a?(Integer) && fields.fetch("capacity", 1).between?(1, 10_000)
         raise ArgumentError unless fields["time"].blank? || fields["time"].is_a?(String) && fields["time"].match?(TIME)
+        reference = fields["schedule_item_source_key"]
+        raise ArgumentError unless reference.nil? || reference.is_a?(String) && reference.match?(SOURCE_KEY)
         if fields["start_date"].present?
           raise ArgumentError unless (Date.iso8601(fields.fetch("end_date")) - Date.iso8601(fields["start_date"])).to_i.between?(0, 59)
         else

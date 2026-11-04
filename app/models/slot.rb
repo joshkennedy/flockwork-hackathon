@@ -1,6 +1,7 @@
 class Slot < ApplicationRecord
   include RefreshesDashboard
   belongs_to :project
+  belongs_to :schedule_item, optional: true
   broadcasts_refreshes_to :project
   has_many :slot_claims, dependent: :destroy
   has_many :people, through: :slot_claims
@@ -11,7 +12,9 @@ class Slot < ApplicationRecord
   validates :date, presence: true
   validates :label, presence: true
   validates :capacity, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
+  validate :schedule_item_belongs_to_project
   validate :capacity_is_not_below_current_claims
+  before_validation :follow_schedule_item_date
 
   scope :chronological, -> {
     order(:date, Arel.sql("starts_at_time ASC NULLS FIRST"), :starts_at_time, :id)
@@ -49,6 +52,16 @@ class Slot < ApplicationRecord
   end
 
   private
+    def follow_schedule_item_date
+      self.date = schedule_item.date if schedule_item
+    end
+
+    def schedule_item_belongs_to_project
+      return if schedule_item.nil? || schedule_item.project_id == project_id
+
+      errors.add(:schedule_item, "must belong to the same Project")
+    end
+
     def capacity_is_not_below_current_claims
       return if capacity.blank?
 

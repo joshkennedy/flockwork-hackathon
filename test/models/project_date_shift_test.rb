@@ -9,6 +9,7 @@ class ProjectDateShiftTest < ActiveSupport::TestCase
     schedule = project.schedule_items.first!
     schedule_date = schedule.date
     slot = project.slots.create!(label: "Serve", date: start, capacity: 2)
+    linked_slot = project.slots.create!(label: "Teach", capacity: 1, schedule_item: schedule)
     claim = slot.slot_claims.create!(person: people(:volunteer))
     list = project.lists.create!(name: "Dates")
     column = list.columns.create!(name: "Due", column_type: :date)
@@ -20,6 +21,7 @@ class ProjectDateShiftTest < ActiveSupport::TestCase
     assert_equal start + 6, task.reload.due_on
     assert_equal schedule_date + 7, schedule.reload.date
     assert_equal start + 7, slot.reload.date
+    assert_equal schedule_date + 7, linked_slot.reload.date
     assert_equal (start + 7).iso8601, row.reload.cells[column.id.to_s]
     assert_nil undated.reload.due_on
     assert_equal people(:volunteer).id, task.assignee_id

@@ -29,6 +29,16 @@ class PlannerProvidersLlmTest < ActiveSupport::TestCase
     end
   end
 
+  test "general prompt and schema let a Slot reference a planned or existing Schedule item" do
+    prompt = Planner::Providers::Llm::GENERAL_PROMPT
+    schema = Planner::Providers::Llm::GENERAL_SCHEMA
+    slot_run = schema.dig(:properties, :added, :items, :oneOf).find { |item| item.dig(:properties, :kind, :const) == "slot_run" }
+
+    assert_includes prompt, "schedule_item_source_key"
+    assert_includes prompt, "existing Schedule item"
+    assert_equal({ type: [ "string", "null" ] }, slot_run.dig(:properties, :fields, :properties, "schedule_item_source_key"))
+  end
+
   test "resolves provider and model from ENV with defaults" do
     with_planner_llm_env("PLANNER_LLM_PROVIDER" => nil, "PLANNER_LLM_MODEL" => nil) do
       llm = Planner::Providers::Llm.new

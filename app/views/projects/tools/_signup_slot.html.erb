@@ -6,7 +6,7 @@
 <% can_comment = Policy.can?(Current.person, :comment, project) %>
 <% has_comment_thread = comment_count.positive? || can_comment || slot.follows.exists?(person: Current.person) %>
 <%# Phones keep DESIGN.md's raised tile for an open Slot; wider screens show every Slot as a flat row. %>
-<li class="signup-row<%= " signup-open" if open %>" data-controller="<%= "comment-thread" if has_comment_thread %>">
+<li id="<%= dom_id(slot) %>" class="signup-row<%= " signup-open" if open %>" data-controller="<%= "comment-thread" if has_comment_thread %>">
   <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
     <p class="signup-date w-28 shrink-0">
       <span class="block font-semibold"><%= slot.date.strftime(slot.date.year == Date.current.year ? "%a, %b %-d" : "%a, %b %-d, %Y") %></span>
@@ -16,6 +16,9 @@
       <p class="text-ink-2">
         <span class="text-ink"><%= slot.label %></span><% if slot.starts_at_time.present? %> · <%= slot.starts_at_time.strftime("%-l:%M %p") %><% end %>
       </p>
+      <% if slot.schedule_item %>
+        <p class="signup-session text-meta text-ink-2">Session: <%= slot.schedule_item.title %></p>
+      <% end %>
       <% if own_claim %>
         <p class="flex items-center gap-1.5 text-meta text-ink"><%= icon(:check, class: "text-sunlit") %><%= dinner ? "You’re bringing dinner" : "You’re signed up" %></p>
       <% end %>

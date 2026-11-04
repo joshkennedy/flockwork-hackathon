@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_04_220000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_04_220001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -393,7 +393,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_220000) do
     t.integer "claims_count", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "schedule_item_id"
     t.index ["project_id"], name: "index_slots_on_project_id"
+    t.index ["schedule_item_id"], name: "index_slots_on_schedule_item_id"
     t.check_constraint "capacity >= 1", name: "slots_capacity_at_least_one"
   end
 
@@ -639,6 +641,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_220000) do
   add_foreign_key "slot_claims", "people"
   add_foreign_key "slot_claims", "slots"
   add_foreign_key "slots", "projects"
+  add_foreign_key "slots", "schedule_items", on_delete: :nullify
   add_foreign_key "solid_queue_batch_executions", "solid_queue_batches", column: "batch_id", on_delete: :cascade
   add_foreign_key "solid_queue_batch_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

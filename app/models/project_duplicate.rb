@@ -22,8 +22,8 @@ class ProjectDuplicate
       copy = create_project
       copy.memberships.create!(person: by, role: :leader)
       copy_tasks(copy)
-      copy_schedule_items(copy)
-      copy_slots(copy)
+      copied_schedule_items = copy_schedule_items(copy)
+      copy_slots(copy, copied_schedule_items)
       copy_budget_lines(copy)
       copy_lists(copy)
       copy_debrief(copy)
@@ -67,8 +67,8 @@ class ProjectDuplicate
     end
 
     def copy_schedule_items(copy)
-      source.schedule_items.find_each do |item|
-        copy.schedule_items.create!(
+      source.schedule_items.each_with_object({}) do |item, copied_items|
+        copied_items[item.id] = copy.schedule_items.create!(
           date: shift(item.date),
           starts_at_time: item.starts_at_time,
           ends_at_time: item.ends_at_time,
@@ -78,13 +78,14 @@ class ProjectDuplicate
       end
     end
 
-    def copy_slots(copy)
+    def copy_slots(copy, copied_schedule_items)
       source.slots.find_each do |slot|
         copy.slots.create!(
           date: shift(slot.date),
           starts_at_time: slot.starts_at_time,
           label: slot.label,
-          capacity: slot.capacity
+          capacity: slot.capacity,
+          schedule_item: copied_schedule_items[slot.schedule_item_id]
         )
       end
     end

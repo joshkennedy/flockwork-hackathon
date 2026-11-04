@@ -21,7 +21,8 @@ class ProjectRecurrenceTest < ActiveSupport::TestCase
   test "generation copies structure and date offsets once per occurrence" do
     @project.update!(skills_needed: [ "Cooking" ])
     @project.tasks.create!(title: "Prepare", due_on: Date.new(2027, 1, 30), assignee: people(:volunteer))
-    @project.slots.create!(label: "Serve", date: Date.new(2027, 1, 31), capacity: 3)
+    session = @project.schedule_items.create!(title: "Class session", date: Date.new(2027, 1, 31))
+    @project.slots.create!(label: "Serve", capacity: 3, schedule_item: session)
     list = @project.lists.create!(name: "Supplies")
     column = list.columns.create!(name: "Item", column_type: :text)
     list.rows.create!(cells: { column.id.to_s => "Plates" })
@@ -37,7 +38,10 @@ class ProjectRecurrenceTest < ActiveSupport::TestCase
     assert_equal @project.skills_needed, copy.skills_needed
     assert_equal Date.new(2027, 2, 27), copy.tasks.sole.due_on
     assert_nil copy.tasks.sole.assignee_id
-    assert_equal [ [ "Serve", occurrence.on, 3 ] ], copy.slots.pluck(:label, :date, :capacity)
+    copied_slot = copy.slots.find_by!(label: "Serve")
+    assert_equal [ "Serve", occurrence.on, 3 ], [ copied_slot.label, copied_slot.date, copied_slot.capacity ]
+    assert_equal "Class session", copied_slot.schedule_item.title
+    assert_equal occurrence.on, copied_slot.schedule_item.date
     assert_equal "Plates", copy.lists.find_by!(name: "Supplies").rows.sole.cells.values.sole
     assert_equal [ people(:leader).id ], copy.memberships.pluck(:person_id)
   end

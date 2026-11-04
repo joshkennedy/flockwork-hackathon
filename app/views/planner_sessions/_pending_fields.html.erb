@@ -15,6 +15,9 @@
   <% else %>
     <div>
       <%= label_tag field_id, definition.fetch(:label), class: "block text-label font-medium text-ink" %>
+      <% if field_name == "schedule_item_source_key" %>
+        <%= select_tag input_name, options_for_select([[ "No session", "" ]] + planner_schedule_item_options(planner_session, value), value), id: field_id, class: field_class, aria: accessibility %>
+      <% else %>
       <% case definition.fetch(:input) %>
       <% when :textarea %>
         <%= text_area_tag input_name, value, id: field_id, rows: 3, required:, class: field_class, aria: accessibility %>
@@ -23,6 +26,7 @@
         <%= select_tag input_name, options_for_select(options, value), id: field_id, required:, class: field_class, aria: accessibility %>
       <% else %>
         <%= tag.input type: definition.fetch(:input), name: input_name, id: field_id, value:, required:, min: definition[:min], step: definition[:step], class: field_class, aria: accessibility %>
+      <% end %>
       <% end %>
       <% if errors.any? %>
         <p id="<%= error_id %>" class="mt-1 text-meta text-danger"><%= errors.to_sentence %></p>

@@ -41,6 +41,8 @@ class ProjectDuplicatesTest < ActionDispatch::IntegrationTest
       capacity: 4
     )
     source_slot.slot_claims.create!(person: people(:volunteer))
+    source_session = source.schedule_items.create!(date: "2027-02-18", title: "Session 3")
+    linked_slot = source.slots.create!(label: "Teacher", capacity: 1, schedule_item: source_session)
     source.recipients.create!(person: people(:recipient))
     source.invitations.create!(
       organization: source.organization,
@@ -94,7 +96,8 @@ class ProjectDuplicatesTest < ActionDispatch::IntegrationTest
       [ "Arrival", Date.new(2028, 3, 15), nil, nil, nil ],
       [ "Day Two Kickoff", Date.new(2028, 3, 16), nil, nil, nil ],
       [ "Lunch", Date.new(2028, 3, 15), "12:00:00", "13:00:00", "Fellowship Hall" ],
-      [ "Opening Session", Date.new(2028, 3, 15), "09:00:00", nil, nil ]
+      [ "Opening Session", Date.new(2028, 3, 15), "09:00:00", nil, nil ],
+      [ "Session 3", Date.new(2028, 3, 21), nil, nil, nil ]
     ], copy.schedule_items.sort_by(&:title).map { |item|
       [
         item.title,
@@ -110,6 +113,11 @@ class ProjectDuplicatesTest < ActionDispatch::IntegrationTest
     assert_equal "17:30:00", copied_slot.starts_at_time.strftime("%H:%M:%S")
     assert_equal 4, copied_slot.capacity
     assert_equal 0, copied_slot.claims_count
+
+    copied_linked_slot = copy.slots.find_by!(label: "Teacher")
+    assert_equal "Session 3", copied_linked_slot.schedule_item.title
+    assert_equal Date.new(2028, 3, 21), copied_linked_slot.date
+    assert_not_equal linked_slot.schedule_item_id, copied_linked_slot.schedule_item_id
 
     assert_equal [
       [ "booking", "Venue rental", 100_000, nil, "pending", nil ],

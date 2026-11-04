@@ -115,6 +115,11 @@ module Planner
             input: :number,
             min: 1,
             schema: { type: "integer", minimum: 1 }
+          },
+          "schedule_item_source_key" => {
+            label: "Session reference",
+            input: :text,
+            schema: { type: [ "string", "null" ] }
           }
         },
         create: lambda do |project, fields|

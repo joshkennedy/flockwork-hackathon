@@ -3,7 +3,7 @@ require "test_helper"
 class PlannerSuggestionKindsTest < ActiveSupport::TestCase
   MERGED_FIELD_NAMES = %w[
     capacity columns day_offset days description details due_in_days end_day_offset ends_at
-    estimated_dollars label location name role start_day_offset starts_at time title tool
+    estimated_dollars label location name role schedule_item_source_key start_day_offset starts_at time title tool
   ].freeze
 
   test "provider schema is one flat added item without session-owned fields" do

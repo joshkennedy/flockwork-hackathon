@@ -43,6 +43,45 @@ class PlannerGeneralSessionTest < ActiveSupport::TestCase
     end
   end
 
+  test "acceptance links planned Slots to their planned Schedule item" do
+    pending = Planner::PendingItems.expand([
+      item("schedule_item", "session-3", "title" => "Session 3", "date" => "2027-04-18", "starts_at" => "09:00", "ends_at" => "10:00", "location" => "Classroom"),
+      item("slot_run", "session-3-teacher", "label" => "Teacher", "start_date" => "2027-01-01", "end_date" => "2027-01-01", "time" => "09:00", "capacity" => 1, "schedule_item_source_key" => "session-3")
+    ], project: @session.project).map(&:to_h)
+    @session.update!(status: :reviewing, pending_items: pending)
+
+    @session.accept_visible!
+
+    schedule_item = @session.project.schedule_items.find_by!(title: "Session 3")
+    slot = @session.project.slots.find_by!(label: "Teacher")
+    assert_equal schedule_item, slot.schedule_item
+    assert_equal schedule_item.date, slot.date
+  end
+
+  test "acceptance links a planned Slot to an existing Schedule item" do
+    schedule_item = @session.project.schedule_items.create!(title: "Existing session", date: "2027-04-25")
+    reference = Planner::PendingItems.existing_schedule_item_source_key(schedule_item)
+    pending = Planner::PendingItems.expand([
+      item("slot_run", "existing-teacher", "label" => "Teacher", "start_date" => "2027-01-01", "end_date" => "2027-01-01", "time" => "09:00", "capacity" => 1, "schedule_item_source_key" => reference)
+    ], project: @session.project).map(&:to_h)
+    @session.update!(status: :reviewing, pending_items: pending)
+
+    @session.accept_visible!
+
+    assert_equal schedule_item, @session.project.slots.find_by!(label: "Teacher").schedule_item
+  end
+
+  test "an unknown Schedule item reference is a visible acceptance blocker" do
+    pending = Planner::PendingItems.expand([
+      item("slot_run", "missing-session-teacher", "label" => "Teacher", "start_date" => "2027-04-18", "end_date" => "2027-04-18", "time" => "09:00", "capacity" => 1, "schedule_item_source_key" => "missing-session")
+    ], project: @session.project).map(&:to_h)
+    @session.update!(status: :reviewing, pending_items: pending)
+
+    errors = @session.pending_item_errors.fetch(pending.sole.fetch("id"))
+    assert_includes errors, "Session reference does not match a planned or existing Schedule item"
+    assert_raises(ArgumentError) { @session.accept_visible! }
+  end
+
   test "unknown budget remains editable but blocks acceptance" do
     pending = Planner::PendingItems.expand([
       item("purchase", "paint", "description" => "Paint", "estimated_dollars" => nil)

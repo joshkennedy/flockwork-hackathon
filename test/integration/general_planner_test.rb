@@ -74,7 +74,8 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_match(/food or catering/, class_kind.fetch(:prompt))
     assert_match(/take-home materials/, class_kind.fetch(:prompt))
     assert_match(/without asking for names or private details/, class_kind.fetch(:prompt))
-    assert_match(/Slots cannot yet link to Schedule items/, class_kind.fetch(:prompt))
+    assert_match(/schedule_item_source_key/, class_kind.fetch(:prompt))
+    assert_no_match(/cannot yet link/, class_kind.fetch(:prompt))
   end
 
   test "Something Else collects a description and redacts names before the first Planner card" do
@@ -352,6 +353,22 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
         expected_revision: planner_session.generation_revision
       }
     end
+  end
+
+  test "an invalid Slot session reference is shown on the Planner item" do
+    sign_in_as_leader
+    project, planner_session = build_reviewing_session(
+      planning_kind: "class",
+      items: [
+        item("slot_run", "teacher", label: "Teacher, Session 3", start_date: "2027-04-18", end_date: "2027-04-18", time: "09:00", capacity: 1, schedule_item_source_key: "missing-session")
+      ]
+    )
+
+    get project_planner_session_path(project, planner_session)
+
+    assert_response :success
+    assert_select "article.meal-slot-error", text: /Session reference does not match a planned or existing Schedule item/
+    assert_select "button[disabled]", text: "Add to Project"
   end
 
   test "general planning enforces leader tenant privacy and v3 endpoint boundaries while v1 remains compatible" do

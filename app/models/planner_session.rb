@@ -86,8 +86,19 @@ class PlannerSession < ApplicationRecord
   end
 
   def pending_item_errors
-    visible_pending_items.to_h do |item|
-      [ item.fetch("id"), Planner::PendingItems.errors(item, project:) ]
+    items = visible_pending_items
+    schedule_references = items.filter_map { |item| item.fetch("source_key") if item["kind"] == "schedule_item" }.to_set
+    project.schedule_items.find_each do |schedule_item|
+      schedule_references << Planner::PendingItems.existing_schedule_item_source_key(schedule_item)
+    end
+
+    items.to_h do |item|
+      errors = Planner::PendingItems.errors(item, project:)
+      reference = item.dig("fields", "schedule_item_source_key")
+      if item["kind"] == "slot" && reference.present? && !schedule_references.include?(reference)
+        errors << "Session reference does not match a planned or existing Schedule item"
+      end
+      [ item.fetch("id"), errors ]
     end.reject { |_, errors| errors.empty? }
   end
 
@@ -109,6 +120,13 @@ class PlannerSession < ApplicationRecord
       "existing_artifacts" => {
         "task_titles" => project.tasks.order(:id).limit(100).pluck(:title),
         "schedule_item_titles" => project.schedule_items.order(:id).limit(100).pluck(:title),
+        "schedule_items" => project.schedule_items.chronological.limit(100).map do |schedule_item|
+          {
+            "source_key" => Planner::PendingItems.existing_schedule_item_source_key(schedule_item),
+            "title" => schedule_item.title,
+            "date" => schedule_item.date.iso8601
+          }
+        end,
         "slot_labels" => project.slots.order(:id).limit(100).pluck(:label),
         "booking_descriptions" => project.budget_lines.booking.order(:id).limit(100).pluck(:description),
         "purchase_descriptions" => project.budget_lines.purchase.order(:id).limit(100).pluck(:description),
@@ -358,8 +376,11 @@ class PlannerSession < ApplicationRecord
       project.save!
 
       created_ids = Hash.new { |hash, key| hash[key] = [] }
-      items.sort_by { |item| item["kind"] == "shift_project_dates" ? 0 : 1 }.each do |item|
-        created = Planner::PendingItems.create!(project, item)
+      created_schedule_items = {}
+      items.sort_by { |item| acceptance_order(item) }.each do |item|
+        schedule_item = linked_schedule_item(item, created_schedule_items)
+        created = Planner::PendingItems.create!(project, item, schedule_item:)
+        created_schedule_items[item.fetch("source_key")] = created if item["kind"] == "schedule_item"
         created_ids[item.fetch("kind")] << created.id if created.respond_to?(:id)
       end
       tools = items.map { |item| Planner::PendingItems.tool(item) }.compact
@@ -473,6 +494,26 @@ class PlannerSession < ApplicationRecord
   private
     def private_safe_text(text)
       Planner::NameRedactor.new(Current.organization).call(text.to_s)
+    end
+
+    def acceptance_order(item)
+      return 0 if item["kind"] == "shift_project_dates"
+      return 1 if item["kind"] == "schedule_item"
+
+      2
+    end
+
+    def linked_schedule_item(item, created_schedule_items)
+      return unless item["kind"] == "slot"
+
+      reference = item.dig("fields", "schedule_item_source_key")
+      return if reference.blank?
+
+      if (match = reference.match(/\Aexisting_schedule_item_(\d+)\z/))
+        project.schedule_items.find(match[1])
+      else
+        created_schedule_items.fetch(reference)
+      end
     end
 
     def apply_generation!(revision:, response:)

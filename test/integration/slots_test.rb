@@ -163,6 +163,66 @@ class SlotsTest < ActionDispatch::IntegrationTest
     assert_select "turbo-frame#slot-form form[data-turbo-frame='_top']"
   end
 
+  test "Slot form offers Project Schedule sessions only when the Schedule tool has items" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    session = schedule_items(:community_meal_opening)
+
+    get new_project_slot_path(project)
+
+    assert_select "form[data-controller~='slot-session']"
+    assert_select "input[name='slot[date]'][data-slot-session-target='date']"
+    assert_select "select[name='slot[schedule_item_id]'][data-slot-session-target='session'][data-action='slot-session#sync']" do
+      assert_select "option[value='']", text: "No session"
+      assert_select "option[value='#{session.id}'][data-date='2027-02-12']", text: /Opening Session/
+    end
+
+    project.update!(enabled_tools: project.enabled_tools - [ "schedule" ])
+    get new_project_slot_path(project)
+
+    assert_select "select[name='slot[schedule_item_id]']", count: 0
+  end
+
+  test "a Leader links a Slot to a Schedule session and the session controls its date" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    session = schedule_items(:community_meal_day_two)
+
+    post project_slots_path(project), params: {
+      slot: {
+        date: "2027-01-01",
+        label: "Teacher",
+        capacity: 2,
+        schedule_item_id: session.id
+      }
+    }
+
+    slot = project.slots.find_by!(label: "Teacher")
+    assert_redirected_to project_path(project)
+    assert_equal session, slot.schedule_item
+    assert_equal session.date, slot.date
+  end
+
+  test "Schedule and Sign-up rows show their linked session role" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    project.update!(enabled_tools: project.enabled_tools | [ "signup_sheet" ])
+    session = schedule_items(:community_meal_opening)
+    slot = project.slots.create!(label: "Teacher", capacity: 2, schedule_item: session)
+    slot.slot_claims.create!(person: people(:volunteer))
+
+    get project_path(project)
+
+    assert_select "li[data-schedule-item-id='#{session.id}']" do
+      assert_select ".schedule-role-label", text: "Teacher"
+      assert_select ".schedule-role-count", text: "1 of 2 filled"
+      assert_select "a[href='##{dom_id(slot)}']", text: "Claim"
+    end
+    assert_select "li##{dom_id(slot)}" do
+      assert_select ".signup-session", text: /Session: Opening Session/
+    end
+  end
+
   test "a run longer than sixty days is refused" do
     sign_in_as_leader
     project = projects(:community_meal)

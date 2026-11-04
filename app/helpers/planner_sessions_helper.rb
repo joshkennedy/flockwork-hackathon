@@ -63,6 +63,25 @@ module PlannerSessionsHelper
     "tasks"
   end
 
+  def planner_schedule_item_options(planner_session, selected_reference = nil)
+    options = planner_session.visible_pending_items.filter_map do |item|
+      next unless item["kind"] == "schedule_item"
+
+      [ item.dig("fields", "title"), item.fetch("source_key") ]
+    end
+    options.concat(planner_session.project.schedule_items.chronological.map do |schedule_item|
+      [ schedule_item.title, Planner::PendingItems.existing_schedule_item_source_key(schedule_item) ]
+    end)
+    if selected_reference.present? && options.none? { |_, reference| reference == selected_reference }
+      options << [ "Unknown session", selected_reference ]
+    end
+    options
+  end
+
+  def planner_schedule_item_label(planner_session, reference)
+    planner_schedule_item_options(planner_session, reference).find { |_, value| value == reference }&.first
+  end
+
   def planner_date(value)
     Date.iso8601(value.to_s).strftime("%B %-d, %Y")
   rescue Date::Error

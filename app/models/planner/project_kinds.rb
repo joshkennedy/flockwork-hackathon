@@ -29,7 +29,7 @@ module Planner
       "class" => {
         name: "Class",
         description: "Plan a class series with teachers, food, and take-home materials.",
-        prompt: "Help organize a class series. Ask how many sessions there are and the date of each session, which teaching roles each session needs, whether food or catering is needed, and which curriculum handouts or take-home materials must be prepared. Build open roles without asking for names or private details. Name each teacher Slot by session, such as \"Teacher, Session 3,\" and date it to match that session because Slots cannot yet link to Schedule items."
+        prompt: "Help organize a class series. Ask how many sessions there are and the date of each session, which teaching roles each session needs, whether food or catering is needed, and which curriculum handouts or take-home materials must be prepared. Build open roles without asking for names or private details. Create each session as a schedule_item. Create its teaching role as a slot_run, such as \"Teacher, Session 3,\" and set schedule_item_source_key to that session's source_key."
       },
       "other" => {
         name: "Project",
