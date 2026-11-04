@@ -14,7 +14,14 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     existing = projects(:community_meal)
     original = existing.attributes
 
-    %w[retreat workday children_program other].each do |planning_kind|
+    expected_names = {
+      "retreat" => "Retreat",
+      "workday" => "Workday",
+      "children_program" => "Children’s program",
+      "other" => "Outreach project"
+    }
+
+    expected_names.each_key do |planning_kind|
       use_provider(response(card: card("What matters most?")))
       params = { planning_kind: }
       params[:planner_session] = { description: "Organize an outreach project." } if planning_kind == "other"
@@ -30,6 +37,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
       assert_redirected_to project_planner_session_path(planner_session.project, planner_session)
       assert_equal 3, planner_session.flow_version
       assert_equal planning_kind, planner_session.planning_kind
+      assert_equal expected_names.fetch(planning_kind), planner_session.project.name
       assert_equal "queued", planner_session.generation_state
       assert_empty planner_session.project.enabled_tools
     end
@@ -92,13 +100,18 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     }
     assert_predicate planner_session.reload, :reviewing?
 
+    get project_planner_session_path(project, planner_session)
+    assert_select "form[action=?] input[name='project[name]'][value='Workday']",
+      accept_project_planner_session_path(project, planner_session)
+
     assert_difference "project.slots.count", 2 do
       assert_difference "project.tasks.count", 1 do
         assert_difference "project.schedule_items.count", 1 do
           assert_difference "project.budget_lines.count", 2 do
             assert_difference "project.lists.count", 1 do
               post accept_project_planner_session_path(project, planner_session), params: {
-                expected_revision: planner_session.generation_revision
+                expected_revision: planner_session.generation_revision,
+                project: { name: "Playground repair day" }
               }
             end
           end
@@ -108,6 +121,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
 
     assert_response :see_other
     assert_redirected_to project_path(project, added_plan: planner_session.id, anchor: "tool-signup-sheet")
+    assert_equal "Playground repair day", project.reload.name
     assert_equal "signup_sheet", planner_session.reload.acceptance_tool
     assert_equal Date.new(2027, 4, 11), project.tasks.find_by!(title: "Confirm volunteers").due_on
     assert_equal Date.new(2027, 4, 10), project.schedule_items.find_by!(title: "Morning briefing").date
@@ -115,6 +129,23 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_equal [ [ "Item", "text" ], [ "Packed", "checkbox" ] ],
       project.lists.find_by!(name: "Supply checklist").columns.order(:id).pluck(:name, :column_type)
     assert_equal %w[budget docs list schedule signup_sheet tasks], project.reload.enabled_tools.sort
+  end
+
+  test "acceptance preserves a Project name the Leader already saved" do
+    sign_in_as_leader
+    project, planner_session = build_reviewing_session(
+      planning_kind: "workday",
+      items: [ item("task", "task-1", title: "Set out tools", details: "", due_on: nil) ]
+    )
+    project.update!(name: "Neighborhood serve day")
+
+    post accept_project_planner_session_path(project, planner_session), params: {
+      expected_revision: planner_session.generation_revision,
+      project: { name: project.name }
+    }
+
+    assert_response :see_other
+    assert_equal "Neighborhood serve day", project.reload.name
   end
 
   test "direct edits removals and restores survive a changed answer and safe resume" do

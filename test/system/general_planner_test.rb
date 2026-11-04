@@ -54,11 +54,15 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
 
     click_button "Finish with This"
     assert_text "Here’s what will be added"
+    assert_field "Project name", with: "Workday"
+    fill_in "Project name", with: "Playground repair day"
     click_button "Add to Project"
 
     planner_session = PlannerSession.order(:id).last!
     assert_equal "tasks", planner_session.acceptance_tool
     assert_current_path project_path(planner_session.project, added_plan: planner_session.id)
+    assert_selector "h1", text: "Playground repair day"
+    assert_link "Rename", href: edit_project_path(planner_session.project)
     within "section[aria-labelledby='tool-tasks']" do
       assert_text "Confirm volunteer crew"
     end

@@ -101,7 +101,10 @@ class PlannerSessionsController < ApplicationController
   def accept
     return accept_meal_setup if @planner_session.meal_setup?
     if @planner_session.build_as_you_go?
-      @planner_session.accept_visible!(expected_revision: expected_revision)
+      @planner_session.accept_visible!(
+        expected_revision: expected_revision,
+        project_name: params.dig(:project, :name)
+      )
       return redirect_to project_path(@project, added_plan: @planner_session.id, anchor: "tool-#{@planner_session.acceptance_tool.tr('_', '-')}"), status: :see_other
     end
     raise ActiveRecord::RecordNotFound unless @planner_session.reviewing?

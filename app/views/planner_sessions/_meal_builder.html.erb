@@ -80,13 +80,18 @@
             <% end %>
           <% end %>
 
-          <% if addable %>
-            <%= button_to "Add to Project", accept_project_planner_session_path(project, planner_session),
-              params: { expected_revision: planner_session.generation_revision }, class: "mt-6 btn btn-primary",
-              form: { data: { turbo_frame: "_top" } }, data: { turbo_submits_with: "Adding #{pluralize(planner_session.pending_item_count, "Item")}…" } %>
-          <% else %>
+          <%= form_with url: accept_project_planner_session_path(project, planner_session), method: :post,
+            class: "mt-5", data: { turbo_frame: "_top" } do |form| %>
+            <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
+            <%= form.label :name, "Project name", class: "block text-label font-medium text-ink" %>
+            <%= form.text_field :name, name: "project[name]", value: project.name, required: true, class: "mt-2 block w-full field" %>
+            <%= form.button "Add to Project", class: "mt-4 btn btn-primary", disabled: !addable,
+              aria: ({ describedby: dom_id(planner_session, :add_note) } unless addable),
+              data: { turbo_submits_with: "Adding #{pluralize(planner_session.pending_item_count, "Item")}…" } %>
+          <% end %>
+
+          <% unless addable %>
             <% add_note_id = dom_id(planner_session, :add_note) %>
-            <button class="mt-6 btn btn-primary" disabled aria-describedby="<%= add_note_id %>">Add to Project</button>
             <p id="<%= add_note_id %>" class="mt-3 text-meta text-ink-2"><%=
               if visible_items.empty?
                 general_planner ? "Restore a removed item before adding." : "Restore a removed meal before adding."

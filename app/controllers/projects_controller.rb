@@ -187,7 +187,11 @@ class ProjectsController < ApplicationController
     def start_planning(kind, description: nil)
       starter = Planner::ProjectKinds::CHOICES.fetch(kind)
       Project.transaction do
-        @project = Project.create_for(creator: Current.person, attributes: starter.slice(:name, :description).merge(enabled_tools: []))
+        project_attributes = starter.slice(:description).merge(
+          name: Planner::ProjectKinds.provisional_name(kind, description:),
+          enabled_tools: []
+        )
+        @project = Project.create_for(creator: Current.person, attributes: project_attributes)
         @project.save!
         @planner_session = @project.planner_sessions.create!(
           started_by: Current.person, flow_version: kind == "meal_train" ? 4 : 3,

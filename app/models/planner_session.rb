@@ -330,7 +330,7 @@ class PlannerSession < ApplicationRecord
     end
   end
 
-  def accept_visible!(expected_revision: nil)
+  def accept_visible!(expected_revision: nil, project_name: nil)
     with_lock do
       ensure_build_as_you_go!
       return acceptance_receipt if accepted?
@@ -353,6 +353,9 @@ class PlannerSession < ApplicationRecord
         end
         raise ArgumentError, errors.values.flatten.to_sentence
       end
+
+      project.name = project_name unless project_name.nil?
+      project.save!
 
       created_ids = Hash.new { |hash, key| hash[key] = [] }
       items.sort_by { |item| item["kind"] == "shift_project_dates" ? 0 : 1 }.each do |item|

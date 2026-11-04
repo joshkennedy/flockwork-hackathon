@@ -26,7 +26,10 @@
 
   <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div class="min-w-0 max-w-4xl">
-      <h1 class="text-ink"><%= @project.name %></h1>
+      <div class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+        <h1 class="min-w-0 text-ink"><%= @project.name %></h1>
+        <%= link_to "Rename", edit_project_path(@project), class: "link text-meta" if can_update %>
+      </div>
       <% if @project.description.present? %>
         <p class="mt-2 text-ink-2"><%= @project.description %></p>
       <% end %>
