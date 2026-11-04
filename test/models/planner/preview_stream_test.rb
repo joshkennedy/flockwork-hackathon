@@ -55,6 +55,22 @@ class PlannerPreviewStreamTest < ActiveSupport::TestCase
     assert_empty @broadcasts
   end
 
+  test "a partial retry preview includes saved items that were not explicitly removed" do
+    saved = [ slot_run("Dinner"), slot_run("Lunch"), slot_run("Brunch") ]
+    @planner_session.update!(
+      pending_items: Planner::PendingItems.expand(saved, project: @planner_session.project).map(&:to_h)
+    )
+    stream = Planner::PreviewStream.new(@planner_session, clock: -> { 0.0 })
+
+    with_broadcasts do
+      stream.push(card: nil, added: [ saved.first ])
+    end
+
+    streamed_items = @broadcasts.sole.dig(:locals, :visible_items)
+    assert_equal @planner_session.pending_item_count, streamed_items.size
+    assert_equal 3, streamed_items.size
+  end
+
   private
     def slot_run(label)
       { "kind" => "slot_run", "source_key" => "meal-slots-#{label.downcase}",

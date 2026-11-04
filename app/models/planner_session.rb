@@ -119,7 +119,7 @@ class PlannerSession < ApplicationRecord
       # The seeded vocabulary only; People's own skill tags never reach the model (ADR 0002).
       "skill_vocabulary" => Skills::SUGGESTED,
       "pending_items" => visible_pending_items.map do |item|
-        item.slice("source_key", "kind", "fields", "day_offset", "removed", "user_edits", "conflict")
+        item.slice("id", "source_key", "kind", "fields", "day_offset", "removed", "user_edits", "conflict")
       end
     }
   end

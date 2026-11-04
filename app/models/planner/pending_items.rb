@@ -26,13 +26,21 @@ module Planner
     def reconcile_candidates(existing:, incoming:, removed_ids: [])
       prior = existing.index_by { |item| item.fetch("source_key") }
       raise ArgumentError, "Planner preview is too large" if incoming.size > 200
-      keys = incoming.to_set(&:source_key)
-      result = incoming.map { |candidate| prior[candidate.source_key] ? merge(prior[candidate.source_key], candidate) : candidate.to_h }
-      existing.each do |item|
-        next if keys.include?(item.fetch("source_key")) || !preserved_by_leader?(item)
-        result << item.merge("conflict" => { "type" => "removed_by_revision", "suggested_fields" => nil })
+      incoming_by_key = incoming.index_by(&:source_key)
+      result = existing.map do |item|
+        candidate = incoming_by_key.delete(item.fetch("source_key"))
+        candidate ? merge(item, candidate) : item
       end
-      result.reject { |item| removed_ids.include?(item.fetch("id")) && !preserved_by_leader?(item) }
+      result.concat(incoming.filter_map { |candidate| candidate.to_h if incoming_by_key.key?(candidate.source_key) })
+      result = result.filter_map do |item|
+        next item unless removed_ids.include?(item.fetch("id"))
+        next unless preserved_by_leader?(item)
+
+        item.merge("conflict" => { "type" => "removed_by_revision", "suggested_fields" => nil })
+      end
+      raise ArgumentError, "Planner preview is too large" if result.size > 200
+
+      result
     end
 
     def expand(added, project:)

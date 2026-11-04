@@ -148,6 +148,38 @@ class PlannerGeneralSessionTest < ActiveSupport::TestCase
     assert_equal 4, @session.reload.pending_item_count
   end
 
+  test "a failed step and retry do not drop prior items without explicit removals" do
+    original = 5.times.map do |index|
+      item("task", "task-#{index}", "title" => "Task #{index + 1}", "details" => "", "due_on" => nil)
+    end
+    retry_snapshot = original.first(2)
+    provider = Planner::Providers::Fake.new([
+      Planner::Response.new(
+        card: { "question" => "What matters most?", "options" => [ "Speed", "Care", "Cost" ] },
+        finished: false,
+        added: original,
+        removed_ids: []
+      ),
+      RuntimeError.new("provider failed"),
+      Planner::Response.new(card: nil, finished: true, added: retry_snapshot, removed_ids: [])
+    ])
+    Rails.configuration.x.planner_provider = provider
+
+    revision = @session.queue_generation!
+    assert @session.generate!(revision:)
+    assert_equal 5, @session.reload.pending_item_count
+
+    revision = @session.select_answer!("Care", expected_revision: revision)
+    assert_not @session.generate!(revision:)
+    assert_equal 5, @session.reload.pending_item_count
+
+    revision = @session.queue_generation!(expected_revision: revision)
+    assert @session.generate!(revision:)
+    assert_equal 5, @session.reload.pending_item_count
+    assert_equal @session.pending_items.pluck("id").sort,
+      provider.contexts.last.fetch("pending_items").pluck("id").sort
+  end
+
   test "skill items write skills_needed on accept, and People's own skill tags never reach the model" do
     @leader.update!(skills: [ "zzz-sentinel-skill" ])
     items = [

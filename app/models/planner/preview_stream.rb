@@ -47,7 +47,12 @@ module Planner
       end
 
       def expanded(added)
-        Planner::PendingItems.expand(added, project:).map(&:to_h)
+        Planner::PendingItems.reconcile(
+          existing: @planner_session.pending_items,
+          added:,
+          removed_ids: [],
+          project:
+        ).then { |items| Planner::PendingItems.visible(items) }
       rescue *SKIPPED_ITEM_ERRORS
         nil
       end

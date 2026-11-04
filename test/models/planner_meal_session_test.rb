@@ -143,7 +143,8 @@ class PlannerMealSessionTest < ActiveSupport::TestCase
     )
     response = response(
       card: card("When?"),
-      added: [ slot_run.merge("fields" => slot_run.fetch("fields").merge("end_date" => "2027-02-12")) ]
+      added: [ slot_run.merge("fields" => slot_run.fetch("fields").merge("end_date" => "2027-02-12")) ],
+      removed_ids: [ second.fetch("id") ]
     )
 
     assert @planner_session.send(:apply_generation!, revision: 1, response:)
@@ -230,8 +231,8 @@ class PlannerMealSessionTest < ActiveSupport::TestCase
       end
     end
 
-    def response(card:, finished: false, added: [])
-      Planner::Response.new(card:, finished:, added:, removed_ids: [])
+    def response(card:, finished: false, added: [], removed_ids: [])
+      Planner::Response.new(card:, finished:, added:, removed_ids:)
     end
 
     def card(question)

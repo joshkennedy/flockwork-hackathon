@@ -48,6 +48,25 @@ class PlannerPendingItemsTest < ActiveSupport::TestCase
     assert_equal "18:30", repeated.first.dig("fields", "time")
   end
 
+  test "only explicit removals drop saved work and Leader edits still win" do
+    existing = reconcile(added: [ slot_run ])
+    omitted = reconcile(existing:, added: [])
+
+    assert_equal existing, omitted
+
+    id = existing.first.fetch("id")
+    assert_equal 2, reconcile(existing:, added: [], removed_ids: [ id ]).size
+
+    edited = existing.map(&:deep_dup)
+    edited.first["fields"]["time"] = "18:30"
+    edited.first["user_edits"]["time"] = "18:30"
+    preserved = reconcile(existing: edited, added: [], removed_ids: [ id ])
+
+    assert_equal 3, preserved.size
+    assert_equal "18:30", preserved.first.dig("fields", "time")
+    assert_equal "removed_by_revision", preserved.first.dig("conflict", "type")
+  end
+
   test "a revised undated offset is used when the first date is supplied later" do
     @project.update!(starts_on: nil, ends_on: nil)
     original = reconcile(added: [ slot_run(start_day_offset: 0, end_day_offset: 0) ])
@@ -71,11 +90,11 @@ class PlannerPendingItemsTest < ActiveSupport::TestCase
   end
 
   private
-    def reconcile(existing: [], added:)
+    def reconcile(existing: [], added:, removed_ids: [])
       Planner::PendingItems.reconcile(
         existing:,
         added:,
-        removed_ids: [],
+        removed_ids:,
         project: @project
       )
     end

@@ -22,6 +22,13 @@ class PlannerProvidersLlmTest < ActiveSupport::TestCase
     assert_includes prompt, "Propose open roles such as \"2 drivers\", never people."
   end
 
+  test "build-as-you-go prompts require explicit item removals" do
+    [ Planner::Providers::Llm::MEAL_PROMPT, Planner::Providers::Llm::GENERAL_PROMPT ].each do |prompt|
+      assert_includes prompt, "Include an item's id in removed_ids only when an answer explicitly rules it out."
+      assert_includes prompt, "Omission from added never removes saved draft work."
+    end
+  end
+
   test "resolves provider and model from ENV with defaults" do
     with_planner_llm_env("PLANNER_LLM_PROVIDER" => nil, "PLANNER_LLM_MODEL" => nil) do
       llm = Planner::Providers::Llm.new
