@@ -5,20 +5,27 @@
   <% field_id = "pending_#{item.fetch('id')}_#{field_name}" %>
   <% input_name = "item[fields][#{field_name}]" %>
   <% required = !Array(definition.fetch(:schema).fetch(:type)).include?("null") %>
+  <% errors = Array(field_errors[field_name]) %>
+  <% error_id = "#{field_id}_error" %>
+  <% accessibility = errors.any? ? { invalid: true, describedby: error_id } : {} %>
+  <% field_class = class_names("mt-2 block w-full field", "field-error": errors.any?) %>
 
   <% if definition.fetch(:input) == :columns %>
-    <%= render "planner_sessions/list_columns_editor", item:, value: Array(value), field_id: %>
+    <%= render "planner_sessions/list_columns_editor", item:, value: Array(value), field_id:, errors:, error_id: %>
   <% else %>
     <div>
       <%= label_tag field_id, definition.fetch(:label), class: "block text-label font-medium text-ink" %>
       <% case definition.fetch(:input) %>
       <% when :textarea %>
-        <%= text_area_tag input_name, value, id: field_id, rows: 3, required:, class: "mt-2 block w-full field" %>
+        <%= text_area_tag input_name, value, id: field_id, rows: 3, required:, class: field_class, aria: accessibility %>
       <% when :select %>
         <% options = definition.fetch(:options).map { |option_value, label| [ label, option_value ] } %>
-        <%= select_tag input_name, options_for_select(options, value), id: field_id, required:, class: "mt-2 block w-full field" %>
+        <%= select_tag input_name, options_for_select(options, value), id: field_id, required:, class: field_class, aria: accessibility %>
       <% else %>
-        <%= tag.input type: definition.fetch(:input), name: input_name, id: field_id, value:, required:, min: definition[:min], step: definition[:step], class: "mt-2 block w-full field" %>
+        <%= tag.input type: definition.fetch(:input), name: input_name, id: field_id, value:, required:, min: definition[:min], step: definition[:step], class: field_class, aria: accessibility %>
+      <% end %>
+      <% if errors.any? %>
+        <p id="<%= error_id %>" class="mt-1 text-meta text-danger"><%= errors.to_sentence %></p>
       <% end %>
     </div>
   <% end %>

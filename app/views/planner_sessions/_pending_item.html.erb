@@ -1,25 +1,26 @@
 <% fields = item.fetch("fields") %>
 <% errors = Array(pending_errors.fetch(item.fetch("id"), [])) %>
-<article id="pending-item-<%= item.fetch("id") %>" class="meal-slot <%= "meal-slot-conflict" if item["conflict"].present? %>">
+<% field_errors = planner_pending_field_errors(item, errors) %>
+<article id="pending-item-<%= item.fetch("id") %>" class="meal-slot <%= "meal-slot-conflict" if item["conflict"].present? %> <%= "meal-slot-error" if errors.any? %>">
   <div class="meal-slot-summary">
     <div class="min-w-0 flex-1">
       <p class="font-semibold text-ink"><%= planner_pending_summary(item) %></p>
       <%= render "planner_sessions/pending_item_meta", item: %>
-      <% if errors.any? %>
+      <% if field_errors[nil].present? %>
         <ul class="mt-2 text-meta text-danger" aria-label="Needs attention">
-          <% errors.each do |error| %><li><%= error %></li><% end %>
+          <% field_errors.fetch(nil).each do |error| %><li><%= error %></li><% end %>
         </ul>
       <% end %>
     </div>
     <% unless planner_session.generation_busy? %>
-      <details class="meal-slot-editor">
+      <details class="meal-slot-editor" <%= "open" if errors.any? %>>
         <%= disclosure_summary "Edit", class: "btn btn-text" %>
         <div class="meal-slot-edit-panel">
           <%= form_with url: pending_item_project_planner_session_path(project, planner_session), method: :patch,
             namespace: "pending_#{item.fetch('id')}", class: "grid gap-4" do |form| %>
             <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
             <%= form.hidden_field :id, name: "item[id]", value: item.fetch("id") %>
-            <%= render "planner_sessions/pending_fields", item:, fields: %>
+            <%= render "planner_sessions/pending_fields", item:, fields:, field_errors: %>
             <div class="flex flex-wrap items-center justify-between gap-3">
               <%= form.button "Save Changes", name: "item[decision]", value: "edit", class: "btn btn-secondary", data: { turbo_submits_with: "Saving…" } %>
               <%= form.button "Remove", name: "item[decision]", value: "remove", class: "btn btn-danger", formnovalidate: true %>

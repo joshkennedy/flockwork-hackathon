@@ -100,7 +100,9 @@
               elsif needs_start_date
                 general_planner ? "Set the start date above to add these items." : "Set the first meal date above to add these slots."
               elsif general_planner
-                "Fix the highlighted fields before adding."
+                safe_join(planner_acceptance_blockers(visible_items, pending_errors).map { |blocker|
+                  link_to(blocker.fetch(:text), "##{blocker.fetch(:id)}", class: "link", data: { turbo: false })
+                }, "; ")
               else
                 "Fix the highlighted meals before adding."
               end

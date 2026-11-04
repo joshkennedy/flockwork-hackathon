@@ -1,4 +1,5 @@
-<fieldset data-controller="list-columns" data-list-columns-next-index-value="<%= value.length %>">
+<fieldset data-controller="list-columns" data-list-columns-next-index-value="<%= value.length %>"
+  <%= tag.attributes(aria: { invalid: true, describedby: error_id }) if errors.any? %>>
   <legend class="text-label font-medium text-ink">Columns</legend>
   <div class="mt-2 grid gap-3" data-list-columns-target="rows">
     <% value.each_with_index do |column, index| %>
@@ -9,4 +10,7 @@
     <%= render "planner_sessions/list_column_row", item:, column: { "name" => "", "type" => "text" }, index: "NEW_INDEX", field_id: %>
   </template>
   <button type="button" class="mt-3 btn btn-text" data-action="list-columns#add">Add Column</button>
+  <% if errors.any? %>
+    <p id="<%= error_id %>" class="mt-1 text-meta text-danger"><%= errors.to_sentence %></p>
+  <% end %>
 </fieldset>

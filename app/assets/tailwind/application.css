@@ -333,6 +333,7 @@
   .status-chip { @apply inline-flex items-center whitespace-nowrap rounded-badge bg-hairline px-1.5 py-0.5 text-label text-ink; }
   .status-chip-need { @apply bg-sunlit-soft; }
   .field { @apply min-h-input-h-phone min-w-0 rounded-control border border-border bg-panel px-3 py-2 text-body-phone text-ink sm:min-h-input-h sm:py-1.5 sm:text-body; }
+  .field-error, [aria-invalid="true"] .field { border-color: var(--color-danger); }
   :is(textarea, trix-editor).field { min-height: 112px; }
   .nav-item { @apply flex min-h-control-h items-center gap-3 rounded-nav px-3 py-1.5 text-meta text-ink-2; transition: background-color var(--duration-hover), color var(--duration-hover); }
   .nav-item:is([aria-current="page"], [aria-current="true"]) { @apply bg-nav-active font-semibold text-ink; }
@@ -448,6 +449,7 @@
   .meal-slot-editor[open] > summary { @apply ml-auto; width: max-content; }
   .meal-slot-edit-panel { @apply mt-3 rounded-nav bg-panel p-4; }
   .meal-slot-conflict { @apply bg-danger-soft; }
+  .meal-slot-error { @apply bg-danger-soft; }
   .meal-slot-conflict-actions { @apply mt-3 border-t border-danger/20 pt-3; }
   .meal-preview-empty { @apply rounded-tile border border-dashed border-ghost-border bg-ghost-fill px-4 py-7; }
   .meal-building { @apply mt-4 flex flex-col gap-2.5 rounded-tile border border-dashed border-ghost-border bg-ghost-fill px-4 py-4; }

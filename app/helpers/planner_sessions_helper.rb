@@ -36,6 +36,25 @@ module PlannerSessionsHelper
     item.dig("fields", "title").presence || item.dig("fields", "name").presence || item.dig("fields", "description").presence || "Untitled item"
   end
 
+  def planner_pending_field_errors(item, errors)
+    Array(errors).group_by { |error| planner_pending_error_field(item, error) }
+  end
+
+  def planner_acceptance_blockers(items, pending_errors)
+    remaining_ids = items.filter_map { |item| item.fetch("id") if pending_errors.key?(item.fetch("id")) }.to_set
+    blockers = [
+      planner_blocker(remaining_ids, pending_errors, "Estimated cost is required", "budget line", "an estimated cost"),
+      planner_blocker(remaining_ids, pending_errors, "Date can't be blank", "schedule item", "a date"),
+      planner_blocker(remaining_ids, pending_errors, "Choose a Project start date or a due date", "task", "a due date or Project start date"),
+      planner_blocker(remaining_ids, pending_errors, "At least one valid column is required", "list", "a valid column")
+    ].compact
+    if remaining_ids.any?
+      count = remaining_ids.size
+      blockers << { id: "pending-item-#{remaining_ids.first}", text: "#{pluralize(count, "item")} #{count == 1 ? "needs" : "need"} attention" }
+    end
+    blockers
+  end
+
   def planner_pending_tool(item)
     return "project_dates" if item["kind"] == "shift_project_dates"
 
@@ -64,4 +83,32 @@ module PlannerSessionsHelper
 
     value.to_s
   end
+
+  private
+    def planner_pending_error_field(item, error)
+      message = error.to_s
+      special_fields = {
+        "Estimated cost" => "estimated_dollars",
+        "Choose a Project start date or a due date" => "due_on",
+        "At least one valid column" => "columns"
+      }
+      special_fields.each { |prefix, field| return field if message.start_with?(prefix) }
+
+      Planner::PendingItems.fields_for(item.fetch("kind")).each do |field, definition|
+        labels = [ definition.fetch(:label), field.humanize ]
+        return field if labels.any? { |label| message.start_with?(label) }
+      end
+      nil
+    rescue KeyError
+      nil
+    end
+
+    def planner_blocker(remaining_ids, pending_errors, message, noun, need)
+      ids = remaining_ids.select { |id| pending_errors.fetch(id).include?(message) }
+      return if ids.empty?
+
+      remaining_ids.subtract(ids)
+      count = ids.size
+      { id: "pending-item-#{ids.first}", text: "#{pluralize(count, noun)} #{count == 1 ? "needs" : "need"} #{need}" }
+    end
 end

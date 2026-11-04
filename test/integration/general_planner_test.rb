@@ -219,6 +219,38 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_predicate planner_session.reload, :reviewing?
   end
 
+  test "review identifies and links to the field blocking acceptance" do
+    sign_in_as_leader
+    project, planner_session = build_reviewing_session(
+      planning_kind: "retreat",
+      items: [
+        item("booking", "booking-1", description: "Retreat center", estimated_dollars: nil),
+        item("schedule_item", "schedule-1", title: "Opening", date: nil, starts_at: "09:00", ends_at: "09:30", location: "Hall")
+      ]
+    )
+    budget_item, schedule_item = planner_session.visible_pending_items
+    budget_item_id = "pending-item-#{budget_item.fetch("id")}"
+    budget_field_id = "pending_#{budget_item.fetch("id")}_estimated_dollars"
+    budget_error_id = "#{budget_field_id}_error"
+    schedule_item_id = "pending-item-#{schedule_item.fetch("id")}"
+    schedule_field_id = "pending_#{schedule_item.fetch("id")}_date"
+    schedule_error_id = "#{schedule_field_id}_error"
+    note_id = ActionView::RecordIdentifier.dom_id(planner_session, :add_note)
+
+    get project_planner_session_path(project, planner_session)
+
+    assert_response :success
+    assert_select "button[disabled][aria-describedby=?]", note_id, text: "Add to Project"
+    assert_select "p##{note_id} a[href='##{budget_item_id}'][data-turbo='false']", text: "1 budget line needs an estimated cost"
+    assert_select "p##{note_id} a[href='##{schedule_item_id}'][data-turbo='false']", text: "1 schedule item needs a date"
+    assert_select "article##{budget_item_id}.meal-slot-error details[open]"
+    assert_select "input##{budget_field_id}[aria-invalid='true'][aria-describedby=?]", budget_error_id
+    assert_select "p##{budget_error_id}", text: "Estimated cost is required"
+    assert_select "article##{schedule_item_id}.meal-slot-error details[open]"
+    assert_select "input##{schedule_field_id}[aria-invalid='true'][aria-describedby=?]", schedule_error_id
+    assert_select "p##{schedule_error_id}", text: "Date can't be blank"
+  end
+
   test "setting the first Project start date preserves explicit item dates and a cleared due date" do
     sign_in_as_leader
     project, planner_session = build_reviewing_session(
