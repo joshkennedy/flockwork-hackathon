@@ -1,0 +1,19 @@
+<% content_for :title, @person.name %>
+<% content_for :breadcrumbs do %>
+  <%= link_to "Search", search_path, class: "link" %>
+  <span aria-hidden="true">/</span>
+  <span class="min-w-0 truncate" aria-current="page"><%= @person.name %></span>
+<% end %>
+<div class="w-full max-w-3xl">
+  <%= page_header @person.name %>
+  <h2 class="mt-6 text-heading">Projects you can view</h2>
+  <% if @projects.any? %>
+    <ul class="mt-4 space-y-3">
+      <% @projects.each do |project| %>
+        <li><%= link_to project.name, project_path(project), class: "link break-words" %></li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="mt-4 text-meta text-ink-2">No shared Projects are available to view.</p>
+  <% end %>
+</div>

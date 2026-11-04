@@ -29,4 +29,25 @@ class SearchSystemTest < ApplicationSystemTestCase
     find("#global_search_query").send_keys(:escape)
     assert_no_selector "dialog[open][aria-labelledby=search-heading]"
   end
+
+  test "a Leader can open a specific person from search without directory access" do
+    viewer = people(:grace_leader)
+    target = people(:grace_volunteer)
+    project = Project.create_for(creator: viewer, attributes: { name: "Shared person search Project", enabled_tools: [] })
+    project.memberships.create!(person: target, role: :volunteer)
+    visit new_demo_session_path
+    click_on "Explore as Leader"
+    assert_selector "[data-signed-in-as]", text: viewer.name
+    visit home_path
+    find("body").send_keys([ :control, "k" ])
+    within("dialog[open][aria-labelledby=search-heading]") do
+      fill_in "Projects, people and this Project’s work", with: target.name
+      click_on "Search", exact: true
+      click_on target.name
+    end
+    assert_current_path search_person_path(target)
+    assert_selector "h1", text: target.name
+    click_on project.name
+    assert_current_path project_path(project)
+  end
 end

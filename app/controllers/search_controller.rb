@@ -1,6 +1,13 @@
 class SearchController < ApplicationController
   LIMIT = 8
 
+  def person
+    raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :view_oversight, Current.organization)
+
+    @person = Current.organization.people.find(params[:id])
+    @projects = Policy.visible_projects(Current.person).where(id: @person.memberships.select(:project_id)).order(:name, :id)
+  end
+
   def index
     @results_frame = request.headers["Turbo-Frame"] == "search-results" ? "search-results" : "search-page-results"
     @query = params[:query].to_s.strip.first(100)

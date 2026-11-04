@@ -22,7 +22,7 @@ class SearchTest < ActionDispatch::IntegrationTest
     assert_no_match person.email, response.body if person.email.present?
     sign_in_as_leader
     get search_path, params: { query: person.name }
-    assert_select "section[aria-label=People] a[href=?]", oversight_path, text: person.name
+    assert_select "section[aria-label=People] a[href=?]", search_person_path(person), text: person.name
     sign_in_as_volunteer
     get search_path, params: { query: person.name }
     assert_select "section[aria-label=People]", count: 0
@@ -52,5 +52,38 @@ class SearchTest < ActionDispatch::IntegrationTest
     assert_select "section[aria-label=Projects]", count: 0
     get search_path, params: { query: " " }
     assert_select "#search-page-results", text: /Enter a name/
+  end
+
+  test "Leader person results show only shared visible Projects without contact or private history" do
+    viewer = sign_in_as_leader
+    target = people(:volunteer)
+    visible = Project.create_for(creator: viewer, attributes: { name: "Shared visible search Project" })
+    visible.memberships.create!(person: target, role: :volunteer)
+    hidden = Project.create_for(creator: people(:admin), attributes: { name: "Private search sentinel" })
+    hidden.memberships.create!(person: target, role: :volunteer)
+    target.update!(phone: "+12025550123")
+    get search_person_path(target)
+    assert_response :success
+    assert_select "h1", text: target.name
+    assert_select "a[href=?]", project_path(visible), text: visible.name
+    assert_no_match hidden.name, response.body
+    assert_no_match target.email, response.body
+    assert_no_match target.phone, response.body
+    assert_select "a[href=?]", edit_person_path(target), count: 0
+
+    get search_person_path(people(:outsider))
+    assert_response :not_found
+    sign_in_as_volunteer
+    get search_person_path(target)
+    assert_response :not_found
+  end
+
+  test "person result with no shared visible Projects has a safe empty state" do
+    viewer = sign_in_as_leader
+    target = viewer.organization.people.create!(name: "Unassigned Search Helper")
+    get search_person_path(target)
+    assert_response :success
+    assert_select "h1", text: target.name
+    assert_select "p", text: "No shared Projects are available to view."
   end
 end

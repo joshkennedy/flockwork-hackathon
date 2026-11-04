@@ -20,7 +20,7 @@
           <% records.each do |record| %>
             <% label, path = case record
                when Project then [ record.name, project_path(record) ]
-               when Person then [ record.name, Current.person.admin? ? person_path(record) : oversight_path ]
+               when Person then [ record.name, Current.person.admin? ? person_path(record) : search_person_path(record) ]
                when Task then [ record.title, project_path(@project, anchor: "tab-tasks") ]
                when Slot then [ "#{record.label} · #{record.date.strftime('%b %-d, %Y')}", project_path(@project, anchor: "tab-signup_sheet") ]
                end %>
