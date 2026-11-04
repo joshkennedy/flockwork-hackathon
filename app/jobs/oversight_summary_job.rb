@@ -1,10 +1,8 @@
 class OversightSummaryJob < ApplicationJob
   queue_as :default
 
-  def perform(key, facts)
-    sentence = OversightSummary.generate(facts)
-    Rails.cache.write(key, sentence || OversightSummary::FAILED, expires_in: sentence ? OversightSummary::TTL : 1.hour)
-  ensure
+  # Keep already queued jobs executable after AI summary generation is removed.
+  def perform(key, _facts)
     Rails.cache.delete("#{key}/pending")
   end
 end

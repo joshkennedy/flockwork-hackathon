@@ -77,7 +77,7 @@ class CheckInsTest < ActionDispatch::IntegrationTest
     assert_equal 0, CheckIn.count
   end
 
-  test "the card shows one concise summary sentence until AI lands, then the AI sentence" do
+  test "the card ignores old AI summaries and shows current facts" do
     store = ActiveSupport::Cache::MemoryStore.new
     sign_in_as_admin
 
@@ -87,9 +87,10 @@ class CheckInsTest < ActionDispatch::IntegrationTest
       assert_match "Serving on 3 Active Projects since", response.body
 
       facts = OversightSummary.facts_for(@volunteer, last_check_in: nil)
-      store.write(OversightSummary.key_for(@volunteer, facts), "Serving on 3 Active Projects, with a check-in on file.")
+      store.write("oversight-summary/#{@volunteer.id}/#{Digest::SHA256.hexdigest(facts.to_json)[0, 16]}", "Serving on 3 Active Projects, with a check-in on file.")
       get oversight_path
-      assert_match "Serving on 3 Active Projects, with a check-in on file.", response.body
+      assert_no_match "Serving on 3 Active Projects, with a check-in on file.", response.body
+      assert_match "Serving on 3 Active Projects since", response.body
     end
   end
 end
