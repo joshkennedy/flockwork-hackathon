@@ -4,6 +4,7 @@ module Planner
     SLOT_RUN_KIND = "slot_run"
     KINDS = Planner::SuggestionKinds::KINDS.keys.freeze
     EDITABLE = {
+      "shift_project_dates" => %w[days],
       "slot" => %w[label date time capacity], "task" => %w[title details due_on],
       "schedule_item" => %w[title date starts_at ends_at location],
       "booking" => %w[description estimated_dollars], "purchase" => %w[description estimated_dollars],
@@ -59,6 +60,7 @@ module Planner
       item = item.deep_stringify_keys
       fields = item.fetch("fields")
       case item.fetch("kind")
+      when "shift_project_dates" then Planner::SuggestionKinds.summary(item)
       when "slot" then fields["label"]
       when "task", "schedule_item" then fields["title"]
       when "booking", "purchase" then fields["description"]
@@ -145,6 +147,9 @@ module Planner
         return [ "At least one valid column is required" ] unless valid_columns?(fields["columns"])
         List.new(project:, name: fields["name"])
       when "enable_tool" then return Project::TOOLS.include?(fields["tool"]) ? [] : [ "Tool is invalid" ]
+      when "shift_project_dates"
+        ProjectDateShift.days(fields["days"])
+        return []
       when "skill" then return Skills.normalize(fields["name"]).one? ? [] : [ "Skill is invalid" ]
       else return [ "Unknown item type" ]
       end
@@ -158,6 +163,7 @@ module Planner
       item = item.deep_stringify_keys
       fields = item.fetch("fields")
       case item.fetch("kind")
+      when "shift_project_dates" then ProjectDateShift.new(project, days: fields.fetch("days")).call
       when "slot" then project.slots.create!(label: fields["label"], date: fields["date"], starts_at_time: fields["time"].presence, capacity: fields["capacity"])
       when "task" then project.tasks.create!(title: fields["title"], details: fields["details"], due_on: fields["due_on"])
       when "schedule_item" then project.schedule_items.create!(title: fields["title"], date: fields["date"], starts_at_time: fields["starts_at"].presence, ends_at_time: fields["ends_at"].presence, location: fields["location"].presence)

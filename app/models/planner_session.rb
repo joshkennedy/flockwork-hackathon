@@ -307,7 +307,7 @@ class PlannerSession < ApplicationRecord
       end
 
       created_ids = Hash.new { |hash, key| hash[key] = [] }
-      items.each do |item|
+      items.sort_by { |item| item["kind"] == "shift_project_dates" ? 0 : 1 }.each do |item|
         created = Planner::PendingItems.create!(project, item)
         created_ids[item.fetch("kind")] << created.id if created.respond_to?(:id)
       end
@@ -397,11 +397,14 @@ class PlannerSession < ApplicationRecord
   end
 
   def accept!(include_proposed:)
-    transaction do
+    with_lock do
+      return if accepted?
+      raise ArgumentError, "Finish reviewing before accepting work" unless reviewing?
+
       suggestions.filter do |suggestion|
         %w[kept edited].include?(suggestion.fetch("status")) ||
           (include_proposed && suggestion.fetch("status") == "proposed")
-      end.each do |suggestion|
+      end.sort_by { |suggestion| suggestion["kind"] == "shift_project_dates" ? 0 : 1 }.each do |suggestion|
         Planner::SuggestionKinds.create!(project, suggestion)
       end
 

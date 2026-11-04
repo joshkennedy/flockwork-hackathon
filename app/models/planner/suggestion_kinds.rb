@@ -3,6 +3,16 @@ module Planner
     TIME_PATTERN = "^([01]\\d|2[0-3]):[0-5]\\d$"
 
     KINDS = {
+      "shift_project_dates" => {
+        label: "Project dates",
+        tool: nil,
+        summary: ->(fields) { "Move all saved Project, Task, Schedule, Slot and List dates #{fields.fetch('days')} days. Keep existing claims and assignments." },
+        fields: {
+          "days" => { label: "Shift days (negative moves earlier)", input: :number, min: -365, max: 365,
+            schema: { type: "integer", minimum: -365, maximum: 365 } }
+        },
+        create: ->(project, fields) { ProjectDateShift.new(project, days: fields.fetch("days")).call }
+      },
       # A skill the Team needs, written to Project#skills_needed; no Tool. Never a person (ADR 0002).
       "skill" => {
         label: "Skills needed",

@@ -37,6 +37,8 @@ module PlannerSessionsHelper
   end
 
   def planner_pending_tool(item)
+    return "project_dates" if item["kind"] == "shift_project_dates"
+
     Planner::PendingItems.tool(item)
   rescue KeyError, ArgumentError
     "tasks"

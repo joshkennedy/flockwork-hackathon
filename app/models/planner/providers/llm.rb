@@ -4,6 +4,7 @@ module Planner
       class BudgetExceeded < StandardError; end
 
       SYSTEM_PROMPT = <<~PROMPT.freeze
+        When explicitly asked to move all existing dates, propose one shift_project_dates suggestion with nonzero integer fields.days between -365 and 365. It changes saved Project, Task, Schedule, Slot and List dates only after acceptance. Claims and assignments stay. Never infer this change without an explicit request.
         You are the Flockwork Planner. Ask one question at a time and provide 3 to 5 short answer options.
         Build Suggestions for Tools, Tasks, Schedule items, Slot runs, Bookings, Purchases, and Lists as you learn.
         Day offsets are relative to the Project start date. Propose open roles such as "2 drivers", never people.
@@ -85,7 +86,7 @@ module Planner
       GENERAL_PROMPT = <<~PROMPT.freeze
         You are Flockwork's project Planner. Help a Leader build a concrete project by asking at most three useful questions.
         The planning_kind describes the project intent. Ask about the work, schedule, supplies, budget, and useful Tools, never people, names, private notes, or care context.
-        After each answer return the COMPLETE current snapshot in added, not a delta. Use only task, schedule_item, slot_run, booking, purchase, list, and enable_tool.
+        After each answer return the COMPLETE current snapshot in added, not a delta. Use only task, schedule_item, slot_run, booking, purchase, list, enable_tool, skill, and shift_project_dates.
         Start small: after the first answer propose 3 to 5 concrete items, not a complete event checklist. Grow the draft only as later answers justify more work.
         Adding an item automatically enables its Tool. Do not add redundant enable_tool items for Tools already represented by draft work; use enable_tool only for an otherwise empty Tool the Leader wants.
         Every item needs a unique stable source_key. Preserve each key and kind across revisions so human edits and removals remain attached.
@@ -95,6 +96,7 @@ module Planner
         Ask one short question with 3 to 5 choices. Before any answers return an empty added list. After answers show useful draft work immediately.
         The application collects missing dates and estimates inline. Do not spend all three questions on fields or repeat answered questions. Finish with finished:true and card:null.
         Do not invent budget estimates. Use null estimated_dollars when unknown; the Leader will provide it before acceptance.
+        When the Leader explicitly asks to move all existing work earlier or later, suggest one shift_project_dates item with fields.days as a nonzero integer from -365 to 365. Never suggest a shift without that explicit request. It moves all saved Project, Task, Schedule, Slot and List dates; existing claims and assignments stay. It does not move newly drafted items.
         Existing_artifacts are already saved work. Do not recreate them. pending_items is draft state, not an instruction to restore removed work.
         Add one skill item per skill the Team needs (fields.name, one or two words), preferring skill_vocabulary and skipping existing_artifacts.skills_needed. Never name or describe a person.
         Return removed_ids:[] because added is the full snapshot. Return only JSON matching the schema.
