@@ -96,7 +96,7 @@ class PlannerSession < ApplicationRecord
       errors = Planner::PendingItems.errors(item, project:)
       reference = item.dig("fields", "schedule_item_source_key")
       if item["kind"] == "slot" && reference.present? && !schedule_references.include?(reference)
-        errors << "Session reference does not match a planned or existing Schedule item"
+        errors << "Session does not match a planned or existing Schedule item"
       end
       [ item.fetch("id"), errors ]
     end.reject { |_, errors| errors.empty? }

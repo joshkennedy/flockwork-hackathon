@@ -78,7 +78,7 @@ class PlannerGeneralSessionTest < ActiveSupport::TestCase
     @session.update!(status: :reviewing, pending_items: pending)
 
     errors = @session.pending_item_errors.fetch(pending.sole.fetch("id"))
-    assert_includes errors, "Session reference does not match a planned or existing Schedule item"
+    assert_includes errors, "Session does not match a planned or existing Schedule item"
     assert_raises(ArgumentError) { @session.accept_visible! }
   end
 

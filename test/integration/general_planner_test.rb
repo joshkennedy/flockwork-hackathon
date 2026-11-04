@@ -367,7 +367,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     get project_planner_session_path(project, planner_session)
 
     assert_response :success
-    assert_select "article.meal-slot-error", text: /Session reference does not match a planned or existing Schedule item/
+    assert_select "article.meal-slot-error", text: /Session does not match a planned or existing Schedule item/
     assert_select "button[disabled]", text: "Add to Project"
   end
 

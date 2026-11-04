@@ -117,7 +117,7 @@ module Planner
             schema: { type: "integer", minimum: 1 }
           },
           "schedule_item_source_key" => {
-            label: "Session reference",
+            label: "Session",
             input: :text,
             schema: { type: [ "string", "null" ] }
           }
