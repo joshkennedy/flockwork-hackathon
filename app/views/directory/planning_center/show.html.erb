@@ -29,6 +29,19 @@
     <%= button_to "Sync Now", sync_planning_center_directory_path, class: "mt-5 btn btn-primary" %>
   <% end %>
 
+  <% if Current.organization.errors.any? %>
+    <p role="alert" class="mt-5 text-meta text-danger"><%= Current.organization.errors.full_messages.to_sentence %></p>
+  <% end %>
+
+  <%= form_with model: Current.organization, url: planning_center_directory_path, method: :patch, class: "mt-7 space-y-4" do |form| %>
+    <div>
+      <%= form.label :pco_skills_field_id, "Skills custom field ID (optional)", class: "block text-label font-medium text-ink" %>
+      <%= form.text_field :pco_skills_field_id, inputmode: "numeric", class: "mt-1 block w-full field", aria: { describedby: "pco-skills-help" } %>
+      <p id="pco-skills-help" class="mt-2 text-meta text-ink-2">Enter the API FieldDefinition ID of a plain text field containing comma-separated skill labels. Leave blank to keep local Skills unchanged. A missing value preserves Skills; an explicitly empty value clears them. Selection and checkbox fields are not supported.</p>
+    </div>
+    <%= form.submit "Save Skills Mapping", class: "btn btn-secondary" %>
+  <% end %>
+
   <%= form_with model: Current.organization, url: planning_center_directory_path, method: :patch, class: "mt-7 space-y-4" do |form| %>
     <div>
       <%= form.label :pco_app_id, "App ID", class: "block text-label font-medium text-ink" %>

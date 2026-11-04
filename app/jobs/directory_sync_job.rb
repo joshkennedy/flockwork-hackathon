@@ -2,7 +2,8 @@ class DirectorySyncJob < ApplicationJob
   def perform(organization)
     source = DirectorySources::PlanningCenter.new(
       app_id: organization.pco_app_id,
-      secret: organization.pco_secret
+      secret: organization.pco_secret,
+      skills_field_id: organization.pco_skills_field_id
     )
     result = DirectorySync.new(organization, source).call
     organization.update!(

@@ -1,20 +1,25 @@
 require "json"
 require "net/http"
+require "set"
 
 module DirectorySources
   class PlanningCenter < Base
     PEOPLE_URL = "https://api.planningcenteronline.com/people/v2/people?include=emails,phone_numbers&per_page=100".freeze
 
-    def initialize(app_id:, secret:)
+    def initialize(app_id:, secret:, skills_field_id: nil)
       @app_id = app_id
       @secret = secret
+      @skills_field_id = skills_field_id.presence
     end
 
     def each_person
       return enum_for(:each_person) unless block_given?
 
+      validate_skills_field! if skills_field_id
       next_url = PEOPLE_URL
+      seen = Set.new
       while next_url
+        raise Error, "Planning Center returned a repeated page. Nothing was changed." unless seen.add?(next_url)
         response = get(next_url)
         document = JSON.parse(response.body)
         included = document.fetch("included", []).index_by { |resource| [ resource.fetch("type"), resource.fetch("id") ] }
@@ -31,10 +36,13 @@ module DirectorySources
     end
 
     private
-      attr_reader :app_id, :secret
+      attr_reader :app_id, :secret, :skills_field_id
 
       def get(url)
         uri = URI(url)
+        unless uri.scheme == "https" && uri.host == "api.planningcenteronline.com" && uri.port == 443 && uri.userinfo.nil? && uri.path.start_with?("/people/v2/")
+          raise Error, "Planning Center returned an unsafe page link. Nothing was changed."
+        end
         request = Net::HTTP::Get.new(uri)
         request.basic_auth(app_id, secret)
 
@@ -59,7 +67,48 @@ module DirectorySources
           name: attributes["name"].presence || [ attributes["first_name"], attributes["last_name"] ].compact.join(" "),
           email: contact_value(person, included, "emails", "Email", "address"),
           phone: contact_value(person, included, "phone_numbers", "PhoneNumber", "number")
-        }
+        }.merge(skills_field_id ? skills_for(person.fetch("id")) : {})
+      end
+
+      def validate_skills_field!
+        unless skills_field_id.to_s.match?(/\A[1-9]\d{0,19}\z/)
+          raise Error, "The Skills mapping needs a numeric Planning Center custom field ID. Nothing was changed."
+        end
+        field = JSON.parse(get("https://api.planningcenteronline.com/people/v2/field_definitions/#{skills_field_id}").body).fetch("data")
+        unless field.fetch("type") == "FieldDefinition" && field.fetch("id") == skills_field_id && field.dig("attributes", "data_type") == "string"
+          raise Error, "The Skills mapping must use a plain text (string) custom field. Selection and other field types are not supported. Nothing was changed."
+        end
+      end
+
+      def skills_for(person_id)
+        unless person_id.to_s.match?(/\A[1-9]\d*\z/)
+          raise Error, "Planning Center returned an invalid Person ID. Nothing was changed."
+        end
+        query = URI.encode_www_form("where[field_definition_id]" => skills_field_id, "per_page" => 100)
+        next_url = "https://api.planningcenteronline.com/people/v2/people/#{person_id}/field_data?#{query}"
+        seen = Set.new
+        values = []
+        while next_url
+          raise Error, "Planning Center returned a repeated page. Nothing was changed." unless seen.add?(next_url)
+          document = JSON.parse(get(next_url).body)
+          document.fetch("data").each do |datum|
+            next unless datum.dig("relationships", "field_definition", "data", "id") == skills_field_id
+            value = datum.fetch("attributes").fetch("value")
+            unless value.nil? || value.is_a?(String)
+              raise Error, "The Skills field must contain text labels. Nothing was changed."
+            end
+            values << value
+          end
+          next_url = document.dig("links", "next")
+        end
+        return {} if values.empty?
+        raise Error, "Planning Center returned multiple values for the Skills field. Nothing was changed." if values.many?
+
+        skills = Skills.normalize(values.first)
+        if skills.any? { |skill| skill.match?(/\A\d+\z/) }
+          raise Error, "The Skills field must contain labels, not numeric option IDs. Nothing was changed."
+        end
+        { skills: skills }
       end
 
       def contact_value(person, included, relationship_name, type, attribute_name)

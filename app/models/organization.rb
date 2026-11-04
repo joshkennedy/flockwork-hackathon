@@ -22,6 +22,9 @@ class Organization < ApplicationRecord
 
   encrypts :pco_app_id, :pco_secret
 
+  normalizes :pco_skills_field_id, with: ->(value) { value.to_s.strip.presence }
+  validates :pco_skills_field_id, format: { with: /\A[1-9]\d{0,19}\z/, message: "must be a numeric Planning Center custom field ID" }, allow_nil: true
+
   normalizes :name, with: ->(name) { name.strip }
   normalizes :mark_color, with: ->(color) { color.strip.upcase.delete_prefix("#").prepend("#") }
   before_validation :assign_slug, on: :create, if: -> { slug.blank? }

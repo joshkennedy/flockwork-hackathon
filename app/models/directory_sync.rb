@@ -19,6 +19,8 @@ class DirectorySync
           external_id: attributes.fetch(:external_id)
         )
 
+        person.skills = Skills.normalize(attributes[:skills]) if attributes.key?(:skills)
+
         if new_record
           person.save!
           counts[:created] += 1
