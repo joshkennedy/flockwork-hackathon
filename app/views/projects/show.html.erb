@@ -51,6 +51,7 @@
           <%= link_to "Edit Project", edit_project_path(@project) if can_update %>
           <%= link_to "Duplicate", new_project_duplicate_path(@project) if can_duplicate %>
           <%= render "projects/recurrence_action", project: @project %>
+          <%= render "projects/debrief_action", project: @project %>
           <% { mark_done: [ "Mark Done", mark_done_project_path(@project) ],
                reopen: [ "Reopen", reopen_project_path(@project) ],
                archive: [ "Archive", archive_project_path(@project) ],

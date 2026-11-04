@@ -39,7 +39,7 @@ module Planner
 
       def context
         if session.build_as_you_go?
-          payload = session.planning_context
+          payload = session.planning_context.merge("past_projects" => past_projects)
           return JSON.parse(Planner::NameRedactor.new(Current.organization).call(JSON.generate(payload)))
         end
         project_name, project_description, enabled_tools = current_project_values
@@ -93,8 +93,9 @@ module Planner
       end
 
       def past_projects
-        Current.organization.projects.where(deleted_at: nil).where.not(id: session.project_id)
-          .includes(:tasks, :budget_lines)
+        projects = Policy.visible_projects(Current.person).where.not(id: session.project_id)
+        projects = projects.where(id: Current.person.memberships.leader.select(:project_id)) unless Current.person.admin?
+        projects.includes(:tasks, :budget_lines, :project_debrief)
           .order(created_at: :desc, id: :desc)
           .limit(5)
           .map do |project|
@@ -109,7 +110,15 @@ module Planner
               booking_descriptions:,
               purchase_count: purchase_descriptions.length,
               purchase_descriptions:
-            }
+            }.tap do |facts|
+              if project.done_at? && project.project_debrief
+                redactor = Planner::NameRedactor.new(Current.organization)
+                facts[:debrief] = {
+                  what_worked: redactor.call(project.project_debrief.what_worked),
+                  change_next_time: redactor.call(project.project_debrief.change_next_time)
+                }
+              end
+            end
           end
       end
 

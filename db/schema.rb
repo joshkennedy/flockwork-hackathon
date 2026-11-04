@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_04_200000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_04_210000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -274,6 +274,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_200000) do
     t.string "planning_kind", default: "meal_train", null: false
     t.index ["project_id"], name: "index_planner_sessions_on_project_id"
     t.index ["started_by_id"], name: "index_planner_sessions_on_started_by_id"
+  end
+
+  create_table "project_debriefs", force: :cascade do |t|
+    t.bigint "project_id", null: false
+    t.text "what_worked", default: "", null: false
+    t.text "change_next_time", default: "", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["project_id"], name: "index_project_debriefs_on_project_id", unique: true
   end
 
   create_table "project_occurrences", force: :cascade do |t|
@@ -606,6 +615,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_200000) do
   add_foreign_key "people", "organizations"
   add_foreign_key "planner_sessions", "people", column: "started_by_id"
   add_foreign_key "planner_sessions", "projects"
+  add_foreign_key "project_debriefs", "projects"
   add_foreign_key "project_occurrences", "project_recurrences"
   add_foreign_key "project_occurrences", "projects", on_delete: :nullify
   add_foreign_key "project_recurrences", "people", column: "creator_id"

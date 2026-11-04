@@ -26,6 +26,7 @@ class ProjectDuplicate
       copy_slots(copy)
       copy_budget_lines(copy)
       copy_lists(copy)
+      copy_debrief(copy)
       copy
     end
   end
@@ -42,6 +43,13 @@ class ProjectDuplicate
         enabled_tools: source.enabled_tools,
         skills_needed: source.skills_needed
       )
+    end
+
+    def copy_debrief(copy)
+      body = source.project_debrief&.notes_body
+      return if body.blank?
+
+      copy.notes.create!(organization: copy.organization, author: by, visibility: :leaders, body: body)
     end
 
     def copy_tasks(copy)

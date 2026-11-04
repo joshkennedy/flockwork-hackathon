@@ -97,7 +97,7 @@ class ProjectsController < ApplicationController
   def mark_done
     authorize_lifecycle(:mark_done)
     @project.update!(done_at: Time.current)
-    redirect_to @project
+    redirect_to edit_project_debrief_path(@project)
   end
 
   def reopen

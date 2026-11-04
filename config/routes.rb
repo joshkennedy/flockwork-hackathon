@@ -107,6 +107,7 @@ Rails.application.routes.draw do
     resources :memberships, only: :destroy
     resources :recipients, only: %i[ new create destroy ]
     resources :notes, only: :create
+    resource :debrief, only: %i[ edit update ], controller: "project_debriefs"
     resource :recurrence, only: %i[ edit update ], controller: "project_recurrences"
     resource :duplicate, only: %i[ new create ], controller: "project_duplicates"
     resource :banner, only: %i[ update destroy ], controller: "project_banners"

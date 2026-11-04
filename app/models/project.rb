@@ -16,6 +16,7 @@ class Project < ApplicationRecord
 
   belongs_to :owner, class_name: "Person"
   broadcasts_refreshes_to ->(project) { project }
+  has_one :project_debrief, dependent: :destroy
   has_one :project_recurrence, dependent: :destroy
   has_one :project_occurrence, dependent: :nullify
   has_many :memberships, dependent: :destroy

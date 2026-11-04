@@ -675,6 +675,7 @@ class PlannerTest < ActionDispatch::IntegrationTest
       enabled_tools: %w[tasks budget]
     )
     past_project.memberships.create!(person: private_person, role: :leader)
+    past_project.memberships.create!(person: people(:leader), role: :leader)
     past_project.tasks.create!(title: "Arrange old tables")
     past_project.budget_lines.create!(kind: :booking, description: "Old hall", estimated: "300")
     past_project.budget_lines.create!(kind: :purchase, description: "Old napkins", estimated: "45")
