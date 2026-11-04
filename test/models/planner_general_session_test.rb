@@ -148,6 +148,27 @@ class PlannerGeneralSessionTest < ActiveSupport::TestCase
     assert_equal 4, @session.reload.pending_item_count
   end
 
+  test "skill items write skills_needed on accept, and People's own skill tags never reach the model" do
+    @leader.update!(skills: [ "zzz-sentinel-skill" ])
+    items = [
+      item("skill", "sound", "name" => "Sound and Tech"),
+      item("task", "cleanup-task", "title" => "Clean the hall", "details" => "Bring gloves", "due_on" => "2027-02-13")
+    ]
+    fake = Planner::Providers::Fake.new([ Planner::Response.new(card: nil, finished: true, added: items, removed_ids: []) ])
+    Rails.configuration.x.planner_provider = fake
+
+    revision = @session.queue_generation!
+    assert @session.generate!(revision:), @session.reload.last_error
+    context_json = fake.contexts.to_json
+    assert_includes context_json, "skill_vocabulary"
+    assert_not_includes context_json, "zzz-sentinel-skill"
+
+    @session.reload.accept_visible!(expected_revision: revision)
+    project = projects(:community_meal).reload
+    assert_includes project.skills_needed, "sound and tech"
+    assert_not_includes project.enabled_tools, nil
+  end
+
   private
     def item(kind, source_key, fields)
       { "kind" => kind, "source_key" => source_key, "fields" => fields }

@@ -7,7 +7,7 @@ module Planner
       "slot" => %w[label date time capacity], "task" => %w[title details due_on],
       "schedule_item" => %w[title date starts_at ends_at location],
       "booking" => %w[description estimated_dollars], "purchase" => %w[description estimated_dollars],
-      "list" => %w[name columns], "enable_tool" => %w[tool]
+      "list" => %w[name columns], "enable_tool" => %w[tool], "skill" => %w[name]
     }.freeze
     TOOLS = { "slot" => "signup_sheet", "task" => "tasks", "schedule_item" => "schedule",
       "booking" => "budget", "purchase" => "budget", "list" => "list" }.freeze
@@ -53,7 +53,7 @@ module Planner
     def editable_fields(kind) = EDITABLE.fetch(kind.to_s)
     def tool(item)
       item = item.deep_stringify_keys
-      item["kind"] == "enable_tool" ? item.dig("fields", "tool") : TOOLS.fetch(item.fetch("kind"))
+      item["kind"] == "enable_tool" ? item.dig("fields", "tool") : TOOLS[item.fetch("kind")]
     end
     def summary(item)
       item = item.deep_stringify_keys
@@ -64,6 +64,7 @@ module Planner
       when "booking", "purchase" then fields["description"]
       when "list" then fields["name"]
       when "enable_tool" then Project::TOOL_LABELS[fields["tool"]] || fields["tool"]
+      when "skill" then Skills.label(fields["name"].to_s)
       end
     end
 
@@ -144,6 +145,7 @@ module Planner
         return [ "At least one valid column is required" ] unless valid_columns?(fields["columns"])
         List.new(project:, name: fields["name"])
       when "enable_tool" then return Project::TOOLS.include?(fields["tool"]) ? [] : [ "Tool is invalid" ]
+      when "skill" then return Skills.normalize(fields["name"]).one? ? [] : [ "Skill is invalid" ]
       else return [ "Unknown item type" ]
       end
       record.valid?
@@ -162,6 +164,9 @@ module Planner
       when "booking", "purchase" then project.budget_lines.create!(kind: item["kind"], description: fields["description"], estimated: fields["estimated_dollars"])
       when "list"
         project.lists.create!(name: fields["name"]).tap { |list| fields.fetch("columns").each { |column| list.columns.create!(name: column["name"], column_type: column["type"]) } }
+      when "skill"
+        project.update!(skills_needed: project.skills_needed + [ fields["name"] ])
+        nil
       end
     end
 
@@ -233,7 +238,7 @@ module Planner
       required_text = case kind
       when "task", "schedule_item" then [ "title" ]
       when "booking", "purchase" then [ "description" ]
-      when "list" then [ "name" ]
+      when "list", "skill" then [ "name" ]
       else []
       end
       required_text.each { |name| errors << "#{name.humanize} is invalid" unless fields[name].is_a?(String) && fields[name].present? }

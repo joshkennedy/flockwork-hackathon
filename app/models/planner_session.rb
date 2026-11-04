@@ -71,8 +71,11 @@ class PlannerSession < ApplicationRecord
         "booking_descriptions" => project.budget_lines.booking.order(:id).limit(100).pluck(:description),
         "purchase_descriptions" => project.budget_lines.purchase.order(:id).limit(100).pluck(:description),
         "list_names" => project.lists.order(:id).limit(100).pluck(:name),
-        "enabled_tools" => project.enabled_tools
+        "enabled_tools" => project.enabled_tools,
+        "skills_needed" => project.skills_needed
       },
+      # The seeded vocabulary only; People's own skill tags never reach the model (ADR 0002).
+      "skill_vocabulary" => Skills::SUGGESTED,
       "pending_items" => visible_pending_items.map do |item|
         item.slice("source_key", "kind", "fields", "day_offset", "removed", "user_edits", "conflict")
       end

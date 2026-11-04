@@ -41,6 +41,9 @@
             <%= form.telephone_field :phone, class: "mt-1 block w-full field" %>
           </div>
 
+          <%= render "shared/skills_field", form:, attribute: :skills, legend: "Your skills",
+            hint: "Leaders may suggest you for Projects that need these. They see only the skills that match." %>
+
           <%= form.submit "Save Changes", class: "btn btn-primary" %>
         </section>
 

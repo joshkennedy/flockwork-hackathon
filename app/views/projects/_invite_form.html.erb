@@ -1,0 +1,6 @@
+<%= form_with model: [ project, Invitation.new ], class: "flex items-center gap-2" do |form| %>
+  <%= form.hidden_field :person_id, value: person.id %>
+  <%= form.label :role, "Role", class: "sr-only" %>
+  <%= form.select :role, Invitation.roles.keys.map { |role| [ role.humanize, role ] }, { selected: "volunteer" }, class: "field min-w-0 flex-1" %>
+  <%= form.submit "Invite", class: "btn btn-secondary" %>
+<% end %>

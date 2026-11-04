@@ -72,4 +72,28 @@ class PlannerContextBuilderTest < ActiveSupport::TestCase
       assert_not_includes context_json, person.phone
     end
   end
+
+  test "the legacy Planner sees skills_needed and the vocabulary, never People's skills, and a kept skill is saved" do
+    people(:volunteer).update!(skills: [ "zzz-sentinel-skill" ])
+    project = projects(:community_meal)
+    project.update!(skills_needed: [ "cooking" ])
+    fake = Planner::Providers::Fake.new([
+      Planner::Response.new(card: { "question" => "Who cooks?", "options" => %w[A B C] }, finished: false, added: [], removed_ids: [])
+    ])
+    Rails.configuration.x.planner_provider = fake
+    planner_session = project.planner_sessions.create!(started_by: people(:leader), description: "Plan the meal.")
+    Current.set(session: people(:leader).sessions.create!(ip_address: "127.0.0.1", user_agent: "test")) do
+      Planner::ContextBuilder.new(planner_session).ask
+    end
+
+    context = fake.contexts.first
+    assert_equal [ "cooking" ], context.fetch(:existing_skills_needed)
+    assert_includes context.fetch(:skill_vocabulary), "Driving"
+    assert_not_includes context.to_json, "zzz-sentinel-skill"
+
+    tools = project.enabled_tools.dup
+    Planner::SuggestionKinds.create!(project, { "kind" => "skill", "fields" => { "name" => "Driving" } })
+    assert_equal %w[cooking driving], project.reload.skills_needed
+    assert_equal tools, project.enabled_tools
+  end
 end

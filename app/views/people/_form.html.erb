@@ -21,6 +21,9 @@
     <%= form.telephone_field :phone, class: "mt-1 block w-full field" %>
   </div>
 
+  <%= render "shared/skills_field", form:, attribute: :skills, legend: "Skills",
+    hint: "Leaders may suggest this Person for Projects that need these." %>
+
   <% if person.persisted? %>
     <div>
       <div class="flex items-center gap-2">

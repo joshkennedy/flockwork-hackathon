@@ -153,11 +153,17 @@ class DemoOrganization
             email:,
             phone: "202-555-#{(100 + index).to_s.rjust(4, "0")}",
             admin: attributes.fetch(:admin, false),
+            skills: demo_skills(index),
             external_source: "planning_center",
             external_id:
           )
           seeded_people[attributes[:name]] = person
         end
+      end
+
+      # Two seeded skills per Person, spread by index so the Team pages always have someone to suggest.
+      def demo_skills(index)
+        [ Skills::SUGGESTED[index % Skills::SUGGESTED.size], Skills::SUGGESTED[(index * 5 + 3) % Skills::SUGGESTED.size] ]
       end
 
       def seed_retreat!(organization, people)
@@ -166,6 +172,7 @@ class DemoOrganization
           creator: grace,
           attributes: {
             name: "Women's Fall Retreat",
+            skills_needed: [ "Hospitality", "Prayer", "Music" ],
             description: "A quiet weekend for the women of Grace Fellowship to rest, connect, and grow together.",
             starts_on: Date.current + 5.weeks,
             ends_on: Date.current + 5.weeks + 2.days,
@@ -189,6 +196,7 @@ class DemoOrganization
           creator: grace,
           attributes: {
             name: "Meal Train for the Alvarez Family",
+            skills_needed: [ "Cooking", "Driving" ],
             description: "Provide a warm dinner each evening while the Alvarez family focuses on recovery.",
             starts_on: Date.current - 10.days,
             ends_on: Date.current + 18.days,
@@ -279,6 +287,7 @@ class DemoOrganization
           creator: naomi,
           attributes: {
             name: "Vacation Bible School #{Date.current.year - 1}",
+            skills_needed: [ "Teaching", "Childcare", "Music" ],
             description: "A week of Bible stories, games, crafts, and music for children in our community.",
             starts_on:,
             ends_on: starts_on + 4.days,
@@ -344,6 +353,7 @@ class DemoOrganization
           creator: grace,
           attributes: {
             name: "Church Workday",
+            skills_needed: [ "Handyman", "Setup and teardown", "Gardening" ],
             description: "Work together on practical projects that care for our building and grounds.",
             starts_on: Date.current + 3.weeks,
             ends_on: Date.current + 3.weeks,

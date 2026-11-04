@@ -39,7 +39,8 @@ class ProjectDuplicate
         ends_on: shift(source.ends_on),
         owner: by,
         open_team: false,
-        enabled_tools: source.enabled_tools
+        enabled_tools: source.enabled_tools,
+        skills_needed: source.skills_needed
       )
     end
 

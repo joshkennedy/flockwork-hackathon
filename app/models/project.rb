@@ -72,6 +72,8 @@ class Project < ApplicationRecord
 
   scope :active, -> { where(done_at: nil, archived_at: nil, deleted_at: nil) }
 
+  normalizes :skills_needed, with: ->(skills) { Skills.normalize(skills) }
+
   has_many :invitations, dependent: :restrict_with_exception
 
   validates :name, presence: true

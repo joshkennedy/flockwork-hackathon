@@ -52,6 +52,7 @@ class ProfilesController < ApplicationController
       permitted = params.require(:person).permit(
         :name,
         :phone,
+        skills: [],
         email_preferences: Notification::KINDS.keys
       )
       preferences = permitted.delete(:email_preferences)

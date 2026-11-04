@@ -1,0 +1,22 @@
+<%# Seeded skills as checkboxes plus a comma list for anything else; both post to one array that Skills.normalize merges. %>
+<% selected = form.object.public_send(attribute) %>
+<% name = "#{form.object_name}[#{attribute}][]" %>
+<% others = selected - Skills.suggested_keys %>
+<fieldset>
+  <legend class="text-body-phone sm:text-body font-semibold text-ink"><%= legend %></legend>
+  <p class="mt-1 text-meta text-ink-2"><%= hint %></p>
+  <%= hidden_field_tag name, "", id: nil %>
+  <div class="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-2">
+    <% Skills::SUGGESTED.each do |skill| %>
+      <label class="flex cursor-pointer items-center gap-3 py-1 text-label font-medium text-ink">
+        <%= check_box_tag name, skill.downcase, selected.include?(skill.downcase), id: "#{form.object_name}_#{attribute}_#{skill.parameterize(separator: "_")}", class: "size-4 accent-ink" %>
+        <%= skill %>
+      </label>
+    <% end %>
+  </div>
+  <div class="mt-4">
+    <%= label_tag "#{form.object_name}_#{attribute}_other", "Other skills", class: "block text-label font-medium text-ink-2" %>
+    <%= text_field_tag name, others.map { |skill| Skills.label(skill) }.join(", "), id: "#{form.object_name}_#{attribute}_other",
+      placeholder: "Separate with commas", autocomplete: "off", class: "mt-1 block w-full field" %>
+  </div>
+</fieldset>

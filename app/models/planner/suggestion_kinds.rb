@@ -3,6 +3,16 @@ module Planner
     TIME_PATTERN = "^([01]\\d|2[0-3]):[0-5]\\d$"
 
     KINDS = {
+      # A skill the Team needs, written to Project#skills_needed; no Tool. Never a person (ADR 0002).
+      "skill" => {
+        label: "Skills needed",
+        tool: nil,
+        summary: ->(fields) { Skills.label(fields.fetch("name")) },
+        fields: {
+          "name" => { label: "Skill", input: :text, schema: { type: "string" } }
+        },
+        create: ->(project, fields) { project.update!(skills_needed: project.skills_needed + [ fields.fetch("name") ]) }
+      },
       "enable_tool" => {
         label: "Tools",
         tool: ->(fields) { fields.fetch("tool") },
@@ -233,7 +243,7 @@ module Planner
       validate_fields!(kind, fields)
       tool = definition.fetch(:tool)
       tool = tool.call(fields) if tool.respond_to?(:call)
-      project.update!(enabled_tools: (project.enabled_tools + [ tool ]).uniq)
+      project.update!(enabled_tools: (project.enabled_tools + [ tool ]).uniq) if tool
       definition.fetch(:create).call(project, fields)
     end
 

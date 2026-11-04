@@ -230,6 +230,8 @@ class PlannerTest < ActionDispatch::IntegrationTest
       existing_booking_descriptions
       existing_purchase_descriptions
       existing_list_names
+      existing_skills_needed
+      skill_vocabulary
       past_projects
       current_suggestions
     ], fake.contexts.first.keys

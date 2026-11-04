@@ -1,0 +1,30 @@
+<%# Ranked in Ruby by StaffingSuggestions; no AI sees People (ADR 0002). Leaders see only the skills that match. %>
+<section class="rounded-panel border border-border p-4" aria-labelledby="suggested-heading">
+  <h2 id="suggested-heading" class="text-ink">Suggested for this Project</h2>
+  <% if project.skills_needed.empty? %>
+    <p class="mt-2 text-meta text-ink-2">
+      Add the skills this Project needs to see People who list them.
+      <% if Policy.can?(Current.person, :update, project) %><%= link_to "Add Skills Needed", edit_project_path(project), class: "link" %><% end %>
+    </p>
+  <% elsif suggestions.empty? %>
+    <p class="mt-2 text-meta text-ink-2">No one free lists <%= skill_list(project.skills_needed) %> yet.</p>
+  <% else %>
+    <p class="mt-1 text-meta text-ink-2">Needs <%= skill_list(project.skills_needed) %>. Not on the Team, not yet asked, not away and not overextended.</p>
+    <ul class="mt-3 divide-y divide-hairline">
+      <% suggestions.each do |suggestion| %>
+        <li class="grid gap-2 py-3">
+          <div class="flex min-w-0 items-center gap-3">
+            <%= avatar(suggestion.person) %>
+            <div class="min-w-0">
+              <p class="font-semibold text-ink"><%= suggestion.person.name %></p>
+              <p class="text-meta text-ink-2">
+                <%= skill_list(suggestion.matched_skills) %> · Serving on <%= pluralize(suggestion.serving_load, "Active Project") %>
+              </p>
+            </div>
+          </div>
+          <%= render "projects/invite_form", project:, person: suggestion.person %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>

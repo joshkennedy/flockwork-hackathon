@@ -49,6 +49,7 @@ class Person < ApplicationRecord
   scope :never_asked, -> { where(admin: false).where.missing(:invitations, :memberships, :owned_projects, :recipients) }
 
   normalizes :email, with: ->(email) { email.strip.downcase.presence }
+  normalizes :skills, with: ->(skills) { Skills.normalize(skills) }
 
   validates :name, presence: true
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_nil: true

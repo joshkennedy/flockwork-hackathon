@@ -4,9 +4,12 @@ module Planner
       @organization = organization
     end
 
+    # A name like "The Alvarez Family" or "Dr. Ruth Park" must not turn every "the" or "dr" into [name].
+    LEADING_WORDS = %w[the a an mr mrs ms miss dr rev pastor].freeze
+
     def call(text)
       names = organization.people.pluck(:name).flat_map do |name|
-        [ name, name.split.first ]
+        [ name, name.split.find { |word| !LEADING_WORDS.include?(word.downcase.delete(".")) } ]
       end.compact_blank.uniq.sort_by { |name| -name.length }
       return text if names.empty?
 

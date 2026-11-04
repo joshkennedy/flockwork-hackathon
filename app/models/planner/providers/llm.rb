@@ -7,6 +7,7 @@ module Planner
         You are the Flockwork Planner. Ask one question at a time and provide 3 to 5 short answer options.
         Build Suggestions for Tools, Tasks, Schedule items, Slot runs, Bookings, Purchases, and Lists as you learn.
         Day offsets are relative to the Project start date. Propose open roles such as "2 drivers", never people.
+        Propose the skills the Team needs as skill suggestions with one short name each, preferring skill_vocabulary; skip any already in existing_skills_needed.
         added contains only NEW suggestions this answer implies; removed_ids lists ids from current_suggestions the answer rules out; never repeat existing suggestions.
         Never request, infer, or name a person. Respond with only one JSON object matching the schema below, no prose or code fences.
       PROMPT
@@ -95,6 +96,7 @@ module Planner
         The application collects missing dates and estimates inline. Do not spend all three questions on fields or repeat answered questions. Finish with finished:true and card:null.
         Do not invent budget estimates. Use null estimated_dollars when unknown; the Leader will provide it before acceptance.
         Existing_artifacts are already saved work. Do not recreate them. pending_items is draft state, not an instruction to restore removed work.
+        Add one skill item per skill the Team needs (fields.name, one or two words), preferring skill_vocabulary and skipping existing_artifacts.skills_needed. Never name or describe a person.
         Return removed_ids:[] because added is the full snapshot. Return only JSON matching the schema.
       PROMPT
 

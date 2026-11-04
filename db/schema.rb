@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_03_024958) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_04_163100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -246,9 +246,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_024958) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.jsonb "email_preferences", default: {}, null: false
+    t.string "skills", default: [], null: false, array: true
     t.index ["organization_id", "email"], name: "index_people_on_organization_id_and_email", unique: true, where: "(email IS NOT NULL)"
     t.index ["organization_id", "external_source", "external_id"], name: "index_people_on_organization_and_external_identity", unique: true, where: "(external_id IS NOT NULL)"
     t.index ["organization_id"], name: "index_people_on_organization_id"
+    t.index ["skills"], name: "index_people_on_skills", using: :gin
   end
 
   create_table "planner_sessions", force: :cascade do |t|
@@ -293,6 +295,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_024958) do
     t.float "banner_focus_y", default: 0.5, null: false
     t.boolean "banner_focus_manual", default: false, null: false
     t.string "banner_alt_text"
+    t.string "skills_needed", default: [], null: false, array: true
     t.index ["organization_id"], name: "index_projects_on_organization_id"
     t.index ["owner_id"], name: "index_projects_on_owner_id"
     t.index ["public_token"], name: "index_projects_on_public_token", unique: true

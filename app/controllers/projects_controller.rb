@@ -165,6 +165,7 @@ class ProjectsController < ApplicationController
       return unless @can_manage_team
 
       @invitations = Current.organization.invitations.where(project: @project).includes(:person).order(created_at: :desc)
+      @staffing_suggestions = StaffingSuggestions.new(@project).call
       return unless params[:query].present?
 
       member_ids = @project.memberships.select(:person_id)
@@ -225,7 +226,7 @@ class ProjectsController < ApplicationController
     end
 
     def project_params
-      permitted = params.expect(project: [ :name, :description, :starts_on, :ends_on, :open_team, enabled_tools: [] ])
+      permitted = params.expect(project: [ :name, :description, :starts_on, :ends_on, :open_team, enabled_tools: [], skills_needed: [] ])
       permitted[:enabled_tools] = permitted[:enabled_tools].compact_blank if permitted.key?(:enabled_tools)
       permitted
     end

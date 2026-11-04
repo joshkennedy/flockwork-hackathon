@@ -56,6 +56,8 @@ module Planner
           existing_booking_descriptions: current_budget_descriptions(:booking),
           existing_purchase_descriptions: current_budget_descriptions(:purchase),
           existing_list_names: current_list_names,
+          existing_skills_needed: current_project.skills_needed,
+          skill_vocabulary: Skills::SUGGESTED,
           past_projects: past_projects,
           current_suggestions: safe_suggestions
         }

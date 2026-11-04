@@ -1,4 +1,8 @@
 module PeopleHelper
+  def skill_list(skills)
+    skills.map { |skill| Skills.label(skill) }.join(", ")
+  end
+
   # Status chips are 4px badges. DESIGN.md keeps pill shapes to the Person pill, so a chip never becomes one.
   def person_chips(person, leader: false, away_until: nil, never_asked: false)
     chips = []

@@ -19,12 +19,15 @@ module PlannerSessionsHelper
     "docs" => "text-tool-docs"
   }.freeze
 
+  # A nil tool is the Skills needed group, the one Planner kind that belongs to no Tool.
   def planner_tool_label(tool)
+    return "Skills needed" if tool.nil?
+
     Project::TOOL_LABELS.fetch(tool, tool.to_s.humanize)
   end
 
   def planner_tool_icon(tool)
-    icon(PLANNER_TOOL_ICONS.fetch(tool, :projects), class: PLANNER_TOOL_COLORS.fetch(tool, "text-ink-2"))
+    icon(PLANNER_TOOL_ICONS.fetch(tool, tool.nil? ? :people : :projects), class: PLANNER_TOOL_COLORS.fetch(tool, "text-ink-2"))
   end
 
   def planner_pending_summary(item)
