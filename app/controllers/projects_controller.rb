@@ -130,7 +130,7 @@ class ProjectsController < ApplicationController
   def destroy
     authorize_lifecycle(:destroy)
     @project.update!(deleted_at: Time.current)
-    redirect_to projects_path
+    redirect_to projects_path, notice: "Deleted #{@project.name}."
   end
 
   def restore

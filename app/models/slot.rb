@@ -1,5 +1,6 @@
 class Slot < ApplicationRecord
   belongs_to :project
+  broadcasts_refreshes_to :project
   has_many :slot_claims, dependent: :destroy
   has_many :people, through: :slot_claims
   has_many :comments, as: :commentable, dependent: :destroy

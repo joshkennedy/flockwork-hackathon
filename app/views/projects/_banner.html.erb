@@ -3,10 +3,6 @@
   <% show_banner = project.banner_ready? %>
   <% small = show_banner && project.banner_small? %>
   <div class="mb-6 space-y-3">
-    <% if editable && flash[:alert].present? %>
-      <p role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger"><%= flash[:alert] %></p>
-    <% end %>
-
     <% if has_banner && (show_banner || editable) %>
       <% chip = "inline-flex min-h-control-h items-center justify-center rounded-control bg-panel/90 px-3 text-button shadow-secondary backdrop-blur-md motion-safe:transition-colors hover:bg-panel focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink" %>
       <% width, height = project.banner.blob.metadata.values_at("width", "height") %>

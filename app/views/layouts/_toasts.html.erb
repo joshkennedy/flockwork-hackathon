@@ -1,0 +1,15 @@
+<%# The stack is permanent, so toasts survive navigations and morphs and pile up. Each render's flash lands in the
+    hidden holder below, and the toasts controller pulls it onto the stack. %>
+<div id="toasts" class="toasts" aria-live="polite" data-turbo-permanent data-controller="toasts"
+  data-action="mouseenter->toasts#expand mouseleave->toasts#collapse focusin->toasts#expand focusout->toasts#collapse"></div>
+<div id="flash" hidden>
+  <% { notice: flash[:notice], alert: flash[:alert] }.compact_blank.each do |kind, message| %>
+    <div class="toast" role="<%= kind == :alert ? "alert" : "status" %>"
+      data-controller="toast" data-toast-dismiss-after-value="<%= kind == :alert ? 0 : 5000 %>"
+      data-action="toast:pause->toast#pause toast:resume->toast#resume">
+      <% if kind == :alert %><span class="toast-dot" aria-hidden="true"></span><% end %>
+      <p class="min-w-0 flex-1"><%= message %></p>
+      <button type="button" class="btn btn-icon -my-1 -me-2 shrink-0" aria-label="Dismiss" data-action="toast#dismiss"><%= icon(:close) %></button>
+    </div>
+  <% end %>
+</div>

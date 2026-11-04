@@ -24,10 +24,14 @@ export default class extends Controller {
 
     this.capture = () => { previous = this.read() }
     document.addEventListener("turbo:before-render", this.capture)
+    // A morph refresh would strip the blob layout set above; the page (and so the layout) is unchanged.
+    this.keepLayout = (event) => { if (event.target === this.element && event.detail.attributeName === "style") event.preventDefault() }
+    this.element.addEventListener("turbo:before-morph-attribute", this.keepLayout)
   }
 
   disconnect() {
     document.removeEventListener("turbo:before-render", this.capture)
+    this.element.removeEventListener("turbo:before-morph-attribute", this.keepLayout)
   }
 
   // Mid-drift this is the in-between value, so a quick second click continues smoothly.

@@ -1,4 +1,6 @@
 <% content_for :title, @project.name %>
+<%# Any change to this Project or its Tools refreshes (morphs) the page for everyone viewing it. %>
+<%= turbo_stream_from @project %>
 <% can_plan = Policy.can?(Current.person, :plan, @project) %>
 <% can_join = !Policy.can?(Current.person, :view_team, @project) && Policy.can?(Current.person, :join, @project) %>
 <% can_share = Policy.can?(Current.person, :manage_public_link, @project) %>
@@ -20,10 +22,6 @@
 <% show_recipients = @project.enabled_tools.include?("recipients") && Policy.can?(Current.person, :view_recipients, @project) %>
 
 <div class="w-full max-w-6xl" data-controller="tabs<%= ' project-arrival' if @completed_planner_session %>"<%= " data-tabs-explicit-value" if @selected_tab %> data-action="turbo:load@document->project-arrival#scheduleArrival" data-project-arrival-target-id-value="tool-<%= (@completed_planner_session&.acceptance_tool || 'signup_sheet').tr('_', '-') %>">
-  <% if flash[:notice].present? %>
-    <p role="status" class="flash-notice mb-5 rounded-control bg-sunlit-soft px-4 py-3 text-ink"><%= flash[:notice] %></p>
-  <% end %>
-
   <%= render "projects/banner", project: @project, editable: can_update %>
 
   <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -60,7 +58,7 @@
           <% end %>
           <% if lifecycle_actions.include?(:destroy) %>
             <hr>
-            <%= button_to "Delete", project_path(@project), method: :delete, class: "menu-danger" %>
+            <%= button_to "Delete Project", project_path(@project), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete #{@project.name}? It moves to Deleted Projects, where it can be restored." } } %>
           <% end %>
         <% end %>
       <% end %>

@@ -1,6 +1,7 @@
 class DocItem < ApplicationRecord
   belongs_to :project
   belongs_to :author, class_name: "Person"
+  broadcasts_refreshes_to :project
   has_many :comments, as: :commentable, dependent: :destroy
   has_many :follows, as: :followable, dependent: :destroy
 

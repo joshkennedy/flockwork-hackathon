@@ -8,12 +8,6 @@
 <div class="w-full max-w-2xl">
   <%= page_header "Planning Center", subtitle: "Connect a personal access token to pull names and contact details into this directory." %>
 
-  <% if flash[:notice].present? %>
-    <p class="mt-7 text-meta font-medium text-ink"><%= flash[:notice] %></p>
-  <% end %>
-  <% if flash[:alert].present? %>
-    <p class="mt-7 text-meta font-medium text-danger" role="alert"><%= flash[:alert] %></p>
-  <% end %>
 
   <% if Current.organization.planning_center_connected? %>
     <div class="mt-7 rounded-tile bg-sunlit-soft p-4">

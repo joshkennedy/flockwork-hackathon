@@ -68,5 +68,9 @@ class ProfileAwayDatesTest < ActionDispatch::IntegrationTest
     delete profile_unavailability_path(own)
     assert_redirected_to edit_profile_path
     assert_not Unavailability.exists?(own.id)
+
+    # Regression: the Profile page never rendered flash, so this notice was lost. The layout toast shows it.
+    follow_redirect!
+    assert_select "#flash [role=status]", text: "Removed away dates."
   end
 end

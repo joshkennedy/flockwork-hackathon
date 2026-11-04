@@ -1,5 +1,6 @@
 class List < ApplicationRecord
   belongs_to :project
+  broadcasts_refreshes_to :project
 
   has_many :columns,
     -> { order(:position, :id) },

@@ -9,7 +9,7 @@
             <%= link_to "Edit", edit_project_message_path(project, message) %>
           <% end %>
           <% if Policy.can?(Current.person, :delete_message, message) %>
-            <%= button_to "Delete", project_message_path(project, message), method: :delete, class: "menu-danger" %>
+            <%= button_to "Delete", project_message_path(project, message), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: message.parent_id ? "Delete this reply?" : "Delete this Message and its replies?" } } %>
           <% end %>
         <% end %>
       </div>

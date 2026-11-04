@@ -2,6 +2,7 @@ class Task < ApplicationRecord
   belongs_to :project
   belongs_to :assignee, class_name: "Person", optional: true
   belongs_to :completed_by, class_name: "Person", optional: true
+  broadcasts_refreshes_to :project
   has_many :comments, as: :commentable, dependent: :destroy
   has_many :follows, as: :followable, dependent: :destroy
   has_many :notifications, as: :notifiable, dependent: :destroy

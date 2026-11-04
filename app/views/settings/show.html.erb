@@ -9,9 +9,6 @@
 <div class="w-full max-w-2xl">
   <%= page_header "Settings", subtitle: "Choices here apply to everyone at #{organization.name}." %>
 
-  <% if flash[:notice].present? %>
-    <p class="mt-7 text-meta font-medium text-ink"><%= flash[:notice] %></p>
-  <% end %>
   <% if organization.errors.any? %>
     <p class="mt-7 text-meta font-medium text-danger" role="alert"><%= organization.errors.full_messages.to_sentence %></p>
   <% end %>

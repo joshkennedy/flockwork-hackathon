@@ -20,7 +20,7 @@
               </div>
               <% if Policy.can?(Current.person, :manage_recipients, project) %>
                 <%= actions_menu("Actions for #{recipient.person.name}") do %>
-                  <%= button_to "Remove", project_recipient_path(project, recipient), method: :delete, class: "menu-danger" %>
+                  <%= button_to "Remove", project_recipient_path(project, recipient), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Remove #{recipient.person.name} from Recipients?" } } %>
                 <% end %>
               <% end %>
             </div>

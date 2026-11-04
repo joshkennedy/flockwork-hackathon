@@ -1,6 +1,7 @@
 class BudgetLine < ApplicationRecord
   belongs_to :project
   belongs_to :responsible_person, class_name: "Person", optional: true
+  broadcasts_refreshes_to :project
   has_many :comments, as: :commentable, dependent: :destroy
   has_many :follows, as: :followable, dependent: :destroy
 

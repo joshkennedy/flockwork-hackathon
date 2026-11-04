@@ -238,6 +238,20 @@
   dialog.modal { @apply m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-2xl overflow-visible rounded-panel bg-transparent p-0; }
   dialog.modal::backdrop { background: rgb(20 20 19 / .32); }
   .modal-panel { @apply max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-panel border border-border bg-panel p-6 shadow-float; }
+  dialog.confirm-dialog { @apply max-w-sm; }
+  /* Toasts: a pile of inverse (ink) panels at the top right, newest in front; toasts_controller.js sets each
+     toast's offset, scale and height. Full width under the notch on phones. */
+  .toasts { @apply pointer-events-none fixed inset-x-2 top-[calc(0.5rem+env(safe-area-inset-top))] z-40 md:inset-x-auto md:right-5 md:top-5 md:w-96; }
+  .toasts[data-expanded] { pointer-events: auto; }
+  .toast { @apply pointer-events-auto absolute inset-x-0 top-0 flex items-center gap-3 overflow-hidden rounded-panel bg-ink py-3 ps-4 pe-3 text-meta text-on-ink shadow-float; transform-origin: bottom center; transition: transform 300ms var(--ease-enter), height 300ms var(--ease-enter), opacity 200ms; animation: toast-in 300ms var(--ease-enter); }
+  .toast > * { transition: opacity 200ms; }
+  .toast { box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-on-ink) 10%, transparent), var(--shadow-float); }
+  .toast[data-behind] { background: color-mix(in oklab, var(--color-ink) 86%, var(--color-on-ink)); }
+  .toast[data-behind] > * { opacity: 0; }
+  .toast[data-beyond] { opacity: 0; pointer-events: none; }
+  .toast .btn-icon { color: color-mix(in oklab, var(--color-on-ink) 70%, transparent); }
+  .toast .btn-icon:hover { @apply text-on-ink; background: color-mix(in oklab, var(--color-on-ink) 14%, transparent); }
+  .toast-dot { @apply size-2 shrink-0 rounded-full bg-danger; }
   @media (prefers-reduced-motion: no-preference) {
     dialog.slideout[open] .slideout-panel { animation: slideout-in 220ms var(--ease-enter); }
     dialog.modal[open] .modal-panel { animation: popover-in 180ms var(--ease-enter); }
@@ -387,7 +401,6 @@
   .meal-slot { @apply min-w-0 border-b border-ghost-border px-4 py-3; }
   .meal-slot:last-child { border-bottom: 0; }
   .meal-slot-changed { @apply bg-panel; box-shadow: inset 2px 0 0 var(--color-ink); animation: slot-changed var(--duration-keep) var(--ease-enter); }
-  .flash-notice { animation: notice-settle 300ms var(--ease-enter) 150ms backwards; }
   .meal-slot-summary { @apply flex min-w-0 flex-wrap items-start gap-3; }
   .meal-slot-editor { @apply ml-auto shrink-0; }
   .meal-slot-editor[open] { flex-basis: 100%; }
@@ -455,10 +468,10 @@
 @keyframes keep-check { from { transform: scale(.7); } to { transform: scale(1); } }
 @keyframes slideout-in { from { transform: translateX(24px); opacity: 0; } }
 @keyframes popover-in { from { opacity: 0; transform: scale(.97); } }
+@keyframes toast-in { from { opacity: 0; translate: 0 -12px; } }
 @keyframes disclose { from { opacity: 0; translate: 0 -4px; } }
 @keyframes meal-shimmer { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
 @keyframes slot-changed { from { background-color: var(--color-ghost-fill); box-shadow: inset 0 0 0 var(--color-ink); } }
-@keyframes notice-settle { from { background-color: color-mix(in oklab, var(--color-sunlit) 35%, var(--color-sunlit-soft)); } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   .btn:active, .answer-tile:active { transform: none; }

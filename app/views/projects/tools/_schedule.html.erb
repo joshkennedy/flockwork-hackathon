@@ -29,7 +29,7 @@
                     <%= actions_menu("Actions for #{item.title}") do %>
                       <%= link_to "Edit Item", edit_project_schedule_item_path(project, item) %>
                       <hr>
-                      <%= button_to "Delete Item", project_schedule_item_path(project, item), method: :delete, class: "menu-danger" %>
+                      <%= button_to "Delete Item", project_schedule_item_path(project, item), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete “#{item.title}”?" } } %>
                     <% end %>
                   <% end %>
                 </div>

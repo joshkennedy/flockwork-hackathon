@@ -15,11 +15,11 @@
             </div>
             <% if Policy.can?(Current.person, :leave_team, membership) %>
               <%= actions_menu("Your membership") do %>
-                <%= button_to "Leave Team", project_membership_path(@project, membership), method: :delete, class: "menu-danger" %>
+                <%= button_to "Leave Team", project_membership_path(@project, membership), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Leave #{@project.name}?" } } %>
               <% end %>
             <% elsif Policy.can?(Current.person, :remove_member, membership) %>
               <%= actions_menu("Actions for #{membership.person.name}") do %>
-                <%= button_to "Remove from Team", project_membership_path(@project, membership), method: :delete, class: "menu-danger" %>
+                <%= button_to "Remove from Team", project_membership_path(@project, membership), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Remove #{membership.person.name} from the Team?" } } %>
               <% end %>
             <% end %>
           </li>

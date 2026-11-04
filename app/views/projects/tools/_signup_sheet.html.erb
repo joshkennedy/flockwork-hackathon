@@ -34,10 +34,6 @@
     <% end %>
   </div>
 
-  <% if flash[:alert].present? %>
-    <p role="alert" class="mt-4 text-danger"><%= flash[:alert] %></p>
-  <% end %>
-
   <% if slots.any? %>
     <div class="mt-5 space-y-6">
       <% if past.any? %>

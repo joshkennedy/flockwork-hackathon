@@ -2,6 +2,7 @@ class Message < ApplicationRecord
   belongs_to :project
   belongs_to :author, class_name: "Person"
   belongs_to :parent, class_name: "Message", optional: true
+  broadcasts_refreshes_to :project
   has_many :replies, -> { order(created_at: :asc, id: :asc) }, class_name: "Message",
     foreign_key: :parent_id, dependent: :destroy, inverse_of: :parent
   has_many :comments, as: :commentable, dependent: :destroy

@@ -1,5 +1,6 @@
 class ScheduleItem < ApplicationRecord
   belongs_to :project
+  broadcasts_refreshes_to :project
   has_many :comments, as: :commentable, dependent: :destroy
   has_many :follows, as: :followable, dependent: :destroy
 

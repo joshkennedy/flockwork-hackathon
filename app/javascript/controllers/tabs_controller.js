@@ -13,6 +13,18 @@ export default class extends Controller {
     const stored = !this.explicitValue && this.panelTargets.find((panel) => panel.dataset.tabsName === this.remembered)
     const panel = fromHash || stored
     if (panel) this.show(panel.dataset.tabsName)
+    this.element.addEventListener("turbo:before-morph-attribute", this.keepShownTab)
+  }
+
+  disconnect() {
+    this.element.removeEventListener("turbo:before-morph-attribute", this.keepShownTab)
+  }
+
+  // A morph refresh keeps this element, so connect() never re-runs; keep the shown tab instead of the server default.
+  keepShownTab = (event) => {
+    const { target, detail } = event
+    if ((detail.attributeName === "hidden" && this.panelTargets.includes(target)) ||
+        (detail.attributeName === "aria-current" && this.tabTargets.includes(target))) event.preventDefault()
   }
 
   select(event) {

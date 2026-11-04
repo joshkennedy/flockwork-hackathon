@@ -1,6 +1,8 @@
 class Comment < ApplicationRecord
   belongs_to :commentable, polymorphic: true
   belongs_to :author, class_name: "Person"
+  # Through another record that a cascade delete may already have removed, so nil-safe.
+  after_commit -> { commentable&.project&.broadcast_refresh_later }
   has_many :mentions, as: :mentionable, dependent: :destroy
   has_many :notifications, as: :notifiable, dependent: :destroy
 

@@ -6,9 +6,6 @@
 <% end %>
 
 <div class="w-full max-w-3xl">
-  <% if flash[:notice].present? %>
-    <p role="status" class="flash-notice mb-5 rounded-control bg-sunlit-soft px-4 py-3 text-ink"><%= flash[:notice] %></p>
-  <% end %>
   <header class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
     <div class="flex min-w-0 items-start gap-4">
       <%= avatar(@person, size: :lg) %>

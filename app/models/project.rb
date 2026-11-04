@@ -14,6 +14,7 @@ class Project < ApplicationRecord
   }.freeze
 
   belongs_to :owner, class_name: "Person"
+  broadcasts_refreshes_to ->(project) { project }
   has_many :memberships, dependent: :destroy
   has_many :people, through: :memberships
   has_many :schedule_items, dependent: :destroy

@@ -44,7 +44,7 @@
                               <%= button_to "Move Down", move_down_project_list_list_column_path(project, list, column), method: :patch %>
                             <% end %>
                             <hr>
-                            <%= button_to "Remove Column", project_list_list_column_path(project, list, column), method: :delete, class: "menu-danger" %>
+                            <%= button_to "Remove Column", project_list_list_column_path(project, list, column), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Remove the #{column.name} column? Its values in every row go with it." } } %>
                           <% end %>
                         </div>
                       <% end %>
@@ -71,7 +71,7 @@
                           <%= actions_menu("Row actions") do %>
                             <%= link_to "Edit Row", edit_project_list_list_row_path(project, list, row) %>
                             <hr>
-                            <%= button_to "Delete Row", project_list_list_row_path(project, list, row), method: :delete, class: "menu-danger" %>
+                            <%= button_to "Delete Row", project_list_list_row_path(project, list, row), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete this row?" } } %>
                           <% end %>
                         </div>
                       <% end %>

@@ -8,7 +8,9 @@
 <div class="w-full max-w-2xl">
   <%= page_header "Import CSV", subtitle: "Upload a CSV with name, email, and phone columns. Existing People are matched by email." %>
 
-  <% if (alert = flash[:alert] || flash.now[:alert]).present? %>
+  <% alert = flash[:alert] %>
+  <% flash.delete(:alert) %>
+  <% if alert.present? %>
     <p role="alert" class="mt-7 text-meta text-danger"><%= alert %></p>
   <% end %>
 

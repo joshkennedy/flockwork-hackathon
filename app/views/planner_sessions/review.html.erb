@@ -4,9 +4,6 @@
   <h1>Review Suggestions</h1>
   <p class="mt-3 max-w-2xl text-ink-2">Keep what fits, edit what needs work, and drop the rest. People and open roles stay unassigned.</p>
 
-  <% if flash[:alert].present? %>
-    <p role="alert" class="mt-5 text-danger"><%= flash[:alert] %></p>
-  <% end %>
   <% if @planner_session.last_error.present? %>
     <p role="alert" class="mt-5 text-danger"><%= PlannerSession::ERROR_MESSAGE %></p>
   <% end %>

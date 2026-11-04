@@ -9,10 +9,6 @@
     <% end %>
   </div>
 
-  <% if flash[:alert].present? %>
-    <p role="alert" class="mt-4 bg-danger-soft px-4 py-3 text-meta font-semibold text-danger"><%= flash[:alert] %></p>
-  <% end %>
-
   <% if open_tasks.any? %>
     <ul class="mt-4 divide-y divide-hairline">
       <% open_tasks.each do |task| %>
@@ -54,7 +50,7 @@
                     <% end %>
                     <% if can_manage %>
                       <hr>
-                      <%= button_to "Delete Task", project_task_path(project, task), method: :delete, class: "menu-danger" %>
+                      <%= button_to "Delete Task", project_task_path(project, task), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete “#{task.title}”?" } } %>
                     <% end %>
                   <% end %>
                 <% end %>
@@ -98,7 +94,7 @@
                   <%= actions_menu("Actions for #{task.title}") do %>
                     <%= link_to "Edit Task", edit_project_task_path(project, task) %>
                     <hr>
-                    <%= button_to "Delete Task", project_task_path(project, task), method: :delete, class: "menu-danger" %>
+                    <%= button_to "Delete Task", project_task_path(project, task), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete “#{task.title}”?" } } %>
                   <% end %>
                 </div>
               <% end %>

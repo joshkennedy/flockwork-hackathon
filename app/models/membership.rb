@@ -1,6 +1,7 @@
 class Membership < ApplicationRecord
   belongs_to :project
   belongs_to :person
+  broadcasts_refreshes_to :project
 
   enum :role, { leader: 0, volunteer: 1 }
 

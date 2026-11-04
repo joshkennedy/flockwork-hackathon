@@ -28,7 +28,7 @@
                 <%= actions_menu("Actions for #{line.description}") do %>
                   <%= link_to "Edit", edit_project_budget_line_path(project, line) %>
                   <hr>
-                  <%= button_to "Delete", project_budget_line_path(project, line), method: :delete, class: "menu-danger" %>
+                  <%= button_to "Delete", project_budget_line_path(project, line), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete “#{line.description}”?" } } %>
                 <% end %>
               <% end %>
               <% if Policy.can?(Current.person, :update_budget_line_status, line) %>

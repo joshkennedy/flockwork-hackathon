@@ -2,6 +2,8 @@ class ListColumn < ApplicationRecord
   class CastError < StandardError; end
 
   belongs_to :list
+  # Through another record that a cascade delete may already have removed, so nil-safe.
+  after_commit -> { list&.project&.broadcast_refresh_later }
 
   enum :column_type, { text: 0, number: 1, date: 2, checkbox: 3, person: 4 }, validate: true
 

@@ -1,5 +1,7 @@
 class ListRow < ApplicationRecord
   belongs_to :list
+  # Through another record that a cascade delete may already have removed, so nil-safe.
+  after_commit -> { list&.project&.broadcast_refresh_later }
   has_many :comments, as: :commentable, dependent: :destroy
   has_many :follows, as: :followable, dependent: :destroy
 

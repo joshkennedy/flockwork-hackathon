@@ -10,6 +10,13 @@ export default class extends Controller {
     this.SpeechRecognition = SpeechRecognition
     this.buttonTarget.hidden = false
     this.committedText = this.fieldTarget.value
+    // A morph refresh would re-hide the button, because the server renders it hidden for browsers without speech.
+    this.keepButton = (event) => { if (event.target === this.buttonTarget && event.detail.attributeName === "hidden") event.preventDefault() }
+    this.element.addEventListener("turbo:before-morph-attribute", this.keepButton)
+  }
+
+  disconnect() {
+    if (this.keepButton) this.element.removeEventListener("turbo:before-morph-attribute", this.keepButton)
   }
 
   toggle(event) {
