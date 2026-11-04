@@ -18,6 +18,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
       "retreat" => "Retreat",
       "workday" => "Workday",
       "children_program" => "Children’s program",
+      "class" => "Class",
       "other" => "Outreach project"
     }
 
@@ -50,6 +51,30 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
       end
     end
     assert_response :bad_request
+  end
+
+  test "Class appears in the chooser and starts with class-specific planning guidance" do
+    sign_in_as_leader
+
+    get new_project_path
+
+    assert_response :success
+    assert_select "form[action='#{start_planner_projects_path}']" do
+      assert_select "input[name='planning_kind'][value='class']"
+      assert_select "button", text: /Class/
+      assert_select "svg"
+    end
+
+    class_kind = Planner::ProjectKinds::CHOICES.fetch("class")
+    assert_equal "Class", class_kind.fetch(:name)
+    assert_equal "Plan a class series with teachers, food, and take-home materials.", class_kind.fetch(:description)
+    assert_match(/how many sessions/, class_kind.fetch(:prompt))
+    assert_match(/date of each session/, class_kind.fetch(:prompt))
+    assert_match(/Teacher, Session 3/, class_kind.fetch(:prompt))
+    assert_match(/food or catering/, class_kind.fetch(:prompt))
+    assert_match(/take-home materials/, class_kind.fetch(:prompt))
+    assert_match(/without asking for names or private details/, class_kind.fetch(:prompt))
+    assert_match(/Slots cannot yet link to Schedule items/, class_kind.fetch(:prompt))
   end
 
   test "Something Else collects a description and redacts names before the first Planner card" do

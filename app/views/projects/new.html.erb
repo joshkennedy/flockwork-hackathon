@@ -45,6 +45,10 @@
           <span class="font-semibold text-ink">Children’s Program</span>
           <span class="mt-1 block text-meta text-ink-2">Plan dates, volunteers, supplies, and details.</span>
         <% end %>
+        <%= button_to start_planner_projects_path, method: :post, params: { planning_kind: "class" }, class: "project-kind-tile", data: { turbo_submits_with: "Creating Project…" } do %>
+          <span class="flex items-center gap-2 font-semibold text-ink"><%= icon(:docs) %>Class</span>
+          <span class="mt-1 block text-meta text-ink-2">Plan sessions, teachers, food, and take-home materials.</span>
+        <% end %>
         <%= button_to new_project_path, method: :get, params: { planning_kind: "other" }, class: "project-kind-tile" do %>
           <span class="font-semibold text-ink">Something Else</span>
           <span class="mt-1 block text-meta text-ink-2">Describe your idea in one sentence.</span>

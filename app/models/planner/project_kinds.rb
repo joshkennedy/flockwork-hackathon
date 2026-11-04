@@ -26,6 +26,11 @@ module Planner
         description: "Plan a children’s program.",
         prompt: "Help organize a children's program. Plan activities, preparation, supplies, and open volunteer roles. Never ask for children's names or private information."
       },
+      "class" => {
+        name: "Class",
+        description: "Plan a class series with teachers, food, and take-home materials.",
+        prompt: "Help organize a class series. Ask how many sessions there are and the date of each session, which teaching roles each session needs, whether food or catering is needed, and which curriculum handouts or take-home materials must be prepared. Build open roles without asking for names or private details. Name each teacher Slot by session, such as \"Teacher, Session 3,\" and date it to match that session because Slots cannot yet link to Schedule items."
+      },
       "other" => {
         name: "Project",
         description: "Shape a new Project together.",

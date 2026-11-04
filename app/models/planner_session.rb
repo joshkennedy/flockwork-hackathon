@@ -9,7 +9,7 @@ class PlannerSession < ApplicationRecord
   enum :status, { asking: 0, reviewing: 1, accepted: 2, abandoned: 3 }
 
   validates :description, presence: true
-  PLANNING_KINDS = %w[meal_train retreat workday children_program other].freeze
+  PLANNING_KINDS = %w[meal_train retreat workday children_program class other].freeze
 
   validates :flow_version, inclusion: { in: [ 1, 2, 3, 4 ] }
   validates :planning_kind, inclusion: { in: PLANNING_KINDS }
