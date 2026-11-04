@@ -43,7 +43,9 @@ Rails.application.routes.draw do
       get :mentionable_people, to: "mentionable_people#index"
     end
 
-    resources :schedule_items, except: %i[ index show ]
+    resources :schedule_items, except: %i[ index show ] do
+      get :calendar, to: "calendar_downloads#schedule_item"
+    end
     resources :tasks, except: %i[ index show ] do
       member do
         post :claim
@@ -56,6 +58,7 @@ Rails.application.routes.draw do
     resources :follows, only: :destroy
     resources :slots, except: %i[ index show ] do
       resource :claim, only: %i[ create destroy ], controller: "slot_claims"
+      get :calendar, to: "calendar_downloads#slot"
     end
     resource :slot_run, only: %i[ new create ]
     resources :planner_sessions, path: "planner", only: %i[ new create show ] do

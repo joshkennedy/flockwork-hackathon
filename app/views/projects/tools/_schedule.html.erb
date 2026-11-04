@@ -25,8 +25,9 @@
                       <p class="mt-0.5 text-meta text-ink-2"><%= meta %></p>
                     <% end %>
                   </div>
-                  <% if Policy.can?(Current.person, :manage_schedule, project) %>
-                    <%= actions_menu("Actions for #{item.title}") do %>
+                  <%= actions_menu("Actions for #{item.title}") do %>
+                    <%= link_to "Add to Calendar", project_schedule_item_calendar_path(project, item), data: { turbo: false } %>
+                    <% if Policy.can?(Current.person, :manage_schedule, project) %>
                       <%= link_to "Edit Item", edit_project_schedule_item_path(project, item) %>
                       <hr>
                       <%= button_to "Delete Item", project_schedule_item_path(project, item), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete “#{item.title}”?" } } %>

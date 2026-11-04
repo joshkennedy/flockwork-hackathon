@@ -43,6 +43,7 @@
           <button type="button" aria-expanded="false" data-comment-thread-target="trigger" data-action="comment-thread#toggle"><%= comment_count.positive? ? "View #{pluralize(comment_count, "Comment")}" : "Add Comment" %></button>
         <% end %>
         <% if own_claim %>
+          <%= link_to "Add to Calendar", project_slot_calendar_path(project, slot), data: { turbo: false } %>
           <%= button_to "Release", project_slot_claim_path(project, slot), method: :delete %>
         <% end %>
         <% if manage %>
