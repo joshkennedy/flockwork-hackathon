@@ -9,6 +9,10 @@
     <% end %>
   </div>
 
+  <% if Policy.can?(Current.person, :plan, project) %>
+    <p class="mt-4"><%= link_to "Draft a Message", new_project_message_draft_path(project), class: "link" %></p>
+  <% end %>
+
   <% if Policy.can?(Current.person, :post_message, project) %>
     <%= render "messages/plain_form",
           project: project,
