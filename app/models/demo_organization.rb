@@ -358,7 +358,7 @@ class DemoOrganization
             starts_on: Date.current + 3.weeks,
             ends_on: Date.current + 3.weeks,
             open_team: true,
-            enabled_tools: %w[tasks signup_sheet]
+            enabled_tools: %w[tasks signup_sheet docs]
           }
         )
         add_members(workday, people, {
@@ -373,6 +373,18 @@ class DemoOrganization
         workday.tasks.create!(title: "Spread mulch by the playground", due_on: workday.starts_on)
         workday.tasks.create!(title: "Touch up hallway paint", due_on: workday.starts_on)
         workday.tasks.create!(title: "Sort the storage room", due_on: workday.starts_on)
+        workday.doc_items.create!(
+          author: grace,
+          kind: :document,
+          title: "Workday safety notes",
+          body: "Wear closed-toe shoes and check in at the welcome table before starting a project."
+        )
+        workday.doc_items.create!(
+          author: grace,
+          kind: :link,
+          title: "Building map",
+          url: "https://example.com/grace-fellowship/workday-map"
+        )
       end
 
       def add_members(project, people, members)

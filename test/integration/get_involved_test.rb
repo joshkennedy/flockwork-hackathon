@@ -18,6 +18,7 @@ class GetInvolvedTest < ActionDispatch::IntegrationTest
     get get_involved_path
 
     assert_response :success
+    assert_select "section[aria-labelledby='needs-heading'] h2", text: "Open Sign-up spots"
     assert_select "section[aria-labelledby='needs-heading'] a[href=?]", project_path(@project), text: /Community Meal.*4 spots still open/m
     assert_select "section[aria-labelledby='needs-heading'] .status-chip", text: "This week"
     assert_select "section[aria-labelledby='joined-teams-heading'] li", text: /3 of 7 spots filled/
@@ -38,7 +39,7 @@ class GetInvolvedTest < ActionDispatch::IntegrationTest
     assert_includes slot.reload.people, volunteer
 
     get get_involved_path
-    assert_select "section[aria-labelledby='needs-heading'] p", text: /Every spot is covered for now/
+    assert_select "section[aria-labelledby='needs-heading'] p", text: /No open Sign-up spots right now/
   end
 
   test "a Volunteer who is not on the Team can browse open spots without joining first" do
@@ -74,14 +75,18 @@ class GetInvolvedTest < ActionDispatch::IntegrationTest
     assert_select "p", text: /When a Team opens its doors/
   end
 
-  test "Get involved says every spot is covered when nothing is open" do
+  test "Get involved names open Sign-up spots separately from unassigned Tasks" do
     slot = @project.slots.create!(date: Date.current + 1, label: "Dinner", capacity: 1)
     slot.claim(people(:other_leader))
+    project_with_task = projects(:building_cleanup)
+    project_with_task.update!(open_team: true, enabled_tools: [ "tasks" ])
+    project_with_task.tasks.create!(title: "Pack supplies")
     sign_in_as_volunteer
 
     get get_involved_path
 
-    assert_select "section[aria-labelledby='needs-heading'] p", text: /Every spot is covered for now/
+    assert_select "section[aria-labelledby='needs-heading'] p", text: "No open Sign-up spots right now. Projects with unassigned Tasks are listed below."
+    assert_select "section[aria-labelledby='open-teams-heading'] .badge-need", text: "1 unassigned Task"
     assert_select "section[aria-labelledby='joined-teams-heading'] li", text: /1 of 1 dinner filled · all covered/
   end
 end

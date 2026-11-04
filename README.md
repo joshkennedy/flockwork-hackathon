@@ -1,6 +1,6 @@
 # Flockwork
 
-Entry for **AI for Church Hackathon 2026** (Church Operations & Admin track). Flockwork is “Basecamp for churches”: each church gets a **Organization** with a **People** directory and **Projects** built from a fixed set of **Tools**—Tasks, Schedule, Sign-up sheet, Budget, Recipients, Messages, Docs & Files, and List. Leaders run an **AI Planner** to shape a Project; **Oversight** helps Admins see serving load and who still needs an invitation. The Planner is designed so it sees the work, not the people: it never receives directory data, names, or care details ([docs/adr/0002-the-ai-never-sees-people.md](docs/adr/0002-the-ai-never-sees-people.md)).
+Entry for **AI for Church Hackathon 2026** (Church Operations & Admin track). Flockwork is “Basecamp for churches”: each church gets an **Organization** with a **People** directory and **Projects** built from **Tools**. The Grace Fellowship demo shows all eight: Tasks, Schedule, Sign-up sheet, Budget, Recipients, Messages, Docs & Files, and List. Leaders run an **AI Planner** to shape a Project; **Oversight** helps Admins and Leaders see serving load and who still needs an invitation. The Planner is designed so it sees the work, not the people: it never receives directory data, names, or care details ([docs/adr/0002-the-ai-never-sees-people.md](docs/adr/0002-the-ai-never-sees-people.md)).
 
 ## Try it
 
@@ -10,11 +10,13 @@ Three buttons on `/demo` sign you in as fixed synthetic People (no email link ne
 
 | Button | Person | What you see |
 |--------|--------|--------------|
-| Explore as Admin | Daniel Okafor | Full Organization: **People** (directory, CSV import, Planning Center sync), **Oversight** (overextended limit, never asked, involvement by year), and every Project |
-| Explore as Leader | Maria Lopez | Projects Maria leads or belongs to (retreat, meal train, VBS, workday, and duplicates)—including **Planner**, Team management, and Tools she can manage |
-| Explore as Volunteer | Sam Chen | Home, **My Tasks**, Projects Sam is on (for example VBS), **Get involved**, and open-team Projects—no People or Oversight |
+| Explore as Admin | Daniel Okafor | Every Project, **People** (directory, CSV import, Planning Center sync), **Oversight**, and Organization settings, including the overextended limit |
+| Explore as Leader | Maria Lopez | Projects Maria leads or belongs to, **Planner**, Team management, Project Tools, and read-only **Oversight** |
+| Explore as Volunteer | Sam Chen | Home, **My Tasks**, Projects Sam is on, **Get involved**, and open-team Projects; no People or Oversight |
 
 Non-demo Organizations use email magic links only; the Explore buttons appear when `organization.demo?` is true.
+
+Anyone signed in can create a Project. Admins and Leaders of at least one active Project can view Oversight. Only Admins can change Oversight settings.
 
 ## How the AI Planner works
 

@@ -28,6 +28,11 @@ module GetInvolvedHelper
     slot.label.downcase == "dinner" ? "I Can Bring Dinner" : "I Can Help"
   end
 
+  def unassigned_task_label(project)
+    count = project.tasks.open.where(assignee_id: nil).count
+    count == 1 ? "1 unassigned Task" : "#{count} unassigned Tasks"
+  end
+
   # Plain counts only (DESIGN.md): "3 of 8 spots filled · next open Sat, Nov 8".
   def momentum_line(slots)
     return if slots.empty?

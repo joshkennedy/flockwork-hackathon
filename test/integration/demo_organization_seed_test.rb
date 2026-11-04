@@ -15,6 +15,7 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
         "Vacation Bible School 2026",
         "Women's Fall Retreat"
       ], organization.projects.order(:name).pluck(:name)
+      assert_equal Project::TOOLS.sort, organization.projects.flat_map(&:enabled_tools).uniq.sort
       assert_equal [ "Maria Lopez", "Grace Kim" ], Oversight.overextended(organization).map(&:name)
       assert_equal 12, Oversight.never_asked(organization).count
 
@@ -22,10 +23,13 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
       assert_equal 14, Oversight.involvement(ruth).find { |entry| entry[:year] == 2026 }[:slots]
 
       meal_train = organization.projects.find_by!(name: "Meal Train for the Alvarez Family")
+      assert_includes meal_train.enabled_tools, "recipients"
       assert meal_train.slots.where("claims_count > 0").exists?
       assert meal_train.slots.where(claims_count: 0).exists?
 
       recipient = meal_train.recipients.includes(:person).find_by!(people: { name: "The Alvarez Family" })
+      assert_match(/\A202-555-01\d\d\z/, recipient.person.phone)
+      assert_equal "planning_center", recipient.person.external_source
       assert_equal [
         [ "Allergic to tree nuts", "team" ],
         [ "Dad's surgery recovery may take 8 weeks", "leaders" ],
@@ -147,8 +151,11 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
       workday = organization.projects.find_by!(name: "Church Workday")
       assert_predicate workday, :open_team?
       assert_equal Date.current + 3.weeks, workday.starts_on
+      assert_equal %w[docs signup_sheet tasks], workday.enabled_tools.sort
       assert_equal 4, workday.tasks.open.where(assignee_id: nil).count
       assert_equal 7, workday.memberships.count
+      assert_equal [ "Building map", "Workday safety notes" ], workday.doc_items.order(:title).pluck(:title)
+      assert_equal "https://example.com/grace-fellowship/workday-map", workday.doc_items.find_by!(title: "Building map").url
 
       [ retreat, vbs ].each do |project|
         assert project.invitations.pending.exists?

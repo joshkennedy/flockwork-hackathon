@@ -9,9 +9,9 @@
     <%# Discovery first: the few Projects short on people soonest, each a click through to sign up there. %>
     <% open_needs = @needs.reject(&:full?).group_by(&:project).first(3) %>
     <section class="mt-7" aria-labelledby="needs-heading">
-      <h2 id="needs-heading" class="text-ink">Needs a hand</h2>
+      <h2 id="needs-heading" class="text-ink">Open Sign-up spots</h2>
       <% if open_needs.any? %>
-        <p class="mt-1 text-meta text-ink-2">Coming up soon and short on people.</p>
+        <p class="mt-1 text-meta text-ink-2">Upcoming Sign-up spots that still need someone.</p>
         <ul class="mt-3 grid gap-2">
           <% open_needs.each do |project, slots| %>
             <% open_spots = slots.sum { |slot| slot.capacity - slot.claims_count } %>
@@ -34,7 +34,7 @@
           <% end %>
         </ul>
       <% else %>
-        <p class="mt-2 text-ink-2">Every spot is covered for now. Thank you for being ready to help. New needs will show up here as soon as a Leader adds them.</p>
+        <p class="mt-2 text-ink-2">No open Sign-up spots right now. Projects with unassigned Tasks are listed below.</p>
       <% end %>
     </section>
 
@@ -63,7 +63,7 @@
                   <p class="mt-2 text-meta text-ink-2"><%= momentum %></p>
                 <% end %>
                 <% if guidance&.dig(:kind) == :tasks %>
-                  <p class="mt-2"><span class="badge-need"><%= guidance[:title] %></span></p>
+                  <p class="mt-2"><span class="badge-need"><%= unassigned_task_label(project) %></span></p>
                 <% end %>
               </div>
               <% open_slots = slots.reject(&:full?) %>
