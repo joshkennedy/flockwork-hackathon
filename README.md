@@ -69,6 +69,11 @@ Create `.env.development.local`:
 |----------|---------|
 | `OPENROUTER_API_KEY` | Planner in development (required for live AI) |
 | `PCO_APP_ID`, `PCO_SECRET` | Optional Planning Center People import (`DirectorySources::PlanningCenter`) |
+| `SENDLY_SANDBOX_API_KEY` | Optional Sendly SMS sandbox client. See [Sendly setup](docs/sendly.md). |
+
+For production SMS notifications, set `SENDLY_API_KEY` and run the Solid Queue
+worker. People choose their notification channels in **My profile > Notifications**;
+SMS stays off until they enable it. See [production SMS setup](docs/sendly.md#enable-production-sending).
 
 `config/credentials/development.key` is gitignored; ask a maintainer for the key if encrypted credentials are required locally.
 

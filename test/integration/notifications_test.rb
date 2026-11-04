@@ -262,14 +262,14 @@ class NotificationsTest < ActionDispatch::IntegrationTest
     get edit_profile_path
 
     assert_response :success
-    assert_select "fieldset legend", "Email notifications"
+    assert_select "fieldset legend", "Notification delivery"
     assert_select "input[type='checkbox'][name='person[email_preferences][invitation]'][checked]", count: 1
     assert_select "input[type='checkbox'][name='person[email_preferences][task_assigned]'][checked]", count: 1
     assert_select "input[type='checkbox'][name='person[email_preferences][mention]'][checked]", count: 1
     assert_select "input[type='checkbox'][name='person[email_preferences][slot_reminder]'][checked]", count: 1
     assert_select "input[type='checkbox'][name='person[email_preferences][followed_reply]'][checked]", count: 0
     assert_select "input[type='checkbox'][name='person[email_preferences][team_departure]'][checked]", count: 1
-    assert_select "label", text: "Replies on things you follow"
+    assert_select "th[scope='row']", text: "Replies on things you follow"
   end
 
   test "the Slot reminder job notifies and emails each claimer only once" do

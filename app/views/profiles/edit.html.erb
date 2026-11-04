@@ -49,18 +49,44 @@
 
         <section id="profile-notifications" class="space-y-4" data-tabs-target="panel" data-tabs-name="notifications" aria-label="Notifications" hidden>
           <fieldset>
-            <legend class="text-body-phone sm:text-body font-semibold text-ink">Email notifications</legend>
-            <p class="mt-1 text-meta text-ink-2">In-app notifications are always on.</p>
-            <div class="mt-4 space-y-3">
-              <% Notification::KINDS.each do |kind, settings| %>
-                <div class="flex items-start gap-3">
-                  <%= hidden_field_tag "person[email_preferences][#{kind}]", "0", id: nil %>
-                  <%= check_box_tag "person[email_preferences][#{kind}]", "1", @person.email_for?(kind), id: "person_email_preferences_#{kind}", class: "mt-0.5 size-4 rounded border-hairline text-ink focus:border-ink" %>
-                  <%= label_tag "person_email_preferences_#{kind}", settings.fetch(:label), class: "text-label text-ink-2" %>
-                </div>
-              <% end %>
-            </div>
+            <legend class="text-body-phone sm:text-body font-semibold text-ink">Notification delivery</legend>
+            <p id="notification-channels-hint" class="mt-1 text-meta text-ink-2">Choose any combination for each type. Leave a row unchecked to turn it off. Changes apply to new notifications.</p>
+            <table class="mt-5 w-full table-fixed text-meta" aria-describedby="notification-channels-hint">
+              <caption class="sr-only">Delivery channels for each notification type</caption>
+              <colgroup><col class="w-[46%]"><col><col><col></colgroup>
+              <thead>
+                <tr class="text-label text-ink-2">
+                  <th scope="col" class="pb-2 text-left font-medium">Notify me about</th>
+                  <th scope="col" class="pb-2 text-center font-medium">In-app</th>
+                  <th scope="col" class="pb-2 text-center font-medium">Email</th>
+                  <th scope="col" class="pb-2 text-center font-medium">SMS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% Notification::KINDS.each do |kind, settings| %>
+                  <tr>
+                    <th scope="row" class="py-2 pr-2 text-left font-normal text-ink"><%= settings.fetch(:label) %></th>
+                    <% Person::NOTIFICATION_CHANNELS.each do |channel, attribute| %>
+                      <td class="py-2 text-center align-middle">
+                        <%= hidden_field_tag "person[#{attribute}][#{kind}]", "0", id: nil %>
+                        <label class="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center">
+                          <%= check_box_tag "person[#{attribute}][#{kind}]", "1", @person.notification_for?(channel, kind), id: "person_#{attribute}_#{kind}", class: "size-4 rounded border-hairline text-ink focus:border-ink" %>
+                          <span class="sr-only"><%= settings.fetch(:label) %> via <%= channel == "in_app" ? "in-app" : channel.upcase %></span>
+                        </label>
+                      </td>
+                    <% end %>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
           </fieldset>
+
+          <div class="space-y-2 text-meta text-ink-2">
+            <p>SMS number: <span class="font-medium text-ink"><%= @person.phone.presence || "Not set" %></span>.
+              <%= link_to "Change Phone", "#profile-details", class: "link", data: { action: "tabs#select", tabs_name: "details" } %>
+            </p>
+            <p>Use a number with its country code, such as +12025550100. Enabling SMS opts you in to these Flockwork texts. Message and data rates may apply. Reply STOP to opt out.</p>
+          </div>
 
           <%= form.submit "Save Changes", class: "btn btn-primary" %>
         </section>

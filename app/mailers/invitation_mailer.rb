@@ -3,6 +3,8 @@ class InvitationMailer < ApplicationMailer
 
   def invitation(invitation)
     @invitation = invitation
+    return unless invitation.person.email.present? && invitation.person.email_for?("invitation")
+
     @url = invitation_url(invitation.generate_token_for(:access))
 
     mail to: invitation.person.email,

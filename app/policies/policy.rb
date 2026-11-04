@@ -318,7 +318,7 @@ module Policy
   private :note_can?
 
   def visible_notifications(person)
-    person.organization.notifications.where(recipient_id: person.id)
+    person.organization.notifications.in_app.where(recipient_id: person.id)
   end
 
   def notification_can?(person, action, notification)

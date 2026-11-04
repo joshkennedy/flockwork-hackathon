@@ -53,13 +53,15 @@ class ProfilesController < ApplicationController
         :name,
         :phone,
         skills: [],
-        email_preferences: Notification::KINDS.keys
+        **Person::NOTIFICATION_CHANNELS.values.index_with { Notification::KINDS.keys }
       )
-      preferences = permitted.delete(:email_preferences)
-      if preferences
-        permitted[:email_preferences] = preferences.to_h.transform_values do |value|
+      Person::NOTIFICATION_CHANNELS.each_value do |attribute|
+        preferences = permitted.delete(attribute)
+        next unless preferences
+
+        permitted[attribute] = @person.public_send(attribute).merge(preferences.to_h.transform_values do |value|
           ActiveModel::Type::Boolean.new.cast(value)
-        end
+        end)
       end
       permitted
     end
