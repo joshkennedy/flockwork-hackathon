@@ -83,6 +83,70 @@ class PlannerProvidersLlmTest < ActiveSupport::TestCase
     assert_equal "Which meals?", response.card.fetch("question")
   end
 
+  test "parses the first JSON object before trailing markup" do
+    content = JSON.generate(card: nil, finished: true, added: [], removed_ids: []) +
+      "</parameter>{\"ignored\":true}"
+
+    response = with_ruby_llm_chat(RecordingChat.new(content)) do
+      Planner::Providers::Llm.new.call("flow_version" => 2, "questions_answered" => 1)
+    end
+
+    assert response.finished
+  end
+
+  test "parses JSON preceded by prose" do
+    content = "Here is the plan:\n" + JSON.generate(card: nil, finished: true, added: [], removed_ids: [])
+
+    response = with_ruby_llm_chat(RecordingChat.new(content)) do
+      Planner::Providers::Llm.new.call("flow_version" => 2, "questions_answered" => 1)
+    end
+
+    assert response.finished
+  end
+
+  test "parses nested braces inside JSON strings" do
+    card = {
+      "question" => "Should {\"label\":\"Dinner\"} stay literal?",
+      "options" => [ "A } brace", "A { brace", "An escaped quote: \"yes\"" ]
+    }
+    content = JSON.generate(card:, finished: false, added: [], removed_ids: [])
+
+    response = with_ruby_llm_chat(RecordingChat.new(content)) do
+      Planner::Providers::Llm.new.call("flow_version" => 2, "questions_answered" => 1)
+    end
+
+    assert_equal card, response.card
+  end
+
+  test "raises JSON parser errors for truncated responses" do
+    content = '{"card":null,"finished":true,"added":[],"removed_ids":['
+
+    assert_raises(JSON::ParserError) do
+      with_ruby_llm_chat(RecordingChat.new(content)) do
+        Planner::Providers::Llm.new.call("flow_version" => 2, "questions_answered" => 1)
+      end
+    end
+  end
+
+  test "retries one transient parse failure and logs response length only" do
+    valid = JSON.generate(card: nil, finished: true, added: [], removed_ids: [])
+    chat = RecordingChat.new([ "private response content", valid ])
+    io = StringIO.new
+    original_logger = Rails.logger
+    Rails.logger = ActiveSupport::Logger.new(io)
+
+    response = with_ruby_llm_chat(chat) do
+      Planner::Providers::Llm.new.call("flow_version" => 2, "questions_answered" => 1)
+    end
+
+    assert response.finished
+    assert_equal 2, chat.calls
+    assert_includes io.string, "response_length=24"
+    refute_includes io.string, "private response content"
+  ensure
+    Rails.logger = original_logger
+  end
+
   test "logs the per-call usage at debug level, including cache reads and writes" do
     tokens = Struct.new(:input, :output, :cache_read, :cache_write, :thinking).new(1200, 300, 900, 0, 40)
     content = JSON.generate(card: nil, finished: true, added: [], removed_ids: [])
@@ -116,7 +180,8 @@ class PlannerProvidersLlmTest < ActiveSupport::TestCase
 
     def ask(_)
       @calls += 1
-      Struct.new(:content, :tokens).new(@content, nil)
+      content = @content.is_a?(Array) ? @content.fetch(@calls - 1) : @content
+      Struct.new(:content, :tokens).new(content, nil)
     end
   end
 

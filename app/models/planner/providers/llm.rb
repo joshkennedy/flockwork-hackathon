@@ -158,9 +158,37 @@ module Planner
           version = context["flow_version"] || context[:flow_version]
           instructions = version == 2 ? MEAL_PROMPT : (version == 3 ? GENERAL_PROMPT : SYSTEM_PROMPT)
           schema = version == 2 ? MEAL_SCHEMA : (version == 3 ? GENERAL_SCHEMA : RESPONSE_SCHEMA)
+          prompt = JSON.generate(context)
+
+          2.times do |attempt|
+            message = stream_message(build_chat(version:, instructions:, schema:, context:), prompt, on_partial)
+            log_usage(message, version)
+            content = message.content.to_s
+            parsed = begin
+              parse_json_object(content)
+            rescue JSON::ParserError, ArgumentError
+              log_parse_failure(content, attempt)
+              raise if attempt == 1
+              next
+            end
+            card = parsed.fetch("card")
+            finished = parsed.fetch("finished")
+            raise ArgumentError, "Finished Planner responses must have no card" unless finished == card.nil?
+            raise ArgumentError, "Cards need 3 to 5 options" if card && !card.fetch("options").size.between?(3, 5)
+
+            return Planner::Response.new(
+              card:,
+              finished:,
+              added: parsed.fetch("added"),
+              removed_ids: parsed.fetch("removed_ids")
+            ).validate!
+          end
+        end
+
+        def build_chat(version:, instructions:, schema:, context:)
           # The schema goes in the prompt, not as a response format: Anthropic's constrained decoding can't
           # compile it in time. The shape is checked here and Suggestions are sanitized per kind on ingest.
-          # One request can't outlive the step budget, so a retry never starts after the budget is spent either.
+          # Each request uses the full timeout, while call's outer timeout keeps both attempts within one budget.
           chat = RubyLLM.context { |config| config.request_timeout = budget_seconds }
             .chat(model: llm_model, provider: llm_provider.to_sym, assume_model_exists: true)
             # The instructions and schema are stable per flow, so cache them (OpenRouter passes cache_control through).
@@ -169,21 +197,53 @@ module Planner
             .with_max_output_tokens(4_000)
           # The first card has no answers to weigh, so it skips the reasoning pass (about 40-50% of output tokens).
           answered = context["questions_answered"] || context[:questions_answered] || 1
-          chat = chat.with_thinking(effort: :low) if version.in?([ 2, 3 ]) && answered.to_i.zero?
-          message = stream_message(chat, JSON.generate(context), on_partial)
-          log_usage(message, version)
-          parsed = JSON.parse(message.content.to_s[/\{.*\}/m] || raise(ArgumentError, "Planner response had no JSON"))
-          card = parsed.fetch("card")
-          finished = parsed.fetch("finished")
-          raise ArgumentError, "Finished Planner responses must have no card" unless finished == card.nil?
-          raise ArgumentError, "Cards need 3 to 5 options" if card && !card.fetch("options").size.between?(3, 5)
+          version.in?([ 2, 3 ]) && answered.to_i.zero? ? chat.with_thinking(effort: :low) : chat
+        end
 
-          Planner::Response.new(
-            card:,
-            finished:,
-            added: parsed.fetch("added"),
-            removed_ids: parsed.fetch("removed_ids")
-          ).validate!
+        def parse_json_object(content)
+          start = nil
+          depth = 0
+          in_string = false
+          escaped = false
+
+          content.each_char.with_index do |character, index|
+            if start.nil?
+              next unless character == "{"
+
+              start = index
+              depth = 1
+              next
+            end
+
+            if in_string
+              if escaped
+                escaped = false
+              elsif character == "\\"
+                escaped = true
+              elsif character == '"'
+                in_string = false
+              end
+              next
+            end
+
+            case character
+            when '"'
+              in_string = true
+            when "{"
+              depth += 1
+            when "}"
+              depth -= 1
+              return JSON.parse(content[start..index]) if depth.zero?
+            end
+          end
+
+          raise ArgumentError, "Planner response had no JSON" unless start
+
+          JSON.parse(content[start..])
+        end
+
+        def log_parse_failure(content, attempt)
+          Rails.logger.warn("[Planner] parse_failed attempt=#{attempt + 1} response_length=#{content.bytesize}")
         end
 
         # Yields a snapshot only when a complete card or item changes, so callers can throttle without diffing.
