@@ -127,7 +127,7 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
     visit project_planner_session_path(project, post_planner)
     click_on "Talk It Through"
 
-    assert_text "Voice planning: talk about the work, not people."
+    assert_text "Your audio is sent to xAI. Describe the work without names or private care details."
     assert_text "How should the Team prepare?"
     assert_text "You: We'll cook together"
     assert_text "What should happen after cooking?", wait: 5

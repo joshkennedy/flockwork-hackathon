@@ -4,9 +4,9 @@ Entry for **AI for Church Hackathon 2026** (Church Operations & Admin track). Fl
 
 ## Try it
 
-After setup, open [http://localhost:3000/grace-fellowship/sign_in](http://localhost:3000/grace-fellowship/sign_in). The demo Organization **Grace Fellowship** is seeded from `DemoOrganization` on `db:prepare` / `db:seed`.
+After setup, open [http://localhost:3000/demo](http://localhost:3000/demo). The demo Organization **Grace Fellowship** is seeded from `DemoOrganization` on `db:prepare` / `db:seed`.
 
-Three buttons sign you in as fixed synthetic People (no email link needed):
+Three buttons on `/demo` sign you in as fixed synthetic People (no email link needed):
 
 | Button | Person | What you see |
 |--------|--------|--------------|

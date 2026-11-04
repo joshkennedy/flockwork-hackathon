@@ -32,11 +32,11 @@
       <% end %>
 
       <div hidden data-voice-planner-target="launcher" class="mt-5">
-        <button type="button" class="btn btn-secondary" data-action="voice-planner#start" data-voice-planner-target="startButton">
+        <p class="text-meta text-ink-2">Your audio is sent to xAI. Describe the work without names or private care details.</p>
+        <button type="button" class="mt-2 btn btn-secondary" data-action="voice-planner#start" data-voice-planner-target="startButton">
           <%= icon(:mic) %>
           <span>Talk It Through</span>
         </button>
-        <p class="mt-2 text-meta text-ink-2">Voice planning: talk about the work, not people.</p>
       </div>
     <% elsif planner_session.reviewing? %>
       <h1 id="planner-question" class="text-ink">Your plan is ready to review</h1>

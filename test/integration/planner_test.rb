@@ -333,6 +333,34 @@ class PlannerTest < ActionDispatch::IntegrationTest
     assert_equal "Set up the room", planner_session.suggestions.first.dig("fields", "title")
   end
 
+  test "planner surfaces qualified privacy and xAI disclosure before voice start" do
+    project = projects(:community_meal)
+    Rails.configuration.x.planner_provider = Planner::Providers::Fake.new([
+      planner_response(
+        card: {
+          "question" => "How should the Team prepare?",
+          "options" => [ "Cook together", "Order food" ]
+        }
+      )
+    ])
+    sign_in_as_leader
+
+    get new_project_planner_session_path(project)
+    assert_response :success
+    assert_select ".privacy-line", text: /not your people directory/
+    assert_select ".privacy-line", text: /speech service/
+
+    post project_planner_sessions_path(project), params: {
+      planner_session: { description: "Prepare the neighborhood meal." }
+    }
+    planner_session = project.planner_sessions.last!
+    get project_planner_session_path(project, planner_session)
+    assert_response :success
+    assert_includes response.body, "Your audio is sent to xAI"
+    assert_includes response.body, "Talk It Through"
+    assert_operator response.body.index("Your audio is sent to xAI"), :<, response.body.index("Talk It Through")
+  end
+
   test "a Leader mints a voice session from safe Planner context and the current card" do
     project = projects(:community_meal)
     project.organization.people.create!(
