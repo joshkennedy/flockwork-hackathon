@@ -1,6 +1,15 @@
 require "test_helper"
 
 class NotificationChannelsTest < ActionDispatch::IntegrationTest
+  setup do
+    @previous_key = ENV["SENDLY_API_KEY"]
+    ENV["SENDLY_API_KEY"] = "sandbox"
+  end
+
+  teardown do
+    @previous_key.nil? ? ENV.delete("SENDLY_API_KEY") : ENV["SENDLY_API_KEY"] = @previous_key
+  end
+
   test "profile saves independent channels and preserves existing email choices" do
     person = sign_in_as_volunteer
     person.update!(email_preferences: { mention: false })
