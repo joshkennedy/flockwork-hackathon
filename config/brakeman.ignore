@@ -2,8 +2,13 @@
   "ignored_warnings": [
     {
       "warning_type": "Mass Assignment",
-      "fingerprint": "fc7b79ef3d0ae6b7d531f43af5020faed1c41f15c533bf88e57350785b71455f",
-      "note": "PeopleController is Admin-only (AdminOnly concern); granting Admin is the feature."
+      "fingerprint": "312d43c0c7de1a659ec4a8fd99b7c0032c44012a8958d97a1b1d70a3acf01f69",
+      "note": "PeopleController authorizes every action through Policy.manage_people, which requires an organization Admin. Granting Admin is an intended feature; directory_management_test covers it and rejects profile escalation."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "fingerprint": "2d52eb1a2bd81906d822efa3c10ca407f27a4f8a2730a4503bb67e4e733b2d58",
+      "note": "StaffingSuggestions.active_sql returns a fixed SQL literal with no input. Only that literal is interpolated in the aggregate; skills and serving limit use bound parameters."
     }
   ],
   "brakeman_version": "8.1.0"

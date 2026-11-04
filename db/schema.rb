@@ -212,6 +212,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_200000) do
     t.datetime "read_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "in_app", default: true, null: false
+    t.jsonb "sms_payload", default: {}, null: false
+    t.string "sms_message_id"
+    t.string "sms_status"
+    t.boolean "sms_simulated"
+    t.string "sms_error"
     t.index ["actor_id"], name: "index_notifications_on_actor_id"
     t.index ["notifiable_type", "notifiable_id"], name: "index_notifications_on_notifiable"
     t.index ["recipient_id", "read_at"], name: "index_notifications_on_recipient_id_and_read_at"
@@ -247,6 +253,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_200000) do
     t.datetime "updated_at", null: false
     t.jsonb "email_preferences", default: {}, null: false
     t.string "skills", default: [], null: false, array: true
+    t.jsonb "in_app_preferences", default: {}, null: false
+    t.jsonb "sms_preferences", default: {}, null: false
     t.index ["organization_id", "email"], name: "index_people_on_organization_id_and_email", unique: true, where: "(email IS NOT NULL)"
     t.index ["organization_id", "external_source", "external_id"], name: "index_people_on_organization_and_external_identity", unique: true, where: "(external_id IS NOT NULL)"
     t.index ["organization_id"], name: "index_people_on_organization_id"

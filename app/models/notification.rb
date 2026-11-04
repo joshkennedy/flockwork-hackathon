@@ -15,6 +15,7 @@ class Notification < ApplicationRecord
   enum :kind, KINDS.keys.each_with_index.to_h
 
   scope :unread, -> { where(read_at: nil) }
+  scope :in_app, -> { where(in_app: true) }
 
   # "Needs you": still asks something of the reader. A mention clears when read;
   # the others clear when the task, Invitation or Slot is done or has passed.
@@ -28,6 +29,28 @@ class Notification < ApplicationRecord
 
   def unread?
     read_at.nil?
+  end
+
+  def sms_text
+    routes = Rails.application.routes.url_helpers
+    options = Rails.application.config.action_mailer.default_url_options
+    url = if invitation?
+      routes.invitation_url(notifiable.generate_token_for(:access), **options)
+    else
+      routes.project_url(project, **options)
+    end
+    "Flockwork: #{message} #{url} Reply STOP to opt out."
+  end
+
+  def sms_relevant?
+    return false unless notifiable && project && project.organization_id == recipient.organization_id
+    return false if project.deleted_at? || project.archived_at?
+    return notifiable.pending? && notifiable.person_id == recipient_id if invitation?
+    return false unless Policy.can?(recipient, :show, project)
+    return notifiable.assignee_id == recipient_id && !notifiable.completed_at? if task_assigned?
+    return notifiable.date >= Date.current && notifiable.slot_claims.exists?(person_id: recipient_id) if slot_reminder?
+
+    true
   end
 
   def project

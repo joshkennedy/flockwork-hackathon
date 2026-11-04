@@ -6,6 +6,12 @@ require "rails/all"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+if defined?(Dotenv) && (Rails.env.development? || Rails.env.test?)
+  environment = Rails.env
+  paths = [ ".env.#{environment}.local", (".env.local" unless environment == "test"), ".env.#{environment}", ".env" ]
+  Dotenv.load(*paths.compact.map { |path| File.expand_path("../#{path}", __dir__) })
+end
+
 module Flockwork
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.

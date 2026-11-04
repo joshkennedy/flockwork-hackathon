@@ -2,6 +2,12 @@ class Person < ApplicationRecord
   include RefreshesStaffingSuggestions
   include OrganizationScoped
 
+  NOTIFICATION_CHANNELS = {
+    "in_app" => :in_app_preferences,
+    "email" => :email_preferences,
+    "sms" => :sms_preferences
+  }.freeze
+
   has_many :sessions, dependent: :destroy
   has_many :memberships, dependent: :destroy
   has_many :comments, foreign_key: :author_id, inverse_of: :author, dependent: :destroy
@@ -50,6 +56,10 @@ class Person < ApplicationRecord
   scope :never_asked, -> { where(admin: false).where.missing(:invitations, :memberships, :owned_projects, :recipients) }
 
   normalizes :email, with: ->(email) { email.strip.downcase.presence }
+  normalizes :phone, with: ->(phone) {
+    value = phone.strip
+    (value.start_with?("+") ? value.gsub(/[ ()\-.]/, "") : value).presence
+  }
   normalizes :skills, with: ->(skills) { Skills.normalize(skills) }
 
   validates :name, presence: true
@@ -58,6 +68,7 @@ class Person < ApplicationRecord
   # The first Admin of a new Organization must be able to sign in, so they need an email then.
   validates :email, presence: true, on: :organization_creation
   validate :cannot_remove_last_admin, if: :admin_changed?
+  validate :sms_requires_international_phone
 
   # Signing in consumes a link by stamping last_signed_in_at, which invalidates every link issued before it.
   # The conditional update means two simultaneous uses of one link cannot both succeed.
@@ -75,13 +86,30 @@ class Person < ApplicationRecord
   end
 
   def email_for?(kind)
-    kind = kind.to_s
-    return ActiveModel::Type::Boolean.new.cast(email_preferences[kind]) if email_preferences.key?(kind)
+    notification_for?("email", kind)
+  end
 
-    Notification::KINDS.fetch(kind).fetch(:email_default)
+  def notification_for?(channel, kind)
+    kind = kind.to_s
+    settings = Notification::KINDS.fetch(kind)
+    preferences = public_send(NOTIFICATION_CHANNELS.fetch(channel.to_s))
+    return ActiveModel::Type::Boolean.new.cast(preferences[kind]) if preferences.key?(kind)
+
+    channel.to_s == "email" ? settings.fetch(:email_default) : channel.to_s == "in_app"
+  end
+
+  def sms_phone?
+    /\A\+[1-9]\d{6,14}\z/.match?(phone.to_s)
   end
 
   private
+    def sms_requires_international_phone
+      return unless Notification::KINDS.keys.any? { |kind| notification_for?("sms", kind) }
+      return if sms_phone?
+
+      errors.add(:phone, "must include the country code, such as +12025550100, to receive SMS notifications")
+    end
+
     def cannot_remove_last_admin
       return if admin?
       return if organization.people.where(admin: true).where.not(id:).exists?
