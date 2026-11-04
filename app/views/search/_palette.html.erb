@@ -1,17 +1,15 @@
-<dialog class="modal" aria-labelledby="search-heading" data-global-search-target="dialog" data-action="click->global-search#backdrop">
-  <div class="modal-panel max-h-[80dvh] overflow-y-auto">
-    <div class="flex items-center justify-between gap-4">
-      <h2 id="search-heading">Search Flockwork</h2>
-      <button type="button" class="btn btn-text btn-sm" data-action="global-search#close">Close</button>
+<dialog class="modal search-dialog" aria-labelledby="search-heading" data-global-search-target="dialog" data-action="click->global-search#backdrop close->global-search#closed keydown->global-search#navigate">
+  <div class="search-panel">
+    <h2 id="search-heading" class="sr-only">Search Flockwork</h2>
+    <%= form_with url: search_path, method: :get, class: "search-input-row", data: { global_search_target: "form", action: "submit->global-search#submit" } do |form| %>
+      <svg aria-hidden="true" class="shrink-0 text-ink-2" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+      <%= form.label :query, "Search Flockwork", for: "global_search_query", class: "sr-only" %>
+      <%= form.search_field :query, id: "global_search_query", placeholder: "Search projects, people, work…", data: { global_search_target: "query", action: "input->global-search#search compositionend->global-search#search" }, autocomplete: "off", spellcheck: false, maxlength: 100, aria: { controls: "search-results", describedby: "search-help" } %>
+      <button type="button" class="search-dismiss" data-action="global-search#close" aria-label="Close search"><kbd>esc</kbd></button>
+    <% end %>
+    <div class="search-results" data-global-search-target="container">
+      <%= render "search/results", results_frame: "search-results", query: "", results: {} %>
     </div>
-    <%= form_with url: search_path, method: :get, class: "mt-4 space-y-3", data: { turbo_frame: "search-results" } do |form| %>
-      <%= form.label :query, "Projects, people and this Project’s work", for: "global_search_query", class: "text-meta text-ink-2" %>
-      <%= form.search_field :query, id: "global_search_query", class: "field w-full", data: { global_search_target: "query" }, autocomplete: "off", maxlength: 100 %>
-      <%= form.hidden_field :project_id, value: @project.id if @project.is_a?(Project) && @project.persisted? %>
-      <%= form.submit "Search", class: "btn btn-primary" %>
-    <% end %>
-    <%= turbo_frame_tag "search-results", class: "block mt-5", role: "region", aria: { label: "Search results", live: "polite" } do %>
-      <p class="text-meta text-ink-2">Enter a name or title to find what you need.</p>
-    <% end %>
+    <div class="search-footer" id="search-help"><span><kbd>↑</kbd> <kbd>↓</kbd> to navigate <span class="ml-3"><kbd>↵</kbd> to open</span></span><span role="status" data-global-search-target="status">Search by name or title</span></div>
   </div>
 </dialog>

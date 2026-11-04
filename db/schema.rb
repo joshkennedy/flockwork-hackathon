@@ -10,9 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_04_220001) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_04_230000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+  enable_extension "pg_trgm"
 
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
@@ -99,6 +100,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_220001) do
     t.datetime "updated_at", null: false
     t.index ["author_id"], name: "index_doc_items_on_author_id"
     t.index ["project_id"], name: "index_doc_items_on_project_id"
+    t.index ["title"], name: "index_doc_items_search", opclass: :gin_trgm_ops, using: :gin
   end
 
   create_table "follows", force: :cascade do |t|
@@ -256,6 +258,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_220001) do
     t.string "skills", default: [], null: false, array: true
     t.jsonb "in_app_preferences", default: {}, null: false
     t.jsonb "sms_preferences", default: {}, null: false
+    t.index ["name"], name: "index_people_search", opclass: :gin_trgm_ops, using: :gin
     t.index ["organization_id", "email"], name: "index_people_on_organization_id_and_email", unique: true, where: "(email IS NOT NULL)"
     t.index ["organization_id", "external_source", "external_id"], name: "index_people_on_organization_and_external_identity", unique: true, where: "(external_id IS NOT NULL)"
     t.index ["organization_id"], name: "index_people_on_organization_id"
@@ -338,6 +341,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_220001) do
     t.boolean "banner_focus_manual", default: false, null: false
     t.string "banner_alt_text"
     t.string "skills_needed", default: [], null: false, array: true
+    t.index ["name"], name: "index_projects_search", opclass: :gin_trgm_ops, using: :gin
     t.index ["organization_id"], name: "index_projects_on_organization_id"
     t.index ["owner_id"], name: "index_projects_on_owner_id"
     t.index ["public_token"], name: "index_projects_on_public_token", unique: true
@@ -363,6 +367,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_220001) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["project_id"], name: "index_schedule_items_on_project_id"
+    t.index ["title"], name: "index_schedule_items_search", opclass: :gin_trgm_ops, using: :gin
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -394,6 +399,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_220001) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "schedule_item_id"
+    t.index ["label"], name: "index_slots_search", opclass: :gin_trgm_ops, using: :gin
     t.index ["project_id"], name: "index_slots_on_project_id"
     t.index ["schedule_item_id"], name: "index_slots_on_schedule_item_id"
     t.check_constraint "capacity >= 1", name: "slots_capacity_at_least_one"
@@ -582,6 +588,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_220001) do
     t.index ["assignee_id"], name: "index_tasks_on_assignee_id"
     t.index ["completed_by_id"], name: "index_tasks_on_completed_by_id"
     t.index ["project_id"], name: "index_tasks_on_project_id"
+    t.index ["title"], name: "index_tasks_search", opclass: :gin_trgm_ops, using: :gin
   end
 
   create_table "unavailabilities", force: :cascade do |t|

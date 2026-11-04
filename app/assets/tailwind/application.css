@@ -239,6 +239,36 @@
   dialog.modal::backdrop { background: rgb(20 20 19 / .32); }
   .modal-panel { @apply max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-panel border border-border bg-panel p-6 shadow-float; }
   dialog.confirm-dialog { @apply max-w-sm; }
+  .search-trigger { @apply inline-flex shrink-0 items-center gap-2 rounded-nav border border-border bg-page px-3 py-1 text-button text-ink-2; }
+  .search-trigger kbd, .search-dismiss kbd, .search-footer kbd { @apply rounded-badge border border-border bg-panel px-1 py-0.5 font-sans text-label; }
+  .search-trigger kbd { @apply ml-2; }
+  dialog.search-dialog { @apply mt-[min(12dvh,96px)] max-w-xl; }
+  .search-panel { @apply flex max-h-[75dvh] flex-col overflow-hidden rounded-panel border border-border bg-panel text-ink shadow-float; }
+  .search-input-row { @apply flex shrink-0 items-center gap-3 rounded-t-panel border-b border-border pl-5 pr-2; }
+  .search-input-row:has(input:focus-visible) { outline: 2px solid var(--color-ink); outline-offset: -2px; }
+  .search-input-row input { @apply min-w-0 grow bg-transparent py-5 text-body text-ink; border: 0; }
+  .search-input-row input:focus-visible { outline: none; }
+  .search-input-row input::-webkit-search-cancel-button { appearance: none; }
+  .search-input-row input::placeholder { @apply text-ink-2; }
+  .search-dismiss { @apply grid size-11 shrink-0 place-items-center rounded-control text-ink-2; }
+  .search-results { @apply min-h-32 overflow-y-auto p-2; overscroll-behavior: contain; }
+  .search-results turbo-frame { @apply block; }
+  .search-caption { @apply px-3 pb-2 pt-3 text-label text-ink-2; }
+  .search-result { @apply flex min-h-12 items-center justify-between gap-3 rounded-nav px-3 py-2 text-body text-ink no-underline; }
+  .search-result:focus-visible { @apply bg-nav-active; outline: 2px solid var(--color-ink); outline-offset: -2px; }
+  .search-return { visibility: hidden; }
+  .search-result:focus-visible .search-return { visibility: visible; }
+  @media (hover: hover) { .search-result:hover, .search-dismiss:hover { @apply bg-hairline; } }
+  .search-match { @apply rounded-sm bg-nav-active font-semibold text-ink; }
+  .search-empty { @apply px-3 py-7; }
+  .search-footer { @apply flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-border bg-page px-5 py-3 text-label text-ink-2; }
+  @media (max-width: 767px) {
+    dialog.search-dialog { @apply mt-4; }
+    .search-panel { max-height: calc(100dvh - 2rem); }
+    .search-input-row input { font-size: 16px; }
+    .search-trigger { @apply min-h-8 px-2; }
+    .search-trigger kbd { display: none; }
+  }
   /* Toasts: a pile of inverse (ink) panels at the top right, newest in front; toasts_controller.js sets each
      toast's offset, scale and height. Full width under the notch on phones. */
   .toasts { @apply pointer-events-none fixed inset-x-2 top-[calc(7.5rem+env(safe-area-inset-top))] z-40 md:inset-x-auto md:right-5 md:top-16 md:w-80; }

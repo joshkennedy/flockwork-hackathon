@@ -57,7 +57,10 @@
           </div>
           <nav aria-label="Breadcrumbs" class="relative flex h-topbar-h min-w-0 items-center gap-2 border-b border-ink/6 px-4 text-label text-ink-2 md:px-7">
             <%= render "layouts/breadcrumbs" %>
-            <%= link_to "Search", search_path, class: "btn btn-text btn-sm ml-auto shrink-0 whitespace-nowrap", data: { action: "global-search#open" }, aria: { label: "Search Flockwork" } %>
+            <%= link_to search_path, class: "search-trigger ml-auto", data: { action: "global-search#open" }, aria: { label: "Search Flockwork", keyshortcuts: "Meta+k Control+k" } do %>
+              <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+              <span>Search</span><kbd data-global-search-target="shortcut">⌘ K</kbd>
+            <% end %>
           </nav>
           <main id="main-content" class="relative min-w-0 p-4 pb-10 md:p-7 md:pb-10">
             <%= yield %>
