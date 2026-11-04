@@ -3,6 +3,11 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
+  # Trust this orb's authenticated portal without disabling host checks elsewhere.
+  if ENV["AMP_ORB"] == "1" && ENV["PUBLIC_URL"].present?
+    config.hosts << URI.parse(ENV.fetch("PUBLIC_URL")).host
+  end
+
   # Make code changes take effect immediately without server restart.
   config.enable_reloading = true
 

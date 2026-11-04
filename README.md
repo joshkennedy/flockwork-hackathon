@@ -91,6 +91,32 @@ Without foreman:
 bin/rails tailwindcss:build && SOLID_QUEUE_IN_PUMA=1 bin/rails server
 ```
 
+## Work in an Amp orb
+
+Amp runs `.agents/setup` to prepare its reusable project snapshot. Setup installs
+the pinned Ruby and Bundler, gems, npm dependencies, Playwright Chromium, PostgreSQL,
+Docker, libvips, and WebP tools. It prepares the development database with synthetic
+demo data and builds Tailwind CSS. Repeated runs preserve the database and reuse
+installed tools and caches. `.agents/resume` checks PostgreSQL without reinstalling
+dependencies.
+
+Run `amp orb services ensure` to start Docker, Rails with its Solid Queue worker,
+and the Tailwind watcher. Open the printed Flockwork portal URL and choose an
+**Explore** button. PostgreSQL runs as a system service; tests use a separate
+Postgres 18 container through Testcontainers. The first test run downloads the
+container image if Docker does not have it yet.
+
+Run `bin/rails test` or `bin/rails test:system` after the services start. For landing
+page recordings, use the cached Chromium instead of installing Google Chrome:
+
+```bash
+CHROME_PATH="$(node -p 'require("playwright").chromium.executablePath()')" bin/marketing-animations
+```
+
+The demo and tests need no API credentials. For live AI, Planning Center, or SMS,
+configure the optional keys listed above in Amp secrets. Setup does not authenticate
+external services or copy credentials into the snapshot.
+
 ## Tests and quality
 
 ```bash

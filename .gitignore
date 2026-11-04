@@ -53,3 +53,6 @@
 # Scene tooling for the landing page animations (bin/marketing-animations)
 /marketing/animations/node_modules
 /marketing/animations/tmp
+
+# Generated orb portal URLs are specific to each thread.
+/.amp/portals/

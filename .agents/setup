@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+export DEBIAN_FRONTEND=noninteractive
+
+step() { printf '\n== %s (%ss) ==\n' "$1" "$SECONDS"; }
+
+step "System packages"
+packages=(build-essential curl git libssl-dev libyaml-dev libreadline-dev zlib1g-dev
+  libpq-dev libvips42 postgresql postgresql-client webp)
+missing=()
+for package in "${packages[@]}"; do
+  if ! dpkg-query -W -f='${Status}' "$package" 2>/dev/null | grep -qx 'install ok installed'; then
+    missing+=("$package")
+  fi
+done
+if ! command -v dockerd >/dev/null; then missing+=(docker.io); fi
+if ((${#missing[@]})); then
+  sudo apt-get update -qq
+  sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${missing[@]}"
+fi
+
+step "Ruby toolchain"
+if [[ ! -x "$HOME/.local/bin/mise" ]]; then
+  curl -fsSL https://mise.run | sh
+fi
+export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
+export MISE_RUBY_COMPILE=false
+ruby_version=$(tr -d '[:space:]' < .ruby-version)
+mise install "ruby@$ruby_version"
+mise settings add idiomatic_version_file_enable_tools ruby
+mise reshim
+# Shims honor .ruby-version in new agent and supervised-service login shells.
+profile_marker='# Flockwork orb toolchain'
+if ! grep -Fqx "$profile_marker" "$HOME/.bash_profile" 2>/dev/null; then
+  cat >> "$HOME/.bash_profile" <<'EOF'
+
+# Flockwork orb toolchain
+export PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$PATH"
+EOF
+fi
+bundler_version=$(awk '/^BUNDLED WITH$/ { getline; print $1 }' Gemfile.lock)
+if ! gem list -i bundler -v "$bundler_version" >/dev/null; then
+  gem install bundler -v "$bundler_version" --no-document
+fi
+bundle check || bundle install --jobs 4
+
+step "Node dependencies and Chromium"
+npm ci --no-audit --no-fund
+npm ci --prefix marketing/animations --no-audit --no-fund
+# Install OS libraries only when absent; Playwright itself reuses cached browsers.
+playwright_packages=(libatk1.0-0 libatk-bridge2.0-0 libatspi2.0-0 libxcomposite1
+  libxdamage1 libxfixes3 libxrandr2 libgbm1 libxkbcommon0 libasound2 libcups2
+  libnss3 libnspr4 libpango-1.0-0 libcairo2 fonts-liberation fonts-noto-color-emoji)
+for package in "${playwright_packages[@]}"; do
+  if ! dpkg-query -W -f='${Status}' "$package" 2>/dev/null | grep -qx 'install ok installed'; then
+    npx playwright install-deps chromium
+    break
+  fi
+done
+npx playwright install chromium
+
+step "Development PostgreSQL"
+# Only the disposable orb database trades durability for speed.
+pg_version=$(pg_lsclusters --no-header | awk '$2 == "main" { print $1; exit }')
+sudo tee "/etc/postgresql/$pg_version/main/conf.d/flockwork-orb.conf" >/dev/null <<'EOF'
+fsync = off
+synchronous_commit = off
+full_page_writes = off
+listen_addresses = 'localhost'
+EOF
+sudo systemctl enable --now postgresql
+if ! sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname = '$(id -un)'" | grep -qx 1; then
+  sudo -u postgres createuser --superuser "$(id -un)"
+fi
+bin/rails db:prepare
+bin/rails tailwindcss:build
+step "Setup complete"

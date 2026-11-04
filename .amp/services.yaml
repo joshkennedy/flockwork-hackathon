@@ -1,0 +1,14 @@
+services:
+  docker:
+    command: sudo dockerd --group "$(id -gn)"
+  web:
+    command: bin/rails server -b 0.0.0.0 -p "$PORT"
+    env:
+      SOLID_QUEUE_IN_PUMA: "true"
+    health: /up
+    portal:
+      title: Flockwork
+      url: /demo
+      description: Use Explore as Admin, Leader, or Volunteer to sign in with synthetic demo data.
+  css:
+    command: bin/rails tailwindcss:watch[always]

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Packages and database contents live in the snapshot; only repair service state.
+sudo systemctl start postgresql
+pg_isready -q
