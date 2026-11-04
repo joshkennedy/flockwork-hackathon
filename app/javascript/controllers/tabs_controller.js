@@ -13,12 +13,19 @@ export default class extends Controller {
     const stored = !this.explicitValue && this.panelTargets.find((panel) => panel.dataset.tabsName === this.remembered)
     const panel = fromHash || stored
     if (panel) this.show(panel.dataset.tabsName)
+    else this.scrollTabIntoView(this.tabTargets.find((tab) => tab.getAttribute("aria-current") === "true"))
+    this.tabBar = this.element.querySelector(".project-tab-strip .tab-bar")
+    this.tabBar?.addEventListener("scroll", this.updateTabOverflow)
+    window.addEventListener("resize", this.updateTabOverflow)
+    requestAnimationFrame(this.updateTabOverflow)
     this.element.addEventListener("turbo:before-morph-attribute", this.keepShownTab)
     window.addEventListener("hashchange", this.selectHash)
   }
 
   disconnect() {
     this.element.removeEventListener("turbo:before-morph-attribute", this.keepShownTab)
+    this.tabBar?.removeEventListener("scroll", this.updateTabOverflow)
+    window.removeEventListener("resize", this.updateTabOverflow)
     window.removeEventListener("hashchange", this.selectHash)
   }
 
@@ -48,6 +55,25 @@ export default class extends Controller {
   show(name) {
     this.panelTargets.forEach((panel) => { panel.hidden = panel.dataset.tabsName !== name })
     this.tabTargets.forEach((tab) => tab.setAttribute("aria-current", tab.dataset.tabsName === name))
+    this.scrollTabIntoView(this.tabTargets.find((tab) => tab.dataset.tabsName === name))
+  }
+
+  scrollTabIntoView(tab) {
+    if (!tab) return
+
+    const bar = tab.parentElement
+    const left = tab.offsetLeft
+    const right = left + tab.offsetWidth
+    if (left < bar.scrollLeft) bar.scrollLeft = left
+    else if (right > bar.scrollLeft + bar.clientWidth - 40) bar.scrollLeft = right - bar.clientWidth + 40
+    requestAnimationFrame(this.updateTabOverflow)
+  }
+
+  updateTabOverflow = () => {
+    const bar = this.tabBar || this.element.querySelector(".project-tab-strip .tab-bar")
+    if (!bar) return
+
+    bar.parentElement.dataset.atEnd = bar.scrollLeft + bar.clientWidth >= bar.scrollWidth - 1
   }
 
   get remembered() {

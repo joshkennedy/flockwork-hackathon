@@ -1,8 +1,10 @@
 <%# Tabs switch panels in place. Team keeps its own URL so it can be linked to and opened in a new tab. %>
-<nav class="mt-7 tab-bar" aria-label="Project sections">
-  <% tabs.each do |tab| %>
-    <% label = { "notes" => "Notes", "team" => "Team" }[tab] || Project::TOOL_LABELS.fetch(tab) %>
-    <% href = tab == "team" ? team_project_path(project) : "#tab-#{tab}" %>
-    <%= link_to label, href, class: "tab-link", aria: { current: tab == current }, data: { tabs_target: "tab", tabs_name: tab, action: "tabs#select" } %>
-  <% end %>
-</nav>
+<div class="project-tab-strip mt-7">
+  <nav class="tab-bar" aria-label="Project sections">
+    <% tabs.each do |tab| %>
+      <% label = { "notes" => "Notes", "team" => "Team" }[tab] || Project::TOOL_LABELS.fetch(tab) %>
+      <% href = tab == "team" ? team_project_path(project) : "#tab-#{tab}" %>
+      <%= link_to label, href, class: "tab-link", aria: { current: tab == current }, data: { tabs_target: "tab", tabs_name: tab, action: "tabs#select" } %>
+    <% end %>
+  </nav>
+</div>
