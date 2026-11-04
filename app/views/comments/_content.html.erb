@@ -28,7 +28,8 @@
   </div>
 
   <% if can_comment %>
-    <%= form_with model: [ project, Comment.new ], class: "min-w-0 space-y-3" do |form| %>
+    <%= form_with model: [ project, Comment.new ], id: "comment_form_#{commentable.model_name.singular}_#{commentable.id}", class: "min-w-0 space-y-3", data: { turbo_permanent: true, controller: "comment-form", action: "turbo:submit-end->comment-form#submitted" } do |form| %>
+      <div id="comment_errors_<%= commentable.model_name.singular %>_<%= commentable.id %>"></div>
       <%= form.hidden_field :commentable_type, value: commentable.class.name, id: nil %>
       <%= form.hidden_field :commentable_id, value: commentable.id, id: nil %>
       <%= render "mentions/field",

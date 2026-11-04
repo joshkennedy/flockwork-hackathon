@@ -4,6 +4,21 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["panel", "trigger"]
 
+  connect() {
+    this.element.addEventListener("turbo:before-morph-attribute", this.keepState)
+  }
+
+  disconnect() {
+    this.element.removeEventListener("turbo:before-morph-attribute", this.keepState)
+  }
+
+  keepState = (event) => {
+    const { target, detail } = event
+    if ((target === this.element && detail.attributeName === "open") ||
+        (this.panelTargets.includes(target) && detail.attributeName === "hidden") ||
+        (this.triggerTargets.includes(target) && detail.attributeName === "aria-expanded")) event.preventDefault()
+  }
+
   toggle(event) {
     event.preventDefault()
     event.currentTarget.closest("details")?.removeAttribute("open")

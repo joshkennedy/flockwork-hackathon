@@ -19,7 +19,14 @@ class CommentsController < ApplicationController
     if comment.save
       redirect_to @project
     else
-      redirect_to @project, alert: comment.errors.full_messages.to_sentence
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.update("comment_errors_#{commentable.model_name.singular}_#{commentable.id}",
+            helpers.tag.p(comment.errors.full_messages.to_sentence, role: "alert", class: "text-danger text-meta")),
+            status: :unprocessable_entity
+        end
+        format.html { redirect_to @project, alert: comment.errors.full_messages.to_sentence }
+      end
     end
   end
 
