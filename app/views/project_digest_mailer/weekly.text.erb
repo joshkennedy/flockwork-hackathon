@@ -1,0 +1,14 @@
+<%= @project.name %>
+
+<%= pluralize(@risk.open_spots, "open spot") %> in the next 7 days.
+<%= pluralize(@risk.overdue_tasks, "overdue task") %>.
+<%= pluralize(@risk.pending_invitations, "unanswered invitation") %>.
+<% if @project.starts_on %>
+Project starts <%= @project.starts_on.strftime("%B %-d, %Y") %>.
+<% end %>
+
+View the Project:
+<%= @url %>
+
+Manage weekly emails:
+<%= digest_preferences_url %>

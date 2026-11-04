@@ -11,6 +11,7 @@ Rails.application.routes.draw do
   get "my_tasks", to: redirect("/home", status: 301)
   resource :oversight, only: %i[ show update ]
   resource :settings, only: %i[ show update ]
+  resource :digest_preferences, only: %i[ show update ], controller: "digest_preferences"
   get "icon.svg", to: "icons#show", as: :icon
   resources :notifications, only: :index do
     member do
