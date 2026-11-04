@@ -61,7 +61,11 @@ class NotificationChannelsTest < ActionDispatch::IntegrationTest
     invitee = people(:other_volunteer)
     invitee.update!(phone: "+15005550000", sms_preferences: { invitation: true },
       email_preferences: { invitation: false }, in_app_preferences: { invitation: false })
-    request = stub_sms
+    sent_text = nil
+    request = stub_sms.with do |sent|
+      sent_text = JSON.parse(sent.body).fetch("text")
+      true
+    end
 
     assert_no_emails do
       perform_enqueued_jobs do
@@ -76,7 +80,8 @@ class NotificationChannelsTest < ActionDispatch::IntegrationTest
     assert_equal "invitation", notification.kind
     assert_equal "msg_test", notification.sms_message_id
     assert_empty Policy.visible_notifications(invitee)
-    url = notification.sms_payload.fetch("text")[%r{https?://\S+/invitations/(\S+)}, 1]
+    assert_empty notification.sms_payload
+    url = sent_text[%r{https?://\S+/invitations/(\S+)}, 1]
     assert_equal notification.notifiable, Invitation.find_by_token_for(:access, url)
     assert_requested request, times: 1
   end
