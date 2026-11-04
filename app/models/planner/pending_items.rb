@@ -17,14 +17,11 @@ module Planner
 
     module_function
 
+    # Model responses are deltas: an item the model leaves out of `added` stays, and only
+    # `removed_ids` removes saved draft work.
     def reconcile(existing:, added:, removed_ids:, project:)
       validate_snapshot!(added, existing:, project:)
       incoming = expand(added, project:)
-      reconcile_candidates(existing:, incoming:, removed_ids:)
-    end
-
-    def reconcile_candidates(existing:, incoming:, removed_ids: [])
-      prior = existing.index_by { |item| item.fetch("source_key") }
       raise ArgumentError, "Planner preview is too large" if incoming.size > 200
       incoming_by_key = incoming.index_by(&:source_key)
       result = existing.map do |item|
@@ -41,6 +38,20 @@ module Planner
       raise ArgumentError, "Planner preview is too large" if result.size > 200
 
       result
+    end
+
+    # Meal setup builds the whole plan itself, so `incoming` is a full snapshot: anything
+    # missing from it is gone, unless the Leader edited it.
+    def reconcile_candidates(existing:, incoming:, removed_ids: [])
+      prior = existing.index_by { |item| item.fetch("source_key") }
+      raise ArgumentError, "Planner preview is too large" if incoming.size > 200
+      keys = incoming.to_set(&:source_key)
+      result = incoming.map { |candidate| prior[candidate.source_key] ? merge(prior[candidate.source_key], candidate) : candidate.to_h }
+      existing.each do |item|
+        next if keys.include?(item.fetch("source_key")) || !preserved_by_leader?(item)
+        result << item.merge("conflict" => { "type" => "removed_by_revision", "suggested_fields" => nil })
+      end
+      result.reject { |item| removed_ids.include?(item.fetch("id")) && !preserved_by_leader?(item) }
     end
 
     def expand(added, project:)
