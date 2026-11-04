@@ -23,4 +23,17 @@ class PlannerNameRedactorTest < ActiveSupport::TestCase
 
     assert_equal "We'll cook together.", redactor.call("We'll cook together.")
   end
+
+  test "church words that match directory first names remain redacted for privacy" do
+    organization = organizations(:st_example)
+    organization.people.create!(name: "Grace Chen")
+    organization.people.create!(name: "Faith Jones")
+    organization.people.create!(name: "Pastor Hope Park")
+    redactor = Planner::NameRedactor.new(organization)
+
+    assert_equal "Ask [name], [name], and [name].", redactor.call("Ask GRACE CHEN, Faith Jones, and Pastor Hope Park.")
+    assert_equal "Practice [name], [name], and [name], with graceful and hopeful words.",
+      redactor.call("Practice grace, FAITH, and Hope, with graceful and hopeful words.")
+    assert_equal "The pastor can ask [name].", redactor.call("The pastor can ask HOPE.")
+  end
 end
