@@ -83,6 +83,7 @@ Rails.application.routes.draw do
     resources :budget_lines, except: %i[ index show ] do
       resource :status, only: %i[ edit update ], controller: "budget_line_statuses"
     end
+    resource :message_draft, only: %i[ new create ]
     resources :messages, except: %i[ index show ]
     resources :doc_items, except: %i[ index show ] do
       member do
@@ -107,6 +108,7 @@ Rails.application.routes.draw do
     resources :memberships, only: :destroy
     resources :recipients, only: %i[ new create destroy ]
     resources :notes, only: :create
+    resource :recurrence, only: %i[ edit update ], controller: "project_recurrences"
     resource :duplicate, only: %i[ new create ], controller: "project_duplicates"
     resource :banner, only: %i[ update destroy ], controller: "project_banners"
   end

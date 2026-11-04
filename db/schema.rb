@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_04_163100) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_04_200000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -274,6 +274,29 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_163100) do
     t.string "planning_kind", default: "meal_train", null: false
     t.index ["project_id"], name: "index_planner_sessions_on_project_id"
     t.index ["started_by_id"], name: "index_planner_sessions_on_started_by_id"
+  end
+
+  create_table "project_occurrences", force: :cascade do |t|
+    t.bigint "project_recurrence_id", null: false
+    t.bigint "project_id"
+    t.date "on", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["project_id"], name: "index_project_occurrences_on_project_id", unique: true
+    t.index ["project_recurrence_id", "on"], name: "index_project_occurrences_on_project_recurrence_id_and_on", unique: true
+    t.index ["project_recurrence_id"], name: "index_project_occurrences_on_project_recurrence_id"
+  end
+
+  create_table "project_recurrences", force: :cascade do |t|
+    t.bigint "project_id", null: false
+    t.bigint "creator_id", null: false
+    t.string "frequency", null: false
+    t.date "anchor_on", null: false
+    t.boolean "enabled", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["creator_id"], name: "index_project_recurrences_on_creator_id"
+    t.index ["project_id"], name: "index_project_recurrences_on_project_id", unique: true
   end
 
   create_table "projects", force: :cascade do |t|
@@ -583,6 +606,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_163100) do
   add_foreign_key "people", "organizations"
   add_foreign_key "planner_sessions", "people", column: "started_by_id"
   add_foreign_key "planner_sessions", "projects"
+  add_foreign_key "project_occurrences", "project_recurrences"
+  add_foreign_key "project_occurrences", "projects", on_delete: :nullify
+  add_foreign_key "project_recurrences", "people", column: "creator_id"
+  add_foreign_key "project_recurrences", "projects"
   add_foreign_key "projects", "organizations"
   add_foreign_key "projects", "people", column: "owner_id"
   add_foreign_key "recipients", "people"
