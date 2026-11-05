@@ -1,13 +1,17 @@
 class InvitationsController < ApplicationController
   allow_unauthenticated_access only: :show
+  before_action :set_show_invitation, only: :show
+  rate_limit to: 3, within: 15.minutes, by: -> { params[:token] }, name: "invitation_sign_in",
+    only: :show, with: -> { render :confirm }
   before_action :set_response_invitation, only: %i[ accept decline ]
 
   def show
-    @invitation = Invitation.find_by_token_for(:access, params[:token])
-    return render :invalid, status: :unprocessable_content unless @invitation&.pending?
+    resume_session
+    unless Current.person == @invitation.person
+      SignInMailer.sign_in_link(@invitation.person).deliver_later
+      return render :confirm
+    end
 
-    terminate_session if Current.session && Current.person != @invitation.person
-    start_new_session_for @invitation.person, auth_method: "invitation" unless Current.person == @invitation.person
     raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :respond, @invitation)
   end
 
@@ -47,6 +51,11 @@ class InvitationsController < ApplicationController
   end
 
   private
+    def set_show_invitation
+      @invitation = Invitation.find_by_token_for(:access, params[:token])
+      render :invalid, status: :unprocessable_content unless @invitation&.pending?
+    end
+
     def set_response_invitation
       @invitation = Current.organization.invitations.find_by_token_for(:access, params[:token])
       raise ActiveRecord::RecordNotFound unless @invitation

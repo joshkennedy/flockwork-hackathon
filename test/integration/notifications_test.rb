@@ -409,7 +409,12 @@ class NotificationsTest < ActionDispatch::IntegrationTest
     get notifications_path
 
     assert_select "form[action='#{mark_done_project_task_path(project, task)}']", text: /Mark Done/
-    assert_select "a[href='#{invitation_path(invitation.generate_token_for(:access))}']", text: "Respond"
+    invitation_links = css_select("a[href^='/invitations/']")
+    assert_equal 1, invitation_links.count
+    invitation_link = invitation_links.first
+    assert_equal "Respond", invitation_link.text.strip
+    token = invitation_link["href"][%r{/invitations/(\S+)}, 1]
+    assert_equal invitation, Invitation.find_by_token_for(:access, token)
   end
 
   test "an accepted Invitation remains listed for information" do
@@ -425,6 +430,9 @@ class NotificationsTest < ActionDispatch::IntegrationTest
     token = invitation.generate_token_for(:access)
 
     delete session_path
+    sign_in_token = invitee.generate_token_for(:sign_in)
+    get sign_in_link_path(sign_in_token)
+    post sign_in_link_path(sign_in_token)
     get invitation_path(token)
     patch accept_invitation_path(token)
     get notifications_path
