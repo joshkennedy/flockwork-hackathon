@@ -114,7 +114,7 @@ class PlannerStepJobTest < ActiveSupport::TestCase
     )
     provider = RevokingProvider.new(membership, planner_response)
     Rails.configuration.x.planner_provider = provider
-    stream = Turbo::StreamsChannel.send(:stream_name_from, [ planner_session ])
+    stream = PlannerStreamChannel.authorized_stream_name(planner_session)
 
     assert_no_broadcasts(stream) do
       PlannerStepJob.perform_now(project.id, planner_session.id, current_session.id, leader.id)
