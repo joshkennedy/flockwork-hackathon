@@ -28,14 +28,21 @@ class ProjectBannersController < ApplicationController
     end
 
     def replace_banner(upload)
-      @project.banner = upload
+      blob = ActiveStorage::Blob.create_and_upload!(
+        io: upload,
+        filename: upload.original_filename,
+        content_type: upload.content_type
+      )
+      blob.analyze
+      if (message = @project.banner_dimension_error_message_for(blob))
+        blob.purge
+        redirect_to @project, alert: "The banner couldn't be saved: Banner #{message}."
+        return
+      end
+
+      @project.banner = blob
       @project.reset_banner_focus
       if @project.save
-        @project.banner.blob.analyze
-        if (message = @project.reject_banner_for_pixel_limits!)
-          redirect_to @project, alert: "The banner couldn't be saved: Banner #{message}."
-          return
-        end
         ProjectBannerFocusJob.perform_later(@project, @project.banner.blob_id)
         redirect_to @project
       else

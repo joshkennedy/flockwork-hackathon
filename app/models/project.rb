@@ -121,21 +121,14 @@ class Project < ApplicationRecord
   def banner_dimension_error_message
     return unless banner.attached?
 
-    width, height = analyzed_banner_blob.metadata.values_at("width", "height")
+    banner_dimension_error_message_for(analyzed_banner_blob)
+  end
+
+  def banner_dimension_error_message_for(blob)
+    width, height = blob.metadata.values_at("width", "height")
     return if width.blank? || height.blank?
 
     banner_dimension_limit_message if banner_dimensions_exceed?(width, height)
-  end
-
-  def reject_banner_for_pixel_limits!
-    message = banner_dimension_error_message
-    return unless message
-
-    banner.purge
-    reset_banner_focus
-    errors.add(:banner, message)
-    save!
-    message
   end
 
   def banner_variant(kind)
@@ -217,6 +210,8 @@ class Project < ApplicationRecord
     end
 
     def banner_bytes_type(attachable)
+      return attachable.open { |io| Marcel::MimeType.for(io) } if attachable.is_a?(ActiveStorage::Blob)
+
       io = attachable.is_a?(Hash) ? attachable[:io] : attachable
       io = io.tempfile if io.respond_to?(:tempfile)
       return unless io.respond_to?(:read)

@@ -28,6 +28,25 @@ class ProjectBannersTest < ActionDispatch::IntegrationTest
     assert_not project.reload.banner.attached?
   end
 
+  test "an oversized replacement leaves the existing banner attached" do
+    sign_in_as_leader
+    project = attach_banner!(projects(:community_meal))
+    original_blob_id = project.banner.blob_id
+    file = Tempfile.new([ "oversized-replacement", ".png" ], binmode: true)
+    file.write(png_bytes_with_declared_dimensions(16_000, 16_000, template: file_fixture("banner_small.png").read))
+    file.rewind
+
+    patch project_banner_path(project), params: { project: { banner: Rack::Test::UploadedFile.new(file.path, "image/png") } }
+
+    assert_redirected_to project_path(project)
+    assert_match "must not exceed", flash[:alert]
+    project.reload
+    assert project.banner.attached?
+    assert_equal original_blob_id, project.banner.blob_id
+  ensure
+    file&.close!
+  end
+
   test "a PNG whose header declares oversized dimensions is refused" do
     sign_in_as_leader
     project = projects(:community_meal)
