@@ -114,6 +114,29 @@ class ActiveStorageAnonymousUploadTest < ActionDispatch::IntegrationTest
     ActionController::Base.allow_forgery_protection = original_forgery_protection
   end
 
+  test "an unattached direct upload claiming image/png with HTML bytes is served as an attachment" do
+    sign_in_as_volunteer
+    original_forgery_protection = ActionController::Base.allow_forgery_protection
+    ActionController::Base.allow_forgery_protection = true
+    payload = "<html><script>alert(1)</script></html>"
+
+    get home_path
+    csrf_token = response.parsed_body.at_css("meta[name=csrf-token]")["content"]
+    post_direct_upload(payload, csrf_token:, filename: "evil.png", content_type: "image/png")
+    upload_response = response.parsed_body
+    blob = ActiveStorage::Blob.find_signed!(upload_response.fetch("signed_id"))
+    direct_upload = upload_response.fetch("direct_upload")
+    put URI.parse(direct_upload.fetch("url")).request_uri, params: payload, headers: direct_upload.fetch("headers")
+
+    get rails_blob_path(blob)
+    follow_redirect!
+
+    assert_response :success
+    assert_match(/\Aattachment/, response.headers["Content-Disposition"])
+  ensure
+    ActionController::Base.allow_forgery_protection = original_forgery_protection
+  end
+
   test "a demo volunteer is limited to 30 direct uploads per hour" do
     post demo_session_path(role: "volunteer")
     original_forgery_protection = ActionController::Base.allow_forgery_protection

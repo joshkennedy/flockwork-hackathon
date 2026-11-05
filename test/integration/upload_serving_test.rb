@@ -51,4 +51,20 @@ class UploadServingTest < ActionDispatch::IntegrationTest
     assert_equal "application/octet-stream", response.media_type
     assert_match(/\Aattachment/, response.headers["Content-Disposition"])
   end
+
+  test "a doc file of plain text named fake.png downloads as application/octet-stream" do
+    sign_in_as_volunteer
+    project = projects(:community_meal)
+    project.update!(enabled_tools: project.enabled_tools | [ "docs" ])
+    item = project.doc_items.create!(
+      kind: "file",
+      title: "Fake PNG",
+      author: people(:volunteer),
+      file: { io: StringIO.new("not an image"), filename: "fake.png", content_type: "image/png", identify: false }
+    )
+
+    get download_project_doc_item_path(project, item)
+
+    assert_equal "application/octet-stream", response.media_type
+  end
 end

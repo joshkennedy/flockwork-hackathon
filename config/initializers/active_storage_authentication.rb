@@ -25,3 +25,13 @@ Rails.application.config.to_prepare do
   ActiveStorage::DirectUploadsController.include(Authentication)
   ActiveStorage::DirectUploadsController.include(ActiveStorageDirectUploadProtection)
 end
+
+# Direct uploads keep the client-claimed type until attach; never serve unverified bytes inline.
+module ActiveStorageServeOnlyIdentifiedInline
+  private
+    def allowed_inline?
+      super && identified?
+    end
+end
+
+ActiveSupport.on_load(:active_storage_blob) { prepend ActiveStorageServeOnlyIdentifiedInline }

@@ -39,7 +39,7 @@ class DocItemsController < ApplicationController
 
   def download
     data = @doc_item.file.download
-    sniffed_type = Marcel::MimeType.for(StringIO.new(data), name: @doc_item.file.filename.to_s)
+    sniffed_type = Marcel::MimeType.for(StringIO.new(data))
     send_data data,
       filename: @doc_item.file.filename.to_s,
       type: ActiveStorage.content_types_allowed_inline.include?(sniffed_type) ? sniffed_type : ActiveStorage.binary_content_type,
