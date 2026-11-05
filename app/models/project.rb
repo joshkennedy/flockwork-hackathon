@@ -98,10 +98,10 @@ class Project < ApplicationRecord
     width, height = banner.blob.metadata.values_at("width", "height")
     aspect = BANNER_SIZES.fetch(kind).then { |w, h| w.fdiv(h) }
     if width.fdiv(height) > aspect
-      crop_w = (height * aspect).round
+      crop_w = (height * aspect).round.clamp(1, width)
       [ (banner_focus_x * width - crop_w / 2.0).round.clamp(0, width - crop_w), 0, crop_w, height ]
     else
-      crop_h = (width / aspect).round
+      crop_h = (width / aspect).round.clamp(1, height)
       [ 0, (banner_focus_y * height - crop_h / 2.0).round.clamp(0, height - crop_h), width, crop_h ]
     end
   end
@@ -116,6 +116,11 @@ class Project < ApplicationRecord
 
     digests = banner_variants.map { |variant| variant.variation.digest }
     blob.variant_records.where(variation_digest: digests).count == digests.size
+  end
+
+  # The model's alt text waits on the blob until a leader saves it as banner_alt_text.
+  def banner_alt_suggestion
+    banner.blob.metadata["alt_suggestion"] if banner.attached?
   end
 
   def reset_banner_focus
@@ -196,7 +201,8 @@ class Project < ApplicationRecord
 
     def revoke_with_banner_rotation!(attributes)
       old_blob = banner.blob if banner.attached?
-      new_blob = copy_banner_blob(old_blob) if old_blob
+      # An analyzed banner with no dimensions can't be shown or validated again, so it is dropped instead of copied.
+      new_blob = copy_banner_blob(old_blob) if old_blob && !(old_blob.analyzed? && old_blob.metadata.values_at("width", "height").any?(&:blank?))
       committed = false
 
       self.class.transaction do
@@ -210,7 +216,7 @@ class Project < ApplicationRecord
         end
         transaction.after_rollback { new_blob.purge } if new_blob
 
-        banner.attach(new_blob) if new_blob
+        new_blob ? banner.attach(new_blob) : banner.detach
         update!(attributes)
       end
     rescue StandardError
@@ -247,7 +253,8 @@ class Project < ApplicationRecord
       return unless blob.analyzed?
 
       width, height = blob.metadata.values_at("width", "height")
-      return if width.blank? || height.blank?
+      # An image libvips can't decode (HEIC without codec support, a corrupt file) would never get variants.
+      return errors.add(:banner, "couldn't be read as an image. Try a JPEG or PNG") if width.blank? || height.blank?
 
       if banner_dimensions_exceed?(width, height)
         errors.add(:banner, banner_dimension_limit_message)

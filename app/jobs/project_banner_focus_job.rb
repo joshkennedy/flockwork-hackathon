@@ -20,8 +20,8 @@ class ProjectBannerFocusJob < ApplicationJob
         next unless project.banner.attached? && project.banner.blob_id == blob.id
 
         focus = project.banner_focus_manual? ? {} : { banner_focus_x: suggestion[:focus_x], banner_focus_y: suggestion[:focus_y] }
-        alt = project.banner_alt_text.presence ? {} : { banner_alt_text: suggestion[:alt] }
-        project.update!(focus.merge(alt))
+        project.update!(focus)
+        blob.update!(metadata: blob.metadata.merge("alt_suggestion" => suggestion[:alt])) if suggestion[:alt].present? && project.banner_alt_text.blank?
       end
     rescue StandardError => error
       Rails.logger.warn("Banner focus suggestion failed for project #{project.id}: #{error.class}: #{error.message}")

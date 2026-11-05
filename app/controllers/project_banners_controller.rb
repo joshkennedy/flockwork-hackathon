@@ -68,6 +68,9 @@ class ProjectBannersController < ApplicationController
       attributes[:banner_alt_text] = attributes[:banner_alt_text].presence if attributes.key?(:banner_alt_text)
       @project.assign_attributes(attributes)
       if @project.save
+        # Saving the field, even cleared, answers the suggestion.
+        blob = @project.banner.blob
+        blob.update!(metadata: blob.metadata.except("alt_suggestion")) if attributes.key?(:banner_alt_text)
         # A moved focal point changes the crops; only those two small variants are decoded, by a signed-in editor.
         ProjectBannerVariantsJob.perform_now(@project)
         redirect_to @project

@@ -231,6 +231,69 @@ class ProjectBannersTest < ActionDispatch::IntegrationTest
     assert_no_match "Reposition", response.body
   end
 
+  test "an HEIC upload that cannot be decoded is refused with a clear error" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    file = Tempfile.new([ "broken", ".heic" ], binmode: true)
+    file.write("\x00\x00\x00\x18ftypheic\x00\x00\x00\x00mif1heic".b + "garbage".b * 50)
+    file.rewind
+
+    patch project_banner_path(project), params: { project: { banner: Rack::Test::UploadedFile.new(file.path, "image/heic") } }
+
+    assert_redirected_to project_path(project)
+    assert_equal "The banner couldn't be saved: Banner couldn't be read as an image. Try a JPEG or PNG.", flash[:alert]
+    assert_not project.reload.banner.attached?
+  ensure
+    file&.close!
+  end
+
+  test "a readable HEIC upload is accepted" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    file = Tempfile.new([ "photo", ".heic" ], binmode: true)
+    file.write(Vips::Image.black(64, 64).heifsave_buffer)
+    file.rewind
+
+    patch project_banner_path(project), params: { project: { banner: Rack::Test::UploadedFile.new(file.path, "image/heic") } }
+
+    assert_redirected_to project_path(project)
+    assert_nil flash[:alert]
+    assert_equal 64, project.reload.banner.blob.metadata["width"]
+  ensure
+    file&.close!
+  end
+
+  test "an AI alt text suggestion prefills the field, and saving it confirms it" do
+    sign_in_as_leader
+    project = attach_banner!(projects(:community_meal))
+    project.banner.blob.update!(metadata: project.banner.blob.metadata.merge("alt_suggestion" => "Chairs in a hall"))
+
+    get project_path(project)
+    assert_select "#banner-alt-popover input[name='project[banner_alt_text]'][value='Chairs in a hall']"
+    assert_select "#banner-alt-popover", text: /Suggested by AI/
+    assert_select "figure img[alt='#{project.name} banner']"
+
+    patch project_banner_path(project), params: { project: { banner_alt_text: "Chairs in a hall" } }
+
+    project.reload
+    assert_equal "Chairs in a hall", project.banner_alt_text
+    assert_nil project.banner_alt_suggestion
+    get project_path(project)
+    assert_select "figure img[alt='Chairs in a hall']"
+    assert_select "#banner-alt-popover", text: /Suggested by AI/, count: 0
+  end
+
+  test "an unconfirmed suggestion is not shown as alt text on the public page" do
+    project = attach_banner!(projects(:community_meal))
+    project.banner.blob.update!(metadata: project.banner.blob.metadata.merge("alt_suggestion" => "Chairs in a hall"))
+    project.enable_public_link!
+
+    get public_project_path(project.public_token)
+
+    assert_match "alt=\"#{project.name} banner\"", response.body
+    assert_no_match "Chairs in a hall", response.body
+  end
+
   private
     def png_bytes_with_declared_dimensions(width, height, template:)
       bytes = template.dup.force_encoding(Encoding::BINARY)
