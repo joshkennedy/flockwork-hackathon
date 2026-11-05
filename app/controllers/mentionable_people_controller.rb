@@ -2,7 +2,8 @@ class MentionablePeopleController < ApplicationController
   def index
     project = Policy.visible_projects(Current.person).find(params[:id])
     query = ActiveRecord::Base.sanitize_sql_like(params[:q].to_s)
-    people = Current.organization.people
+    people = Current.organization.people.where(id: project.memberships.select(:person_id))
+      .or(Current.organization.people.where(admin: true))
       .where("name ILIKE ?", "%#{query}%")
       .order(:name)
       .select { |person| Policy.can?(person, :show, project) }
