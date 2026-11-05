@@ -205,7 +205,13 @@ class ProjectsController < ApplicationController
           @revision = @planner_session.queue_generation!
         end
       end
-      PlannerStepJob.perform_later(@project.id, @planner_session.id, Current.session.id, @revision) if @revision
+      PlannerStepJob.perform_later(
+        @project.id,
+        @planner_session.id,
+        Current.session.id,
+        Current.person.id,
+        @revision
+      ) if @revision
       redirect_to project_planner_session_path(@project, @planner_session), status: :see_other
     end
 

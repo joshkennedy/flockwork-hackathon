@@ -5,7 +5,8 @@
   data-controller="voice-planner"
   data-voice-planner-voice-session-url-value="<%= voice_session_project_planner_session_path(@project, @planner_session) %>"
   data-voice-planner-answer-url-value="<%= answer_project_planner_session_path(@project, @planner_session) %>">
-  <%= turbo_stream_from @planner_session %>
+  <%= turbo_stream_from @planner_session, channel: PlannerStreamChannel,
+    data: { planner_session_id: @planner_session.id } %>
 
   <p hidden data-voice-planner-target="error" role="alert" class="mb-7 rounded-control bg-danger-soft px-4 py-3 text-danger"></p>
 

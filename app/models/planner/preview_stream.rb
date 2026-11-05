@@ -6,9 +6,10 @@ module Planner
     # Streamed items are not validated yet, so a malformed one skips this render; the next partial retries.
     SKIPPED_ITEM_ERRORS = [ ArgumentError, KeyError, TypeError, NoMethodError ].freeze
 
-    def initialize(planner_session, clock: -> { Process.clock_gettime(Process::CLOCK_MONOTONIC) })
+    def initialize(planner_session, clock: -> { Process.clock_gettime(Process::CLOCK_MONOTONIC) }, authorized: -> { true })
       @planner_session = planner_session
       @clock = clock
+      @authorized = authorized
       @last_sent_at = nil
       @card_sent = false
       @items_sent = nil
@@ -58,6 +59,8 @@ module Planner
       end
 
       def replace(target, partial, **locals)
+        return unless @authorized.call
+
         Turbo::StreamsChannel.broadcast_replace_to(@planner_session, target:, partial:, locals:)
       end
 

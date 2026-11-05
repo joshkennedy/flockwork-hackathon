@@ -1,7 +1,8 @@
 <% content_for :title, "Plan #{@project.name}" %>
 
 <div class="w-full">
-  <%= turbo_stream_from @planner_session %>
+  <%= turbo_stream_from @planner_session, channel: PlannerStreamChannel,
+    data: { planner_session_id: @planner_session.id } %>
   <%= render "meal_builder", project: @project, planner_session: @planner_session %>
   <%# Lives outside the frame so swaps update one stable region screen readers already track. %>
   <p id="planner-announcer" class="sr-only" role="status"></p>
