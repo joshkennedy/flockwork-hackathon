@@ -1,5 +1,6 @@
 class OrganizationsController < ApplicationController
   allow_unauthenticated_access only: %i[ new create ]
+  rate_limit to: 5, within: 1.hour, by: -> { request.remote_ip }, only: :create, with: :organization_create_rate_limited
 
   def new
     redirect_to home_path if authenticated?
@@ -50,6 +51,11 @@ class OrganizationsController < ApplicationController
   end
 
   private
+    def organization_create_rate_limited
+      flash.now[:alert] = "Too many sign-ups from this network. Try again in an hour."
+      render :new, status: :too_many_requests
+    end
+
     def organization_params
       params.permit(:church_name, :your_name, :email)
     end
