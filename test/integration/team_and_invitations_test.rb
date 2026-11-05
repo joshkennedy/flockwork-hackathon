@@ -16,7 +16,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     assert_select "li", text: /Vic Volunteer.*Volunteer/
   end
 
-  test "a Leader sees why a Person without email or phone cannot be invited" do
+  test "a Leader searches the directory and sees why a Person without email cannot be invited" do
     sign_in_as_leader
     project = projects(:community_meal)
 
@@ -24,7 +24,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "input[name='query'][value='Rowan']"
-    assert_select "li", text: /Rowan Recipient.*No email or phone, can't be invited/
+    assert_select "li", text: /Rowan Recipient.*No email, can't be invited/
     assert_select "button[disabled]", "Invite"
 
     get team_project_path(project), params: { query: "Vic" }
@@ -157,89 +157,6 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", "Check your inbox"
     assert_equal 3, ActionMailer::Base.deliveries.count
-  end
-
-
-  test "a phone-only invitee receives a sign-in text and can sign in" do
-    leader = sign_in_as_leader
-    project = projects(:community_meal)
-    invitee = leader.organization.people.create!(name: "Parker Phone", phone: "+15005550000")
-
-    get team_project_path(project), params: { query: "Parker" }
-    assert_select "form[action='#{project_invitations_path(project)}']" do
-      assert_select "input[name='invitation[person_id]'][value='#{invitee.id}']"
-      assert_select "input[type='submit'][value='Invite']"
-    end
-
-    assert_difference "Invitation.count", 1 do
-      assert_no_emails do
-        perform_enqueued_jobs do
-          post project_invitations_path(project), params: {
-            invitation: { person_id: invitee.id, role: "volunteer" }
-          }
-        end
-      end
-    end
-    invitation = leader.organization.invitations.find_by!(project: project, person: invitee)
-    token = invitation.generate_token_for(:access)
-    delete session_path
-
-    deliveries = []
-    sendly = Messaging::Sendly.new(api_key: "test")
-    send_sms = ->(**message) {
-      deliveries << message
-      { "id" => "msg_invitation", "status" => "queued", "simulated" => true }
-    }
-    stub_method(sendly, :send_sms, send_sms) do
-      stub_method(Messaging::Sendly, :new, -> { sendly }) do
-        assert_no_emails do
-          perform_enqueued_jobs do
-            get invitation_path(token)
-          end
-        end
-      end
-    end
-
-    assert_response :success
-    assert_select "h1", "Check your texts"
-    assert_equal 1, deliveries.count
-    assert_equal "+15005550000", deliveries.first.fetch(:to)
-    assert_match %r{http://example\.com/sign_in/\S+}, deliveries.first.fetch(:text)
-    sign_in_token = deliveries.first.fetch(:text)[%r{/sign_in/(\S+)}, 1]
-    assert_equal invitee, Person.find_by_token_for(:sign_in, sign_in_token)
-
-    get sign_in_link_path(sign_in_token)
-    assert_select "h1", "Finish signing in"
-    post sign_in_link_path(sign_in_token)
-    assert_redirected_to home_path
-    get home_path
-    assert_select "[data-signed-in-as]", "Parker Phone"
-  end
-
-
-  test "an invitee without email or phone is told to contact the leader" do
-    sign_in_as_leader
-    project = projects(:community_meal)
-    invitee = people(:other_volunteer)
-    perform_enqueued_jobs do
-      post project_invitations_path(project), params: {
-        invitation: { person_id: invitee.id, role: "volunteer" }
-      }
-    end
-    invitation = invitee.invitations.find_by!(project: project)
-    token = invitation.generate_token_for(:access)
-    invitee.update!(email: nil, phone: nil)
-    delete session_path
-    ActionMailer::Base.deliveries.clear
-
-    assert_no_enqueued_jobs do
-      get invitation_path(token)
-    end
-
-    assert_response :success
-    assert_select "h1", "Contact your leader"
-    assert_select "p", "Ask your leader to add an email address or phone number before you respond to this Invitation."
-    assert_empty ActionMailer::Base.deliveries
   end
 
 
@@ -445,7 +362,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "a Person without email or phone and a Person with a pending Invitation cannot be invited" do
+  test "a no-email Person and a Person with a pending Invitation cannot be invited" do
     leader = sign_in_as_leader
     project = projects(:community_meal)
 

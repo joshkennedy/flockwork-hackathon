@@ -11,8 +11,7 @@ class SignInLinksController < ApplicationController
 
     if person
       start_new_session_for person, auth_method: "magic_link", verified_email: person.email
-      multiple_organizations = person.email.present? && Person.where(email: person.email).many?
-      redirect_to multiple_organizations ? new_organization_choice_path : home_path
+      redirect_to Person.where(email: person.email).many? ? new_organization_choice_path : home_path
     else
       render :invalid, status: :unprocessable_content
     end

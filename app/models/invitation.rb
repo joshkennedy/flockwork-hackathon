@@ -53,7 +53,7 @@ class Invitation < ApplicationRecord
     end
 
     def person_can_be_invited
-      errors.add(:person, "has no email or phone and can't be invited") if person&.email.blank? && person&.phone.blank?
+      errors.add(:person, "has no email and can't be invited") if person&.email.blank?
       errors.add(:person, "is already a Team member") if project&.memberships&.exists?(person: person)
     end
 end

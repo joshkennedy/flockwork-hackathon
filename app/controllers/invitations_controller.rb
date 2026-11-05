@@ -8,7 +8,7 @@ class InvitationsController < ApplicationController
   def show
     resume_session
     unless Current.person == @invitation.person
-      send_sign_in_link
+      SignInMailer.sign_in_link(@invitation.person).deliver_later
       return render :confirm
     end
 
@@ -53,24 +53,7 @@ class InvitationsController < ApplicationController
   private
     def set_show_invitation
       @invitation = Invitation.find_by_token_for(:access, params[:token])
-      return render :invalid, status: :unprocessable_content unless @invitation&.pending?
-
-      @delivery_method = if @invitation.person.email.present?
-        :email
-      elsif @invitation.person.phone.present?
-        :phone
-      else
-        :none
-      end
-    end
-
-    def send_sign_in_link
-      if @delivery_method == :email
-        SignInMailer.sign_in_link(@invitation.person).deliver_later
-      elsif @delivery_method == :phone
-        token = @invitation.person.generate_token_for(:sign_in)
-        InvitationSignInSmsJob.perform_later(@invitation.organization, @invitation.person_id, token)
-      end
+      render :invalid, status: :unprocessable_content unless @invitation&.pending?
     end
 
     def set_response_invitation
