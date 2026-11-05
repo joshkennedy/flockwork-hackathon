@@ -205,7 +205,9 @@ module Policy
   private :task_can?
 
   def can_respond_to_invitation?(person, action, invitation)
-    action == :respond && invitation.pending? && invitation.person_id == person.id &&
+    return false if action == :accept && invitation.project.archived_at?
+
+    action.in?([ :respond, :accept ]) && invitation.pending? && invitation.person_id == person.id &&
       invitation.organization_id == person.organization_id
   end
 

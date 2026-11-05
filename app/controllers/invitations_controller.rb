@@ -22,6 +22,7 @@ class InvitationsController < ApplicationController
   def create
     project = Policy.visible_projects(Current.person).find(params[:project_id])
     raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :manage_team, project)
+    raise ActiveRecord::RecordNotFound if project.archived_at?
 
     person = Current.organization.people.find(invitation_params[:person_id])
     invitation = Current.organization.invitations.build(
@@ -45,6 +46,8 @@ class InvitationsController < ApplicationController
   end
 
   def accept
+    raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :accept, @invitation)
+
     @invitation.accept!
     redirect_to team_project_path(@invitation.project), notice: "You joined the Team."
   end

@@ -57,4 +57,42 @@ class ArchivedProjectReadOnlyTest < ActionDispatch::IntegrationTest
       Notifier.notify(recipient: volunteer, kind: "task_assigned", notifiable: @task, actor: people(:leader))
     end
   end
+
+  test "an invitee cannot accept an Invitation after the Project is archived but may decline" do
+    @project.update!(archived_at: nil)
+    invitee = people(:other_volunteer)
+    invitation = @project.organization.invitations.create!(project: @project, person: invitee, inviter: people(:leader), role: "volunteer")
+    token = invitation.generate_token_for(:access)
+    @project.update!(archived_at: Time.current)
+    sign_in_as(invitee)
+
+    assert_no_difference "Membership.count" do
+      patch accept_invitation_path(token)
+    end
+    assert_response :not_found
+    assert_predicate invitation.reload, :pending?
+
+    patch decline_invitation_path(token)
+    assert_redirected_to home_path
+  end
+
+  test "the Owner cannot invite to an archived Project" do
+    sign_in_as_leader
+
+    assert_no_difference "Invitation.count" do
+      post project_invitations_path(@project), params: { invitation: { person_id: people(:other_volunteer).id, role: "volunteer" } }
+    end
+    assert_response :not_found
+  end
+
+  test "an invitation email queued before archiving is not delivered" do
+    @project.update!(archived_at: nil)
+    invitation = @project.organization.invitations.create!(project: @project, person: people(:other_volunteer), inviter: people(:leader), role: "volunteer")
+    InvitationMailer.invitation(invitation).deliver_later
+    @project.update!(archived_at: Time.current)
+
+    assert_no_difference -> { ActionMailer::Base.deliveries.size } do
+      perform_enqueued_jobs
+    end
+  end
 end
