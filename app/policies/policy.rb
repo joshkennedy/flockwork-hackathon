@@ -234,7 +234,7 @@ module Policy
   end
   private :message_can?
 
-  # A Leader of any active Project may use Oversight; the Projects they lead are what the page reads from.
+  # A Leader of any active Project may use Oversight; the page itself reads org-wide serving counts (Oversight.serving_load), not just the Projects they lead.
   def leader_somewhere?(person)
     person.memberships.leader.joins(:project).merge(Project.active).exists?
   end

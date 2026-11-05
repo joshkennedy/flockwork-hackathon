@@ -1,4 +1,4 @@
-# People a Leader might invite to a Project, ranked in Ruby from the directory. No AI sees any of this (ADR 0002).
+# People a Leader might invite to a Project, ranked and limited in SQL. No AI sees any of this (ADR 0002).
 # Someone is suggested when they list at least one of the Project's skills_needed and nothing rules them out:
 # already on or asked to the Team, a Recipient of it, unable to sign in, away during it, or overextended.
 class StaffingSuggestions
@@ -14,8 +14,6 @@ class StaffingSuggestions
     return [] if needed.empty?
 
     candidates.map { |person| Suggestion.new(person:, matched_skills: person.skills & needed, serving_load: person.serving_load.to_i) }
-      .sort_by { |suggestion| [ -suggestion.matched_skills.size, suggestion.serving_load, suggestion.person.name ] }
-      .first(LIMIT)
   end
 
   private
@@ -35,9 +33,17 @@ class StaffingSuggestions
         .left_joins(memberships: :project)
         .select("people.*, COUNT(DISTINCT projects.id) FILTER (WHERE #{active_sql}) AS serving_load")
         .group("people.id")
+        .order(Arel.sql(order_sql))
+        .limit(LIMIT)
         .having("COUNT(DISTINCT projects.id) FILTER (WHERE #{active_sql}) < ?", organization.overextended_limit)
       away = away_during_project
       away ? people.where.not(id: away) : people
+    end
+
+    # COLLATE "C" keeps names in the byte order Ruby's sort used.
+    def order_sql
+      matched = Person.sanitize_sql_array([ "(SELECT COUNT(*) FROM unnest(people.skills) AS skill WHERE skill = ANY(ARRAY[?]::varchar[])) DESC", needed ])
+      "#{matched}, serving_load ASC, people.name COLLATE \"C\" ASC"
     end
 
     def active_sql = "projects.done_at IS NULL AND projects.archived_at IS NULL AND projects.deleted_at IS NULL"

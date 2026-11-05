@@ -57,6 +57,17 @@ class StaffingSuggestionsTest < ActiveSupport::TestCase
     assert_equal [ "Al Away" ], suggested_names
   end
 
+  test "orders by matched skills, then serving load, then name, and caps the list at five" do
+    %w[Zed Amy bob].each { |name| person(name, %w[handyman]) }
+    person("Cy Both", %w[handyman driving])
+    person("Di Both", %w[handyman driving])
+    busy = person("Al Busy", %w[handyman])
+    projects(:community_meal).memberships.create!(person: busy, role: :volunteer)
+    person("Ed Late", %w[driving])
+
+    assert_equal [ "Cy Both", "Di Both", "Amy", "Ed Late", "Zed" ], suggested_names
+  end
+
   test "suggests no one when the Project needs no skills" do
     person("Bo Both", %w[handyman])
     @project.update!(skills_needed: [])

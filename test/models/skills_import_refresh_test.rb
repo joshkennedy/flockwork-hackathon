@@ -2,6 +2,7 @@ require "test_helper"
 
 class SkillsImportRefreshTest < ActiveSupport::TestCase
   include ActionCable::TestHelper
+  include ActiveJob::TestHelper
 
   test "CSV normalizes optional skills and leaves existing skills when column is absent" do
     person = people(:leader)
@@ -27,14 +28,24 @@ class SkillsImportRefreshTest < ActiveSupport::TestCase
     other_stream = Turbo::StreamsChannel.send(:stream_name_from, [ other ])
 
     assert_no_broadcasts other_stream do
-      messages = capture_broadcasts(stream) { person.update!(skills: [ "music" ]) }
+      messages = capture_broadcasts(stream) { perform_enqueued_jobs { person.update!(skills: [ "music" ]) } }
       assert_equal 1, messages.size
       assert_includes messages.first, 'action="refresh"'
       assert_not_includes messages.first, person.name
     end
-    assert_broadcasts(stream, 1) { person.update!(skills: []) }
-    assert_no_broadcasts(stream) { person.update!(name: "New helper name") }
+    assert_broadcasts(stream, 1) { perform_enqueued_jobs { person.update!(skills: []) } }
+    assert_no_broadcasts(stream) { perform_enqueued_jobs { person.update!(name: "New helper name") } }
     project.update!(archived_at: Time.current)
-    assert_no_broadcasts(stream) { person.update!(skills: [ "music" ]) }
+    assert_no_broadcasts(stream) { perform_enqueued_jobs { person.update!(skills: [ "music" ]) } }
+  end
+
+  test "skill changes enqueue the refresh instead of broadcasting inside the save" do
+    project = projects(:building_cleanup)
+    project.update!(skills_needed: [ "music" ])
+    stream = Turbo::StreamsChannel.send(:stream_name_from, [ project ])
+
+    assert_no_broadcasts(stream) do
+      assert_enqueued_jobs(1) { people(:other_volunteer).update!(skills: [ "music" ]) }
+    end
   end
 end
