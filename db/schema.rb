@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_04_290001) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_05_630001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -405,6 +405,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_290001) do
     t.index ["project_id"], name: "index_slots_on_project_id"
     t.index ["schedule_item_id"], name: "index_slots_on_schedule_item_id"
     t.check_constraint "capacity >= 1", name: "slots_capacity_at_least_one"
+  end
+
+  create_table "sms_opt_outs", force: :cascade do |t|
+    t.string "phone", null: false
+    t.datetime "opted_out_at", null: false
+    t.jsonb "disabled_preferences", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["phone"], name: "index_sms_opt_outs_on_phone", unique: true
+  end
+
+  create_table "sms_webhook_events", force: :cascade do |t|
+    t.string "event_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id"], name: "index_sms_webhook_events_on_event_id", unique: true
   end
 
   create_table "solid_cable_messages", force: :cascade do |t|
