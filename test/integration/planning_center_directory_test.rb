@@ -115,7 +115,7 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
     assert_equal "changed@example.test", result.fetch(:skipped_email_changes).sole.fetch(:skipped_email)
   end
 
-  test "sync protects a Person email after invitation sign-in" do
+  test "sync protects a Person email after an invitee signs in" do
     organization = organizations(:st_example)
     invitee = people(:other_volunteer)
     invitee.update!(external_source: "planning_center", external_id: "pco-invitee-1")
@@ -126,6 +126,9 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
       role: :volunteer
     )
 
+    sign_in_token = invitee.generate_token_for(:sign_in)
+    get sign_in_link_path(sign_in_token)
+    post sign_in_link_path(sign_in_token)
     get invitation_path(invitation.generate_token_for(:access))
     assert_response :success
 

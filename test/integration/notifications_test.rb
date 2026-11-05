@@ -430,6 +430,9 @@ class NotificationsTest < ActionDispatch::IntegrationTest
     token = invitation.generate_token_for(:access)
 
     delete session_path
+    sign_in_token = invitee.generate_token_for(:sign_in)
+    get sign_in_link_path(sign_in_token)
+    post sign_in_link_path(sign_in_token)
     get invitation_path(token)
     patch accept_invitation_path(token)
     get notifications_path
