@@ -19,6 +19,11 @@
       "warning_type": "SQL Injection",
       "fingerprint": "cad855dc1dbe2cffd918421799055319c7802e99cc496079a065956d95538172",
       "note": "Search#matching interpolates only table names and column names from the hard-coded WORK constant and literal \"name\"; the query words are bound parameters."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "fingerprint": "f4509a1abc506fb985a91dd5ef7a222ec26557b77011a6815ab42c7ac2f9a809",
+      "note": "StaffingSuggestions#people interpolates only the fixed active_sql literal; order_sql is built with sanitize_sql_array, and skills, the serving limit and the row limit are bound."
     }
   ],
   "brakeman_version": "8.1.0"

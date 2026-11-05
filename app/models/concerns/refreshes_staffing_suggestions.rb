@@ -11,6 +11,6 @@ module RefreshesStaffingSuggestions
       return if changed_skills.empty?
 
       Project.active.where(organization_id: organization_id)
-        .where("skills_needed && ARRAY[?]::varchar[]", changed_skills).find_each(&:broadcast_refresh)
+        .where("skills_needed && ARRAY[?]::varchar[]", changed_skills).find_each(&:broadcast_refresh_later)
     end
 end
