@@ -366,6 +366,61 @@ class DemoSpendLimitsTest < ActionDispatch::IntegrationTest
     assert_empty notification.sms_payload
   end
 
+  test "a demo Invitation link sends no sign-in email after the Organization cap" do
+    organization = organizations(:grace_fellowship)
+    inviter = people(:grace_admin)
+    project = organization.projects.find_by!(name: "Church Workday")
+    invitee = organization.people.create!(name: "Demo Invitee", email: "demo-invitee@example.test")
+    invitation = organization.invitations.create!(
+      project:,
+      person: invitee,
+      inviter:,
+      role: "volunteer"
+    )
+    token = invitation.generate_token_for(:access)
+    reset!
+
+    with_rate_limit_store do
+      20.times { assert DemoOutboundLimit.allow?(organization) }
+
+      assert_no_enqueued_jobs only: ActionMailer::MailDeliveryJob do
+        get invitation_path(token)
+      end
+    end
+
+    assert_response :success
+    assert_select "h1", "Check your inbox"
+  end
+
+  test "a demo Person receives no sign-in email after the Organization cap" do
+    organization = organizations(:grace_fellowship)
+    person = people(:grace_leader)
+
+    with_rate_limit_store do
+      20.times { assert DemoOutboundLimit.allow?(organization) }
+
+      assert_no_enqueued_jobs only: ActionMailer::MailDeliveryJob do
+        post sign_in_requests_path, params: { email: person.email }
+      end
+    end
+
+    assert_redirected_to check_email_path, status: :see_other
+    follow_redirect!
+    assert_select "h1", "Check your email"
+  end
+
+  test "a non-demo Person still receives a sign-in email" do
+    person = people(:leader)
+
+    with_rate_limit_store do
+      assert_enqueued_email_with SignInMailer, :sign_in_link, args: [ person ] do
+        post sign_in_requests_path, params: { email: person.email }
+      end
+    end
+
+    assert_redirected_to check_email_path, status: :see_other
+  end
+
   test "non-demo Invitation creation remains unlimited" do
     leader = sign_in_as_leader
     project = projects(:community_meal)
