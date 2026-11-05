@@ -10,7 +10,7 @@ class Notifier
     notification.save!
 
     ActiveRecord.after_all_transactions_commit do
-      if email && recipient.email.present? && recipient.email_for?(kind)
+      if email && recipient.email.present? && recipient.email_for?(kind) && DemoOutboundLimit.allow?(recipient.organization)
         if notification.invitation?
           InvitationMailer.invitation(notifiable).deliver_later
         else

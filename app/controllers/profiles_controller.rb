@@ -1,5 +1,10 @@
 class ProfilesController < ApplicationController
   rate_limit to: 20, within: 1.hour, by: -> { Current.person.id }, only: :suggest_away, with: :suggest_away_rate_limited
+  rate_limit to: 5, within: 10.minutes, by: -> { Current.session.id }, name: "demo_session",
+    scope: "demo_outbound_actions", only: :update, if: :demo_phone_change?
+  rate_limit to: 20, within: 10.minutes, by: -> { request.remote_ip }, name: "demo_ip",
+    scope: "demo_outbound_actions", only: :update, if: :demo_phone_change?
+
   def edit
     @person = Current.person
     load_involvement
@@ -39,6 +44,12 @@ class ProfilesController < ApplicationController
   end
 
   private
+    def demo_phone_change?
+      person_params = params[:person]
+      demo_session? && person_params.respond_to?(:key?) && person_params.key?(:phone) &&
+        person_params[:phone].to_s != Current.person.phone.to_s
+    end
+
     def suggest_away_rate_limited
       if request.format.json?
         render json: { error: "Too many suggestions. Try again in an hour." }, status: :too_many_requests

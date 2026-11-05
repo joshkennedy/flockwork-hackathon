@@ -9,6 +9,10 @@ class ApplicationController < ActionController::Base
   helper_method :unread_notification_count
 
   private
+    def demo_session?
+      Current.organization&.demo? && Current.session&.auth_method == "demo"
+    end
+
     def unread_notification_count
       @unread_notification_count ||= Policy.visible_notifications(Current.person).unread.needs_you.count
     end
