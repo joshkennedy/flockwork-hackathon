@@ -82,10 +82,10 @@ class DocViewerSystemTest < ApplicationSystemTestCase
     base = find("[data-controller=doc-viewer]")["data-doc-viewer-assets-value"]
     statuses = evaluate_async_script(<<~JS, base)
       const [base, done] = arguments
-      Promise.all(["wasm/openjpeg.wasm", "wasm/jbig2.wasm", "standard_fonts/FoxitSerif.pfb", "standard_fonts/LiberationSans-Regular.ttf"]
+      Promise.all(["wasm/openjpeg.wasm", "wasm/jbig2.wasm", "standard_fonts/FoxitSerif.pfb", "standard_fonts/LiberationSans-Regular.ttf", "cmaps/90ms-RKSJ-H.bcmap"]
         .map((path) => fetch(`${base}/${path}`).then((response) => response.status))).then(done)
     JS
-    assert_equal [ 200, 200, 200, 200 ], statuses
+    assert_equal [ 200, 200, 200, 200, 200 ], statuses
   end
 
   test "the PDF scripting engine is never served and the viewer opens documents with scripting off" do
@@ -104,5 +104,33 @@ class DocViewerSystemTest < ApplicationSystemTestCase
     JS
     assert_equal [ 404, 404, 200 ], statuses
     assert_includes File.read(Rails.root.join("app/javascript/controllers/doc_viewer_controller.js")), "enableScripting: false"
+  end
+
+  test "zooming keeps the current page in view" do
+    visit new_demo_session_path
+    click_on "Explore as Leader"
+    assert_selector "[data-signed-in-as]", text: "Maria Lopez"
+    visit project_path(@project)
+    click_on "Volunteer Handbook"
+    assert_selector "[data-controller=doc-viewer] canvas", count: 2
+
+    click_on "Next"
+    # At 300% the two pages are taller than the viewer, so the page has to be scrolled to.
+    8.times { click_on "Zoom in" }
+    assert_text "300%"
+    assert_selector "[data-controller=doc-viewer] canvas", count: 2
+    assert_text "Page 2 of 2"
+
+    # Zoom re-renders every page; the swap lands after the counter updates.
+    page.document.synchronize do
+      visible = evaluate_script(<<~JS)
+        (() => {
+          const container = document.querySelector("[data-doc-viewer-target=pages]").getBoundingClientRect()
+          const canvas = document.querySelectorAll("[data-doc-viewer-target=pages] canvas")[1]?.getBoundingClientRect()
+          return !!canvas && canvas.top >= container.top - 1 && canvas.bottom <= container.bottom + 1
+        })()
+      JS
+      raise Capybara::ExpectationNotMet, "page 2 is not fully inside the viewer" unless visible
+    end
   end
 end

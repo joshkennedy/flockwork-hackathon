@@ -19,6 +19,8 @@ export default class extends Controller {
         isEvalSupported: false,
         enableScripting: false,
         wasmUrl: `${this.assetsValue}/wasm/`,
+        cMapUrl: `${this.assetsValue}/cmaps/`,
+        cMapPacked: true,
         standardFontDataUrl: `${this.assetsValue}/standard_fonts/`
       }).promise
       this.totalTarget.textContent = this.pdf.numPages
@@ -43,7 +45,11 @@ export default class extends Controller {
     if (!this.pdf || number < 1 || number > this.pdf.numPages) return
     this.page = number
     this.currentTarget.textContent = number
-    this.pagesTarget.children[number - 1]?.scrollIntoView({ block: "nearest" })
+    this.showCurrentPage("nearest")
+  }
+
+  showCurrentPage(block) {
+    this.pagesTarget.children[this.page - 1]?.scrollIntoView({ block })
   }
 
   zoomTo(scale) {
@@ -54,6 +60,7 @@ export default class extends Controller {
   }
 
   async render() {
+    const canvases = []
     const token = (this.renderToken = (this.renderToken || 0) + 1)
     for (let number = 1; number <= this.pdf.numPages; number++) {
       const page = await this.pdf.getPage(number)
@@ -67,8 +74,12 @@ export default class extends Controller {
       canvas.setAttribute("aria-label", `Page ${number}`)
       await page.render({ canvas, viewport }).promise
       if (token !== this.renderToken) return
-      if (number === 1) this.pagesTarget.replaceChildren(canvas)
-      else this.pagesTarget.append(canvas)
+      canvases.push(canvas)
+      // The first page appears right away; later pages are swapped in together to keep scroll stable.
+      if (number === 1 && !this.pagesTarget.children.length) this.pagesTarget.append(canvas)
     }
+    this.pagesTarget.replaceChildren(...canvases)
+    // Replacing the canvases resets the scroll; bring the page the counter shows back.
+    this.showCurrentPage("start")
   }
 }
