@@ -160,6 +160,30 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
   end
 
 
+  test "an invitee opening their own Invitation link five times still sees the Invitation" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    invitee = people(:other_volunteer)
+    post project_invitations_path(project), params: {
+      invitation: { person_id: invitee.id, role: "volunteer" }
+    }
+    invitation = invitee.invitations.find_by!(project: project)
+    token = invitation.generate_token_for(:access)
+    delete session_path
+    sign_in_as(invitee)
+
+    with_invitation_rate_limit_store do
+      assert_no_enqueued_jobs only: ActionMailer::MailDeliveryJob do
+        5.times { get invitation_path(token) }
+      end
+    end
+
+    assert_response :success
+    assert_select "h1", project.name
+    assert_select "button", "Accept"
+  end
+
+
   test "a copied pending Invitation link does not sign a Leader in as the invitee" do
     sign_in_as_leader
     project = projects(:community_meal)
