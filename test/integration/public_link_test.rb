@@ -70,7 +70,7 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
 
   test "turning the Public link off invalidates the old banner URL" do
     project = projects(:community_meal)
-    project.banner.attach(io: file_fixture("banner_wide.jpg").open, filename: "banner.jpg", content_type: "image/jpeg")
+    attach_ready_banner(project)
     project.banner.blob.update!(metadata: project.banner.blob.metadata.except("organization_id"))
     project.enable_public_link!
     token = project.public_token
@@ -85,6 +85,7 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
     assert_response :success
 
     project.disable_public_link!
+    perform_enqueued_jobs
 
     assert_not_equal old_banner_blob_id, project.reload.banner.blob_id
     assert_equal project.organization_id, project.banner.blob.metadata["organization_id"]
@@ -102,7 +103,7 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
 
   test "resetting the Public link invalidates the old banner URL and keeps the banner public" do
     project = projects(:community_meal)
-    project.banner.attach(io: file_fixture("banner_wide.jpg").open, filename: "banner.jpg", content_type: "image/jpeg")
+    attach_ready_banner(project)
     project.enable_public_link!
     old_token = project.public_token
     old_banner_blob_id = project.banner.blob_id
@@ -111,6 +112,7 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
     old_banner_path = css_select("picture img").first["src"]
 
     project.reset_public_link!
+    perform_enqueued_jobs
 
     assert_not_equal old_banner_blob_id, project.reload.banner.blob_id
     get old_banner_path
@@ -125,7 +127,7 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
   test "deleting a Project invalidates its old public banner URL" do
     sign_in_as_admin
     project = projects(:community_meal)
-    project.banner.attach(io: file_fixture("banner_wide.jpg").open, filename: "banner.jpg", content_type: "image/jpeg")
+    attach_ready_banner(project)
     project.enable_public_link!
     old_banner_blob_id = project.banner.blob_id
 
@@ -143,7 +145,7 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
 
   test "a failed Public link revocation keeps the current banner attachment" do
     project = projects(:community_meal)
-    project.banner.attach(io: file_fixture("banner_wide.jpg").open, filename: "banner.jpg", content_type: "image/jpeg")
+    attach_ready_banner(project)
     project.enable_public_link!
     old_token = project.public_token
     old_banner_blob_id = project.banner.blob_id

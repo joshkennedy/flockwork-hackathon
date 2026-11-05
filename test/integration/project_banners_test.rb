@@ -251,7 +251,6 @@ class ProjectBannersTest < ActionDispatch::IntegrationTest
     end
 
     def attach_banner!(project)
-      project.banner.attach(io: file_fixture("banner_wide.jpg").open, filename: "banner.jpg", content_type: "image/jpeg")
-      project.reload
+      attach_ready_banner(project)
     end
 end

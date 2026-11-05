@@ -29,7 +29,7 @@
             <div data-banner-focus-target="layer" hidden tabindex="0" role="group" aria-label="Banner photo. Drag, or use the arrow keys, to reposition it."
                  class="absolute inset-0 cursor-grab touch-none select-none overflow-hidden active:cursor-grabbing focus-visible:-outline-offset-4 focus-visible:outline-2 focus-visible:outline-ink"
                  data-action="pointerdown->banner-focus#start pointermove->banner-focus#move pointerup->banner-focus#stop pointercancel->banner-focus#stop">
-              <img src="<%= url_for(project.banner.variant(resize_to_limit: [ 2400, 2400 ], format: :webp)) %>" alt="" draggable="false" loading="lazy" class="pointer-events-none size-full object-cover">
+              <img src="<%= url_for(project.banner_reposition_variant) %>" alt="" draggable="false" loading="lazy" class="pointer-events-none size-full object-cover">
             </div>
           <% end %>
 

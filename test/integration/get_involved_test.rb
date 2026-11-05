@@ -56,7 +56,7 @@ class GetInvolvedTest < ActionDispatch::IntegrationTest
   end
 
   test "Project card images link through to the Project" do
-    @project.banner.attach(io: file_fixture("banner_wide.jpg").open, filename: "banner.jpg", content_type: "image/jpeg")
+    attach_ready_banner(@project)
     @project.reload.banner_ready?
     sign_in_as(:other_volunteer)
 

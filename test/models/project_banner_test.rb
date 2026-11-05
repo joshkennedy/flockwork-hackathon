@@ -3,8 +3,7 @@ require "test_helper"
 class ProjectBannerTest < ActiveSupport::TestCase
   setup do
     @project = projects(:community_meal)
-    @project.banner.attach(io: file_fixture("banner_wide.jpg").open, filename: "banner.jpg", content_type: "image/jpeg")
-    @project.reload
+    attach_ready_banner(@project)
   end
 
   test "the wide crop follows the focal point and stays inside the photo" do
@@ -19,9 +18,9 @@ class ProjectBannerTest < ActiveSupport::TestCase
   test "a small photo is flagged so it is shown on a blurred fill instead of upscaled" do
     assert_not @project.banner_small?
 
-    @project.banner.attach(io: file_fixture("banner_small.png").open, filename: "small.png", content_type: "image/png")
+    attach_ready_banner(@project, fixture: "banner_small.png", content_type: "image/png")
 
-    assert @project.reload.banner_small?
+    assert @project.banner_small?
   end
 
   test "focal point must sit between 0 and 1" do

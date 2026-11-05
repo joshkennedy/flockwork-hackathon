@@ -1,6 +1,8 @@
 require "application_system_test_case"
 
 class ProjectBannerSystemTest < ApplicationSystemTestCase
+  include ActiveJob::TestHelper
+
   setup do
     @project = Project.create_for(
       creator: people(:grace_leader),
@@ -12,7 +14,7 @@ class ProjectBannerSystemTest < ApplicationSystemTestCase
         enabled_tools: []
       }
     )
-    @project.banner.attach(io: file_fixture("banner_wide.jpg").open, filename: "banner.jpg", content_type: "image/jpeg")
+    attach_ready_banner(@project)
     @project.reload
   end
 
@@ -50,11 +52,17 @@ class ProjectBannerSystemTest < ApplicationSystemTestCase
 
   test "a Leader replaces the banner photo from the banner, which resets its focal point" do
     @project.update!(banner_focus_x: 0.2, banner_focus_manual: true)
+    ProjectBannerVariantsJob.perform_now(@project)
     previous_blob_id = @project.banner.blob_id
     sign_in_as_leader_in_browser
     visit project_path(@project)
 
     find("input[type=file][name='project[banner]']", visible: :all).set(file_fixture("banner_small.png").to_s)
+
+    assert_text "This photo can't be shown yet."
+    perform_enqueued_jobs only: ProjectBannerFocusJob
+    ProjectBannerVariantsJob.perform_now(@project.reload)
+    visit project_path(@project)
 
     assert_selector "input[name='project[banner_focus_x]'][value='0.5']", visible: :all
     @project.reload
