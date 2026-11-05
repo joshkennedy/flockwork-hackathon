@@ -319,16 +319,34 @@ module Policy
 
   def visible_notifications(person)
     notifications = person.organization.notifications.in_app.where(recipient_id: person.id)
-    visible_ids = notifications.includes(:notifiable).filter_map do |notification|
-      visible = if notification.invitation?
-        can?(person, :respond, notification.notifiable)
-      else
-        can?(person, :show, notification.project)
-      end
-      notification.id if visible
-    end
-    notifications.where(id: visible_ids)
+    project_ids = visible_projects(person).select(:id)
+    invitation_ids = person.organization.invitations.where.not(status: :pending).where(project_id: project_ids)
+      .or(person.organization.invitations.pending.where(person_id: person.id))
+      .select(:id)
+    comment_ids = visible_project_comment_ids(project_ids)
+    mention_ids = Mention.where(mentionable_type: "Message", mentionable_id: Message.where(project_id: project_ids).select(:id))
+      .or(Mention.where(mentionable_type: "Comment", mentionable_id: comment_ids))
+      .select(:id)
+
+    notifications.where(notifiable_type: "Project", notifiable_id: project_ids)
+      .or(notifications.where(notifiable_type: "Invitation", notifiable_id: invitation_ids))
+      .or(notifications.where(notifiable_type: "Task", notifiable_id: Task.where(project_id: project_ids).select(:id)))
+      .or(notifications.where(notifiable_type: "Slot", notifiable_id: Slot.where(project_id: project_ids).select(:id)))
+      .or(notifications.where(notifiable_type: "Comment", notifiable_id: comment_ids))
+      .or(notifications.where(notifiable_type: "Mention", notifiable_id: mention_ids))
   end
+
+  def visible_project_comment_ids(project_ids)
+    Comment.where(commentable_type: "BudgetLine", commentable_id: BudgetLine.where(project_id: project_ids).select(:id))
+      .or(Comment.where(commentable_type: "DocItem", commentable_id: DocItem.where(project_id: project_ids).select(:id)))
+      .or(Comment.where(commentable_type: "ListRow", commentable_id: ListRow.joins(:list).where(lists: { project_id: project_ids }).select(:id)))
+      .or(Comment.where(commentable_type: "Message", commentable_id: Message.where(project_id: project_ids).select(:id)))
+      .or(Comment.where(commentable_type: "ScheduleItem", commentable_id: ScheduleItem.where(project_id: project_ids).select(:id)))
+      .or(Comment.where(commentable_type: "Slot", commentable_id: Slot.where(project_id: project_ids).select(:id)))
+      .or(Comment.where(commentable_type: "Task", commentable_id: Task.where(project_id: project_ids).select(:id)))
+      .select(:id)
+  end
+  private :visible_project_comment_ids
 
   def notification_can?(person, action, notification)
     action == :mark_read && notification.recipient_id == person.id &&

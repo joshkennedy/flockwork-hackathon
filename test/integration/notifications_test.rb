@@ -412,6 +412,29 @@ class NotificationsTest < ActionDispatch::IntegrationTest
     assert_select "a[href='#{invitation_path(invitation.generate_token_for(:access))}']", text: "Respond"
   end
 
+  test "an accepted Invitation remains listed for information" do
+    inviter = sign_in_as_leader
+    project = projects(:community_meal)
+    invitee = people(:other_volunteer)
+
+    post project_invitations_path(project), params: {
+      invitation: { person_id: invitee.id, role: "volunteer" }
+    }
+    invitation = inviter.organization.invitations.find_by!(project: project, person: invitee)
+    notification = invitee.notifications.find_by!(kind: "invitation", notifiable: invitation)
+    token = invitation.generate_token_for(:access)
+
+    delete session_path
+    get invitation_path(token)
+    patch accept_invitation_path(token)
+    get notifications_path
+
+    assert_predicate invitation.reload, :accepted?
+    assert_select "section[aria-labelledby='needs-you-heading'] [data-notification-id='#{notification.id}']", count: 0
+    assert_select "section[aria-labelledby='for-information-heading'] [data-notification-id='#{notification.id}']"
+    assert_select "[data-notification-id='#{notification.id}'] a > span:last-child", "invited you to join Community Meal."
+  end
+
   test "a Person with nothing to act on or report sees warm empty states" do
     sign_in_as_volunteer
 
