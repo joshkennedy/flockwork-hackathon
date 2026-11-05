@@ -1,5 +1,6 @@
 class Task < ApplicationRecord
   include RefreshesDashboard
+  include OrganizationOwnedBlobs
   belongs_to :project
   belongs_to :assignee, class_name: "Person", optional: true
   belongs_to :completed_by, class_name: "Person", optional: true
@@ -11,6 +12,7 @@ class Task < ApplicationRecord
   has_rich_text :details
 
   validates :title, presence: true
+  validates_organization_owned_blobs rich_texts: [ :details ]
   validate :assignee_is_a_team_member
 
   scope :open, -> { where(completed_at: nil) }

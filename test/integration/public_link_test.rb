@@ -71,6 +71,7 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
   test "turning the Public link off invalidates the old banner URL" do
     project = projects(:community_meal)
     project.banner.attach(io: file_fixture("banner_wide.jpg").open, filename: "banner.jpg", content_type: "image/jpeg")
+    project.banner.blob.update!(metadata: project.banner.blob.metadata.except("organization_id"))
     project.enable_public_link!
     token = project.public_token
     old_banner_blob_id = project.banner.blob_id
@@ -86,6 +87,7 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
     project.disable_public_link!
 
     assert_not_equal old_banner_blob_id, project.reload.banner.blob_id
+    assert_equal project.organization_id, project.banner.blob.metadata["organization_id"]
     get public_project_path(token)
     assert_response :not_found
 

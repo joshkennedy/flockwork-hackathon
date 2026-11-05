@@ -5,6 +5,8 @@ class ProjectBannersController < ApplicationController
   def update
     upload = params.dig(:project, :banner)
     if upload.present?
+      return head :unprocessable_content unless upload.is_a?(ActionDispatch::Http::UploadedFile)
+
       replace_banner(upload)
     else
       update_focus
@@ -36,7 +38,8 @@ class ProjectBannersController < ApplicationController
       blob = ActiveStorage::Blob.create_and_upload!(
         io: upload,
         filename: upload.original_filename,
-        content_type: upload.content_type
+        content_type: upload.content_type,
+        metadata: { "organization_id" => Current.organization.id }
       )
       blob.analyze
       if (message = @project.banner_dimension_error_message_for(blob))

@@ -13,8 +13,27 @@ class ProjectBannersTest < ActionDispatch::IntegrationTest
     assert_redirected_to project_path(project)
     project.reload
     assert project.banner.attached?
+    assert_equal project.organization_id, project.banner.blob.metadata["organization_id"]
     assert_equal 0.5, project.banner_focus_x
     assert_equal 0.5, project.banner_focus_y
+  end
+
+  test "a banner signed id string is rejected without attaching it" do
+    blob = ActiveStorage::Blob.create_and_upload!(
+      io: file_fixture("banner_wide.jpg").open,
+      filename: "banner.jpg",
+      content_type: "image/jpeg",
+      metadata: { "organization_id" => organizations(:outsider_church).id }
+    )
+    sign_in_as_leader
+    project = projects(:community_meal)
+
+    assert_no_difference "ActiveStorage::Attachment.count" do
+      patch project_banner_path(project), params: { project: { banner: blob.signed_id } }
+    end
+
+    assert_response :unprocessable_content
+    assert_not project.reload.banner.attached?
   end
 
   test "an upload is judged by its bytes, so a renamed text file is refused" do

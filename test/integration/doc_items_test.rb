@@ -52,11 +52,60 @@ class DocItemsTest < ActionDispatch::IntegrationTest
 
     item = project.doc_items.find_by!(title: "Volunteer Handbook")
     assert_redirected_to project_path(project)
+    assert_equal project.organization_id, item.file.blob.metadata["organization_id"]
 
     get download_project_doc_item_path(project, item)
 
     assert_response :success
     assert_equal "Flockwork sample upload file.\n", response.body
+  end
+
+  test "an admin cannot attach another church's blob by signed id" do
+    blob = ActiveStorage::Blob.create_and_upload!(
+      io: file_fixture("sample_upload.txt").open,
+      filename: "sample_upload.txt",
+      content_type: "text/plain",
+      metadata: { "organization_id" => organizations(:st_example).id }
+    )
+    sign_in_as_outsider
+    project = enable_docs_tool!(projects(:outsider_project))
+
+    assert_no_difference [ "DocItem.count", "ActiveStorage::Attachment.count" ] do
+      post project_doc_items_path(project), params: {
+        doc_item: {
+          kind: "file",
+          title: "Foreign file",
+          file: blob.signed_id
+        }
+      }
+    end
+
+    assert_response :unprocessable_content
+    assert_not project.doc_items.exists?(title: "Foreign file")
+  end
+
+  test "an admin cannot embed another church's blob in a document" do
+    blob = ActiveStorage::Blob.create_and_upload!(
+      io: file_fixture("banner_small.png").open,
+      filename: "banner.png",
+      content_type: "image/png",
+      metadata: { "organization_id" => organizations(:st_example).id }
+    )
+    sign_in_as_outsider
+    project = enable_docs_tool!(projects(:outsider_project))
+
+    assert_no_difference [ "DocItem.count", "ActiveStorage::Attachment.count" ] do
+      post project_doc_items_path(project), params: {
+        doc_item: {
+          kind: "document",
+          title: "Foreign image",
+          body: %(<div>Foreign image</div><action-text-attachment sgid="#{blob.attachable_sgid}"></action-text-attachment>)
+        }
+      }
+    end
+
+    assert_response :unprocessable_content
+    assert_not project.doc_items.exists?(title: "Foreign image")
   end
 
   test "a Volunteer adds links and PCO hosts show a badge" do

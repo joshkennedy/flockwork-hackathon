@@ -1,6 +1,32 @@
 require "test_helper"
 
 class CommentsMentionsFollowsTest < ActionDispatch::IntegrationTest
+  test "a member cannot embed another church's blob in a comment" do
+    blob = ActiveStorage::Blob.create_and_upload!(
+      io: file_fixture("banner_small.png").open,
+      filename: "banner.png",
+      content_type: "image/png",
+      metadata: { "organization_id" => organizations(:st_example).id }
+    )
+    sign_in_as_outsider
+    project = projects(:outsider_project)
+    task = project.tasks.create!(title: "Set up picnic tables")
+
+    assert_no_difference [ "Comment.count", "ActiveStorage::Attachment.count" ] do
+      post project_comments_path(project), params: {
+        comment: {
+          commentable_type: "Task",
+          commentable_id: task.id,
+          body: %(<div>Foreign image</div><action-text-attachment sgid="#{blob.attachable_sgid}"></action-text-attachment>)
+        }
+      }
+    end
+
+    assert_redirected_to project_path(project)
+    assert_match "belongs to another church", flash[:alert]
+    assert_not task.comments.exists?
+  end
+
   test "a Team member comments on a Task and follows it" do
     member = sign_in_as_volunteer
     project = projects(:community_meal)

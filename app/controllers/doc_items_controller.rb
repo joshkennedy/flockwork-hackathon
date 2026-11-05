@@ -4,6 +4,7 @@ class DocItemsController < ApplicationController
   before_action :authorize_manage_docs, except: :download
   before_action :authorize_download, only: :download
   before_action :authorize_destroy_doc_item, only: :destroy
+  before_action :require_uploaded_file, only: %i[ create update ]
 
   def new
     @doc_item = @project.doc_items.build(kind: doc_item_kind_param)
@@ -62,6 +63,11 @@ class DocItemsController < ApplicationController
 
     def authorize_destroy_doc_item
       raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :destroy, @doc_item)
+    end
+
+    def require_uploaded_file
+      file = params.dig(:doc_item, :file)
+      head :unprocessable_content if file.present? && !file.is_a?(ActionDispatch::Http::UploadedFile)
     end
 
     def doc_item_kind_param

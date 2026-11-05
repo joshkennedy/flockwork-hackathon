@@ -40,6 +40,49 @@ class ActiveStorageAnonymousUploadTest < ActionDispatch::IntegrationTest
     ActionController::Base.allow_forgery_protection = original_forgery_protection
   end
 
+  test "a direct upload is owned by the uploader's church and embeds in its Message" do
+    person = sign_in_as_volunteer
+    original_forgery_protection = ActionController::Base.allow_forgery_protection
+    ActionController::Base.allow_forgery_protection = true
+    payload = file_fixture("banner_small.png").binread
+
+    get home_path
+    csrf_token = response.parsed_body.at_css("meta[name=csrf-token]")["content"]
+    post_direct_upload(payload, csrf_token:, filename: "banner.png", content_type: "image/png")
+
+    assert_response :success
+    upload_response = response.parsed_body
+    blob = ActiveStorage::Blob.find_signed!(upload_response.fetch("signed_id"))
+    assert_equal person.organization_id, blob.metadata["organization_id"]
+
+    direct_upload = upload_response.fetch("direct_upload")
+    put URI.parse(direct_upload.fetch("url")).request_uri,
+      params: payload,
+      headers: direct_upload.fetch("headers")
+    assert_response :no_content
+
+    ActionController::Base.allow_forgery_protection = original_forgery_protection
+
+    project = projects(:community_meal)
+    post project_messages_path(project), params: {
+      message: {
+        body: %(<div>Same church image</div><action-text-attachment sgid="#{blob.attachable_sgid}"></action-text-attachment>)
+      }
+    }
+
+    assert_redirected_to project_path(project)
+    message = project.messages.order(:id).last!
+    assert_equal [ blob.id ], message.body.embeds.map(&:blob_id)
+
+    get project_path(project)
+
+    assert_response :success
+    assert_match "Same church image", response.body
+    assert_match "banner.png", response.body
+  ensure
+    ActionController::Base.allow_forgery_protection = original_forgery_protection
+  end
+
   test "a demo volunteer is limited to 30 direct uploads per hour" do
     post demo_session_path(role: "volunteer")
     original_forgery_protection = ActionController::Base.allow_forgery_protection
@@ -84,14 +127,14 @@ class ActiveStorageAnonymousUploadTest < ActionDispatch::IntegrationTest
   end
 
   private
-    def post_direct_upload(payload, csrf_token:, byte_size: payload.bytesize)
+    def post_direct_upload(payload, csrf_token:, byte_size: payload.bytesize, filename: "x.pdf", content_type: "application/pdf")
       post rails_direct_uploads_path,
         params: {
           blob: {
-            filename: "x.pdf",
+            filename:,
             byte_size:,
             checksum: Digest::MD5.base64digest(payload),
-            content_type: "application/pdf"
+            content_type:
           }
         }.to_json,
         headers: {
