@@ -28,6 +28,22 @@ class ProjectBannersTest < ActionDispatch::IntegrationTest
     assert_not project.reload.banner.attached?
   end
 
+  test "a PNG whose header declares oversized dimensions is refused" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    file = Tempfile.new([ "oversized-header", ".png" ], binmode: true)
+    file.write(png_bytes_with_declared_dimensions(16_000, 16_000, template: file_fixture("banner_small.png").read))
+    file.rewind
+
+    patch project_banner_path(project), params: { project: { banner: Rack::Test::UploadedFile.new(file.path, "image/png") } }
+
+    assert_redirected_to project_path(project)
+    assert_match "must not exceed", flash[:alert]
+    assert_not project.reload.banner.attached?
+  ensure
+    file&.close!
+  end
+
   test "an image over 10 MB is refused" do
     sign_in_as_leader
     project = projects(:community_meal)
@@ -140,6 +156,24 @@ class ProjectBannersTest < ActionDispatch::IntegrationTest
   end
 
   private
+    def png_bytes_with_declared_dimensions(width, height, template:)
+      bytes = template.dup.force_encoding(Encoding::BINARY)
+      offset = 8
+      while offset + 12 <= bytes.bytesize
+        length = bytes[offset, 4].unpack1("N")
+        type = bytes[offset + 4, 4]
+        if type == "IHDR"
+          bytes[offset + 8, 4] = [ width ].pack("N")
+          bytes[offset + 12, 4] = [ height ].pack("N")
+          chunk = bytes[offset + 4, 4 + length]
+          bytes[offset + 8 + length, 4] = [ Zlib.crc32(chunk) ].pack("N")
+          break
+        end
+        offset += 12 + length
+      end
+      bytes
+    end
+
     def attach_banner!(project)
       project.banner.attach(io: file_fixture("banner_wide.jpg").open, filename: "banner.jpg", content_type: "image/jpeg")
       project.reload

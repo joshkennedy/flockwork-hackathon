@@ -32,6 +32,10 @@ class ProjectBannersController < ApplicationController
       @project.reset_banner_focus
       if @project.save
         @project.banner.blob.analyze
+        if (message = @project.reject_banner_for_pixel_limits!)
+          redirect_to @project, alert: "The banner couldn't be saved: Banner #{message}."
+          return
+        end
         ProjectBannerFocusJob.perform_later(@project, @project.banner.blob_id)
         redirect_to @project
       else
