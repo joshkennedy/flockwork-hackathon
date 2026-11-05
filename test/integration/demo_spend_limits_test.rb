@@ -437,6 +437,23 @@ class DemoSpendLimitsTest < ActionDispatch::IntegrationTest
     assert_select "h1", "Check your email"
   end
 
+  test "a demo Admin's email change stores the pending address but mails nothing after the Organization cap" do
+    organization = organizations(:grace_fellowship)
+    person = people(:grace_leader)
+    post demo_session_path(role: "admin")
+
+    with_rate_limit_store do
+      20.times { assert DemoOutboundLimit.allow?(organization) }
+
+      assert_no_enqueued_jobs only: ActionMailer::MailDeliveryJob do
+        patch person_path(person), params: { person: { name: person.name, email: "new.grace@example.test" } }
+      end
+    end
+
+    assert_redirected_to person_path(person)
+    assert_equal "new.grace@example.test", person.reload.pending_email
+  end
+
   test "a non-demo Person still receives a sign-in email" do
     person = people(:leader)
 

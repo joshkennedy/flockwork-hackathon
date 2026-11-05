@@ -64,7 +64,9 @@ class PeopleController < ApplicationController
     send_confirmation = stage_email_change
 
     if @person.save
-      SignInMailer.email_change(@person).deliver_later if send_confirmation
+      if send_confirmation && DemoOutboundLimit.allow?(@person.organization)
+        SignInMailer.email_change(@person).deliver_later
+      end
       flash[:notice] = "Saved #{@person.name}."
       # From the slideout, refresh the person page underneath; errors re-render inside the panel.
       # request_id: nil, because Turbo ignores a refresh stamped with the request that caused it.
@@ -126,11 +128,14 @@ class PeopleController < ApplicationController
       return false unless params[:person]&.key?(:email)
 
       address = Person.normalize_value_for(:email, params[:person][:email].to_s)
+      if address.nil?
+        @person.assign_attributes(email: nil, pending_email: nil)
+        return false
+      end
       return false if address == @person.email
 
       @person.pending_email = address
-      @person.email = nil if address.nil?
-      address.present?
+      true
     end
 
     def person_params

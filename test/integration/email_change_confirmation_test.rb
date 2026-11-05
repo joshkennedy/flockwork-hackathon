@@ -85,6 +85,43 @@ class EmailChangeConfirmationTest < ActionDispatch::IntegrationTest
     assert_equal "second@st-example.test", people(:volunteer).pending_email
   end
 
+  test "a confirmed link stays dead after the address changes away and is requested again" do
+    sign_in_as_admin
+    first_a = request_email_change(people(:volunteer), "a@st-example.test")
+    post email_confirmation_path(first_a)
+    request_email_change(people(:volunteer), "b@st-example.test")
+    post email_confirmation_path(ActionMailer::Base.deliveries.last.text_part.body.decoded[%r{/email_confirmations/(\S+)}, 1])
+    request_email_change(people(:volunteer), "a@st-example.test")
+
+    post email_confirmation_path(first_a)
+
+    assert_response :unprocessable_content
+    assert_equal "b@st-example.test", people(:volunteer).reload.email
+    assert_equal "a@st-example.test", people(:volunteer).pending_email
+  end
+
+  test "a link for a pending address the Admin cleared is rejected and the email stays blank" do
+    sign_in_as_admin
+    person = organizations(:st_example).people.create!(name: "No Email", email: nil)
+    token = request_email_change(person, "ne@st-example.test")
+    patch person_path(person), params: { person: { name: "No Email", email: "" } }
+
+    post email_confirmation_path(token)
+
+    assert_response :unprocessable_content
+    assert_nil person.reload.email
+    assert_nil person.pending_email
+  end
+
+  test "saving a blank email on a Person with no email clears a pending address" do
+    sign_in_as_admin
+    person = organizations(:st_example).people.create!(name: "No Email", email: nil, pending_email: "ne@st-example.test")
+
+    patch person_path(person), params: { person: { name: "No Email", email: "" } }
+
+    assert_nil person.reload.pending_email
+  end
+
   test "setting an email where none existed is pending too" do
     sign_in_as_admin
     person = organizations(:st_example).people.create!(name: "No Email", email: nil)

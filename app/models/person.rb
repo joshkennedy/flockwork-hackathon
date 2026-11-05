@@ -40,9 +40,9 @@ class Person < ApplicationRecord
     [ last_signed_in_at, email ]
   end
 
-  # Bound to pending_email, so confirming (which clears it) or asking for a different address voids the link.
+  # Bound to both addresses, so any confirmed change or a different pending address voids earlier links.
   generates_token_for :email_change, expires_in: 24.hours do
-    pending_email
+    [ email, pending_email ]
   end
 
   # Every typed word must appear somewhere in the name, so "ma lo" finds Maria Lopez.
@@ -95,7 +95,10 @@ class Person < ApplicationRecord
     person = find_by_token_for(:email_change, token)
     return unless person
 
-    person if person.update(email: person.pending_email, pending_email: nil)
+    # Re-check under the row lock, so an Admin clearing or replacing the pending address cannot race the confirmation.
+    person.with_lock do
+      person if find_by_token_for(:email_change, token) == person && person.update(email: person.pending_email, pending_email: nil)
+    end
   end
 
   def can_sign_in?
