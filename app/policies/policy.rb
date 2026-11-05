@@ -98,7 +98,7 @@ module Policy
       return false unless record.organization_id == person.organization_id
 
       return person.admin? || record.id == person.id if action == :view_involvement
-      return person.admin? || leader_somewhere?(person) if action == :log_check_in
+      return person.admin? || leads_member?(person, record) if action == :log_check_in
 
       return false
     end
@@ -254,6 +254,13 @@ module Policy
     person.memberships.leader.joins(:project).merge(Project.active).exists?
   end
   private :leader_somewhere?
+
+  # A non-admin Leader may only check in people on a Project they lead.
+  def leads_member?(leader, member)
+    led_project_ids = leader.memberships.leader.joins(:project).merge(Project.active).select(:project_id)
+    Membership.exists?(person_id: member.id, project_id: led_project_ids)
+  end
+  private :leads_member?
 
   def project_leader_or_admin?(person, record)
     person.admin? || record.memberships.leader.exists?(person: person)

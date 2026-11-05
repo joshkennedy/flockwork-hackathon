@@ -48,9 +48,6 @@
                       <%= avatar(person) %>
                       <div class="min-w-0">
                         <p class="font-semibold text-ink"><%= person.name %></p>
-                        <% if person.email.blank? %>
-                          <p class="text-meta text-ink-2">No email, can't be invited</p>
-                        <% end %>
                       </div>
                     </div>
                     <% if person.email.blank? %>
