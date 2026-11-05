@@ -49,4 +49,11 @@ class CalendarEventTest < ActiveSupport::TestCase
 
     assert_raises(ArgumentError) { CalendarEvent.new(item, url: "https://example.test").to_ical }
   end
+
+  test "the URL line is escaped like other text" do
+    event = CalendarEvent.new(schedule_items(:community_meal_arrival), url: "https://example.test/a;b\r\nBEGIN:VEVENT").to_ical
+
+    assert_includes event, 'URL:https://example.test/a\;b\nBEGIN:VEVENT'
+    assert_equal 1, event.scan(/^BEGIN:VEVENT\r$/).size
+  end
 end

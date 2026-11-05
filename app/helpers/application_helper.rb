@@ -113,10 +113,16 @@ module ApplicationHelper
   # Mentions are stored as @[Name](person:ID) in the rich text; each one renders as a Person pill. Only the church's own People resolve.
   def mention_pills(body)
     people = Current.organization.people.where(id: body.to_plain_text.scan(MentionParser::TOKEN_PATTERN).flatten).index_by(&:id)
-    body.to_s.gsub(MentionParser::TOKEN_PATTERN) do |token|
-      person = people[Regexp.last_match(1).to_i]
-      person ? person_pill(person) : token
-    end.html_safe
+    fragment = Nokogiri::HTML5.fragment(body.to_s)
+    fragment.xpath(".//text()[not(ancestor::a)]").each do |node|
+      next unless node.text.match?(MentionParser::TOKEN_PATTERN)
+
+      node.replace(ERB::Util.h(node.text).gsub(MentionParser::TOKEN_PATTERN) do |token|
+        person = people[Regexp.last_match(1).to_i]
+        person ? person_pill(person) : token
+      end)
+    end
+    fragment.to_html.html_safe
   end
 
   # Up to three overlapping people, then "+N". The names sit in the text beside it, so the stack is decorative.

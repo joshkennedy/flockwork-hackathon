@@ -151,6 +151,23 @@ class CommentsMentionsFollowsTest < ActionDispatch::IntegrationTest
     assert_not task.follows.exists?(person: non_member)
   end
 
+  test "a name that closes the bracket early cannot spoof a mention token" do
+    sign_in_as_volunteer
+    project = projects(:community_meal)
+    task = project.tasks.create!(title: "Count the chairs")
+    spoofed = people(:other_leader)
+
+    post project_comments_path(project), params: {
+      comment: {
+        commentable_type: "Task",
+        commentable_id: task.id,
+        body: "@[Vera](person:0](person:#{spoofed.id})"
+      }
+    }
+
+    assert_not task.comments.last!.mentions.exists?(person: spoofed)
+  end
+
   test "commenting and mentioning the author creates one idempotent Follow" do
     member = sign_in_as_volunteer
     project = projects(:community_meal)
