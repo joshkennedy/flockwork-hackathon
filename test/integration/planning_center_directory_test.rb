@@ -115,6 +115,35 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
     assert_equal "changed@example.test", result.fetch(:skipped_email_changes).sole.fetch(:skipped_email)
   end
 
+  test "sync protects a Person email after invitation sign-in" do
+    organization = organizations(:st_example)
+    invitee = people(:other_volunteer)
+    invitee.update!(external_source: "planning_center", external_id: "pco-invitee-1")
+    invitation = organization.invitations.create!(
+      project: projects(:community_meal),
+      person: invitee,
+      inviter: people(:leader),
+      role: :volunteer
+    )
+
+    get invitation_path(invitation.generate_token_for(:access))
+    assert_response :success
+
+    result = DirectorySync.new(organization, source_for(
+      external_id: "pco-invitee-1",
+      name: "Vera Volunteer",
+      email: "attacker@example.test",
+      phone: "+12025550105"
+    )).call
+
+    assert_equal "vera@st-example.test", invitee.reload.email
+    assert_equal [ {
+      person_name: "Vera Volunteer",
+      current_email: "vera@st-example.test",
+      skipped_email: "attacker@example.test"
+    } ], result.fetch(:skipped_email_changes)
+  end
+
   test "sync does not replace an Admin sign-in email" do
     organization = organizations(:st_example)
     admin = people(:admin)
