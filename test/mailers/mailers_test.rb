@@ -72,6 +72,17 @@ class MailersTest < ActionMailer::TestCase
     assert_match "http://example.com/projects/#{projects(:community_meal).id}", mail.text_part.body.decoded
   end
 
+  test "a notification email is skipped when the recipient cannot see the Project" do
+    project = projects(:community_meal)
+    recipient = people(:other_volunteer)
+    task = project.tasks.create!(title: "Audit task")
+    notification = recipient.notifications.create!(kind: "task_assigned", notifiable: task, actor: people(:leader))
+
+    assert_no_emails do
+      NotificationMailer.with(notification: notification).notification_email.deliver_now
+    end
+  end
+
   private
     def notification_email(kind, notifiable, actor: nil)
       notification = people(:volunteer).notifications.create!(kind: kind, notifiable: notifiable, actor: actor)

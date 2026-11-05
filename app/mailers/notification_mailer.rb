@@ -4,6 +4,7 @@ class NotificationMailer < ApplicationMailer
     return unless @notification.recipient.email.present? && @notification.recipient.email_for?(@notification.kind)
 
     @project = @notification.project
+    return unless Policy.can?(@notification.recipient, :show, @project)
 
     mail to: @notification.recipient.email, subject: @notification.message
   end

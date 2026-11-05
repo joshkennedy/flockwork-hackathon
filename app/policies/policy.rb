@@ -318,7 +318,16 @@ module Policy
   private :note_can?
 
   def visible_notifications(person)
-    person.organization.notifications.in_app.where(recipient_id: person.id)
+    notifications = person.organization.notifications.in_app.where(recipient_id: person.id)
+    visible_ids = notifications.includes(:notifiable).filter_map do |notification|
+      visible = if notification.invitation?
+        can?(person, :respond, notification.notifiable)
+      else
+        can?(person, :show, notification.project)
+      end
+      notification.id if visible
+    end
+    notifications.where(id: visible_ids)
   end
 
   def notification_can?(person, action, notification)

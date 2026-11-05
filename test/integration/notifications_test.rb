@@ -346,6 +346,7 @@ class NotificationsTest < ActionDispatch::IntegrationTest
     person = sign_in_as_volunteer
     project = projects(:community_meal)
     welcome_team = project.organization.projects.create!(name: "Welcome Team", owner: people(:leader))
+    welcome_team.memberships.create!(person: person, role: :volunteer)
     assigned = Notifier.notify(
       recipient: person,
       kind: "task_assigned",
