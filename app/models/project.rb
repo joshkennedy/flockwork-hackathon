@@ -201,7 +201,8 @@ class Project < ApplicationRecord
 
     def revoke_with_banner_rotation!(attributes)
       old_blob = banner.blob if banner.attached?
-      new_blob = copy_banner_blob(old_blob) if old_blob
+      # An analyzed banner with no dimensions can't be shown or validated again, so it is dropped instead of copied.
+      new_blob = copy_banner_blob(old_blob) if old_blob && !(old_blob.analyzed? && old_blob.metadata.values_at("width", "height").any?(&:blank?))
       committed = false
 
       self.class.transaction do
@@ -215,7 +216,7 @@ class Project < ApplicationRecord
         end
         transaction.after_rollback { new_blob.purge } if new_blob
 
-        banner.attach(new_blob) if new_blob
+        new_blob ? banner.attach(new_blob) : banner.detach
         update!(attributes)
       end
     rescue StandardError
