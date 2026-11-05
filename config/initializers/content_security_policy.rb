@@ -7,7 +7,8 @@ Rails.application.configure do
     policy.default_src :self
     policy.base_uri    :self
     policy.object_src  :none
-    policy.script_src  :self
+    # 'wasm-unsafe-eval' lets pdf.js instantiate its JPEG2000/JBIG2 decoders; it does not allow eval().
+    policy.script_src  :self, :wasm_unsafe_eval
     policy.style_src   :self, :unsafe_inline, "https://fonts.googleapis.com"
     policy.font_src    :self, :data, "https://fonts.gstatic.com"
     policy.img_src     :self, :data, :blob

@@ -1,7 +1,7 @@
 class DocItemsController < ApplicationController
   before_action :set_project
   before_action :set_doc_item, only: %i[ show edit update destroy download ]
-  before_action :authorize_manage_docs, except: :download
+  before_action :authorize_manage_docs, except: %i[ show download ]
   before_action :authorize_update_doc_item, only: %i[ edit update ]
   before_action :authorize_download, only: %i[ show download ]
   before_action :authorize_destroy_doc_item, only: :destroy

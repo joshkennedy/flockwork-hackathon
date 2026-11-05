@@ -5,7 +5,7 @@ import * as pdfjs from "pdfjs-dist"
 // and parsed in pdf.js's own worker; the browser never renders them inline.
 export default class extends Controller {
   static targets = ["pages", "current", "total", "zoom", "status"]
-  static values = { url: String, worker: String, scale: { type: Number, default: 1 } }
+  static values = { url: String, worker: String, assets: String, scale: { type: Number, default: 1 } }
 
   async connect() {
     this.page = 1
@@ -14,7 +14,12 @@ export default class extends Controller {
       const response = await fetch(this.urlValue, { credentials: "same-origin" })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.arrayBuffer()
-      this.pdf = await pdfjs.getDocument({ data, isEvalSupported: false }).promise
+      this.pdf = await pdfjs.getDocument({
+        data,
+        isEvalSupported: false,
+        wasmUrl: `${this.assetsValue}/wasm/`,
+        standardFontDataUrl: `${this.assetsValue}/standard_fonts/`
+      }).promise
       this.totalTarget.textContent = this.pdf.numPages
       this.statusTarget.hidden = true
       await this.render()

@@ -7,7 +7,8 @@ class ContentSecurityPolicyTest < ActionDispatch::IntegrationTest
     policy = response.headers["Content-Security-Policy"]
     nonce = policy[/script-src [^;]*'nonce-([^']+)'/, 1]
     assert nonce.present?
-    assert_includes policy, "script-src 'self' 'nonce-#{nonce}'"
+    assert_includes policy, "script-src 'self' 'wasm-unsafe-eval' 'nonce-#{nonce}'"
+    assert_not_includes policy, "'unsafe-eval'"
     assert_not_includes policy[/script-src [^;]*/], "unsafe-inline"
     assert_includes policy, "object-src 'none'"
     assert_includes policy, "connect-src 'self' wss://api.x.ai"

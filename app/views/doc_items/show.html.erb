@@ -12,6 +12,7 @@
       <div data-controller="doc-viewer"
            data-doc-viewer-kind-value="pdf"
            data-doc-viewer-url-value="<%= download_project_doc_item_path(@project, @doc_item) %>"
+           data-doc-viewer-assets-value="/pdfjs/6.4.299"
            data-doc-viewer-worker-value="<%= asset_path("pdf.worker.min.js") %>">
         <div class="mb-3 flex flex-wrap items-center gap-2" role="toolbar" aria-label="PDF controls">
           <button type="button" class="btn btn-secondary btn-sm" data-action="doc-viewer#previous" aria-label="Previous page">Previous</button>

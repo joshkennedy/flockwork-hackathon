@@ -22,6 +22,22 @@ class ArchivedProjectReadOnlyTest < ActionDispatch::IntegrationTest
     assert_nil @task.reload.assignee_id
   end
 
+  test "a Team member of an archived Project can still open and download a doc file" do
+    author = @project.memberships.first.person
+    item = @project.doc_items.create!(
+      kind: "file", title: "Archived Handbook", author: author,
+      file: { io: file_fixture("handbook.pdf").open, filename: "handbook.pdf", content_type: "application/pdf" }
+    )
+    sign_in_as_volunteer
+
+    get project_doc_item_path(@project, item)
+    assert_response :success
+    assert_select "a[href=?]", download_project_doc_item_path(@project, item), text: "Download"
+
+    get download_project_doc_item_path(@project, item)
+    assert_response :success
+  end
+
   test "a non-Owner Leader cannot create Tasks on an archived Project" do
     sign_in_as(:other_leader)
 
