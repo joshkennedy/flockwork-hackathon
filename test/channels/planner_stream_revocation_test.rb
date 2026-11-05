@@ -126,7 +126,7 @@ class PlannerStreamRevocationTest < ActionDispatch::IntegrationTest
 
   private
     def subscribe(channel_class, person, signed_stream_name, live: false, delivery: false)
-      connection = ActionCable::Channel::ConnectionStub.new(current_person: person)
+      connection = ActionCable::Channel::ConnectionStub.new(current_session: person.sessions.order(:id).last)
       subscription = channel_class.new(
         connection,
         "planner-stream-revocation-test",
