@@ -63,6 +63,44 @@ class CsvImportTest < ActionDispatch::IntegrationTest
     assert_select "p[role=alert]", text: "That file isn't a CSV with a name column."
   end
 
+  test "UTF-8 BOM does not break the name column" do
+    sign_in_as_admin
+    organization = organizations(:st_example)
+
+    upload_csv_bytes "\xEF\xBB\xBFname,email,phone\nBOM Person,bom@st-example.test,555-3003\n"
+
+    assert_response :success
+    assert_select "p", text: /1 created, 0 updated, 0 rejected/
+    assert organization.people.exists?(name: "BOM Person", email: "bom@st-example.test", phone: "555-3003")
+  end
+
+  test "oversized CSV is refused and changes nothing" do
+    sign_in_as_admin
+    organization = organizations(:st_example)
+
+    assert_no_difference -> { organization.people.count } do
+      upload_csv_bytes "name,email\n#{'x' * 1.megabyte},too-big@st-example.test\n"
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "p[role=alert]", text: "That CSV is too large."
+    assert_not organization.people.exists?(email: "too-big@st-example.test")
+  end
+
+  test "a CSV with too many rows is refused and changes nothing" do
+    sign_in_as_admin
+    organization = organizations(:st_example)
+    rows = (1..5_001).map { |n| "Person #{n},p#{n}@st-example.test\n" }.join
+
+    assert_no_difference -> { organization.people.count } do
+      upload_csv_bytes "name,email\n#{rows}"
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "p[role=alert]", text: "That CSV is too large."
+    assert_not organization.people.exists?(email: "p1@st-example.test")
+  end
+
   test "non-Admin gets 404 on CSV import" do
     sign_in_as_volunteer
 
@@ -78,5 +116,16 @@ class CsvImportTest < ActionDispatch::IntegrationTest
       post people_csv_import_path, params: {
         csv_file: fixture_file_upload(filename, "text/csv")
       }
+    end
+
+    def upload_csv_bytes(contents)
+      file = Tempfile.new([ "people-import", ".csv" ], binmode: true)
+      file.write(contents)
+      file.rewind
+      post people_csv_import_path, params: {
+        csv_file: Rack::Test::UploadedFile.new(file.path, "text/csv")
+      }
+    ensure
+      file.close!
     end
 end

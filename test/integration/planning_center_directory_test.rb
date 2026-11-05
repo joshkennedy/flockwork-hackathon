@@ -223,6 +223,36 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
     assert_select "h1", "Check your email"
   end
 
+  test "duplicate email across Planning Center records is recorded and shown" do
+    sign_in_as_admin
+    connect
+    organization = organizations(:st_example)
+    stub_request(:get, DirectorySources::PlanningCenter::PEOPLE_URL).to_return(
+      status: 200,
+      headers: { "Content-Type" => "application/json" },
+      body: JSON.generate(
+        data: [
+          remote_person("1001", "First Twin", "e1"),
+          remote_person("1002", "Second Twin", "e2")
+        ],
+        included: [
+          { type: "Email", id: "e1", attributes: { address: "twins@grace.example", primary: true } },
+          { type: "Email", id: "e2", attributes: { address: "twins@grace.example", primary: true } }
+        ],
+        links: {}
+      )
+    )
+
+    assert_no_difference -> { organization.people.count } do
+      perform_enqueued_jobs { post sync_planning_center_directory_path }
+    end
+
+    follow_redirect!
+    assert_select "p[role=alert]", text: "Validation failed: Email has already been taken"
+    assert_equal "Validation failed: Email has already been taken", organization.reload.pco_last_sync_error
+    assert_nil organization.pco_last_synced_at
+  end
+
   test "rejected credentials show a plain error and change no People" do
     sign_in_as_admin
     connect(app_id: "wrong", secret: "wrong")
@@ -269,5 +299,17 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
 
     def source_for(**attributes)
       StaticDirectorySource.new([ attributes ])
+    end
+
+    def remote_person(id, name, email_id)
+      {
+        type: "Person",
+        id:,
+        attributes: { name: },
+        relationships: {
+          emails: { data: [ { type: "Email", id: email_id } ] },
+          phone_numbers: { data: [] }
+        }
+      }
     end
 end

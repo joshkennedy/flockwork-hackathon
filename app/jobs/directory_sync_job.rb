@@ -11,7 +11,7 @@ class DirectorySyncJob < ApplicationJob
       pco_last_sync_result: result,
       pco_last_sync_error: nil
     )
-  rescue DirectorySources::Error => error
-    organization.update!(pco_last_sync_result: {}, pco_last_sync_error: error.message)
+  rescue DirectorySources::Error, ActiveRecord::RecordInvalid => error
+    organization.reload.update!(pco_last_sync_result: {}, pco_last_sync_error: error.message)
   end
 end

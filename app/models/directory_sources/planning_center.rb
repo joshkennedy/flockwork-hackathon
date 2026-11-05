@@ -5,6 +5,7 @@ require "set"
 module DirectorySources
   class PlanningCenter < Base
     PEOPLE_URL = "https://api.planningcenteronline.com/people/v2/people?include=emails,phone_numbers&per_page=100".freeze
+    MAX_PAGES = 50
 
     def initialize(app_id:, secret:, skills_field_id: nil)
       @app_id = app_id
@@ -18,8 +19,11 @@ module DirectorySources
       validate_skills_field! if skills_field_id
       next_url = PEOPLE_URL
       seen = Set.new
+      pages = 0
       while next_url
         raise Error, "Planning Center returned a repeated page. Nothing was changed." unless seen.add?(next_url)
+        pages += 1
+        raise Error, "Planning Center returned too many pages. Nothing was changed." if pages > MAX_PAGES
         response = get(next_url)
         document = JSON.parse(response.body)
         included = document.fetch("included", []).index_by { |resource| [ resource.fetch("type"), resource.fetch("id") ] }
@@ -88,8 +92,11 @@ module DirectorySources
         next_url = "https://api.planningcenteronline.com/people/v2/people/#{person_id}/field_data?#{query}"
         seen = Set.new
         values = []
+        pages = 0
         while next_url
           raise Error, "Planning Center returned a repeated page. Nothing was changed." unless seen.add?(next_url)
+          pages += 1
+          raise Error, "Planning Center returned too many pages. Nothing was changed." if pages > MAX_PAGES
           document = JSON.parse(get(next_url).body)
           document.fetch("data").each do |datum|
             next unless datum.dig("relationships", "field_definition", "data", "id") == skills_field_id
