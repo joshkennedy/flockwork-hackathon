@@ -29,4 +29,14 @@ class ProjectBannerTest < ActiveSupport::TestCase
     assert_not @project.valid?
     assert @project.errors.of_kind?(:banner_focus_x, :less_than_or_equal_to)
   end
+
+  test "a one pixel wide photo never produces a zero-size crop, and its variants process" do
+    png = Vips::Image.black(1, 1).write_to_buffer(".png")
+    @project.banner.attach(io: StringIO.new(png), filename: "dot.png", content_type: "image/png")
+    @project.banner.blob.analyze
+
+    assert_equal [ 0, 0, 1, 1 ], @project.banner_crop(:wide)
+    assert_equal [ 0, 0, 1, 1 ], @project.banner_crop(:phone)
+    assert_nothing_raised { @project.banner_variants.each(&:processed) }
+  end
 end
