@@ -20,6 +20,11 @@ class SmsNotificationJob < ApplicationJob
         return
       end
 
+      unless DemoOutboundLimit.allow?(recipient.organization)
+        notification.update!(sms_status: "cancelled", sms_payload: {})
+        return
+      end
+
       # The saved payload and key survive a crash after Sendly accepts the request.
       response = Messaging::Sendly.new.send_sms(
         to: notification.sms_payload.fetch("to"), text: notification.sms_payload.fetch("text"),

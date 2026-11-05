@@ -3,12 +3,18 @@ class InvitationsController < ApplicationController
   before_action :set_show_invitation, only: :show
   rate_limit to: 3, within: 15.minutes, by: -> { params[:token] }, name: "invitation_sign_in",
     only: :show, with: -> { render :confirm }
+  rate_limit to: 5, within: 10.minutes, by: -> { Current.session.id }, name: "demo_session",
+    scope: "demo_outbound_actions", only: :create, if: :demo_organization?
+  rate_limit to: 20, within: 10.minutes, by: -> { request.remote_ip }, name: "demo_ip",
+    scope: "demo_outbound_actions", only: :create, if: :demo_organization?
   before_action :set_response_invitation, only: %i[ accept decline ]
 
   def show
     resume_session
     unless Current.person == @invitation.person
-      SignInMailer.sign_in_link(@invitation.person).deliver_later
+      if DemoOutboundLimit.allow?(@invitation.person.organization)
+        SignInMailer.sign_in_link(@invitation.person).deliver_later
+      end
       return render :confirm
     end
 

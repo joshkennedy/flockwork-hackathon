@@ -16,7 +16,9 @@ class SignInRequestsController < ApplicationController
   def create
     email = params[:email].to_s
     person = Person.where(email:).order(:id).first if email.present?
-    SignInMailer.sign_in_link(person).deliver_later if person&.can_sign_in?
+    if person&.can_sign_in? && DemoOutboundLimit.allow?(person.organization)
+      SignInMailer.sign_in_link(person).deliver_later
+    end
 
     redirect_to check_email_path, status: :see_other
   rescue ActiveJob::EnqueueError

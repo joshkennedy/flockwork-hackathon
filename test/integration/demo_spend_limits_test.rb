@@ -229,15 +229,272 @@ class DemoSpendLimitsTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "a demo session can create only five Invitations in ten minutes" do
+    post demo_session_path(role: "admin")
+    organization = organizations(:grace_fellowship)
+    project = organization.projects.find_by!(name: "Church Workday")
+    invitees = organization.people.where.not(email: nil)
+      .where.not(id: project.memberships.select(:person_id))
+      .where.not(id: project.invitations.pending.select(:person_id))
+      .order(:id).limit(6).to_a
+
+    with_rate_limit_store do
+      invitees.first(5).each do |invitee|
+        post project_invitations_path(project), params: {
+          invitation: { person_id: invitee.id, role: "volunteer" }
+        }
+        assert_response :redirect
+      end
+
+      assert_no_difference -> { organization.invitations.count } do
+        post project_invitations_path(project), params: {
+          invitation: { person_id: invitees.fetch(5).id, role: "volunteer" }
+        }
+      end
+      assert_response :too_many_requests
+    end
+
+    assert_equal 5, organization.invitations.where(project:, person: invitees).count
+  end
+
+  test "a demo Person signed in by magic link can create only five Invitations in ten minutes" do
+    admin = sign_in_as(people(:grace_admin))
+    organization = admin.organization
+    project = organization.projects.find_by!(name: "Church Workday")
+    invitees = organization.people.where.not(email: nil)
+      .where.not(id: project.memberships.select(:person_id))
+      .where.not(id: project.invitations.pending.select(:person_id))
+      .order(:id).limit(6).to_a
+
+    with_rate_limit_store do
+      invitees.first(5).each do |invitee|
+        post project_invitations_path(project), params: {
+          invitation: { person_id: invitee.id, role: "volunteer" }
+        }
+        assert_response :redirect
+      end
+
+      assert_no_difference -> { organization.invitations.count } do
+        post project_invitations_path(project), params: {
+          invitation: { person_id: invitees.fetch(5).id, role: "volunteer" }
+        }
+      end
+      assert_response :too_many_requests
+    end
+
+    assert_equal 5, organization.invitations.where(project:, person: invitees).count
+  end
+
+  test "a demo session can create only five People in ten minutes" do
+    post demo_session_path(role: "admin")
+    organization = organizations(:grace_fellowship)
+
+    with_rate_limit_store do
+      5.times do |index|
+        post people_path, params: {
+          person: { name: "Demo Person #{index + 1}", email: "demo-person-#{index + 1}@example.test" }
+        }
+        assert_response :redirect
+      end
+
+      assert_no_difference -> { organization.people.count } do
+        post people_path, params: {
+          person: { name: "Demo Person 6", email: "demo-person-6@example.test" }
+        }
+      end
+      assert_response :too_many_requests
+    end
+
+    assert_equal 5, organization.people.where("email LIKE ?", "demo-person-%@example.test").count
+  end
+
+  test "a demo session can change its phone only five times in ten minutes" do
+    post demo_session_path(role: "volunteer")
+    volunteer = people(:grace_volunteer)
+
+    with_rate_limit_store do
+      5.times do |index|
+        patch profile_path, params: { person: { phone: "+1555555010#{index}" } }
+        assert_response :redirect
+      end
+
+      patch profile_path, params: { person: { phone: "+15555550105" } }
+      assert_response :too_many_requests
+    end
+
+    assert_equal "+15555550104", volunteer.reload.phone
+  end
+
+  test "new demo sessions cannot evade the shared IP cap" do
+    organization = organizations(:grace_fellowship)
+
+    with_rate_limit_store do
+      4.times do |session_index|
+        post demo_session_path(role: "admin")
+        5.times do |request_index|
+          number = session_index * 5 + request_index + 1
+          post people_path, params: {
+            person: { name: "IP Person #{number}", email: "ip-person-#{number}@example.test" }
+          }
+          assert_response :redirect
+        end
+      end
+
+      post demo_session_path(role: "admin")
+      assert_no_difference -> { organization.people.count } do
+        post people_path, params: {
+          person: { name: "IP Person 21", email: "ip-person-21@example.test" }
+        }
+      end
+      assert_response :too_many_requests
+    end
+
+    assert_equal 20, organization.people.where("email LIKE ?", "ip-person-%@example.test").count
+  end
+
+  test "demo outbound beyond the Organization cap stays in app" do
+    post demo_session_path(role: "admin")
+    organization = organizations(:grace_fellowship)
+    admin = people(:grace_admin)
+    project = organization.projects.find_by!(name: "Church Workday")
+    leader = people(:grace_leader)
+    task = project.tasks.create!(title: "Prepare welcome table", assignee: leader)
+    invitee = organization.people.where.not(email: nil)
+      .where.not(id: admin.id)
+      .where.not(id: project.memberships.select(:person_id))
+      .where.not(id: project.invitations.pending.select(:person_id))
+      .order(:id).first!
+    invitee.update!(phone: "+15555550100", sms_preferences: { invitation: true })
+    sms_request = stub_request(:post, Messaging::Sendly::ENDPOINT.to_s)
+      .to_return(status: 201, body: { id: "msg_demo", status: "delivered", simulated: true }.to_json)
+
+    with_sendly_api_key do
+      with_rate_limit_store do
+        20.times do
+          Notifier.notify(recipient: leader, kind: "task_assigned", notifiable: task, actor: admin)
+        end
+        clear_enqueued_jobs
+        ActionMailer::Base.deliveries.clear
+
+        assert_difference -> { invitee.notifications.in_app.count }, 1 do
+          perform_enqueued_jobs do
+            post project_invitations_path(project), params: {
+              invitation: { person_id: invitee.id, role: "volunteer" }
+            }
+          end
+        end
+      end
+    end
+
+    assert_response :redirect
+    assert_empty ActionMailer::Base.deliveries
+    assert_not_requested sms_request
+    notification = invitee.notifications.invitation.order(:id).last!
+    assert_equal "cancelled", notification.sms_status
+    assert_empty notification.sms_payload
+  end
+
+  test "a demo Invitation link sends no sign-in email after the Organization cap" do
+    organization = organizations(:grace_fellowship)
+    inviter = people(:grace_admin)
+    project = organization.projects.find_by!(name: "Church Workday")
+    invitee = organization.people.create!(name: "Demo Invitee", email: "demo-invitee@example.test")
+    invitation = organization.invitations.create!(
+      project:,
+      person: invitee,
+      inviter:,
+      role: "volunteer"
+    )
+    token = invitation.generate_token_for(:access)
+    reset!
+
+    with_rate_limit_store do
+      20.times { assert DemoOutboundLimit.allow?(organization) }
+
+      assert_no_enqueued_jobs only: ActionMailer::MailDeliveryJob do
+        get invitation_path(token)
+      end
+    end
+
+    assert_response :success
+    assert_select "h1", "Check your inbox"
+  end
+
+  test "a demo Person receives no sign-in email after the Organization cap" do
+    organization = organizations(:grace_fellowship)
+    person = people(:grace_leader)
+
+    with_rate_limit_store do
+      20.times { assert DemoOutboundLimit.allow?(organization) }
+
+      assert_no_enqueued_jobs only: ActionMailer::MailDeliveryJob do
+        post sign_in_requests_path, params: { email: person.email }
+      end
+    end
+
+    assert_redirected_to check_email_path, status: :see_other
+    follow_redirect!
+    assert_select "h1", "Check your email"
+  end
+
+  test "a non-demo Person still receives a sign-in email" do
+    person = people(:leader)
+
+    with_rate_limit_store do
+      assert_enqueued_email_with SignInMailer, :sign_in_link, args: [ person ] do
+        post sign_in_requests_path, params: { email: person.email }
+      end
+    end
+
+    assert_redirected_to check_email_path, status: :see_other
+  end
+
+  test "non-demo Invitation creation remains unlimited" do
+    leader = sign_in_as_leader
+    project = projects(:community_meal)
+    invitees = 6.times.map do |index|
+      leader.organization.people.create!(
+        name: "Invitee #{index + 1}", email: "invitee-#{index + 1}@st-example.test"
+      )
+    end
+
+    with_rate_limit_store do
+      invitees.each do |invitee|
+        post project_invitations_path(project), params: {
+          invitation: { person_id: invitee.id, role: "volunteer" }
+        }
+        assert_response :redirect
+      end
+    end
+
+    assert_equal 6, leader.organization.invitations.where(project:, person: invitees).count
+  end
+
   private
     def with_rate_limit_store
       store = ActiveSupport::Cache::MemoryStore.new
       increment = ->(*args, **kwargs) { store.increment(*args, **kwargs) }
-      stub_method(PlannerSessionsController.cache_store, :increment, increment) do
-        stub_method(ProjectsController.cache_store, :increment, increment) do
-          yield
+      stub_method(Rails, :cache, -> { store }) do
+        stub_method(PlannerSessionsController.cache_store, :increment, increment) do
+          stub_method(ProjectsController.cache_store, :increment, increment) do
+            stub_method(InvitationsController.cache_store, :increment, increment) do
+              stub_method(PeopleController.cache_store, :increment, increment) do
+                stub_method(ProfilesController.cache_store, :increment, increment) do
+                  yield
+                end
+              end
+            end
+          end
         end
       end
+    end
+
+    def with_sendly_api_key
+      previous_key = ENV["SENDLY_API_KEY"]
+      ENV["SENDLY_API_KEY"] = "sandbox"
+      yield
+    ensure
+      previous_key.nil? ? ENV.delete("SENDLY_API_KEY") : ENV["SENDLY_API_KEY"] = previous_key
     end
 
     def planner_response(card: nil, finished: false, added: [], removed_ids: [])

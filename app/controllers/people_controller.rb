@@ -1,5 +1,9 @@
 class PeopleController < ApplicationController
   before_action :authorize_people_management
+  rate_limit to: 5, within: 10.minutes, by: -> { Current.session.id }, name: "demo_session",
+    scope: "demo_outbound_actions", only: :create, if: :demo_organization?
+  rate_limit to: 20, within: 10.minutes, by: -> { request.remote_ip }, name: "demo_ip",
+    scope: "demo_outbound_actions", only: :create, if: :demo_organization?
 
   # Quick filters on the directory: each is a Person scope, and its count is for the whole church.
   FILTERS = {
