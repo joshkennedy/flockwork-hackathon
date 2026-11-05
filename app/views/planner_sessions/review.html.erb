@@ -17,6 +17,14 @@
             <% if kept %><%= icon(:kept, class: "kept-check mt-0.5 text-sunlit") %><% end %>
             <span><%= Planner::SuggestionKinds.summary(suggestion) %></span>
           </p>
+          <ul class="suggestion-params mt-2 text-label text-ink-2">
+            <% Planner::SuggestionKinds.fields_for(suggestion.fetch("kind")).each do |name, definition| %>
+              <% value = suggestion.fetch("fields")[name] %>
+              <% value = value.map { |column| "#{column["name"]} (#{column["type"]})" }.join(", ") if value.is_a?(Array) %>
+              <% next if value.blank? && value != 0 %>
+              <li><%= definition.fetch(:label) %>: <%= value %></li>
+            <% end %>
+          </ul>
           <p class="mt-2 text-label text-ink-2"><%= Planner::SuggestionKinds.label(suggestion.fetch("kind")).singularize %> Suggestion · Currently <%= suggestion.fetch("status").humanize.downcase %></p>
           <details class="mt-2" <%= "open" unless kept %>>
             <%= disclosure_summary(kept ? "Edit Kept Suggestion" : "Edit Suggestion", class: "text-label text-ink-2") %>

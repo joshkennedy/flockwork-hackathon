@@ -507,6 +507,52 @@ class PlannerTest < ActionDispatch::IntegrationTest
     assert_equal "kept", planner_session.reload.suggestions.first.fetch("status")
   end
 
+  test "accept rejects a multi-skill name" do
+    assert_ask_accept_rejected(suggestion("skill", "name" => "Cooking, Driving, Welding"), /Skill is invalid/) do |project|
+      -> { project.skills_needed.size }
+    end
+  end
+
+  test "accept rejects an unknown list column type" do
+    list = suggestion("list", "name" => "Stations", "columns" => [ { "name" => "Station", "type" => "bogus" } ])
+    assert_ask_accept_rejected(list, /Columns are invalid/) { |project| -> { project.lists.count } }
+  end
+
+  test "an enable_tool Suggestion with an unknown tool is dropped and review still renders" do
+    project = projects(:community_meal)
+    Rails.configuration.x.planner_provider = Planner::Providers::Fake.new([
+      planner_response(finished: true, added: [
+        suggestion("enable_tool", "tool" => "bogus"),
+        task_suggestion("Confirm the serving plan", "Review the order of service.")
+      ])
+    ])
+    sign_in_as_leader
+    post project_planner_sessions_path(project), params: { planner_session: { description: "Plan the meal." } }
+    planner_session = project.planner_sessions.last!
+
+    assert_equal [ "task" ], planner_session.suggestions.pluck("kind")
+    get review_project_planner_session_path(project, planner_session)
+    assert_response :success
+  end
+
+  test "review shows each Suggestion's parameters" do
+    project = projects(:community_meal)
+    Rails.configuration.x.planner_provider = Planner::Providers::Fake.new([
+      planner_response(finished: true, added: [
+        task_suggestion("Confirm the serving plan", "Review the order of service.", due_in_days: 3),
+        suggestion("list", "name" => "Stations", "columns" => [ { "name" => "Station", "type" => "text" } ])
+      ])
+    ])
+    sign_in_as_leader
+    post project_planner_sessions_path(project), params: { planner_session: { description: "Plan the meal." } }
+
+    get review_project_planner_session_path(project, project.planner_sessions.last!)
+
+    assert_select ".suggestion-params", text: /Due in days: 3/
+    assert_select ".suggestion-params", text: /Details: Review the order of service\./
+    assert_select ".suggestion-params", text: /Columns: Station \(text\)/
+  end
+
   test "accept creates every Suggestion kind with literal values and enables matching Tools" do
     project = projects(:community_meal)
     Rails.configuration.x.planner_provider = Planner::Providers::Fake.new([
@@ -743,6 +789,22 @@ class PlannerTest < ActionDispatch::IntegrationTest
   end
 
   private
+    def assert_ask_accept_rejected(added, message)
+      project = projects(:community_meal)
+      Rails.configuration.x.planner_provider = Planner::Providers::Fake.new([ planner_response(finished: true, added: [ added ]) ])
+      sign_in_as_leader
+      post project_planner_sessions_path(project), params: { planner_session: { description: "Plan the meal." } }
+      planner_session = project.planner_sessions.last!
+
+      assert_no_difference yield(project) do
+        post accept_project_planner_session_path(project, planner_session), params: { mode: "all" }
+      end
+
+      assert_redirected_to review_project_planner_session_path(project, planner_session)
+      assert_predicate planner_session.reload, :reviewing?
+      assert_match message, flash[:alert]
+    end
+
     def planner_response(card: nil, finished: false, added: [], removed_ids: [])
       Planner::Response.new(card:, finished:, added:, removed_ids:)
     end

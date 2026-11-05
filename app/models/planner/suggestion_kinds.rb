@@ -282,10 +282,21 @@ module Planner
 
     def validate_fields!(kind, fields)
       missing = required_field_names(kind).reject { |name| field_present?(fields[name]) }
-      return if missing.empty?
+      unless missing.empty?
+        kind_label = KINDS.fetch(kind).fetch(:label)
+        raise ArgumentError, "#{kind_label} suggestion is missing #{missing.to_sentence}"
+      end
 
-      kind_label = KINDS.fetch(kind).fetch(:label)
-      raise ArgumentError, "#{kind_label} suggestion is missing #{missing.to_sentence}"
+      invalid = invalid_field_messages(kind, fields)
+      raise ArgumentError, invalid.to_sentence if invalid.any?
+    end
+
+    # Same checks as PendingItems for the kinds both flows share, so ask-mode can't store what build-as-you-go rejects.
+    def invalid_field_messages(kind, fields)
+      messages = PendingItems.raw_field_errors(kind, fields)
+      messages << "Skill is invalid" if kind == "skill" && !Skills.normalize(fields["name"]).one?
+      messages << "Columns are invalid" if kind == "list" && !PendingItems.valid_columns?(fields["columns"])
+      messages
     end
 
     def required_field_names(kind)
@@ -350,7 +361,7 @@ module Planner
       schema[:type] = (schema[:type] - [ "null" ]).sole if schema[:type].is_a?(Array)
     end
 
-    private_class_method :validate_fields!, :required_field_names, :nullable_field_schema?, :field_present?,
+    private_class_method :validate_fields!, :required_field_names, :invalid_field_messages, :nullable_field_schema?, :field_present?,
       :merged_field_properties, :slim_provider_schema, :scrub_grammar_bloat!, :make_scalars_non_null!
   end
 end
