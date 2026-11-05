@@ -78,6 +78,44 @@ class ProjectBannersTest < ActionDispatch::IntegrationTest
     file&.close!
   end
 
+  test "an 11 MB upload with valid dimensions is refused without creating a blob" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    file = Tempfile.new([ "eleven-megabyte", ".png" ], binmode: true)
+    header = png_bytes_with_declared_dimensions(800, 400, template: file_fixture("banner_small.png").read)
+    file.write(header)
+    file.write("\0".b * (11.megabytes - header.bytesize))
+    file.rewind
+
+    assert_no_difference "ActiveStorage::Blob.count" do
+      patch project_banner_path(project), params: { project: { banner: Rack::Test::UploadedFile.new(file.path, "image/png") } }
+    end
+
+    assert_redirected_to project_path(project)
+    assert_match "must be 10 MB or smaller", flash[:alert]
+    assert_not project.reload.banner.attached?
+  ensure
+    file&.close!
+  end
+
+  test "a non-image upload named banner.png is refused without creating a blob" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    file = Tempfile.new([ "banner", ".png" ], binmode: true)
+    file.write("plain text, not an image")
+    file.rewind
+
+    assert_no_difference "ActiveStorage::Blob.count" do
+      patch project_banner_path(project), params: { project: { banner: Rack::Test::UploadedFile.new(file.path, "image/png", original_filename: "banner.png") } }
+    end
+
+    assert_redirected_to project_path(project)
+    assert_match "must be a JPEG, PNG, WebP, or HEIC image", flash[:alert]
+    assert_not project.reload.banner.attached?
+  ensure
+    file&.close!
+  end
+
   test "people who cannot edit the Project get not found for every banner change" do
     project = projects(:community_meal)
     sign_in_as_volunteer
