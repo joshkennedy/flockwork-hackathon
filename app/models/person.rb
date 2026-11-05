@@ -8,6 +8,8 @@ class Person < ApplicationRecord
     "sms" => :sms_preferences
   }.freeze
 
+  belongs_to :added_by, class_name: "Person", optional: true
+
   has_many :sessions, dependent: :destroy
   has_many :memberships, dependent: :destroy
   has_many :comments, foreign_key: :author_id, inverse_of: :author, dependent: :destroy

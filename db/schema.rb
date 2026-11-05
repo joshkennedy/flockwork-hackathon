@@ -259,6 +259,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_630002) do
     t.jsonb "in_app_preferences", default: {}, null: false
     t.jsonb "sms_preferences", default: {}, null: false
     t.string "pending_email"
+    t.bigint "added_by_id"
+    t.index ["added_by_id"], name: "index_people_on_added_by_id"
     t.index ["name"], name: "index_people_search", opclass: :gin_trgm_ops, using: :gin
     t.index ["organization_id", "email"], name: "index_people_on_organization_id_and_email", unique: true, where: "(email IS NOT NULL)"
     t.index ["organization_id", "external_source", "external_id"], name: "index_people_on_organization_and_external_identity", unique: true, where: "(external_id IS NOT NULL)"
@@ -653,6 +655,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_630002) do
   add_foreign_key "notifications", "people", column: "actor_id"
   add_foreign_key "notifications", "people", column: "recipient_id"
   add_foreign_key "people", "organizations"
+  add_foreign_key "people", "people", column: "added_by_id", on_delete: :nullify
   add_foreign_key "planner_sessions", "people", column: "started_by_id"
   add_foreign_key "planner_sessions", "projects"
   add_foreign_key "project_debriefs", "projects"

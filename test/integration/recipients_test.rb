@@ -21,6 +21,24 @@ class RecipientsTest < ActionDispatch::IntegrationTest
     assert_select "section[aria-labelledby='tool-recipients'] li", text: /Rowan Recipient/
   end
 
+  test "a Person created through the recipients flow records the Leader and the directory says so" do
+    sign_in_as_leader
+    post project_recipients_path(@project), params: { person: { name: "Taylor Care", phone: "555-0100" } }
+    post project_recipients_path(@project), params: { person_id: people(:recipient).id }
+
+    assert_equal people(:leader), Person.find_by!(name: "Taylor Care").added_by
+    assert_nil people(:recipient).reload.added_by
+
+    delete session_path
+    sign_in_as_admin
+    get people_path
+
+    assert_select "turbo-frame#people-results li", text: /Taylor Care/ do
+      assert_select "p", text: "Added by Leo Leader"
+    end
+    assert_select "turbo-frame#people-results p", text: /Added by/, count: 1
+  end
+
   test "a Leader creates a new Person without email as a Recipient" do
     sign_in_as_leader
 

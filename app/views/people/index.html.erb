@@ -41,6 +41,9 @@
                 <%= person_chips(person, leader: @leader_ids.include?(person.id), away_until: @away_until[person.id], never_asked: @never_asked_ids.include?(person.id)) %>
               </p>
               <p class="mt-0.5 truncate text-meta text-ink-2"><%= serving_line(@serving_names.fetch(person.id, [])) %></p>
+              <% if person.added_by %>
+                <p class="mt-0.5 truncate text-meta text-ink-2">Added by <%= person.added_by.name %></p>
+              <% end %>
             </div>
           </li>
         <% end %>

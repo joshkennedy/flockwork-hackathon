@@ -52,7 +52,7 @@ class RecipientsController < ApplicationController
         return Current.organization.people.find(params[:person_id])
       end
 
-      person = Current.organization.people.build(new_person_params)
+      person = Current.organization.people.build(new_person_params.merge(added_by: Current.person))
       person.save ? person : person
     end
 

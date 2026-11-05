@@ -28,7 +28,7 @@ class PeopleController < ApplicationController
     matches = matches.where("? = ANY(people.skills)", @skill) if @skill
     scope = FILTERS.fetch(@filter).last
     matches = matches.public_send(scope) if scope
-    @people = matches.order(:name).to_a
+    @people = matches.includes(:added_by).order(:name).to_a
     load_directory_rows(@people.map(&:id))
   end
 
