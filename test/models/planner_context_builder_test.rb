@@ -24,7 +24,11 @@ class PlannerContextBuilderTest < ActiveSupport::TestCase
     planner_session = project.planner_sessions.create!(
       started_by: leader,
       description: "Have #{directory_name} lead the work.",
-      flow_version: 1
+      flow_version: 1,
+      current_card: {
+        "question" => "Should #{directory_name} coordinate?",
+        "options" => [ "Yes", "Ask #{directory_name} later" ]
+      }
     )
     fake = Planner::Providers::Fake.new([
       Planner::Response.new(
@@ -44,6 +48,41 @@ class PlannerContextBuilderTest < ActiveSupport::TestCase
       assert_not_includes fake.contexts.to_json, directory_name
       assert_not_includes builder.voice_instructions, directory_name
     end
+  end
+
+  test "build-as-you-go context redacts directory names before JSON encoding" do
+    organization = organizations(:st_example)
+    leader = people(:leader)
+    directory_name = "Ann \"Annie\" Lee"
+    organization.people.create!(name: directory_name)
+    project = organization.projects.create!(
+      name: "Quoted name project",
+      description: "Plan the work.",
+      owner: leader,
+      enabled_tools: [ "tasks" ]
+    )
+    project.memberships.create!(person: leader, role: :leader)
+    planner_session = project.planner_sessions.create!(
+      started_by: leader,
+      description: "Ask #{directory_name} to coordinate.",
+      flow_version: 3
+    )
+    fake = Planner::Providers::Fake.new([
+      Planner::Response.new(
+        card: nil,
+        finished: false,
+        added: [],
+        removed_ids: []
+      )
+    ])
+    Rails.configuration.x.planner_provider = fake
+    current_session = leader.sessions.create!(ip_address: "127.0.0.1", user_agent: "test")
+
+    Current.set(session: current_session) do
+      Planner::ContextBuilder.new(planner_session).ask
+    end
+
+    assert_equal "Ask [name] to coordinate.", fake.contexts.first.fetch("project_intent")
   end
 
   test "randomized Planner contexts never contain generated Person data" do
