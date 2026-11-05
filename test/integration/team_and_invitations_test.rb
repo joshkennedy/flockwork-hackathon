@@ -171,16 +171,16 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     token = invitation.generate_token_for(:access)
     delete session_path
     sign_in_as(invitee)
-    ActionMailer::Base.deliveries.clear
 
     with_invitation_rate_limit_store do
-      5.times { get invitation_path(token) }
+      assert_no_enqueued_jobs only: ActionMailer::MailDeliveryJob do
+        5.times { get invitation_path(token) }
+      end
     end
 
     assert_response :success
     assert_select "h1", project.name
     assert_select "button", "Accept"
-    assert_equal 0, ActionMailer::Base.deliveries.count
   end
 
 
