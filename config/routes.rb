@@ -121,6 +121,7 @@ Rails.application.routes.draw do
     end
   end
   resource :session, only: :destroy
+  post "webhooks/sendly", to: "webhooks/sendly#create", format: false
 
   get "sign_in/:token", to: "sign_in_links#show", as: :sign_in_link, format: false
   post "sign_in/:token", to: "sign_in_links#create", format: false

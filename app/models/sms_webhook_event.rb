@@ -1,0 +1,2 @@
+class SmsWebhookEvent < ApplicationRecord
+end

@@ -20,6 +20,11 @@ class SmsNotificationJob < ApplicationJob
         return
       end
 
+      if SmsOptOut.blocked?(recipient.phone)
+        notification.update!(sms_status: "cancelled", sms_payload: {})
+        return
+      end
+
       unless DemoOutboundLimit.allow?(recipient.organization)
         notification.update!(sms_status: "cancelled", sms_payload: {})
         return
