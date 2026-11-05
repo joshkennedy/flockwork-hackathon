@@ -28,7 +28,7 @@ class PlannerStreamChannel < Turbo::StreamsChannel
 
   private
     def authorized_planner_session
-      person = current_person.reload
+      person = current_session.person.reload
       project = person.organization.projects
         .joins(:planner_sessions)
         .find_by(planner_sessions: { id: params[:planner_session_id] })
