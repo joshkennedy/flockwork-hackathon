@@ -40,6 +40,11 @@ class Person < ApplicationRecord
     [ last_signed_in_at, email ]
   end
 
+  # Bound to pending_email, so confirming (which clears it) or asking for a different address voids the link.
+  generates_token_for :email_change, expires_in: 24.hours do
+    pending_email
+  end
+
   # Every typed word must appear somewhere in the name, so "ma lo" finds Maria Lopez.
   scope :matching, ->(query) {
     query.to_s.split.first(5).reduce(all) { |people, word| people.where("people.name ILIKE ?", "%#{sanitize_sql_like(word)}%") }
@@ -56,6 +61,7 @@ class Person < ApplicationRecord
   scope :never_asked, -> { where(admin: false).where.missing(:invitations, :memberships, :owned_projects, :recipients) }
 
   normalizes :email, with: ->(email) { email.strip.downcase.presence }
+  normalizes :pending_email, with: ->(email) { email.strip.downcase.presence }
   normalizes :phone, with: ->(phone) {
     value = phone.strip
     (value.start_with?("+") ? value.gsub(/[ ()\-.]/, "") : value).presence
@@ -67,6 +73,8 @@ class Person < ApplicationRecord
   validates :email, uniqueness: { scope: :organization_id }, allow_nil: true
   # The first Admin of a new Organization must be able to sign in, so they need an email then.
   validates :email, presence: true, on: :organization_creation
+  validates :pending_email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_nil: true
+  validate :pending_email_not_taken, if: :pending_email_changed?
   validate :cannot_remove_last_admin, if: :admin_changed?
   validate :sms_requires_international_phone
 
@@ -79,6 +87,15 @@ class Person < ApplicationRecord
     updated = where(id: person.id, last_signed_in_at: person.last_signed_in_at)
       .update_all(last_signed_in_at: Time.current)
     person if updated == 1
+  end
+
+  # An address typed by an Admin only becomes the sign-in email once its owner follows the mailed link.
+  # Uniqueness is checked again here, because someone else may have taken the address while the link sat unread.
+  def self.confirm_email_change(token)
+    person = find_by_token_for(:email_change, token)
+    return unless person
+
+    person if person.update(email: person.pending_email, pending_email: nil)
   end
 
   def can_sign_in?
@@ -103,6 +120,12 @@ class Person < ApplicationRecord
   end
 
   private
+    def pending_email_not_taken
+      return unless pending_email && organization.people.where.not(id:).exists?(email: pending_email)
+
+      errors.add(:email, "has already been taken")
+    end
+
     def sms_requires_international_phone
       return unless Notification::KINDS.keys.any? { |kind| notification_for?("sms", kind) }
       return if sms_phone?

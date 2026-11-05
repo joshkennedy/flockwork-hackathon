@@ -60,7 +60,11 @@ class PeopleController < ApplicationController
   def update
     @person = Current.organization.people.find(params[:id])
 
-    if @person.update(person_params)
+    @person.assign_attributes(person_params.except(:email))
+    send_confirmation = stage_email_change
+
+    if @person.save
+      SignInMailer.email_change(@person).deliver_later if send_confirmation
       flash[:notice] = "Saved #{@person.name}."
       # From the slideout, refresh the person page underneath; errors re-render inside the panel.
       # request_id: nil, because Turbo ignores a refresh stamped with the request that caused it.
@@ -114,6 +118,19 @@ class PeopleController < ApplicationController
     def load_notes
       @person_notes = Policy.visible_notes(Current.person, @person.notes).includes(:author).order(:created_at, :id)
       @note_visibilities = Policy.writable_note_visibilities(Current.person, @person)
+    end
+
+    # A new address is held as pending until its owner confirms by mail; blanking the email takes effect at once.
+    # Returns whether a confirmation mail is due once the Person saves.
+    def stage_email_change
+      return false unless params[:person]&.key?(:email)
+
+      address = Person.normalize_value_for(:email, params[:person][:email].to_s)
+      return false if address == @person.email
+
+      @person.pending_email = address
+      @person.email = nil if address.nil?
+      address.present?
     end
 
     def person_params
