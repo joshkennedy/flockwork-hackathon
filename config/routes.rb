@@ -86,7 +86,7 @@ Rails.application.routes.draw do
     end
     resource :message_draft, only: %i[ new create ]
     resources :messages, except: %i[ index show ]
-    resources :doc_items, except: %i[ index show ] do
+    resources :doc_items, except: %i[ index ] do
       member do
         get :download
       end

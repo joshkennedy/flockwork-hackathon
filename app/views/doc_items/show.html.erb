@@ -1,0 +1,37 @@
+<% content_for :title, @doc_item.title %>
+
+<div class="w-full max-w-4xl">
+  <%= page_header @doc_item.title do %>
+    <%= link_to "Back", project_path(@project), class: "btn btn-secondary" %>
+    <%= link_to "Download", download_project_doc_item_path(@project, @doc_item), class: "btn btn-primary" %>
+  <% end %>
+
+  <div class="mt-7">
+    <% case @viewer_kind %>
+    <% when :pdf %>
+      <div data-controller="doc-viewer"
+           data-doc-viewer-kind-value="pdf"
+           data-doc-viewer-url-value="<%= download_project_doc_item_path(@project, @doc_item) %>"
+           data-doc-viewer-assets-value="/pdfjs/6.4.299"
+           data-doc-viewer-worker-value="<%= asset_path("pdf.worker.min.js") %>">
+        <div class="mb-3 flex flex-wrap items-center gap-2" role="toolbar" aria-label="PDF controls">
+          <button type="button" class="btn btn-secondary btn-sm" data-action="doc-viewer#previous" aria-label="Previous page">Previous</button>
+          <span class="text-meta text-ink-2" aria-live="polite">Page <span data-doc-viewer-target="current">1</span> of <span data-doc-viewer-target="total">…</span></span>
+          <button type="button" class="btn btn-secondary btn-sm" data-action="doc-viewer#next" aria-label="Next page">Next</button>
+          <span class="mx-1 h-4 w-px bg-border" aria-hidden="true"></span>
+          <button type="button" class="btn btn-secondary btn-sm" data-action="doc-viewer#zoomOut" aria-label="Zoom out">Zoom out</button>
+          <span class="text-meta text-ink-2"><span data-doc-viewer-target="zoom">100</span>%</span>
+          <button type="button" class="btn btn-secondary btn-sm" data-action="doc-viewer#zoomIn" aria-label="Zoom in">Zoom in</button>
+        </div>
+        <p class="text-meta text-ink-2" data-doc-viewer-target="status" role="status">Loading…</p>
+        <div class="max-h-[75dvh] overflow-auto rounded-panel border border-border bg-frame p-3" data-doc-viewer-target="pages" tabindex="0" aria-label="Document pages"></div>
+      </div>
+    <% when :image %>
+      <div class="overflow-auto rounded-panel border border-border bg-frame p-3">
+        <%= image_tag download_project_doc_item_path(@project, @doc_item), alt: @doc_item.title, class: "mx-auto max-h-[75dvh] max-w-full" %>
+      </div>
+    <% else %>
+      <p class="text-ink-2">This file type can't be previewed here. Use Download to open it.</p>
+    <% end %>
+  </div>
+</div>
