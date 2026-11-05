@@ -4,6 +4,10 @@ class CsvImport
   Result = Data.define(:created_count, :updated_count, :rejected_rows, :fatal_error)
 
   MalformedFile = Class.new(StandardError)
+  TooLarge = Class.new(StandardError)
+
+  MAX_BYTES = 1.megabyte
+  MAX_ROWS = 5_000
 
   def initialize(organization, file_content)
     @organization = organization
@@ -17,16 +21,29 @@ class CsvImport
     end
   rescue MalformedFile
     Result.new(0, 0, [], "That file isn't a CSV with a name column.")
+  rescue TooLarge
+    Result.new(0, 0, [], "That CSV is too large.")
   end
 
   private
     def parse_table!
-      table = CSV.parse(@file_content, headers: true, header_converters: ->(header) { header&.strip&.downcase })
+      raise TooLarge if @file_content.bytesize > MAX_BYTES
+
+      table = CSV.parse(utf8_content, headers: true, header_converters: ->(header) { header&.delete_prefix("\uFEFF")&.strip&.downcase })
       raise MalformedFile unless table.headers&.include?("name")
+      raise TooLarge if table.size > MAX_ROWS
 
       table
     rescue CSV::MalformedCSVError
       raise MalformedFile
+    end
+
+    def utf8_content
+      content = @file_content.to_s.dup
+      content.force_encoding(Encoding::UTF_8)
+      raise MalformedFile unless content.valid_encoding?
+
+      content.delete_prefix("\uFEFF")
     end
 
     def import_rows(table)

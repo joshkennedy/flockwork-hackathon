@@ -28,6 +28,21 @@ class DirectorySources::PlanningCenterTest < ActiveSupport::TestCase
     assert_equal "Planning Center didn't accept those credentials.", error.message
   end
 
+  test "stops following pagination at a page cap" do
+    cap = 50
+    cap.times do |index|
+      page = index + 1
+      url = page == 1 ? DirectorySources::PlanningCenter::PEOPLE_URL : "#{people_root}?offset=#{index * 100}"
+      next_url = "#{people_root}?offset=#{page * 100}"
+      stub_people_page(url, id: page.to_s, next_url:)
+    end
+    stub_people_page("#{people_root}?offset=#{cap * 100}", id: (cap + 1).to_s, next_url: nil)
+
+    error = assert_raises(DirectorySources::Error) { source.each_person.to_a }
+
+    assert_equal "Planning Center returned too many pages. Nothing was changed.", error.message
+  end
+
   test "committed cassettes filter credentials" do
     cassette_contents = Rails.root.glob("test/vcr_cassettes/**/*.yml").map(&:read).join
 
@@ -41,6 +56,22 @@ class DirectorySources::PlanningCenterTest < ActiveSupport::TestCase
       DirectorySources::PlanningCenter.new(
         app_id: ENV.fetch("PCO_APP_ID", "cassette-app-id"),
         secret: ENV.fetch("PCO_SECRET", "cassette-secret")
+      )
+    end
+
+    def people_root
+      "https://api.planningcenteronline.com/people/v2/people"
+    end
+
+    def stub_people_page(url, id:, next_url:)
+      stub_request(:get, url).to_return(
+        status: 200,
+        headers: { "Content-Type" => "application/json" },
+        body: JSON.generate(
+          data: [ { type: "Person", id:, attributes: { name: "Paged Person #{id}" }, relationships: {} } ],
+          included: [],
+          links: { next: next_url }
+        )
       )
     end
 end

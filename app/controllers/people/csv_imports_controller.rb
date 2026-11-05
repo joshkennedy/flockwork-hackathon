@@ -7,6 +7,12 @@ module People
 
     def create
       file = params.require(:csv_file)
+      if file.size > CsvImport::MAX_BYTES
+        flash.now[:alert] = "That CSV is too large."
+        render :new, status: :unprocessable_entity
+        return
+      end
+
       @result = CsvImport.new(Current.organization, file.read).call
 
       if @result.fatal_error
