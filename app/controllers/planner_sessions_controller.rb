@@ -3,8 +3,10 @@ class PlannerSessionsController < ApplicationController
   before_action :authorize_plan
   before_action :set_planner_session, except: %i[ new create ]
   rescue_from Planner::StaleRevision, with: :stale_planning_action
-  rate_limit to: 10, within: 1.hour, by: -> { Current.person.id }, only: :create, with: :planner_create_rate_limited
-  rate_limit to: 10, within: 1.hour, by: -> { Current.person.id }, only: :voice_session, with: :voice_session_rate_limited
+  rate_limit to: 10, within: 1.hour, by: -> { Current.person.id }, name: "planner_spend", scope: :planner,
+    only: %i[ create retry_generation ], with: :planner_create_rate_limited
+  rate_limit to: 10, within: 1.hour, by: -> { Current.person.id }, name: "voice_session",
+    only: :voice_session, with: :voice_session_rate_limited
 
   def new
     @planner_session = @project.planner_sessions.build
