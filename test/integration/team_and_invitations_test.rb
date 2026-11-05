@@ -16,7 +16,17 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     assert_select "li", text: /Vic Volunteer.*Volunteer/
   end
 
-  test "a Leader searches the directory and sees why a Person without email cannot be invited" do
+  test "the invite directory returns at most 50 people" do
+    sign_in_as_leader
+    55.times { |n| projects(:community_meal).organization.people.create!(name: "Zed Extra #{n}", email: "zed#{n}@st-example.test") }
+
+    get team_project_path(projects(:community_meal)), params: { query: "Zed Extra" }
+
+    assert_response :success
+    assert_select "section[aria-labelledby='directory-heading'] li", count: 50
+  end
+
+  test "a Leader searches the directory and the Invite button stays disabled for a Person without email" do
     sign_in_as_leader
     project = projects(:community_meal)
 
@@ -24,7 +34,8 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "input[name='query'][value='Rowan']"
-    assert_select "li", text: /Rowan Recipient.*No email, can't be invited/
+    assert_select "li", text: /Rowan Recipient/
+    assert_select "section[aria-labelledby='directory-heading'] li", text: /No email|can't be invited/, count: 0
     assert_select "button[disabled]", "Invite"
 
     get team_project_path(project), params: { query: "Vic" }

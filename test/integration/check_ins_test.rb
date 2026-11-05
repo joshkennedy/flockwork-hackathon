@@ -27,6 +27,26 @@ class CheckInsTest < ActionDispatch::IntegrationTest
     assert_select "[data-overextended-person='Vic Volunteer']", 0
   end
 
+  test "a Leader cannot log a check-in for someone on none of the Projects they lead, and nothing is saved" do
+    sign_in_as_leader
+    stranger = people(:other_volunteer)
+
+    post person_check_ins_path(stranger), params: { check_in: { on: Date.current.iso8601 } }
+
+    assert_response :not_found
+    assert_equal 0, CheckIn.count
+  end
+
+  test "an Admin logs a check-in for someone on no Project" do
+    sign_in_as_admin
+    stranger = people(:other_volunteer)
+
+    post person_check_ins_path(stranger), params: { check_in: { on: Date.current.iso8601 } }
+
+    assert_redirected_to oversight_path
+    assert_equal [ stranger ], CheckIn.all.map(&:person)
+  end
+
   test "a volunteer cannot log a check-in, and nothing is saved" do
     sign_in_as_volunteer
 

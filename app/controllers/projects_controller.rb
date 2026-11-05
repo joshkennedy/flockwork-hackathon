@@ -184,6 +184,7 @@ class ProjectsController < ApplicationController
         .matching(params[:query])
         .where.not(id: member_ids)
         .order(:name)
+        .limit(50)
     end
 
     def start_planning(kind, description: nil)
