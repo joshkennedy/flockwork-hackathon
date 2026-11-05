@@ -257,6 +257,34 @@ class DemoSpendLimitsTest < ActionDispatch::IntegrationTest
     assert_equal 5, organization.invitations.where(project:, person: invitees).count
   end
 
+  test "a demo Person signed in by magic link can create only five Invitations in ten minutes" do
+    admin = sign_in_as(people(:grace_admin))
+    organization = admin.organization
+    project = organization.projects.find_by!(name: "Church Workday")
+    invitees = organization.people.where.not(email: nil)
+      .where.not(id: project.memberships.select(:person_id))
+      .where.not(id: project.invitations.pending.select(:person_id))
+      .order(:id).limit(6).to_a
+
+    with_rate_limit_store do
+      invitees.first(5).each do |invitee|
+        post project_invitations_path(project), params: {
+          invitation: { person_id: invitee.id, role: "volunteer" }
+        }
+        assert_response :redirect
+      end
+
+      assert_no_difference -> { organization.invitations.count } do
+        post project_invitations_path(project), params: {
+          invitation: { person_id: invitees.fetch(5).id, role: "volunteer" }
+        }
+      end
+      assert_response :too_many_requests
+    end
+
+    assert_equal 5, organization.invitations.where(project:, person: invitees).count
+  end
+
   test "a demo session can create only five People in ten minutes" do
     post demo_session_path(role: "admin")
     organization = organizations(:grace_fellowship)

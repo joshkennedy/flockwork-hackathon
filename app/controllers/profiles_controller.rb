@@ -46,7 +46,7 @@ class ProfilesController < ApplicationController
   private
     def demo_phone_change?
       person_params = params[:person]
-      demo_session? && person_params.respond_to?(:key?) && person_params.key?(:phone) &&
+      demo_organization? && person_params.respond_to?(:key?) && person_params.key?(:phone) &&
         person_params[:phone].to_s != Current.person.phone.to_s
     end
 

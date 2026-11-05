@@ -4,9 +4,9 @@ class InvitationsController < ApplicationController
   rate_limit to: 3, within: 15.minutes, by: -> { params[:token] }, name: "invitation_sign_in",
     only: :show, with: -> { render :confirm }
   rate_limit to: 5, within: 10.minutes, by: -> { Current.session.id }, name: "demo_session",
-    scope: "demo_outbound_actions", only: :create, if: :demo_session?
+    scope: "demo_outbound_actions", only: :create, if: :demo_organization?
   rate_limit to: 20, within: 10.minutes, by: -> { request.remote_ip }, name: "demo_ip",
-    scope: "demo_outbound_actions", only: :create, if: :demo_session?
+    scope: "demo_outbound_actions", only: :create, if: :demo_organization?
   before_action :set_response_invitation, only: %i[ accept decline ]
 
   def show

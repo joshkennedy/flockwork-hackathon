@@ -9,8 +9,8 @@ class ApplicationController < ActionController::Base
   helper_method :unread_notification_count
 
   private
-    def demo_session?
-      Current.organization&.demo? && Current.session&.auth_method == "demo"
+    def demo_organization?
+      Current.organization&.demo?
     end
 
     def unread_notification_count
