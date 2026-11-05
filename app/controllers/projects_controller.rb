@@ -7,6 +7,8 @@ class ProjectsController < ApplicationController
   before_action :authorize_project_write, only: %i[ edit update ]
   before_action :authorize_deleted_list, only: :deleted
   before_action :authorize_project_team, only: :team
+  rate_limit to: 10, within: 1.hour, by: -> { Current.person.id }, name: "planner_spend", scope: :planner,
+    only: %i[start_planner start_meal_planner], with: :start_planner_rate_limited
 
   def index
     @projects = Policy.listed_projects(Current.person).with_attached_banner.order(:name)
@@ -240,6 +242,10 @@ class ProjectsController < ApplicationController
 
     def authorize_public_link
       raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :manage_public_link, @project)
+    end
+
+    def start_planner_rate_limited
+      redirect_to new_project_path, alert: "Too many planning requests. Try again in an hour.", status: :see_other
     end
 
     def project_params

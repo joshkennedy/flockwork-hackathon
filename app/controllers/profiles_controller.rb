@@ -1,4 +1,5 @@
 class ProfilesController < ApplicationController
+  rate_limit to: 20, within: 1.hour, by: -> { Current.person.id }, only: :suggest_away, with: :suggest_away_rate_limited
   def edit
     @person = Current.person
     load_involvement
@@ -38,6 +39,19 @@ class ProfilesController < ApplicationController
   end
 
   private
+    def suggest_away_rate_limited
+      if request.format.json?
+        render json: { error: "Too many suggestions. Try again in an hour." }, status: :too_many_requests
+        return
+      end
+
+      @person = Current.person
+      flash.now[:alert] = "Too many suggestions. Try again in an hour."
+      load_involvement
+      load_away_dates
+      render :edit, status: :too_many_requests
+    end
+
     def load_involvement
       raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :view_involvement, @person)
 
