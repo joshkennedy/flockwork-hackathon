@@ -95,7 +95,7 @@ class Project < ApplicationRecord
 
   # [left, top, width, height] in source pixels: the largest crop at the target aspect that keeps the focal point in view.
   def banner_crop(kind)
-    width, height = analyzed_banner_blob.metadata.values_at("width", "height")
+    width, height = banner.blob.metadata.values_at("width", "height")
     aspect = BANNER_SIZES.fetch(kind).then { |w, h| w.fdiv(h) }
     if width.fdiv(height) > aspect
       crop_w = (height * aspect).round
@@ -106,11 +106,16 @@ class Project < ApplicationRecord
     end
   end
 
-  # False when the photo could not be analyzed (no dimensions), so the page shows no banner instead of failing.
+  # False until the photo is analyzed and every variant the pages use is stored (see ProjectBannerVariantsJob), or
+  # after a variant failed: the page shows no banner instead of decoding the photo during a request.
   def banner_ready?
     return false unless banner.attached?
 
-    analyzed_banner_blob.metadata["width"].present?
+    blob = banner.blob
+    return false unless blob.analyzed? && blob.metadata["width"].present? && !blob.metadata["variants_failed"]
+
+    digests = banner_variants.map { |variant| variant.variation.digest }
+    blob.variant_records.where(variation_digest: digests).count == digests.size
   end
 
   def reset_banner_focus
@@ -123,7 +128,7 @@ class Project < ApplicationRecord
   def banner_dimension_error_message
     return unless banner.attached?
 
-    banner_dimension_error_message_for(analyzed_banner_blob)
+    banner_dimension_error_message_for(banner.blob)
   end
 
   def banner_dimension_error_message_for(blob)
@@ -133,8 +138,18 @@ class Project < ApplicationRecord
     banner_dimension_limit_message if banner_dimensions_exceed?(width, height)
   end
 
+  # The format is a string because a variation signed into a URL loses symbol values, which would change its digest
+  # and make the first request for a pregenerated variant decode it again.
   def banner_variant(kind)
-    banner.variant(crop: banner_crop(kind), resize_to_limit: BANNER_SIZES.fetch(kind), format: :webp, saver: { quality: 82 })
+    banner.variant(crop: banner_crop(kind), resize_to_limit: BANNER_SIZES.fetch(kind), format: "webp", saver: { quality: 82 })
+  end
+
+  def banner_reposition_variant
+    banner.variant(resize_to_limit: [ 2400, 2400 ], format: "webp")
+  end
+
+  def banner_variants
+    [ banner_variant(:wide), banner_variant(:phone), banner_reposition_variant ]
   end
 
   def banner_small?
@@ -190,6 +205,7 @@ class Project < ApplicationRecord
           transaction.after_commit do
             committed = true
             old_blob.purge
+            ProjectBannerVariantsJob.perform_later(self) if new_blob
           end
         end
         transaction.after_rollback { new_blob.purge } if new_blob
@@ -247,10 +263,6 @@ class Project < ApplicationRecord
     end
 
     # Sniff the bytes ourselves: Active Storage keeps a declared type when it matches the file name, so a text file named .jpg would pass.
-    def analyzed_banner_blob
-      banner.blob.tap { |blob| blob.analyze unless blob.analyzed? }
-    end
-
     def banner_bytes_type(attachable)
       return attachable.open { |io| Marcel::MimeType.for(io) } if attachable.is_a?(ActiveStorage::Blob)
 

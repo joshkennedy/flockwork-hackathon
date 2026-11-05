@@ -21,6 +21,14 @@ module ActiveSupport
     parallelize(workers: 1)
 
     fixtures :all
+
+    # A banner as it looks once admission and the variants job are done.
+    def attach_ready_banner(project, fixture: "banner_wide.jpg", content_type: "image/jpeg")
+      project.banner.attach(io: file_fixture(fixture).open, filename: fixture, content_type: content_type)
+      project.banner.blob.analyze
+      ProjectBannerVariantsJob.perform_now(project.reload)
+      project.reload
+    end
   end
 end
 

@@ -68,6 +68,8 @@ class ProjectBannersController < ApplicationController
       attributes[:banner_alt_text] = attributes[:banner_alt_text].presence if attributes.key?(:banner_alt_text)
       @project.assign_attributes(attributes)
       if @project.save
+        # A moved focal point changes the crops; only those two small variants are decoded, by a signed-in editor.
+        ProjectBannerVariantsJob.perform_now(@project)
         redirect_to @project
       else
         redirect_to @project, alert: "The banner focus couldn't be saved: #{@project.errors.full_messages.to_sentence}."

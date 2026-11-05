@@ -21,7 +21,25 @@ module ActiveStorageDirectUploadProtection
     end
 end
 
+# Rails verifies signed_blob_id and variation_key separately, so an anonymous visitor could pair a public blob with any
+# variation and force a decode. Without a session, only variants that are already stored are served.
+module ActiveStorageStoredVariantsOnly
+  private
+    def set_representation
+      return super if cookies.signed[:session_id] && Session.exists?(id: cookies.signed[:session_id])
+
+      representation = @blob.representation(params[:variation_key])
+      stored = representation.respond_to?(:image) && representation.image&.attached?
+      return head :not_found if !stored || @blob.metadata["variants_failed"]
+
+      super
+    rescue ActiveSupport::MessageVerifier::InvalidSignature
+      head :not_found
+    end
+end
+
 Rails.application.config.to_prepare do
+  ActiveStorage::Representations::BaseController.prepend(ActiveStorageStoredVariantsOnly)
   ActiveStorage::DirectUploadsController.include(Authentication)
   ActiveStorage::DirectUploadsController.include(ActiveStorageDirectUploadProtection)
 end
