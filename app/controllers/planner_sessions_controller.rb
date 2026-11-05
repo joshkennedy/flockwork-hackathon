@@ -7,6 +7,8 @@ class PlannerSessionsController < ApplicationController
     only: %i[ create retry_generation ], with: :planner_create_rate_limited
   rate_limit to: 10, within: 1.hour, by: -> { Current.person.id }, name: "voice_session",
     only: :voice_session, with: :voice_session_rate_limited
+  rate_limit to: 60, within: 1.hour, by: -> { Current.person.id }, name: "planner_steps",
+    only: %i[ answer select_answer ], with: :planner_create_rate_limited
 
   def new
     @planner_session = @project.planner_sessions.build

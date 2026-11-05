@@ -7,9 +7,9 @@ class DemoSpendLimitsTest < ActionDispatch::IntegrationTest
   class CountingPlannerProvider
     attr_reader :calls
 
-    def initialize(response)
+    def initialize(response, responses: nil)
       @calls = 0
-      @fake = Planner::Providers::Fake.new([ response ])
+      @fake = Planner::Providers::Fake.new(responses || [ response ])
     end
 
     def call(context, &on_partial)
@@ -142,6 +142,50 @@ class DemoSpendLimitsTest < ActionDispatch::IntegrationTest
       assert_redirected_to new_project_planner_session_path(project)
       assert_equal "Too many planning requests. Try again in an hour.", flash[:alert]
       assert_equal 10, provider.calls
+    end
+  end
+
+  test "select answer is bounded per person and paid generation stops at the cap" do
+    post demo_session_path(role: "leader")
+    card_response = planner_response(
+      card: { "question" => "What matters most?", "options" => [ "Food", "Setup", "Cleanup" ] }
+    )
+    provider = CountingPlannerProvider.new(
+      card_response, responses: Array.new(70) { card_response }
+    )
+    Rails.configuration.x.planner_provider = provider
+    with_rate_limit_store do
+      perform_enqueued_jobs(only: PlannerStepJob) do
+        post start_planner_projects_path, params: { planning_kind: "workday" }
+      end
+      project = PlannerSession.order(:id).last!.project
+      planner_session = PlannerSession.order(:id).last!
+      assert_equal 1, provider.calls
+
+      60.times do
+        perform_enqueued_jobs(only: PlannerStepJob) do
+          post select_answer_project_planner_session_path(project, planner_session),
+            params: {
+              answer: "Food",
+              step_index: 0,
+              expected_revision: planner_session.reload.generation_revision
+            }
+          assert_response :see_other
+        end
+      end
+      assert_equal 61, provider.calls
+
+      perform_enqueued_jobs(only: PlannerStepJob) do
+        post select_answer_project_planner_session_path(project, planner_session),
+          params: {
+            answer: "Food",
+            step_index: 0,
+            expected_revision: planner_session.reload.generation_revision
+          }
+      end
+      assert_redirected_to new_project_planner_session_path(project)
+      assert_equal "Too many planning requests. Try again in an hour.", flash[:alert]
+      assert_equal 61, provider.calls
     end
   end
 
