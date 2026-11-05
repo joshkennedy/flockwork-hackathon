@@ -455,6 +455,7 @@ class PlannerSession < ApplicationRecord
       when "edit"
         edited_fields = fields || { "title" => title, "details" => details }.compact
         edited_fields = Planner::SuggestionKinds.sanitize_fields(suggestion.fetch("kind"), edited_fields)
+        raise ArgumentError, "Tool is invalid" if edited_fields.key?("tool") && Project::TOOLS.exclude?(edited_fields["tool"])
         suggestion.merge(
           "fields" => suggestion.fetch("fields").merge(edited_fields),
           "status" => "edited"
@@ -615,6 +616,7 @@ class PlannerSession < ApplicationRecord
         added = added.deep_stringify_keys
         kind = added["kind"]
         next unless Planner::SuggestionKinds::KINDS.key?(kind)
+        next if kind == "enable_tool" && Project::TOOLS.exclude?(added.dig("fields", "tool"))
 
         next_suggestions << {
           "id" => SecureRandom.uuid,
