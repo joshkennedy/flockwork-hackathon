@@ -24,6 +24,14 @@
     <% elsif Current.organization.pco_last_sync_result.present? %>
       <% result = Current.organization.pco_last_sync_result %>
       <p class="mt-5 text-meta text-ink-2"><%= result.fetch("created") %> created, <%= result.fetch("updated") %> updated, <%= result.fetch("unchanged") %> unchanged.</p>
+      <% if result.fetch("skipped_email_changes", []).any? %>
+        <p class="mt-3 text-meta font-medium text-ink">Email changes skipped:</p>
+        <ul class="mt-1 list-disc space-y-1 break-words pl-5 text-meta text-ink-2">
+          <% result.fetch("skipped_email_changes").each do |change| %>
+            <li><%= change.fetch("person_name") %>: kept <%= change.fetch("current_email") %>; skipped <%= change.fetch("skipped_email") %> from Planning Center.</li>
+          <% end %>
+        </ul>
+      <% end %>
     <% end %>
 
     <%= button_to "Sync Now", sync_planning_center_directory_path, class: "mt-5 btn btn-primary" %>
