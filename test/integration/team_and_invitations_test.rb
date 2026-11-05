@@ -1,6 +1,8 @@
 require "test_helper"
+require_relative "../support/method_stubs"
 
 class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
+  include MethodStubs
   test "a Leader sees the Project Team with member roles" do
     sign_in_as_leader
     project = projects(:community_meal)
@@ -14,7 +16,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     assert_select "li", text: /Vic Volunteer.*Volunteer/
   end
 
-  test "a Leader searches the directory and sees why a Person without email cannot be invited" do
+  test "a Leader sees why a Person without email or phone cannot be invited" do
     sign_in_as_leader
     project = projects(:community_meal)
 
@@ -22,7 +24,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "input[name='query'][value='Rowan']"
-    assert_select "li", text: /Rowan Recipient.*No email, can't be invited/
+    assert_select "li", text: /Rowan Recipient.*No email or phone, can't be invited/
     assert_select "button[disabled]", "Invite"
 
     get team_project_path(project), params: { query: "Vic" }
@@ -67,6 +69,8 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     assert_equal [ "vera@st-example.test" ], mail.to
     assert_equal "You're invited to help with Community Meal on Flockwork", mail.subject
     assert_match %r{http://example.com/invitations/\S+}, mail.body.encoded
+    invitation_token = mail.body.encoded[%r{/invitations/(\S+)}, 1]
+    assert_equal invitation, Invitation.find_by_token_for(:access, invitation_token)
   end
 
 
@@ -120,11 +124,122 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     mail = ActionMailer::Base.deliveries.last
     assert_equal [ "vera@st-example.test" ], mail.to
     assert_equal "Your Flockwork sign-in link", mail.subject
+    sign_in_token = mail.body.encoded[%r{/sign_in/(\S+)}, 1]
+    assert_equal invitee, Person.find_by_token_for(:sign_in, sign_in_token)
 
     get home_path
 
     assert_response :success
     assert_select "[data-signed-in-as]", "Leo Leader"
+  end
+
+
+  test "an Invitation link sends at most three sign-in emails in fifteen minutes" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    invitee = people(:other_volunteer)
+    perform_enqueued_jobs do
+      post project_invitations_path(project), params: {
+        invitation: { person_id: invitee.id, role: "volunteer" }
+      }
+    end
+    invitation = invitee.invitations.find_by!(project: project)
+    token = invitation.generate_token_for(:access)
+    delete session_path
+    ActionMailer::Base.deliveries.clear
+
+    with_invitation_rate_limit_store do
+      perform_enqueued_jobs do
+        4.times { get invitation_path(token) }
+      end
+    end
+
+    assert_response :success
+    assert_select "h1", "Check your inbox"
+    assert_equal 3, ActionMailer::Base.deliveries.count
+  end
+
+
+  test "a phone-only invitee receives a sign-in text and can sign in" do
+    leader = sign_in_as_leader
+    project = projects(:community_meal)
+    invitee = leader.organization.people.create!(name: "Parker Phone", phone: "+15005550000")
+
+    get team_project_path(project), params: { query: "Parker" }
+    assert_select "form[action='#{project_invitations_path(project)}']" do
+      assert_select "input[name='invitation[person_id]'][value='#{invitee.id}']"
+      assert_select "input[type='submit'][value='Invite']"
+    end
+
+    assert_difference "Invitation.count", 1 do
+      assert_no_emails do
+        perform_enqueued_jobs do
+          post project_invitations_path(project), params: {
+            invitation: { person_id: invitee.id, role: "volunteer" }
+          }
+        end
+      end
+    end
+    invitation = leader.organization.invitations.find_by!(project: project, person: invitee)
+    token = invitation.generate_token_for(:access)
+    delete session_path
+
+    deliveries = []
+    sendly = Messaging::Sendly.new(api_key: "test")
+    send_sms = ->(**message) {
+      deliveries << message
+      { "id" => "msg_invitation", "status" => "queued", "simulated" => true }
+    }
+    stub_method(sendly, :send_sms, send_sms) do
+      stub_method(Messaging::Sendly, :new, -> { sendly }) do
+        assert_no_emails do
+          perform_enqueued_jobs do
+            get invitation_path(token)
+          end
+        end
+      end
+    end
+
+    assert_response :success
+    assert_select "h1", "Check your texts"
+    assert_equal 1, deliveries.count
+    assert_equal "+15005550000", deliveries.first.fetch(:to)
+    assert_match %r{http://example\.com/sign_in/\S+}, deliveries.first.fetch(:text)
+    sign_in_token = deliveries.first.fetch(:text)[%r{/sign_in/(\S+)}, 1]
+    assert_equal invitee, Person.find_by_token_for(:sign_in, sign_in_token)
+
+    get sign_in_link_path(sign_in_token)
+    assert_select "h1", "Finish signing in"
+    post sign_in_link_path(sign_in_token)
+    assert_redirected_to home_path
+    get home_path
+    assert_select "[data-signed-in-as]", "Parker Phone"
+  end
+
+
+  test "an invitee without email or phone is told to contact the leader" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    invitee = people(:other_volunteer)
+    perform_enqueued_jobs do
+      post project_invitations_path(project), params: {
+        invitation: { person_id: invitee.id, role: "volunteer" }
+      }
+    end
+    invitation = invitee.invitations.find_by!(project: project)
+    token = invitation.generate_token_for(:access)
+    invitee.update!(email: nil, phone: nil)
+    delete session_path
+    ActionMailer::Base.deliveries.clear
+
+    assert_no_enqueued_jobs do
+      get invitation_path(token)
+    end
+
+    assert_response :success
+    assert_select "h1", "Contact your leader"
+    assert_select "p", "Ask your leader to add an email address or phone number before you respond to this Invitation."
+    assert_empty ActionMailer::Base.deliveries
   end
 
 
@@ -141,6 +256,9 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     assert copy_button
     copied_link = copy_button["data-clipboard-text-value"]
     assert_match %r{\Ahttp://www\.example\.com/invitations/\S+\z}, copied_link
+    copied_token = copied_link[%r{/invitations/(\S+)}, 1]
+    invitation = people(:other_volunteer).invitations.find_by!(project: project)
+    assert_equal invitation, Invitation.find_by_token_for(:access, copied_token)
 
     reset!
     perform_enqueued_jobs do
@@ -197,6 +315,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     assert_equal "Your Flockwork sign-in link", ActionMailer::Base.deliveries.last.subject
 
     sign_in_token = ActionMailer::Base.deliveries.last.body.encoded[%r{/sign_in/(\S+)}, 1]
+    assert_equal invitee, Person.find_by_token_for(:sign_in, sign_in_token)
     get sign_in_link_path(sign_in_token)
     assert_select "h1", "Finish signing in"
     post sign_in_link_path(sign_in_token)
@@ -295,6 +414,8 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     end
     assert copy_button
     pending_url = copy_button["data-clipboard-text-value"]
+    pending_token = pending_url[%r{/invitations/(\S+)}, 1]
+    assert_equal pending_invitation, Invitation.find_by_token_for(:access, pending_token)
     sms_body = ERB::Util.url_encode("You're invited to help with Community Meal on Flockwork: #{pending_url}")
     assert_select "button[data-controller='clipboard'][data-clipboard-text-value=?]", pending_url, text: "Copy Link"
     assert_select "a[href=?]", "sms:?&body=#{sms_body}", text: "Send by Text"
@@ -324,7 +445,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "a no-email Person and a Person with a pending Invitation cannot be invited" do
+  test "a Person without email or phone and a Person with a pending Invitation cannot be invited" do
     leader = sign_in_as_leader
     project = projects(:community_meal)
 
@@ -364,7 +485,13 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h2", "Pending Invitations"
-    assert_select "a[href^='/invitations/']", text: /Community Meal.*Volunteer/
+    invitation_links = css_select("a[href^='/invitations/']")
+    assert_equal 1, invitation_links.count
+    invitation_link = invitation_links.first
+    assert_match(/Community Meal.*Volunteer/m, invitation_link.text)
+    token = invitation_link["href"][%r{/invitations/(\S+)}, 1]
+    invitation = invitee.invitations.find_by!(project: project)
+    assert_equal invitation, Invitation.find_by_token_for(:access, token)
   end
 
 
@@ -424,4 +551,11 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "a.tab-link[href='#{team_project_path(project)}']", "Team"
   end
+
+  private
+    def with_invitation_rate_limit_store
+      store = ActiveSupport::Cache::MemoryStore.new
+      increment = ->(*args, **kwargs) { store.increment(*args, **kwargs) }
+      stub_method(InvitationsController.cache_store, :increment, increment) { yield }
+    end
 end

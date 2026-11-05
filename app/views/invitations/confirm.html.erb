@@ -1,6 +1,13 @@
-<% content_for :title, "Check your inbox" %>
+<% heading = { email: "Check your inbox", phone: "Check your texts", none: "Contact your leader" }.fetch(@delivery_method) %>
+<% content_for :title, heading %>
 
 <div class="mx-auto w-full max-w-xl">
-  <h1 class="text-ink">Check your inbox</h1>
-  <p class="mt-2 leading-normal text-ink-2">We sent the invitee a secure sign-in link. Open it to return to Flockwork and respond to this Invitation.</p>
+  <h1 class="text-ink"><%= heading %></h1>
+  <% if @delivery_method == :email %>
+    <p class="mt-2 leading-normal text-ink-2">A secure sign-in link was sent recently. Check your inbox, then open the link to return to Flockwork and respond to this Invitation.</p>
+  <% elsif @delivery_method == :phone %>
+    <p class="mt-2 leading-normal text-ink-2">A secure sign-in link was sent recently. Check your texts, then open the link to return to Flockwork and respond to this Invitation.</p>
+  <% else %>
+    <p class="mt-2 leading-normal text-ink-2">Ask your leader to add an email address or phone number before you respond to this Invitation.</p>
+  <% end %>
 </div>

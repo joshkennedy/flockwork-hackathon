@@ -48,12 +48,12 @@
                       <%= avatar(person) %>
                       <div class="min-w-0">
                         <p class="font-semibold text-ink"><%= person.name %></p>
-                        <% if person.email.blank? %>
-                          <p class="text-meta text-ink-2">No email, can't be invited</p>
+                        <% if person.email.blank? && person.phone.blank? %>
+                          <p class="text-meta text-ink-2">No email or phone, can't be invited</p>
                         <% end %>
                       </div>
                     </div>
-                    <% if person.email.blank? %>
+                    <% if person.email.blank? && person.phone.blank? %>
                       <button type="button" disabled class="btn btn-secondary btn-sm justify-self-start">Invite</button>
                     <% else %>
                       <%= render "projects/invite_form", project: @project, person: %>

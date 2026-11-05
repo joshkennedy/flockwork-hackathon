@@ -1,14 +1,14 @@
 class InvitationsController < ApplicationController
   allow_unauthenticated_access only: :show
+  before_action :set_show_invitation, only: :show
+  rate_limit to: 3, within: 15.minutes, by: -> { params[:token] }, name: "invitation_sign_in",
+    only: :show, with: -> { render :confirm }
   before_action :set_response_invitation, only: %i[ accept decline ]
 
   def show
-    @invitation = Invitation.find_by_token_for(:access, params[:token])
-    return render :invalid, status: :unprocessable_content unless @invitation&.pending?
-
     resume_session
     unless Current.person == @invitation.person
-      SignInMailer.sign_in_link(@invitation.person).deliver_later
+      send_sign_in_link
       return render :confirm
     end
 
@@ -51,6 +51,28 @@ class InvitationsController < ApplicationController
   end
 
   private
+    def set_show_invitation
+      @invitation = Invitation.find_by_token_for(:access, params[:token])
+      return render :invalid, status: :unprocessable_content unless @invitation&.pending?
+
+      @delivery_method = if @invitation.person.email.present?
+        :email
+      elsif @invitation.person.phone.present?
+        :phone
+      else
+        :none
+      end
+    end
+
+    def send_sign_in_link
+      if @delivery_method == :email
+        SignInMailer.sign_in_link(@invitation.person).deliver_later
+      elsif @delivery_method == :phone
+        token = @invitation.person.generate_token_for(:sign_in)
+        InvitationSignInSmsJob.perform_later(@invitation.organization, @invitation.person_id, token)
+      end
+    end
+
     def set_response_invitation
       @invitation = Current.organization.invitations.find_by_token_for(:access, params[:token])
       raise ActiveRecord::RecordNotFound unless @invitation
