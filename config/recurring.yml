@@ -22,6 +22,9 @@ production:
   slot_reminders:
     class: SlotReminderJob
     schedule: at 7am every day
+  purge_unattached_blobs:
+    class: PurgeUnattachedBlobsJob
+    schedule: at 2am every day
   demo_organization_reset:
     class: DemoResetJob
     schedule: at 3am every day
