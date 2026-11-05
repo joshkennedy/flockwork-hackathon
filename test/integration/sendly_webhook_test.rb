@@ -11,6 +11,7 @@ class SendlyWebhookTest < ActionDispatch::IntegrationTest
     @volunteer.update!(phone: "+15005550000", sms_preferences: { task_assigned: true, invitation: false })
     @leader = people(:leader)
     @leader.update!(phone: "+15005550000", sms_preferences: { invitation: true })
+    @clock = Time.current.to_i
   end
 
   teardown do
@@ -57,6 +58,40 @@ class SendlyWebhookTest < ActionDispatch::IntegrationTest
     assert_not SmsOptOut.blocked?("+15005550000")
   end
 
+  test "a late START retried after a newer STOP does not undo it" do
+    post_event("evt_1", "message.opt_out", "+15005550000", created: 100)
+    post_event("evt_2", "message.opt_out", "+15005550000", created: 300)
+    post_event("evt_3", "message.opt_in", "+15005550000", created: 200)
+
+    assert_response :ok
+    assert SmsOptOut.blocked?("+15005550000")
+    assert_not @volunteer.reload.notification_for?("sms", "task_assigned")
+    assert_not @leader.reload.notification_for?("sms", "invitation")
+    assert SmsWebhookEvent.exists?(event_id: "evt_3")
+  end
+
+  test "a late STOP older than the latest START is ignored" do
+    post_event("evt_1", "message.opt_out", "+15005550000", created: 100)
+    post_event("evt_2", "message.opt_in", "+15005550000", created: 300)
+    post_event("evt_3", "message.opt_out", "+15005550000", created: 200)
+
+    assert_not SmsOptOut.blocked?("+15005550000")
+    assert @volunteer.reload.notification_for?("sms", "task_assigned")
+  end
+
+  test "every transition takes the per-phone advisory lock before reading the row" do
+    %w[opt_out! opt_in!].each do |transition|
+      statements = []
+      callback = ->(*, payload) { statements << payload[:sql] }
+      ActiveSupport::Notifications.subscribed(callback, "sql.active_record") { SmsOptOut.public_send(transition, "+15005559999", at: Time.current) }
+
+      lock = statements.index { |sql| sql.include?("pg_advisory_xact_lock(hashtext('+15005559999'))") }
+      read = statements.index { |sql| sql.match?(/SELECT.*FROM "sms_opt_outs"/) }
+      assert lock, "#{transition} did not lock"
+      assert_operator lock, :<, read
+    end
+  end
+
   test "bad signature, stale timestamp and missing secret return 401 and change nothing" do
     post_event("evt_1", "message.opt_out", "+15005550000", signature: "sha256=bad")
     assert_response :unauthorized
@@ -83,8 +118,8 @@ class SendlyWebhookTest < ActionDispatch::IntegrationTest
   end
 
   private
-    def post_event(id, type, phone, timestamp: Time.current.to_i, signature: nil, secret: "whsec_test")
-      body = { id:, type:, data: { object: { id: "msg_#{id}", from: phone, to: "+18335550100", direction: "inbound" } } }.to_json
+    def post_event(id, type, phone, timestamp: Time.current.to_i, signature: nil, secret: "whsec_test", created: @clock += 1)
+      body = { id:, type:, created:, data: { object: { id: "msg_#{id}", from: phone, to: "+18335550100", direction: "inbound" } } }.to_json
       signature ||= "sha256=#{OpenSSL::HMAC.hexdigest("SHA256", secret, "#{timestamp}.#{body}")}"
       post "/webhooks/sendly", params: body,
         headers: { "Content-Type" => "application/json", "X-Sendly-Timestamp" => timestamp.to_s, "X-Sendly-Signature" => signature }

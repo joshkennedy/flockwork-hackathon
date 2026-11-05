@@ -6,7 +6,7 @@ module Webhooks
     TOLERANCE = 300
 
     # Payload per sendly.live/llms.txt "Webhook Payload Structure":
-    # { "id": "evt_...", "type": "message.opt_out" | "message.opt_in",
+    # { "id": "evt_...", "created": 1737283800 (unix seconds), "type": "message.opt_out" | "message.opt_in",
     #   "data": { "object": { "from": "+1...", "to": "+1..." } } }
     # For an inbound STOP/START, "from" is the subscriber and "to" is our number.
     def create
@@ -15,11 +15,13 @@ module Webhooks
       event = JSON.parse(request.raw_post)
       id, type = event["id"].to_s, event["type"].to_s
       phone = event.dig("data", "object", "from") if event["data"].is_a?(Hash) && event["data"]["object"].is_a?(Hash)
-      return head :unprocessable_entity if id.empty? || phone.blank? || %w[message.opt_out message.opt_in].exclude?(type)
+      created = event["created"]
+      return head :unprocessable_entity if id.empty? || phone.blank? || !created.is_a?(Integer) || %w[message.opt_out message.opt_in].exclude?(type)
 
       SmsOptOut.transaction do
         SmsWebhookEvent.create!(event_id: id)
-        type == "message.opt_out" ? SmsOptOut.opt_out!(phone) : SmsOptOut.opt_in!(phone)
+        at = Time.at(created).utc
+        type == "message.opt_out" ? SmsOptOut.opt_out!(phone, at:) : SmsOptOut.opt_in!(phone, at:)
       end
       head :ok
     rescue JSON::ParserError

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_05_630001) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_05_630002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -258,6 +258,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_630001) do
     t.string "skills", default: [], null: false, array: true
     t.jsonb "in_app_preferences", default: {}, null: false
     t.jsonb "sms_preferences", default: {}, null: false
+    t.string "pending_email"
     t.index ["name"], name: "index_people_search", opclass: :gin_trgm_ops, using: :gin
     t.index ["organization_id", "email"], name: "index_people_on_organization_id_and_email", unique: true, where: "(email IS NOT NULL)"
     t.index ["organization_id", "external_source", "external_id"], name: "index_people_on_organization_and_external_identity", unique: true, where: "(external_id IS NOT NULL)"
@@ -413,6 +414,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_630001) do
     t.jsonb "disabled_preferences", default: {}, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "opted_out", default: true, null: false
+    t.datetime "last_event_at", default: -> { "to_timestamp((0)::double precision)" }, null: false
     t.index ["phone"], name: "index_sms_opt_outs_on_phone", unique: true
   end
 
