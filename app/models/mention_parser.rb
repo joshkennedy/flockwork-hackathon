@@ -1,5 +1,5 @@
 class MentionParser
-  TOKEN_PATTERN = /@\[[^\r\n]*?\]\(person:(\d+)\)/
+  TOKEN_PATTERN = /@\[[^\]\r\n]*\]\(person:(\d+)\)/
 
   def initialize(mentionable)
     @mentionable = mentionable

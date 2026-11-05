@@ -38,7 +38,7 @@ export default class extends Controller {
 
   insert(event) {
     const { id, name } = event.currentTarget.dataset
-    this.editorTarget.editor.insertString(`@[${name}](person:${id}) `)
+    this.editorTarget.editor.insertString(`@[${name.replace(/[\])\r\n]+/g, " ").trim()}](person:${id}) `)
     this.editorTarget.focus()
     this.queryTarget.value = ""
     this.clearResults()

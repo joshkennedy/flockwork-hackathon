@@ -104,6 +104,19 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_includes html, "@[Gone](person:0)"
   end
 
+  test "mention_pills rewrites tokens in text nodes only, never inside attributes or across tags" do
+    leader = people(:leader)
+    Current.session = leader.sessions.create!(ip_address: "127.0.0.1", user_agent: "test")
+    token = "@[#{leader.name}](person:#{leader.id})"
+    body = ActionText::Content.new(%(<div><a href="https://example.test/@[x](person:#{leader.id})">link</a> then @[Split<strong>](person:#{leader.id})</strong> and #{token}</div>))
+
+    html = mention_pills(body)
+
+    assert_equal 1, html.scan(%(class="person-pill")).size
+    assert_includes html, %(href="https://example.test/@[x](person:#{leader.id})")
+    assert_includes html, "@[Split<strong>](person:#{leader.id})</strong>"
+  end
+
   test "people_pill is one pill with the stack and the names, or a label that includes them" do
     people = [ Person.new(name: "Grace Kim"), Person.new(name: "Maria Lopez") ]
     html = people_pill(people)

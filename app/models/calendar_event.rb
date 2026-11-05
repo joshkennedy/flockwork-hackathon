@@ -14,7 +14,7 @@ class CalendarEvent
       "DTSTAMP:#{@record.updated_at.utc.strftime('%Y%m%dT%H%M%SZ')}",
       "SUMMARY:#{escape(title)}",
       "DESCRIPTION:#{escape(@record.project.name)}",
-      "URL:#{@url}"
+      "URL:#{escape(@url)}"
     ]
     if @record.starts_at_time
       lines << "DTSTART:#{timestamp(@record.starts_at_time)}"
