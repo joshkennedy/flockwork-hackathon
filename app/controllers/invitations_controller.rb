@@ -6,8 +6,12 @@ class InvitationsController < ApplicationController
     @invitation = Invitation.find_by_token_for(:access, params[:token])
     return render :invalid, status: :unprocessable_content unless @invitation&.pending?
 
-    terminate_session if Current.session && Current.person != @invitation.person
-    start_new_session_for @invitation.person, auth_method: "invitation" unless Current.person == @invitation.person
+    resume_session
+    unless Current.person == @invitation.person
+      SignInMailer.sign_in_link(@invitation.person).deliver_later
+      return render :confirm
+    end
+
     raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :respond, @invitation)
   end
 

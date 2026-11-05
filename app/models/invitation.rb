@@ -10,7 +10,7 @@ class Invitation < ApplicationRecord
   enum :role, { leader: 0, volunteer: 1 }
   enum :status, { pending: 0, accepted: 1, declined: 2 }
 
-  generates_token_for :access do
+  generates_token_for :access, expires_in: 14.days do
     status
   end
 

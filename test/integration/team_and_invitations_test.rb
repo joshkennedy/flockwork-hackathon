@@ -70,17 +70,18 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
   end
 
 
-  test "an invitation link signs in the invitee and shows Accept and Decline actions" do
+  test "a signed-in invitee sees Accept and Decline actions" do
     sign_in_as_leader
     project = projects(:community_meal)
     invitee = people(:other_volunteer)
-    organizations(:outsider_church).people.create!(name: "Vera Elsewhere", email: invitee.email)
     perform_enqueued_jobs do
       post project_invitations_path(project), params: {
         invitation: { person_id: invitee.id, role: "volunteer" }
       }
     end
     token = ActionMailer::Base.deliveries.last.body.encoded[%r{/invitations/(\S+)}, 1]
+    delete session_path
+    sign_in_as(invitee)
 
     get invitation_path(token)
 
@@ -98,7 +99,83 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
   end
 
 
-  test "accepting an Invitation adds the invitee with the invited role and preserves the Invitation" do
+  test "GET to an Invitation link does not switch an already signed-in browser to the invitee" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    invitee = people(:other_volunteer)
+    perform_enqueued_jobs do
+      post project_invitations_path(project), params: {
+        invitation: { person_id: invitee.id, role: "volunteer" }
+      }
+    end
+    token = ActionMailer::Base.deliveries.last.body.encoded[%r{/invitations/(\S+)}, 1]
+
+    assert_emails 1 do
+      perform_enqueued_jobs do
+        get invitation_path(token)
+      end
+    end
+    assert_response :success
+    assert_select "h1", "Check your inbox"
+    mail = ActionMailer::Base.deliveries.last
+    assert_equal [ "vera@st-example.test" ], mail.to
+    assert_equal "Your Flockwork sign-in link", mail.subject
+
+    get home_path
+
+    assert_response :success
+    assert_select "[data-signed-in-as]", "Leo Leader"
+  end
+
+
+  test "a copied pending Invitation link does not sign a Leader in as the invitee" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    post project_invitations_path(project), params: {
+      invitation: { person_id: people(:other_volunteer).id, role: "volunteer" }
+    }
+    get team_project_path(project)
+    copy_button = css_select("button[data-controller='clipboard']").find do |button|
+      button["data-clipboard-text-value"].include?("/invitations/")
+    end
+    assert copy_button
+    copied_link = copy_button["data-clipboard-text-value"]
+    assert_match %r{\Ahttp://www\.example\.com/invitations/\S+\z}, copied_link
+
+    reset!
+    perform_enqueued_jobs do
+      get copied_link
+    end
+
+    assert_response :success
+    assert_select "h1", "Check your inbox"
+    get home_path
+    assert_redirected_to root_path
+  end
+
+
+  test "an Invitation link older than 14 days is refused" do
+    leader = sign_in_as_leader
+    project = projects(:community_meal)
+    post project_invitations_path(project), params: {
+      invitation: { person_id: people(:other_volunteer).id, role: "volunteer" }
+    }
+    invitation = leader.organization.invitations.find_by!(project: project, person: people(:other_volunteer))
+    token = invitation.generate_token_for(:access)
+    delete session_path
+
+    travel 15.days do
+      get invitation_path(token)
+      assert_response :unprocessable_content
+      assert_select "h1", "Invitation link not valid"
+    end
+
+    get home_path
+    assert_redirected_to root_path
+  end
+
+
+  test "an invitee accepts from the emailed Invitation through a magic link" do
     memberships(:community_meal_other_leader).destroy!
     sign_in_as_leader
     project = projects(:community_meal)
@@ -111,6 +188,19 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     invitation = invitee.invitations.find_by!(project: project)
     token = ActionMailer::Base.deliveries.last.body.encoded[%r{/invitations/(\S+)}, 1]
     delete session_path
+    perform_enqueued_jobs do
+      get invitation_path(token)
+    end
+    assert_response :success
+    assert_select "h1", "Check your inbox"
+    assert_equal [ "lucy@st-example.test" ], ActionMailer::Base.deliveries.last.to
+    assert_equal "Your Flockwork sign-in link", ActionMailer::Base.deliveries.last.subject
+
+    sign_in_token = ActionMailer::Base.deliveries.last.body.encoded[%r{/sign_in/(\S+)}, 1]
+    get sign_in_link_path(sign_in_token)
+    assert_select "h1", "Finish signing in"
+    post sign_in_link_path(sign_in_token)
+    assert_redirected_to home_path
     get invitation_path(token)
 
     assert_no_difference "Invitation.count" do
@@ -145,6 +235,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     invitation = invitee.invitations.find_by!(project: project)
     token = ActionMailer::Base.deliveries.last.body.encoded[%r{/invitations/(\S+)}, 1]
     delete session_path
+    sign_in_as(invitee)
     get invitation_path(token)
 
     assert_no_difference [ "Invitation.count", "Membership.count" ] do
@@ -174,6 +265,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     accepted_invitation = leader.organization.invitations.find_by!(project: project, person: people(:other_leader))
     accepted_token = accepted_invitation.generate_token_for(:access)
     delete session_path
+    sign_in_as(people(:other_leader))
     get invitation_path(accepted_token)
     patch accept_invitation_path(accepted_token)
 
@@ -185,6 +277,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     declined_invitation = leader.organization.invitations.find_by!(project: project, person: people(:admin))
     declined_token = declined_invitation.generate_token_for(:access)
     delete session_path
+    sign_in_as(people(:admin))
     get invitation_path(declined_token)
     patch decline_invitation_path(declined_token)
 
@@ -197,7 +290,11 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     assert_select "li", text: /Lucy Leader.*Leader.*Accepted/
     assert_select "li", text: /Ada Admin.*Volunteer.*Declined/
 
-    pending_url = invitation_url(pending_invitation.generate_token_for(:access))
+    copy_button = css_select("button[data-controller='clipboard']").find do |button|
+      button["data-clipboard-text-value"].include?("/invitations/")
+    end
+    assert copy_button
+    pending_url = copy_button["data-clipboard-text-value"]
     sms_body = ERB::Util.url_encode("You're invited to help with Community Meal on Flockwork: #{pending_url}")
     assert_select "button[data-controller='clipboard'][data-clipboard-text-value=?]", pending_url, text: "Copy Link"
     assert_select "a[href=?]", "sms:?&body=#{sms_body}", text: "Send by Text"
@@ -261,16 +358,13 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     post project_invitations_path(project), params: {
       invitation: { person_id: invitee.id, role: "volunteer" }
     }
-    invitation = invitee.invitations.find_by!(project: project)
-    token = invitation.generate_token_for(:access)
-
     delete session_path
     sign_in_as(invitee)
     get home_path
 
     assert_response :success
     assert_select "h2", "Pending Invitations"
-    assert_select "a[href='#{invitation_path(token)}']", text: /Community Meal.*Volunteer/
+    assert_select "a[href^='/invitations/']", text: /Community Meal.*Volunteer/
   end
 
 
