@@ -1,6 +1,12 @@
 require "test_helper"
 
 class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
+  StaticDirectorySource = Data.define(:people) do
+    def each_person(&block)
+      people.each(&block)
+    end
+  end
+
   test "Admin connects Planning Center and sees the connected state" do
     sign_in_as_admin
 
@@ -72,6 +78,7 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
       external_source: "planning_center",
       external_id: "204576403"
     )
+    assert_nil existing.last_signed_in_at
 
     assert_difference -> { organization.people.count }, 25 do
       sync_with_recording
@@ -81,6 +88,119 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
     assert_equal "Ruth Bennett", existing.name
     assert_equal "ruth.bennett@grace.example", existing.email
     assert_equal "202-555-0104", existing.phone
+  end
+
+  test "sync protects a signed-in Person email while updating their other details" do
+    leader = sign_in_as_leader
+    organization = organizations(:st_example)
+
+    DirectorySync.new(organization, source_for(
+      external_id: "pco-leader-1",
+      name: "Leo Leader",
+      email: "leo@st-example.test",
+      phone: "+12025550103"
+    )).call
+
+    result = DirectorySync.new(organization, source_for(
+      external_id: "pco-leader-1",
+      name: "Leonard Leader",
+      email: "changed@example.test",
+      phone: "+12025550104"
+    )).call
+
+    leader.reload
+    assert_equal "leo@st-example.test", leader.email
+    assert_equal "Leonard Leader", leader.name
+    assert_equal "+12025550104", leader.phone
+    assert_equal "changed@example.test", result.fetch(:skipped_email_changes).sole.fetch(:skipped_email)
+  end
+
+  test "sync protects a Person email after invitation sign-in" do
+    organization = organizations(:st_example)
+    invitee = people(:other_volunteer)
+    invitee.update!(external_source: "planning_center", external_id: "pco-invitee-1")
+    invitation = organization.invitations.create!(
+      project: projects(:community_meal),
+      person: invitee,
+      inviter: people(:leader),
+      role: :volunteer
+    )
+
+    get invitation_path(invitation.generate_token_for(:access))
+    assert_response :success
+
+    result = DirectorySync.new(organization, source_for(
+      external_id: "pco-invitee-1",
+      name: "Vera Volunteer",
+      email: "attacker@example.test",
+      phone: "+12025550105"
+    )).call
+
+    assert_equal "vera@st-example.test", invitee.reload.email
+    assert_equal [ {
+      person_name: "Vera Volunteer",
+      current_email: "vera@st-example.test",
+      skipped_email: "attacker@example.test"
+    } ], result.fetch(:skipped_email_changes)
+  end
+
+  test "sync protects a Person email when an older Session exists without a sign-in stamp" do
+    organization = organizations(:st_example)
+    person = organization.people.find(people(:other_volunteer).id)
+    person.update!(external_source: "planning_center", external_id: "pco-legacy-session-1")
+    person.sessions.create!(user_agent: "Legacy browser", ip_address: "192.0.2.31")
+    assert_nil person.last_signed_in_at
+
+    result = DirectorySync.new(organization, source_for(
+      external_id: "pco-legacy-session-1",
+      name: "Vera Volunteer",
+      email: "attacker@example.test",
+      phone: "+12025550105"
+    )).call
+
+    assert_equal "vera@st-example.test", person.reload.email
+    assert_equal [ {
+      person_name: "Vera Volunteer",
+      current_email: "vera@st-example.test",
+      skipped_email: "attacker@example.test"
+    } ], result.fetch(:skipped_email_changes)
+  end
+
+  test "sync does not replace an Admin sign-in email" do
+    organization = organizations(:st_example)
+    admin = people(:admin)
+    original_email = admin.email
+
+    DirectorySync.new(organization, source_for(
+      external_id: "pco-admin-1",
+      name: "Ada Admin",
+      email: original_email,
+      phone: "+12025550101"
+    )).call
+
+    result = DirectorySync.new(organization, source_for(
+      external_id: "pco-admin-1",
+      name: "Ada Admin",
+      email: "attacker@example.test",
+      phone: "+12025550102"
+    )).call
+
+    assert_equal original_email, admin.reload.email
+    assert_equal [ {
+      person_name: "Ada Admin",
+      current_email: "ada@st-example.test",
+      skipped_email: "attacker@example.test"
+    } ], result.fetch(:skipped_email_changes)
+
+    organization.update!(
+      pco_app_id: "fixture-app",
+      pco_secret: "fixture-secret",
+      pco_last_synced_at: Time.current,
+      pco_last_sync_result: result
+    )
+    sign_in_as_admin
+    get planning_center_directory_path
+    assert_select "li", text: "Ada Admin: kept ada@st-example.test; skipped attacker@example.test from Planning Center."
   end
 
   test "a Planning Center Person without email cannot request a sign-in link" do
@@ -142,5 +262,9 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
       VCR.use_cassette("planning_center/people") do
         perform_enqueued_jobs { post sync_planning_center_directory_path }
       end
+    end
+
+    def source_for(**attributes)
+      StaticDirectorySource.new([ attributes ])
     end
 end

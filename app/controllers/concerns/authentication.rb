@@ -34,6 +34,7 @@ module Authentication
     end
 
     def start_new_session_for(person, auth_method:, verified_email: nil)
+      person.update_column(:last_signed_in_at, Time.current)
       person.sessions.create!(auth_method:, verified_email:, user_agent: request.user_agent, ip_address: request.remote_ip).tap do |session|
         Current.session = session
         cookies.signed.permanent[:session_id] = { value: session.id, httponly: true, same_site: :lax }
