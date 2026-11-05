@@ -1,4 +1,5 @@
 require "test_helper"
+require "rake"
 
 class BannerVariantDecodingTest < ActionDispatch::IntegrationTest
   setup do
@@ -74,5 +75,56 @@ class BannerVariantDecodingTest < ActionDispatch::IntegrationTest
     perform_enqueued_jobs { @project.enable_public_link! && @project.reset_public_link! }
 
     assert @project.reload.banner_ready?
+  end
+
+  test "an anonymous visitor cannot force an unprepared variation of a public banner" do
+    attach_ready_banner(@project)
+    unprepared = @project.banner.blob.variant(resize_to_limit: [ 50, 50 ], format: "webp")
+
+    assert_no_difference "ActiveStorage::VariantRecord.count" do
+      get rails_blob_representation_path(@project.banner.blob.signed_id, unprepared.variation.key, @project.banner.blob.filename)
+    end
+
+    assert_response :not_found
+  end
+
+  test "an anonymous visitor is served a prepared banner variant but not one whose transform failed" do
+    attach_ready_banner(@project)
+    prepared = @project.banner_variant(:wide)
+    path = rails_blob_representation_path(@project.banner.blob.signed_id, prepared.variation.key, @project.banner.blob.filename)
+
+    get path
+    assert_response :redirect
+
+    @project.banner.blob.update!(metadata: @project.banner.blob.metadata.merge("variants_failed" => true))
+    get path
+    assert_response :not_found
+  end
+
+  test "a signed-in person still gets an on-demand variant" do
+    attach_ready_banner(@project)
+    sign_in_as_leader
+    unprepared = @project.banner.blob.variant(resize_to_limit: [ 50, 50 ], format: "webp")
+
+    assert_difference "ActiveStorage::VariantRecord.count", 1 do
+      get rails_blob_representation_path(@project.banner.blob.signed_id, unprepared.variation.key, @project.banner.blob.filename)
+    end
+
+    assert_response :redirect
+  end
+
+  test "banners:prepare queues the variants job only for banners that are not ready" do
+    ready = attach_ready_banner(projects(:community_meal))
+    pending = projects(:outsider_project)
+    pending.banner.attach(io: file_fixture("banner_wide.jpg").open, filename: "banner.jpg", content_type: "image/jpeg")
+    pending.banner.blob.analyze
+
+    Rails.application.load_tasks unless Rake::Task.task_defined?("banners:prepare")
+    Rake::Task["banners:prepare"].reenable
+
+    assert_enqueued_jobs 1, only: ProjectBannerVariantsJob do
+      assert_enqueued_with(job: ProjectBannerVariantsJob, args: [ pending ]) { capture_io { Rake::Task["banners:prepare"].invoke } }
+    end
+    assert ready.banner_ready?
   end
 end
