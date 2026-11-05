@@ -42,7 +42,7 @@ class SmsOptOut < ApplicationRecord
     transaction do
       connection.execute("SELECT pg_advisory_xact_lock(#{sanitize_sql_array([ "hashtext(?)", phone ])})")
       record = find_or_initialize_by(phone:)
-      next if record.persisted? && at <= record.last_event_at
+      next if record.persisted? && at < record.last_event_at
 
       yield record
       record.last_event_at = at

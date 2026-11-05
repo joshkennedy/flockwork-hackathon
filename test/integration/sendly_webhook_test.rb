@@ -79,6 +79,14 @@ class SendlyWebhookTest < ActionDispatch::IntegrationTest
     assert @volunteer.reload.notification_for?("sms", "task_assigned")
   end
 
+  test "a STOP in the same second as an earlier START still applies" do
+    post_event("evt_1", "message.opt_in", "+15005550000", created: 100)
+    post_event("evt_2", "message.opt_out", "+15005550000", created: 100)
+
+    assert SmsOptOut.blocked?("+15005550000")
+    assert_not @volunteer.reload.notification_for?("sms", "task_assigned")
+  end
+
   test "every transition takes the per-phone advisory lock before reading the row" do
     %w[opt_out! opt_in!].each do |transition|
       statements = []
