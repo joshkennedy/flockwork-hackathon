@@ -293,6 +293,43 @@ class NotesVisibilityTest < ActionDispatch::IntegrationTest
     assert_not Note.exists?(body: "Rejected volunteer admins note.")
   end
 
+  test "after removal a person no longer sees project Notes they authored" do
+    sign_in_as_volunteer
+    distinctive = "Removed member note sentinel: setup gear list."
+
+    assert_difference "Note.count", 1 do
+      post project_notes_path(@project), params: {
+        note: {
+          notable_type: "Project",
+          notable_id: @project.id,
+          visibility: "team",
+          body: distinctive
+        }
+      }
+    end
+
+    get project_path(@project)
+
+    assert_response :success
+    assert_includes response.body, distinctive
+
+    sign_in_as_leader
+    membership = @project.memberships.find_by!(person: people(:volunteer))
+
+    assert_difference "Membership.count", -1 do
+      delete project_membership_path(@project, membership)
+    end
+
+    delete session_path
+    sign_in_as_volunteer
+
+    get project_path(@project)
+
+    assert_response :not_found
+    visible = Policy.visible_notes(people(:volunteer), @project.notes.reload)
+    assert_not visible.exists?(body: distinctive)
+  end
+
   test "a non-Admin cannot write a Person Note" do
     sign_in_as_volunteer
     person = people(:recipient)

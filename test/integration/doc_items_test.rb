@@ -193,6 +193,89 @@ class DocItemsTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "a Volunteer cannot edit a Leader-authored doc but the author and Leaders can" do
+    sign_in_as_leader
+    project = enable_docs_tool!(projects(:community_meal))
+
+    post project_doc_items_path(project), params: {
+      doc_item: {
+        kind: "document",
+        title: "Leader Run Sheet",
+        body: "Original leader text."
+      }
+    }
+
+    item = project.doc_items.find_by!(title: "Leader Run Sheet")
+
+    sign_in_as_volunteer
+
+    patch project_doc_item_path(project, item), params: {
+      doc_item: {
+        kind: "document",
+        title: "Leader Run Sheet",
+        body: "Volunteer tamper attempt."
+      }
+    }
+
+    assert_response :not_found
+    assert_equal "Original leader text.", item.reload.body.to_plain_text
+
+    sign_in_as_leader
+
+    patch project_doc_item_path(project, item), params: {
+      doc_item: {
+        kind: "document",
+        title: "Leader Run Sheet",
+        body: "Leader revision."
+      }
+    }
+
+    assert_redirected_to project_path(project)
+    assert_equal "Leader revision.", item.reload.body.to_plain_text
+  end
+
+  test "a removed author on an open team project cannot update or destroy their doc" do
+    sign_in_as_volunteer
+    project = enable_docs_tool!(projects(:community_meal))
+    project.update!(open_team: true)
+
+    post project_doc_items_path(project), params: {
+      doc_item: {
+        kind: "document",
+        title: "Open Team Notes",
+        body: "Original volunteer text."
+      }
+    }
+
+    item = project.doc_items.find_by!(title: "Open Team Notes")
+
+    sign_in_as_leader
+    membership = project.memberships.find_by!(person: people(:volunteer))
+
+    assert_difference "Membership.count", -1 do
+      delete project_membership_path(project, membership)
+    end
+
+    sign_in_as_volunteer
+
+    patch project_doc_item_path(project, item), params: {
+      doc_item: {
+        kind: "document",
+        title: "Open Team Notes",
+        body: "Tamper after removal."
+      }
+    }
+
+    assert_response :not_found
+    assert_equal "Original volunteer text.", item.reload.body.to_plain_text
+
+    assert_no_difference "DocItem.count" do
+      delete project_doc_item_path(project, item)
+    end
+
+    assert_response :not_found
+  end
+
   test "a Leader can delete another member's doc item" do
     sign_in_as_volunteer
     project = enable_docs_tool!(projects(:community_meal))

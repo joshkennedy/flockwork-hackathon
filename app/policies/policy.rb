@@ -281,7 +281,7 @@ module Policy
     case action
     when :download
       person.admin? || project.memberships.exists?(person: person)
-    when :destroy
+    when :destroy, :update
       return false if archived_locked?(person, project)
 
       person.admin? || record.author_id == person.id || project.memberships.leader.exists?(person: person)
@@ -304,7 +304,9 @@ module Policy
       .or(notes.team.where(notable_type: "Recipient", notable_id: member_recipient_ids))
     leader_notes = notes.leaders.where(notable_type: "Project", notable_id: leader_project_ids)
       .or(notes.leaders.where(notable_type: "Recipient", notable_id: leader_recipient_ids))
-    authored_notes = notes.where(author_id: person.id).where.not(notable_type: "Person")
+    authored_project_notes = notes.where(author_id: person.id, notable_type: "Project", notable_id: member_project_ids)
+    authored_recipient_notes = notes.where(author_id: person.id, notable_type: "Recipient", notable_id: member_recipient_ids)
+    authored_notes = authored_project_notes.or(authored_recipient_notes)
 
     team_notes.or(leader_notes).or(authored_notes)
   end
