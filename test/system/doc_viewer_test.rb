@@ -87,4 +87,22 @@ class DocViewerSystemTest < ApplicationSystemTestCase
     JS
     assert_equal [ 200, 200, 200, 200 ], statuses
   end
+
+  test "the PDF scripting engine is never served and the viewer opens documents with scripting off" do
+    visit new_demo_session_path
+    click_on "Explore as Leader"
+    assert_selector "[data-signed-in-as]", text: "Maria Lopez"
+    visit project_path(@project)
+    click_on "Volunteer Handbook"
+    assert_selector "[data-controller=doc-viewer] canvas", count: 2
+
+    base = find("[data-controller=doc-viewer]")["data-doc-viewer-assets-value"]
+    statuses = evaluate_async_script(<<~JS, base)
+      const [base, done] = arguments
+      Promise.all(["wasm/quickjs-eval.wasm", "wasm/quickjs-eval.js", "wasm/qcms_bg.wasm"]
+        .map((path) => fetch(`${base}/${path}`).then((response) => response.status))).then(done)
+    JS
+    assert_equal [ 404, 404, 200 ], statuses
+    assert_includes File.read(Rails.root.join("app/javascript/controllers/doc_viewer_controller.js")), "enableScripting: false"
+  end
 end

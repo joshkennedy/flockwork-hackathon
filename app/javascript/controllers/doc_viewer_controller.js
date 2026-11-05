@@ -17,6 +17,7 @@ export default class extends Controller {
       this.pdf = await pdfjs.getDocument({
         data,
         isEvalSupported: false,
+        enableScripting: false,
         wasmUrl: `${this.assetsValue}/wasm/`,
         standardFontDataUrl: `${this.assetsValue}/standard_fonts/`
       }).promise
