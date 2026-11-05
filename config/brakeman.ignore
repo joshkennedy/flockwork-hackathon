@@ -9,6 +9,16 @@
       "warning_type": "SQL Injection",
       "fingerprint": "2d52eb1a2bd81906d822efa3c10ca407f27a4f8a2730a4503bb67e4e733b2d58",
       "note": "StaffingSuggestions.active_sql returns a fixed SQL literal with no input. Only that literal is interpolated in the aggregate; skills and serving limit use bound parameters."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "fingerprint": "def25c5fd505e89c01506b6c8e15b70d2e55c20b7a3cd0f26cdeeb641168f8ce",
+      "note": "Search#matching interpolates only table names and column names from the hard-coded WORK constant and literal \"name\"; the query words are bound parameters."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "fingerprint": "cad855dc1dbe2cffd918421799055319c7802e99cc496079a065956d95538172",
+      "note": "Search#matching interpolates only table names and column names from the hard-coded WORK constant and literal \"name\"; the query words are bound parameters."
     }
   ],
   "brakeman_version": "8.1.0"
