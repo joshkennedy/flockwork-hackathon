@@ -45,7 +45,7 @@ class PlannerSessionsController < ApplicationController
     raise ActiveRecord::RecordNotFound unless @planner_session.asking?
 
     @planner_session.record_answer!(params.expect(:answer))
-    PlannerStepJob.perform_later(@project.id, @planner_session.id, Current.session.id)
+    PlannerStepJob.perform_later(@project.id, @planner_session.id, Current.session.id, Current.person.id)
     redirect_to project_planner_session_path(@project, @planner_session)
   end
 
@@ -249,7 +249,7 @@ class PlannerSessionsController < ApplicationController
     end
 
     def enqueue_generation(revision)
-      PlannerStepJob.perform_later(@project.id, @planner_session.id, Current.session.id, revision)
+      PlannerStepJob.perform_later(@project.id, @planner_session.id, Current.session.id, Current.person.id, revision)
     end
 
     def planning_redirect

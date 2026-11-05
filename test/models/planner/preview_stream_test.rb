@@ -71,6 +71,17 @@ class PlannerPreviewStreamTest < ActiveSupport::TestCase
     assert_equal 3, streamed_items.size
   end
 
+  test "does not broadcast a partial after Planner authority is revoked" do
+    stream = Planner::PreviewStream.new(@planner_session, clock: -> { 0.0 }, authorized: -> { false })
+
+    with_broadcasts do
+      stream.push(card: { "question" => "Which meals?", "options" => %w[Dinner Lunch Brunch] },
+        added: [ slot_run("Dinner") ])
+    end
+
+    assert_empty @broadcasts
+  end
+
   private
     def slot_run(label)
       { "kind" => "slot_run", "source_key" => "meal-slots-#{label.downcase}",
