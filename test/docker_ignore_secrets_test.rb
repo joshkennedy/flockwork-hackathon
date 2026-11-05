@@ -25,10 +25,14 @@ class DockerIgnoreSecretsTest < ActiveSupport::TestCase
     end
   end
 
-  test ".gitignore excludes /.claude/, **/.env*, and **/config/credentials/*.key" do
+  test ".gitignore excludes /.claude/worktrees/, **/.env*, and **/config/credentials/*.key" do
     contents = File.read(Rails.root.join(".gitignore"))
 
-    REQUIRED_PATTERNS.each do |pattern|
+    [
+      "/.claude/worktrees/",
+      "**/.env*",
+      "**/config/credentials/*.key"
+    ].each do |pattern|
       assert_includes contents, pattern
     end
   end

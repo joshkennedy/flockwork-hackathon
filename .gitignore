@@ -49,7 +49,7 @@
 **/config/credentials/*.key
 
 # Nested agent worktrees copy .env files and credential keys.
-/.claude/
+/.claude/worktrees/
 
 # Lavish review artifacts
 /.lavish/
