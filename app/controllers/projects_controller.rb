@@ -8,7 +8,7 @@ class ProjectsController < ApplicationController
   before_action :authorize_deleted_list, only: :deleted
   before_action :authorize_project_team, only: :team
   rate_limit to: 10, within: 1.hour, by: -> { Current.person.id }, name: "planner_spend", scope: :planner,
-    only: :start_planner, with: :start_planner_rate_limited
+    only: %i[start_planner start_meal_planner], with: :start_planner_rate_limited
 
   def index
     @projects = Policy.listed_projects(Current.person).with_attached_banner.order(:name)

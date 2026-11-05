@@ -90,6 +90,31 @@ class DemoSpendLimitsTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "start meal planner is bounded per person and paid generation stops at the cap" do
+    post demo_session_path(role: "leader")
+    provider = CountingPlannerProvider.new(
+      planner_response(card: { "question" => "What matters most?", "options" => [ "Food", "Setup" ] })
+    )
+    Rails.configuration.x.planner_provider = provider
+    with_rate_limit_store do
+      perform_enqueued_jobs(only: PlannerStepJob) do
+        10.times do
+          post start_meal_planner_projects_path
+          assert_response :see_other
+        end
+      end
+      assert_equal 0, provider.calls
+      assert_no_difference [ "Project.count", "PlannerSession.count" ] do
+        perform_enqueued_jobs(only: PlannerStepJob) do
+          post start_meal_planner_projects_path
+        end
+      end
+      assert_redirected_to new_project_path
+      assert_equal "Too many planning requests. Try again in an hour.", flash[:alert]
+      assert_equal 0, provider.calls
+    end
+  end
+
   test "retry generation is bounded per person and paid generation stops at the cap" do
     post demo_session_path(role: "leader")
     provider = CountingPlannerProvider.new(
