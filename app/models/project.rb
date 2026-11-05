@@ -144,18 +144,15 @@ class Project < ApplicationRecord
   end
 
   def reset_public_link!
-    rotate_banner_blob!
-    update!(public_token: generate_public_token)
+    revoke_with_banner_rotation!(public_token: generate_public_token)
   end
 
   def disable_public_link!
-    rotate_banner_blob!
-    update!(public_token: nil)
+    revoke_with_banner_rotation!(public_token: nil)
   end
 
   def soft_delete!
-    rotate_banner_blob!
-    update!(deleted_at: Time.current)
+    revoke_with_banner_rotation!(deleted_at: Time.current)
   end
 
   def self.create_for(creator:, attributes:)
@@ -180,26 +177,40 @@ class Project < ApplicationRecord
       end
     end
 
-    def rotate_banner_blob!
-      return unless banner.attached?
+    def revoke_with_banner_rotation!(attributes)
+      old_blob = banner.blob if banner.attached?
+      new_blob = copy_banner_blob(old_blob) if old_blob
+      committed = false
 
-      old_blob = banner.blob
-      new_blob = old_blob.open do |file|
+      self.class.transaction do
+        transaction = self.class.current_transaction
+        if old_blob
+          transaction.after_commit do
+            committed = true
+            old_blob.purge
+          end
+        end
+        transaction.after_rollback { new_blob.purge } if new_blob
+
+        banner.attach(new_blob) if new_blob
+        update!(attributes)
+      end
+    rescue StandardError
+      new_blob&.purge unless committed || new_blob&.destroyed?
+      raise
+    end
+
+    def copy_banner_blob(blob)
+      blob.open do |file|
         ActiveStorage::Blob.create_and_upload!(
           io: file,
-          filename: old_blob.filename,
-          content_type: old_blob.content_type,
-          metadata: old_blob.metadata,
-          service_name: old_blob.service_name,
+          filename: blob.filename,
+          content_type: blob.content_type,
+          metadata: blob.metadata,
+          service_name: blob.service_name,
           identify: false
         )
       end
-      banner.attach(new_blob)
-      unless banner.blob_id == new_blob.id
-        new_blob.purge
-        raise ActiveRecord::RecordInvalid, self
-      end
-      old_blob.purge
     end
 
     def banner_is_an_image_within_limits

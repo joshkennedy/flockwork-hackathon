@@ -73,6 +73,7 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
     project.banner.attach(io: file_fixture("banner_wide.jpg").open, filename: "banner.jpg", content_type: "image/jpeg")
     project.enable_public_link!
     token = project.public_token
+    old_banner_blob_id = project.banner.blob_id
 
     get public_project_path(token)
     banner_path = css_select("picture img").first["src"]
@@ -84,6 +85,7 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
 
     project.disable_public_link!
 
+    assert_not_equal old_banner_blob_id, project.reload.banner.blob_id
     get public_project_path(token)
     assert_response :not_found
 
@@ -101,12 +103,14 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
     project.banner.attach(io: file_fixture("banner_wide.jpg").open, filename: "banner.jpg", content_type: "image/jpeg")
     project.enable_public_link!
     old_token = project.public_token
+    old_banner_blob_id = project.banner.blob_id
 
     get public_project_path(old_token)
     old_banner_path = css_select("picture img").first["src"]
 
     project.reset_public_link!
 
+    assert_not_equal old_banner_blob_id, project.reload.banner.blob_id
     get old_banner_path
     follow_redirect! if response.redirect?
     assert_response :not_found
@@ -121,16 +125,34 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
     project = projects(:community_meal)
     project.banner.attach(io: file_fixture("banner_wide.jpg").open, filename: "banner.jpg", content_type: "image/jpeg")
     project.enable_public_link!
+    old_banner_blob_id = project.banner.blob_id
 
     get public_project_path(project.public_token)
     old_banner_path = css_select("picture img").first["src"]
 
     delete project_path(project)
 
+    assert_not_equal old_banner_blob_id, project.reload.banner.blob_id
     get old_banner_path
     follow_redirect! if response.redirect?
     assert_response :not_found
     assert project.reload.banner.attached?
+  end
+
+  test "a failed Public link revocation keeps the current banner attachment" do
+    project = projects(:community_meal)
+    project.banner.attach(io: file_fixture("banner_wide.jpg").open, filename: "banner.jpg", content_type: "image/jpeg")
+    project.enable_public_link!
+    old_token = project.public_token
+    old_banner_blob_id = project.banner.blob_id
+
+    assert_raises(ActiveRecord::RecordInvalid) do
+      project.send(:revoke_with_banner_rotation!, name: nil, public_token: nil)
+    end
+
+    project.reload
+    assert_equal old_token, project.public_token
+    assert_equal old_banner_blob_id, project.banner.blob_id
   end
 
   test "the public view shows allowed content and no Person names" do
