@@ -44,7 +44,7 @@ module Planner
         end
         project_name, project_description, enabled_tools = current_project_values
 
-        {
+        payload = {
           project_name:,
           project_description:,
           leader_description: session.description,
@@ -61,6 +61,8 @@ module Planner
           past_projects: past_projects,
           current_suggestions: safe_suggestions
         }
+        redactor = Planner::NameRedactor.new(Current.organization)
+        payload.deep_transform_values { |value| value.is_a?(String) ? redactor.call(value) : value }
       end
 
       def current_project_values
