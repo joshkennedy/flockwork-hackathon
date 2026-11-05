@@ -18,9 +18,9 @@
     <% end %>
     <span class="mt-1 block text-meta text-ink-2"><%= person_pill(item.author) %></span>
     </div>
-    <% if Policy.can?(Current.person, :manage_docs, project) || Policy.can?(Current.person, :destroy, item) %>
+    <% if Policy.can?(Current.person, :update, item) || Policy.can?(Current.person, :destroy, item) %>
       <%= actions_menu("Actions for #{item.title}") do %>
-        <% if Policy.can?(Current.person, :manage_docs, project) %>
+        <% if Policy.can?(Current.person, :update, item) %>
           <%= link_to "Edit", edit_project_doc_item_path(project, item) %>
         <% end %>
         <% if Policy.can?(Current.person, :destroy, item) %>

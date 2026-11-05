@@ -1,7 +1,8 @@
 class DocItemsController < ApplicationController
   before_action :set_project
   before_action :set_doc_item, only: %i[ edit update destroy download ]
-  before_action :authorize_manage_docs, except: :download
+  before_action :authorize_manage_docs, only: %i[ new create ]
+  before_action :authorize_update_doc_item, only: %i[ edit update ]
   before_action :authorize_download, only: :download
   before_action :authorize_destroy_doc_item, only: :destroy
   before_action :require_uploaded_file, only: %i[ create update ]
@@ -65,6 +66,10 @@ class DocItemsController < ApplicationController
 
     def authorize_destroy_doc_item
       raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :destroy, @doc_item)
+    end
+
+    def authorize_update_doc_item
+      raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :update, @doc_item)
     end
 
     def require_uploaded_file
