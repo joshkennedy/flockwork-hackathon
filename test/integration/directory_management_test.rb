@@ -58,7 +58,8 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     assert_redirected_to person_path(people(:volunteer))
     people(:volunteer).reload
     assert_equal "Victor Volunteer", people(:volunteer).name
-    assert_equal "victor@st-example.test", people(:volunteer).email
+    assert_equal "vic@st-example.test", people(:volunteer).email
+    assert_equal "victor@st-example.test", people(:volunteer).pending_email
     assert_equal "555-0199", people(:volunteer).phone
   end
 

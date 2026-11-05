@@ -13,6 +13,19 @@ class MailersTest < ActionMailer::TestCase
     end
   end
 
+  test "the email change confirmation goes to the pending address with a 24 hour link" do
+    person = people(:volunteer)
+    person.update!(pending_email: "new.vic@st-example.test")
+    mail = SignInMailer.email_change(person)
+
+    assert_equal [ "new.vic@st-example.test" ], mail.to
+    assert_equal "Confirm your email for Flockwork", mail.subject
+    [ mail.html_part, mail.text_part ].each do |part|
+      assert_match %r{http://example.com/email_confirmations/\S+}, part.body.decoded
+      assert_match "expires in 24 hours", part.body.decoded
+    end
+  end
+
   test "the welcome email names the Organization and explains signing in without a password" do
     admin = people(:admin)
     mail = WelcomeMailer.welcome(admin)

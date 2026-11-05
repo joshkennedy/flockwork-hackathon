@@ -5,4 +5,12 @@ class SignInMailer < ApplicationMailer
 
     mail to: person.email, subject: "Your Flockwork sign-in link"
   end
+
+  # Goes to the address being claimed, so only its mailbox owner can make it the Person's sign-in email.
+  def email_change(person)
+    @person = person
+    @url = email_confirmation_url(person.generate_token_for(:email_change))
+
+    mail to: person.pending_email, subject: "Confirm your email for Flockwork"
+  end
 end

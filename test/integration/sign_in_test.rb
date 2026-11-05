@@ -135,8 +135,11 @@ class SignInTest < ActionDispatch::IntegrationTest
     admin = organization.people.find_by!(email: "mallory@example.test")
     token = admin.generate_token_for(:sign_in)
 
-    patch person_path(admin), params: { person: { email: outsider.email } }
+    perform_enqueued_jobs do
+      patch person_path(admin), params: { person: { email: outsider.email } }
+    end
     assert_redirected_to person_path(admin)
+    post email_confirmation_path(ActionMailer::Base.deliveries.last.text_part.body.decoded[%r{/email_confirmations/(\S+)}, 1])
     assert_equal "olive@outsider-church.test", admin.reload.email
 
     get sign_in_link_path(token)

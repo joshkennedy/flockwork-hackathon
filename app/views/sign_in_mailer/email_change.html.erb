@@ -1,0 +1,10 @@
+<% content_for :preheader, "Confirm this address to use it with Flockwork. The link works once and expires in 24 hours." %>
+
+<%= mail_heading "Confirm your email address" %>
+<%= mail_paragraph "Hi #{@person.name}, an Admin asked to use this address for your Flockwork account. Confirm it to sign in with it." %>
+<%= mail_button "Confirm email", @url %>
+<%= mail_muted "The link works once and expires in 24 hours. If this isn't you, ignore this email; nothing changes until the link is used." %>
+<%= mail_muted do %>
+  Button not working? Paste this into your browser:<br>
+  <%= mail_link @url, @url %>
+<% end %>
