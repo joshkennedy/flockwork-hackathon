@@ -5,16 +5,16 @@ module Webhooks
 
     TOLERANCE = 300
 
-    # Assumed payload: { "id": "evt_...", "type": "message.opt_out" | "message.opt_in",
-    #                    "data": { "from" | "phone_number" | "to": "+1..." } }
-    # For STOP/START the number that replied is the sender; "to" is our own number, so it is tried last.
+    # Payload per sendly.live/llms.txt "Webhook Payload Structure":
+    # { "id": "evt_...", "type": "message.opt_out" | "message.opt_in",
+    #   "data": { "object": { "from": "+1...", "to": "+1..." } } }
+    # For an inbound STOP/START, "from" is the subscriber and "to" is our number.
     def create
       return head :unauthorized unless valid_signature?
 
       event = JSON.parse(request.raw_post)
       id, type = event["id"].to_s, event["type"].to_s
-      data = event["data"].is_a?(Hash) ? event["data"] : {}
-      phone = data["from"] || data["phone_number"] || data["phone"] || data["to"]
+      phone = event.dig("data", "object", "from") if event["data"].is_a?(Hash) && event["data"]["object"].is_a?(Hash)
       return head :unprocessable_entity if id.empty? || phone.blank? || %w[message.opt_out message.opt_in].exclude?(type)
 
       SmsOptOut.transaction do

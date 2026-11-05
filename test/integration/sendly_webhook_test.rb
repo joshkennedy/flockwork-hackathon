@@ -46,6 +46,17 @@ class SendlyWebhookTest < ActionDispatch::IntegrationTest
     assert_not SmsOptOut.blocked?("+15005550000")
   end
 
+  test "opt in from the old number does not re-enable SMS on a changed phone" do
+    post_event("evt_1", "message.opt_out", "+15005550000")
+    @volunteer.update!(phone: "+15005550111")
+    post_event("evt_2", "message.opt_in", "+15005550000")
+
+    assert_response :ok
+    assert_not @volunteer.reload.notification_for?("sms", "task_assigned")
+    assert @leader.reload.notification_for?("sms", "invitation")
+    assert_not SmsOptOut.blocked?("+15005550000")
+  end
+
   test "bad signature, stale timestamp and missing secret return 401 and change nothing" do
     post_event("evt_1", "message.opt_out", "+15005550000", signature: "sha256=bad")
     assert_response :unauthorized
@@ -73,7 +84,7 @@ class SendlyWebhookTest < ActionDispatch::IntegrationTest
 
   private
     def post_event(id, type, phone, timestamp: Time.current.to_i, signature: nil, secret: "whsec_test")
-      body = { id:, type:, data: { from: phone } }.to_json
+      body = { id:, type:, data: { object: { id: "msg_#{id}", from: phone, to: "+18335550100", direction: "inbound" } } }.to_json
       signature ||= "sha256=#{OpenSSL::HMAC.hexdigest("SHA256", secret, "#{timestamp}.#{body}")}"
       post "/webhooks/sendly", params: body,
         headers: { "Content-Type" => "application/json", "X-Sendly-Timestamp" => timestamp.to_s, "X-Sendly-Signature" => signature }

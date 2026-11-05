@@ -30,7 +30,8 @@ class SmsOptOut < ApplicationRecord
       next unless record
 
       record.disabled_preferences.each do |person_id, kinds|
-        person = Person.find_by(id: person_id)
+        # A Person who changed numbers after STOP never consented to SMS on the new one.
+        person = Person.find_by(id: person_id, phone: record.phone)
         person&.update_columns(sms_preferences: person.sms_preferences.merge(kinds.index_with { true }))
       end
       record.destroy!
