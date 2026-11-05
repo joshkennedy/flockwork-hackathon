@@ -39,7 +39,7 @@ class PlannerStepJob < ApplicationJob
 
     def broadcast(planner_session)
       if planner_session.build_as_you_go?
-        Turbo::StreamsChannel.broadcast_replace_to(
+        PlannerStreamChannel.broadcast_replace_to(
           planner_session,
           target: ActionView::RecordIdentifier.dom_id(planner_session, :meal_builder),
           partial: "planner_sessions/meal_builder",
@@ -47,13 +47,13 @@ class PlannerStepJob < ApplicationJob
         )
         return
       end
-      Turbo::StreamsChannel.broadcast_replace_to(
+      PlannerStreamChannel.broadcast_replace_to(
         planner_session,
         target: ActionView::RecordIdentifier.dom_id(planner_session, :card),
         partial: "planner_sessions/card",
         locals: { project: planner_session.project, planner_session: }
       )
-      Turbo::StreamsChannel.broadcast_replace_to(
+      PlannerStreamChannel.broadcast_replace_to(
         planner_session,
         target: ActionView::RecordIdentifier.dom_id(planner_session, :summary),
         partial: "planner_sessions/summary",

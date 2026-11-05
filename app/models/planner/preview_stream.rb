@@ -61,7 +61,7 @@ module Planner
       def replace(target, partial, **locals)
         return unless @authorized.call
 
-        Turbo::StreamsChannel.broadcast_replace_to(@planner_session, target:, partial:, locals:)
+        PlannerStreamChannel.broadcast_replace_to(@planner_session, target:, partial:, locals:)
       end
 
       def sent!
