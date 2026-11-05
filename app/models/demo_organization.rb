@@ -109,7 +109,8 @@ class DemoOrganization
           record.demo = true
           record.overextended_limit = 3
         end
-        return organization if organization.projects.exists?
+        # A real church may own this slug; never adopt it, or the nightly reset would destroy it.
+        return organization if !organization.demo? || organization.projects.exists?
 
         organization.update!(name: "Grace Fellowship", demo: true, overextended_limit: 3)
         people = seed_people!(organization)

@@ -38,6 +38,21 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "seed leaves a real organization with the demo slug untouched" do
+    real = organizations(:grace_fellowship)
+    real.update!(name: "Grace Fellowship Church", demo: false)
+
+    assert_no_difference -> { Person.count } do
+      DemoOrganization.seed!
+    end
+
+    real.reload
+    assert_not real.demo?
+    assert_equal "Grace Fellowship Church", real.name
+    assert_raises(ActiveRecord::RecordNotFound) { DemoOrganization.reset! }
+    assert Organization.exists?(real.id)
+  end
+
   test "reset replaces only the demo Organization and all of its dependent data" do
     other_organization = organizations(:st_example)
     other_counts = [ other_organization.people.count, other_organization.projects.count ]
