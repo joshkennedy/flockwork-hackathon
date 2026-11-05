@@ -7,7 +7,7 @@ class InvitationsController < ApplicationController
     return render :invalid, status: :unprocessable_content unless @invitation&.pending?
 
     terminate_session if Current.session && Current.person != @invitation.person
-    start_new_session_for @invitation.person unless Current.person == @invitation.person
+    start_new_session_for @invitation.person, auth_method: "invitation" unless Current.person == @invitation.person
     raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :respond, @invitation)
   end
 

@@ -37,7 +37,7 @@ class Person < ApplicationRecord
     dependent: :nullify
 
   generates_token_for :sign_in, expires_in: 15.minutes do
-    last_signed_in_at
+    [ last_signed_in_at, email ]
   end
 
   # Every typed word must appear somewhere in the name, so "ma lo" finds Maria Lopez.

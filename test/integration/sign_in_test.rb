@@ -91,6 +91,64 @@ class SignInTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_select "[data-organization-name]", "Outsider Church"
     assert_select "[data-signed-in-as]", "Leo Elsewhere"
+    assert_select "a", text: "Switch Church"
+  end
+
+  test "signing up with another Person's email cannot switch into that Person's Organization" do
+    post organizations_path, params: {
+      church_name: "Mallory Church",
+      your_name: "Mallory",
+      email: people(:leader).email
+    }
+    follow_redirect!
+
+    assert_select "a", text: "Switch Church", count: 0
+
+    post organization_choice_path, params: { person_id: people(:leader).id }
+    get home_path
+
+    assert_select "[data-signed-in-as]", "Mallory"
+  end
+
+  test "changing the signed-in Person's email does not transfer magic-link proof" do
+    admin = people(:admin)
+    outsider = people(:outsider)
+    token = request_sign_in_link(admin)
+    post sign_in_link_path(token)
+
+    patch person_path(admin), params: { person: { email: outsider.email } }
+    post organization_choice_path, params: { person_id: outsider.id }
+
+    assert_response :not_found
+    get home_path
+    assert_select "[data-signed-in-as]", "Ada Admin"
+  end
+
+  test "changing a Person's email invalidates sign-in links sent to their old email" do
+    outsider = people(:outsider)
+    post organizations_path, params: {
+      church_name: "Mallory Church",
+      your_name: "Mallory",
+      email: "mallory@example.test"
+    }
+    organization = Organization.find_by!(name: "Mallory Church")
+    admin = organization.people.find_by!(email: "mallory@example.test")
+    token = admin.generate_token_for(:sign_in)
+
+    patch person_path(admin), params: { person: { email: outsider.email } }
+    assert_redirected_to person_path(admin)
+    assert_equal "olive@outsider-church.test", admin.reload.email
+
+    get sign_in_link_path(token)
+
+    assert_response :unprocessable_content
+    assert_select "p", "That sign-in link has expired or was already used. Request a new one."
+
+    post organization_choice_path, params: { person_id: outsider.id }
+
+    assert_response :not_found
+    get home_path
+    assert_select "[data-signed-in-as]", "Mallory"
   end
 
   test "choosing an organization cannot switch to a Person with a different email" do
