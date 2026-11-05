@@ -25,6 +25,9 @@ module Flockwork
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
+    # Rails also serves application/pdf inline by its claimed type; only images are inline here.
+    config.active_storage.content_types_allowed_inline = ActiveStorage::Engine.config.active_storage.content_types_allowed_inline - %w[application/pdf]
+
     # Parallel tickets use preassigned migration versions that can be ahead of wall-clock time.
     config.active_record.validate_migration_timestamps = false
 
