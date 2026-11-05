@@ -93,6 +93,18 @@ class SignInTest < ActionDispatch::IntegrationTest
     assert_select "[data-signed-in-as]", "Leo Elsewhere"
   end
 
+  test "signing up with another Person's email cannot switch into that Person's Organization" do
+    post organizations_path, params: {
+      church_name: "Mallory Church",
+      your_name: "Mallory",
+      email: people(:leader).email
+    }
+    post organization_choice_path, params: { person_id: people(:leader).id }
+    get home_path
+
+    assert_select "[data-signed-in-as]", "Mallory"
+  end
+
   test "choosing an organization cannot switch to a Person with a different email" do
     sign_in_as_leader
 

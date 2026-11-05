@@ -41,7 +41,7 @@ class OrganizationsController < ApplicationController
     @admin = @organization.people.build(name: organization_params[:your_name], email: organization_params[:email], admin: true)
 
     if @admin.valid?(:organization_creation) && @organization.save
-      start_new_session_for @admin
+      start_new_session_for @admin, auth_method: "signup"
       WelcomeMailer.welcome(@admin).deliver_later
       redirect_to home_path
     else
