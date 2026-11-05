@@ -1,4 +1,6 @@
 class DocItem < ApplicationRecord
+  include OrganizationOwnedBlobs
+
   belongs_to :project
   belongs_to :author, class_name: "Person"
   broadcasts_refreshes_to :project
@@ -11,6 +13,7 @@ class DocItem < ApplicationRecord
   enum :kind, { document: 0, file: 1, link: 2 }, validate: true
 
   validates :title, presence: true
+  validates_organization_owned_blobs attachments: [ :file ], rich_texts: [ :body ]
   validate :validate_kind_specific_fields
 
   scope :ordered, -> { order(:kind, :title, :id) }

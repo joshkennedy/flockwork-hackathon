@@ -1,6 +1,50 @@
 require "test_helper"
 
 class MessagesTest < ActionDispatch::IntegrationTest
+  test "a member cannot embed another church's blob" do
+    blob = ActiveStorage::Blob.create_and_upload!(
+      io: file_fixture("banner_small.png").open,
+      filename: "banner.png",
+      content_type: "image/png",
+      metadata: { "organization_id" => organizations(:st_example).id }
+    )
+    sign_in_as_outsider
+    project = projects(:outsider_project)
+    project.update!(enabled_tools: project.enabled_tools + [ "messages" ])
+
+    assert_no_difference [ "Message.count", "ActiveStorage::Attachment.count" ] do
+      post project_messages_path(project), params: {
+        message: { body: rich_text_with(blob, "Foreign image") }
+      }
+    end
+
+    assert_redirected_to project_path(project)
+    assert_match "belongs to another church", flash[:alert]
+    assert_not project.messages.exists?
+  end
+
+  test "an unstamped legacy blob attached in another church cannot be embedded" do
+    blob = ActiveStorage::Blob.create_and_upload!(
+      io: file_fixture("banner_small.png").open,
+      filename: "banner.png",
+      content_type: "image/png"
+    )
+    projects(:community_meal).banner.attach(blob)
+    sign_in_as_outsider
+    project = projects(:outsider_project)
+    project.update!(enabled_tools: project.enabled_tools + [ "messages" ])
+
+    assert_no_difference [ "Message.count", "ActiveStorage::Attachment.count" ] do
+      post project_messages_path(project), params: {
+        message: { body: rich_text_with(blob, "Legacy foreign image") }
+      }
+    end
+
+    assert_redirected_to project_path(project)
+    assert_match "belongs to another church", flash[:alert]
+    assert_not project.messages.exists?
+  end
+
   test "a Team member posts messages and replies with expected order on the board" do
     sign_in_as_volunteer
     project = projects(:community_meal)
@@ -122,4 +166,9 @@ class MessagesTest < ActionDispatch::IntegrationTest
     assert_response :not_found
     assert_equal 0, project.messages.count
   end
+
+  private
+    def rich_text_with(blob, text)
+      %(<div>#{text}</div><action-text-attachment sgid="#{blob.attachable_sgid}"></action-text-attachment>)
+    end
 end

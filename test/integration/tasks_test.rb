@@ -1,6 +1,30 @@
 require "test_helper"
 
 class TasksTest < ActionDispatch::IntegrationTest
+  test "an admin cannot embed another church's blob in Task details" do
+    blob = ActiveStorage::Blob.create_and_upload!(
+      io: file_fixture("banner_small.png").open,
+      filename: "banner.png",
+      content_type: "image/png",
+      metadata: { "organization_id" => organizations(:st_example).id }
+    )
+    sign_in_as_outsider
+    project = projects(:outsider_project)
+    project.update!(enabled_tools: project.enabled_tools + [ "tasks" ])
+
+    assert_no_difference [ "Task.count", "ActiveStorage::Attachment.count" ] do
+      post project_tasks_path(project), params: {
+        task: {
+          title: "Foreign image",
+          details: %(<div>Foreign image</div><action-text-attachment sgid="#{blob.attachable_sgid}"></action-text-attachment>)
+        }
+      }
+    end
+
+    assert_response :unprocessable_content
+    assert_not project.tasks.exists?(title: "Foreign image")
+  end
+
   test "a Leader creates, assigns, edits, unassigns, and deletes Tasks" do
     sign_in_as_leader
     project = projects(:community_meal)

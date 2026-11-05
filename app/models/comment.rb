@@ -1,4 +1,6 @@
 class Comment < ApplicationRecord
+  include OrganizationOwnedBlobs
+
   belongs_to :commentable, polymorphic: true
   belongs_to :author, class_name: "Person"
   # Through another record that a cascade delete may already have removed, so nil-safe.
@@ -9,6 +11,7 @@ class Comment < ApplicationRecord
   has_rich_text :body
 
   validates :body, presence: true
+  validates_organization_owned_blobs rich_texts: [ :body ]
 
   after_create :follow_author
   after_create :notify_followers

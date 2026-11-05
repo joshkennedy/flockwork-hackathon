@@ -1,5 +1,6 @@
 class Project < ApplicationRecord
   include RefreshesDashboard
+  include OrganizationOwnedBlobs
   include OrganizationScoped
 
   TOOLS = %w[tasks schedule signup_sheet budget recipients messages docs list].freeze
@@ -42,6 +43,7 @@ class Project < ApplicationRecord
   has_one_attached :banner
   validates :banner_focus_x, :banner_focus_y, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 1 }
   validates :banner_alt_text, length: { maximum: 200 }
+  validates_organization_owned_blobs attachments: [ :banner ]
   validate :banner_is_an_image_within_limits
   validate :banner_pixel_dimensions_within_limits
 
@@ -206,7 +208,7 @@ class Project < ApplicationRecord
           io: file,
           filename: blob.filename,
           content_type: blob.content_type,
-          metadata: blob.metadata,
+          metadata: blob.metadata.merge("organization_id" => organization_id),
           service_name: blob.service_name,
           identify: false
         )

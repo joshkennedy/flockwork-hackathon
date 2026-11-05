@@ -1,4 +1,6 @@
 class Message < ApplicationRecord
+  include OrganizationOwnedBlobs
+
   belongs_to :project
   belongs_to :author, class_name: "Person"
   belongs_to :parent, class_name: "Message", optional: true
@@ -12,6 +14,7 @@ class Message < ApplicationRecord
   has_rich_text :body
 
   validates :body, presence: true
+  validates_organization_owned_blobs rich_texts: [ :body ]
   validate :parent_must_belong_to_project
   validate :parent_must_be_root
 
