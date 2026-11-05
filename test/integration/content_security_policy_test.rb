@@ -12,6 +12,8 @@ class ContentSecurityPolicyTest < ActionDispatch::IntegrationTest
     assert_includes policy, "object-src 'none'"
     assert_includes policy, "connect-src 'self' wss://api.x.ai"
     assert_select "script[nonce='#{nonce}']"
+    assert_select "script[src*=device_theme]"
+    assert_select "script:not([src]):not([type=importmap]):not([type=module])", false
     assert_select "script:not([nonce]):not([src])", false
   end
 
