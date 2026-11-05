@@ -12,6 +12,7 @@ class Message < ApplicationRecord
   has_rich_text :body
 
   validates :body, presence: true
+  validate :parent_must_belong_to_project
   validate :parent_must_be_root
 
   scope :roots, -> { where(parent_id: nil) }
@@ -39,8 +40,19 @@ class Message < ApplicationRecord
 
     def parent_must_be_root
       return if parent_id.nil?
+      return if parent.nil?
       return if parent.parent_id.nil?
 
       errors.add(:parent, "must be a root message")
+    end
+
+    def parent_must_belong_to_project
+      return if parent_id.nil?
+
+      if parent.nil?
+        errors.add(:parent, "must exist")
+      elsif parent.project_id != project_id
+        errors.add(:parent, "must belong to the same project")
+      end
     end
 end
