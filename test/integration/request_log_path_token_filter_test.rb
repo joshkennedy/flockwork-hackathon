@@ -24,6 +24,9 @@ class RequestLogPathTokenFilterTest < ActionDispatch::IntegrationTest
     get invitation_path(invitation_token)
     assert_response :success
 
+    get "/invitations//#{invitation_token}"
+    assert_response :success
+
     log = io.string
     started_lines = log.lines.grep(/Started GET/)
 
