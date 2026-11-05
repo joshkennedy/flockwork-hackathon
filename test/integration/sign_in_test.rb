@@ -124,6 +124,33 @@ class SignInTest < ActionDispatch::IntegrationTest
     assert_select "[data-signed-in-as]", "Ada Admin"
   end
 
+  test "changing a Person's email invalidates sign-in links sent to their old email" do
+    outsider = people(:outsider)
+    post organizations_path, params: {
+      church_name: "Mallory Church",
+      your_name: "Mallory",
+      email: "mallory@example.test"
+    }
+    organization = Organization.find_by!(name: "Mallory Church")
+    admin = organization.people.find_by!(email: "mallory@example.test")
+    token = admin.generate_token_for(:sign_in)
+
+    patch person_path(admin), params: { person: { email: outsider.email } }
+    assert_redirected_to person_path(admin)
+    assert_equal "olive@outsider-church.test", admin.reload.email
+
+    get sign_in_link_path(token)
+
+    assert_response :unprocessable_content
+    assert_select "p", "That sign-in link has expired or was already used. Request a new one."
+
+    post organization_choice_path, params: { person_id: outsider.id }
+
+    assert_response :not_found
+    get home_path
+    assert_select "[data-signed-in-as]", "Mallory"
+  end
+
   test "choosing an organization cannot switch to a Person with a different email" do
     sign_in_as_leader
 
