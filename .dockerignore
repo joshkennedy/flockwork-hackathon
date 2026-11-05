@@ -9,10 +9,15 @@
 
 # Ignore all environment files.
 /.env*
+**/.env*
 
 # Ignore all default key files.
 /config/master.key
 /config/credentials/*.key
+**/config/credentials/*.key
+
+# Nested agent worktrees copy .env files and credential keys.
+/.claude/
 
 # Ignore all logfiles and tempfiles.
 /log/*

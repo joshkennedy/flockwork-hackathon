@@ -9,6 +9,7 @@
 
 # Ignore all environment files.
 /.env*
+**/.env*
 
 # Ignore all logfiles and tempfiles.
 /log/*
@@ -45,6 +46,10 @@
 
 # Environment-specific credentials keys stay local.
 /config/credentials/*.key
+**/config/credentials/*.key
+
+# Nested agent worktrees copy .env files and credential keys.
+/.claude/
 
 # Lavish review artifacts
 /.lavish/
