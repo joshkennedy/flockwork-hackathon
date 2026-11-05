@@ -11,7 +11,7 @@
         readonly
         value="<%= public_project_url(project.public_token) %>"
         class="field w-full"
-        onclick="this.select()"
+        data-controller="select" data-action="click->select#all"
       >
       <div class="mt-4 flex flex-wrap gap-3">
         <%= button_to "Reset Link", reset_public_link_project_path(project), class: "btn btn-secondary", form: { data: { turbo_confirm: "Reset the public link? The current link stops working." } } %>

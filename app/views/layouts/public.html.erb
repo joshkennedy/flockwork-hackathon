@@ -1,16 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"<%= " data-dark" if appearance == "dark" %>>
   <head>
-    <% if appearance == "system" %>
-      <script>
-        {
-        const darkQuery = matchMedia("(prefers-color-scheme: dark)")
-        const followDevice = () => document.documentElement.toggleAttribute("data-dark", darkQuery.matches)
-        followDevice()
-        darkQuery.addEventListener("change", () => { if (!document.cookie.includes("appearance=")) followDevice() })
-        }
-      </script>
-    <% end %>
+    <%= javascript_include_tag "device_theme" if appearance == "system" %>
     <title><%= content_for(:title) || "Project" %></title>
     <meta name="theme-color" content="<%= appearance == "dark" ? "#141413" : "#F3F2EF" %>"<%= ' media="(prefers-color-scheme: light)"'.html_safe if appearance == "system" %>>
     <% if appearance == "system" %><meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)"><% end %>
