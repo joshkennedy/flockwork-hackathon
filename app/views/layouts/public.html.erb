@@ -2,7 +2,7 @@
 <html lang="en"<%= " data-dark" if appearance == "dark" %>>
   <head>
     <% if appearance == "system" %>
-      <script>
+      <script nonce="<%= content_security_policy_nonce %>">
         {
         const darkQuery = matchMedia("(prefers-color-scheme: dark)")
         const followDevice = () => document.documentElement.toggleAttribute("data-dark", darkQuery.matches)
