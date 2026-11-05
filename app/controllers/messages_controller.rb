@@ -6,7 +6,10 @@ class MessagesController < ApplicationController
   before_action :authorize_delete_message, only: %i[ destroy ]
 
   def create
-    @message = @project.messages.build(message_params)
+    attributes = create_message_params
+    parent_id = attributes.delete(:parent_id)
+    @message = @project.messages.build(attributes)
+    @message.parent = @project.messages.find(parent_id) if parent_id.present?
     @message.author = Current.person
 
     if @message.save
@@ -20,7 +23,7 @@ class MessagesController < ApplicationController
   end
 
   def update
-    if @message.update(message_params)
+    if @message.update(update_message_params)
       redirect_to @project
     else
       render :edit, status: :unprocessable_content
@@ -53,7 +56,11 @@ class MessagesController < ApplicationController
       raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :delete_message, @message)
     end
 
-    def message_params
+    def create_message_params
       params.expect(message: [ :body, :parent_id ])
+    end
+
+    def update_message_params
+      params.expect(message: [ :body ])
     end
 end
