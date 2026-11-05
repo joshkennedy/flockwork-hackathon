@@ -1,1 +1,1 @@
-<%= link_to "Project Debrief", edit_project_debrief_path(project) if project.done_at? && Policy.can?(Current.person, :duplicate, project) %>
+<%= link_to "Project Debrief", edit_project_debrief_path(project) if project.done_at? && Policy.can?(Current.person, :edit_debrief, project) %>

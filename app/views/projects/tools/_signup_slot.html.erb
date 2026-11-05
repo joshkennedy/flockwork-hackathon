@@ -47,7 +47,7 @@
         <% end %>
         <% if own_claim %>
           <%= link_to "Add to Calendar", project_slot_calendar_path(project, slot), data: { turbo: false } %>
-          <%= button_to "Release", project_slot_claim_path(project, slot), method: :delete %>
+          <%= button_to "Release", project_slot_claim_path(project, slot), method: :delete if Policy.can?(Current.person, :claim_slot, project) %>
         <% end %>
         <% if manage %>
           <%= link_to "Edit Slot", edit_project_slot_path(project, slot), data: { action: "slideout#open", slideout_title_param: "Edit Slot" } %>
