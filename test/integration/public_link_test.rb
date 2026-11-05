@@ -68,6 +68,71 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "turning the Public link off invalidates the old banner URL" do
+    project = projects(:community_meal)
+    project.banner.attach(io: file_fixture("banner_wide.jpg").open, filename: "banner.jpg", content_type: "image/jpeg")
+    project.enable_public_link!
+    token = project.public_token
+
+    get public_project_path(token)
+    banner_path = css_select("picture img").first["src"]
+
+    get banner_path
+    assert_response :redirect
+    follow_redirect!
+    assert_response :success
+
+    project.disable_public_link!
+
+    get public_project_path(token)
+    assert_response :not_found
+
+    get banner_path
+    follow_redirect! if response.redirect?
+    assert_response :not_found
+
+    sign_in_as_leader
+    get project_path(project)
+    assert_select "picture img[alt=?]", "#{project.name} banner"
+  end
+
+  test "resetting the Public link invalidates the old banner URL and keeps the banner public" do
+    project = projects(:community_meal)
+    project.banner.attach(io: file_fixture("banner_wide.jpg").open, filename: "banner.jpg", content_type: "image/jpeg")
+    project.enable_public_link!
+    old_token = project.public_token
+
+    get public_project_path(old_token)
+    old_banner_path = css_select("picture img").first["src"]
+
+    project.reset_public_link!
+
+    get old_banner_path
+    follow_redirect! if response.redirect?
+    assert_response :not_found
+
+    get public_project_path(project.public_token)
+    assert_select "picture img[alt=?]", "#{project.name} banner"
+    assert_not_equal old_banner_path, css_select("picture img").first["src"]
+  end
+
+  test "deleting a Project invalidates its old public banner URL" do
+    sign_in_as_admin
+    project = projects(:community_meal)
+    project.banner.attach(io: file_fixture("banner_wide.jpg").open, filename: "banner.jpg", content_type: "image/jpeg")
+    project.enable_public_link!
+
+    get public_project_path(project.public_token)
+    old_banner_path = css_select("picture img").first["src"]
+
+    delete project_path(project)
+
+    get old_banner_path
+    follow_redirect! if response.redirect?
+    assert_response :not_found
+    assert project.reload.banner.attached?
+  end
+
   test "the public view shows allowed content and no Person names" do
     sign_in_as_leader
     project = projects(:community_meal)

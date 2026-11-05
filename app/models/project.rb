@@ -144,11 +144,18 @@ class Project < ApplicationRecord
   end
 
   def reset_public_link!
+    rotate_banner_blob!
     update!(public_token: generate_public_token)
   end
 
   def disable_public_link!
+    rotate_banner_blob!
     update!(public_token: nil)
+  end
+
+  def soft_delete!
+    rotate_banner_blob!
+    update!(deleted_at: Time.current)
   end
 
   def self.create_for(creator:, attributes:)
@@ -171,6 +178,28 @@ class Project < ApplicationRecord
         token = SecureRandom.urlsafe_base64(24)
         break token unless self.class.exists?(public_token: token)
       end
+    end
+
+    def rotate_banner_blob!
+      return unless banner.attached?
+
+      old_blob = banner.blob
+      new_blob = old_blob.open do |file|
+        ActiveStorage::Blob.create_and_upload!(
+          io: file,
+          filename: old_blob.filename,
+          content_type: old_blob.content_type,
+          metadata: old_blob.metadata,
+          service_name: old_blob.service_name,
+          identify: false
+        )
+      end
+      banner.attach(new_blob)
+      unless banner.blob_id == new_blob.id
+        new_blob.purge
+        raise ActiveRecord::RecordInvalid, self
+      end
+      old_blob.purge
     end
 
     def banner_is_an_image_within_limits
