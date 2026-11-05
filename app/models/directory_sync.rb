@@ -55,7 +55,7 @@ class DirectorySync
     end
 
     def protected_email?(person)
-      person.persisted? && (person.admin? || person.last_signed_in_at.present?)
+      person.persisted? && (person.admin? || person.last_signed_in_at.present? || person.sessions.exists?)
     end
 
     def skipped_email_change_for(person, incoming_email)

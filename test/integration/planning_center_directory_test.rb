@@ -144,6 +144,28 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
     } ], result.fetch(:skipped_email_changes)
   end
 
+  test "sync protects a Person email when an older Session exists without a sign-in stamp" do
+    organization = organizations(:st_example)
+    person = organization.people.find(people(:other_volunteer).id)
+    person.update!(external_source: "planning_center", external_id: "pco-legacy-session-1")
+    person.sessions.create!(user_agent: "Legacy browser", ip_address: "192.0.2.31")
+    assert_nil person.last_signed_in_at
+
+    result = DirectorySync.new(organization, source_for(
+      external_id: "pco-legacy-session-1",
+      name: "Vera Volunteer",
+      email: "attacker@example.test",
+      phone: "+12025550105"
+    )).call
+
+    assert_equal "vera@st-example.test", person.reload.email
+    assert_equal [ {
+      person_name: "Vera Volunteer",
+      current_email: "vera@st-example.test",
+      skipped_email: "attacker@example.test"
+    } ], result.fetch(:skipped_email_changes)
+  end
+
   test "sync does not replace an Admin sign-in email" do
     organization = organizations(:st_example)
     admin = people(:admin)
