@@ -74,6 +74,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     sign_in_as_leader
     project = projects(:community_meal)
     invitee = people(:other_volunteer)
+    organizations(:outsider_church).people.create!(name: "Vera Elsewhere", email: invitee.email)
     perform_enqueued_jobs do
       post project_invitations_path(project), params: {
         invitation: { person_id: invitee.id, role: "volunteer" }
@@ -93,6 +94,7 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "[data-signed-in-as]", "Vera Volunteer"
+    assert_select "a", text: "Switch Church", count: 0
   end
 
 

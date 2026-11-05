@@ -63,7 +63,7 @@ module ApplicationHelper
   # Settings and Profile live in the account menu, not the nav.
   # Only a Person whose email belongs to several Organizations gets the church switcher.
   def other_churches?
-    Current.person.email.present? && Person.where(email: Current.person.email).many?
+    Current.session.organization_choice_eligible? && Person.where(email: Current.session.verified_email).many?
   end
 
   # First letter of the first and last name ("Maria Lopez" → "ML"); one word gives one letter, a name with no letters gives "?".

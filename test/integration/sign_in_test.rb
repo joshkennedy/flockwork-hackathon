@@ -91,6 +91,7 @@ class SignInTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_select "[data-organization-name]", "Outsider Church"
     assert_select "[data-signed-in-as]", "Leo Elsewhere"
+    assert_select "a", text: "Switch Church"
   end
 
   test "signing up with another Person's email cannot switch into that Person's Organization" do
@@ -99,10 +100,28 @@ class SignInTest < ActionDispatch::IntegrationTest
       your_name: "Mallory",
       email: people(:leader).email
     }
+    follow_redirect!
+
+    assert_select "a", text: "Switch Church", count: 0
+
     post organization_choice_path, params: { person_id: people(:leader).id }
     get home_path
 
     assert_select "[data-signed-in-as]", "Mallory"
+  end
+
+  test "changing the signed-in Person's email does not transfer magic-link proof" do
+    admin = people(:admin)
+    outsider = people(:outsider)
+    token = request_sign_in_link(admin)
+    post sign_in_link_path(token)
+
+    patch person_path(admin), params: { person: { email: outsider.email } }
+    post organization_choice_path, params: { person_id: outsider.id }
+
+    assert_response :not_found
+    get home_path
+    assert_select "[data-signed-in-as]", "Ada Admin"
   end
 
   test "choosing an organization cannot switch to a Person with a different email" do

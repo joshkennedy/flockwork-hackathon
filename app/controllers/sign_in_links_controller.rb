@@ -10,7 +10,7 @@ class SignInLinksController < ApplicationController
     person = Person.sign_in_with_token(params[:token])
 
     if person
-      start_new_session_for person, auth_method: "magic_link"
+      start_new_session_for person, auth_method: "magic_link", verified_email: person.email
       redirect_to Person.where(email: person.email).many? ? new_organization_choice_path : home_path
     else
       render :invalid, status: :unprocessable_content

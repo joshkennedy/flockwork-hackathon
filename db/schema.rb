@@ -377,6 +377,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_04_290001) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "auth_method"
+    t.string "verified_email"
     t.index ["person_id"], name: "index_sessions_on_person_id"
   end
 
