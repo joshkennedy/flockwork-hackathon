@@ -83,6 +83,37 @@ class ActiveStorageAnonymousUploadTest < ActionDispatch::IntegrationTest
     ActionController::Base.allow_forgery_protection = original_forgery_protection
   end
 
+  test "a direct upload claiming image/png with HTML bytes is not served inline once embedded" do
+    sign_in_as_volunteer
+    original_forgery_protection = ActionController::Base.allow_forgery_protection
+    ActionController::Base.allow_forgery_protection = true
+    payload = "<html><script>alert(1)</script></html>"
+
+    get home_path
+    csrf_token = response.parsed_body.at_css("meta[name=csrf-token]")["content"]
+    post_direct_upload(payload, csrf_token:, filename: "evil.png", content_type: "image/png")
+    upload_response = response.parsed_body
+    blob = ActiveStorage::Blob.find_signed!(upload_response.fetch("signed_id"))
+    direct_upload = upload_response.fetch("direct_upload")
+    put URI.parse(direct_upload.fetch("url")).request_uri, params: payload, headers: direct_upload.fetch("headers")
+    ActionController::Base.allow_forgery_protection = original_forgery_protection
+
+    project = projects(:community_meal)
+    post project_messages_path(project), params: {
+      message: { body: %(<div>Hi</div><action-text-attachment sgid="#{blob.attachable_sgid}"></action-text-attachment>) }
+    }
+    assert_redirected_to project_path(project)
+
+    get rails_blob_path(blob)
+    follow_redirect!
+
+    assert_response :success
+    assert_not_equal "image/png", response.media_type
+    assert_match(/\Aattachment/, response.headers["Content-Disposition"])
+  ensure
+    ActionController::Base.allow_forgery_protection = original_forgery_protection
+  end
+
   test "a demo volunteer is limited to 30 direct uploads per hour" do
     post demo_session_path(role: "volunteer")
     original_forgery_protection = ActionController::Base.allow_forgery_protection
