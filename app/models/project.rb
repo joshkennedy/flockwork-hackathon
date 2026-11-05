@@ -32,6 +32,8 @@ class Project < ApplicationRecord
 
   BANNER_TYPES = %w[ image/jpeg image/png image/webp image/heic image/heif ].freeze
   BANNER_MAX_BYTES = 10.megabytes
+  BANNER_MAX_PIXELS = 40_000_000
+  BANNER_MAX_DIMENSION = 12_000
   # Target pixel sizes for each crop; the phone crop is a 2:1 shape for narrow screens.
   BANNER_SIZES = { wide: [ 1500, 500 ], phone: [ 800, 400 ] }.freeze
   # shortcut: a crop narrower than this is shown on a blurred fill instead of upscaled, revisit if banners get wider than 1000px
@@ -41,6 +43,7 @@ class Project < ApplicationRecord
   validates :banner_focus_x, :banner_focus_y, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 1 }
   validates :banner_alt_text, length: { maximum: 200 }
   validate :banner_is_an_image_within_limits
+  validate :banner_pixel_dimensions_within_limits
 
   def budget_lines_by_kind(kind)
     budget_lines.public_send(kind).order(:id)
@@ -115,6 +118,19 @@ class Project < ApplicationRecord
     self.banner_alt_text = nil
   end
 
+  def banner_dimension_error_message
+    return unless banner.attached?
+
+    banner_dimension_error_message_for(analyzed_banner_blob)
+  end
+
+  def banner_dimension_error_message_for(blob)
+    width, height = blob.metadata.values_at("width", "height")
+    return if width.blank? || height.blank?
+
+    banner_dimension_limit_message if banner_dimensions_exceed?(width, height)
+  end
+
   def banner_variant(kind)
     banner.variant(crop: banner_crop(kind), resize_to_limit: BANNER_SIZES.fetch(kind), format: :webp, saver: { quality: 82 })
   end
@@ -165,12 +181,37 @@ class Project < ApplicationRecord
       errors.add(:banner, "must be 10 MB or smaller") if change.blob.byte_size > BANNER_MAX_BYTES
     end
 
+    def banner_pixel_dimensions_within_limits
+      change = attachment_changes["banner"]
+      return unless change.is_a?(ActiveStorage::Attached::Changes::CreateOne)
+
+      blob = change.blob
+      return unless blob.analyzed?
+
+      width, height = blob.metadata.values_at("width", "height")
+      return if width.blank? || height.blank?
+
+      if banner_dimensions_exceed?(width, height)
+        errors.add(:banner, banner_dimension_limit_message)
+      end
+    end
+
+    def banner_dimensions_exceed?(width, height)
+      width > BANNER_MAX_DIMENSION || height > BANNER_MAX_DIMENSION || width * height > BANNER_MAX_PIXELS
+    end
+
+    def banner_dimension_limit_message
+      "must not exceed #{BANNER_MAX_DIMENSION} pixels per side or #{BANNER_MAX_PIXELS / 1_000_000} megapixels"
+    end
+
     # Sniff the bytes ourselves: Active Storage keeps a declared type when it matches the file name, so a text file named .jpg would pass.
     def analyzed_banner_blob
       banner.blob.tap { |blob| blob.analyze unless blob.analyzed? }
     end
 
     def banner_bytes_type(attachable)
+      return attachable.open { |io| Marcel::MimeType.for(io) } if attachable.is_a?(ActiveStorage::Blob)
+
       io = attachable.is_a?(Hash) ? attachable[:io] : attachable
       io = io.tempfile if io.respond_to?(:tempfile)
       return unless io.respond_to?(:read)
