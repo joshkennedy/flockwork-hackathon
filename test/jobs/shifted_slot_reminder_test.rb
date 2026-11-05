@@ -26,16 +26,20 @@ class ShiftedSlotReminderTest < ActiveSupport::TestCase
     slot.slot_claims.create!(person:)
     selected = Slot.where(date: Date.tomorrow).includes(slot_claims: :person).to_a
     relation = Slot.where(id: selected.map(&:id))
-    stub_method(relation, :includes, ->(*) { relation }) do
-      stub_method(relation, :find_each, ->(&block) {
-        selected.each do |candidate|
-          Slot.find(candidate.id).update!(date: Date.tomorrow + 7)
-          block.call(candidate)
-        end
-      }) do
-        stub_method(Slot, :where, ->(*) { relation }) do
-          assert_no_difference -> { person.notifications.where(kind: :slot_reminder, notifiable: slot).count } do
-            SlotReminderJob.perform_now
+    stub_method(relation, :merge, ->(*) { relation }) do
+      stub_method(relation, :where, ->(*) { relation }) do
+        stub_method(relation, :includes, ->(*) { relation }) do
+          stub_method(relation, :find_each, ->(&block) {
+            selected.each do |candidate|
+              Slot.find(candidate.id).update!(date: Date.tomorrow + 7)
+              block.call(candidate)
+            end
+          }) do
+            stub_method(Slot, :joins, ->(*) { relation }) do
+              assert_no_difference -> { person.notifications.where(kind: :slot_reminder, notifiable: slot).count } do
+                SlotReminderJob.perform_now
+              end
+            end
           end
         end
       end
