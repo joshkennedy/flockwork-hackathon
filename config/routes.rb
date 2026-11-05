@@ -1,6 +1,4 @@
 Rails.application.routes.draw do
-  post "rails/active_storage/direct_uploads", to: ->(_env) { [ 404, { "Content-Type" => "text/plain; charset=utf-8" }, [ "Not Found" ] ] }
-
   get "up" => "rails/health#show", as: :rails_health_check
 
   root "landing#show"
