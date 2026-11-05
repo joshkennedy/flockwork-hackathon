@@ -138,6 +138,66 @@ class DocItemsTest < ActionDispatch::IntegrationTest
     assert_no_match %r{/rails/active_storage/(blobs|disk|representations)/(redirect/|proxy/)?(?!:signed_id)[A-Za-z0-9=_-]{20,}}, response.body
   end
 
+  test "a Volunteer opens a PDF doc file in the viewer, which fetches bytes from the authorized download route" do
+    sign_in_as_volunteer
+    project = enable_docs_tool!(projects(:community_meal))
+    post project_doc_items_path(project), params: {
+      doc_item: { kind: "file", title: "Volunteer Handbook", file: fixture_file_upload("handbook.pdf", "application/pdf") }
+    }
+    item = project.doc_items.find_by!(title: "Volunteer Handbook")
+
+    get project_doc_item_path(project, item)
+
+    assert_response :success
+    assert_select "[data-controller=doc-viewer][data-doc-viewer-kind-value=pdf][data-doc-viewer-url-value=?]", download_project_doc_item_path(project, item)
+    assert_select "[data-doc-viewer-target=pages]"
+    assert_select "a[href=?]", download_project_doc_item_path(project, item), text: "Download"
+    assert_select "img", count: 0
+
+    get project_path(project)
+    assert_select "a[href=?]", project_doc_item_path(project, item), text: "Volunteer Handbook"
+
+    get download_project_doc_item_path(project, item)
+    assert_response :success
+    assert_match "attachment", response.headers["Content-Disposition"]
+    assert_equal "application/octet-stream", response.media_type
+  end
+
+  test "a Volunteer opens an image doc file in the viewer as an img from the download route" do
+    sign_in_as_volunteer
+    project = enable_docs_tool!(projects(:community_meal))
+    post project_doc_items_path(project), params: {
+      doc_item: { kind: "file", title: "Room Photo", file: fixture_file_upload("banner_small.png", "image/png") }
+    }
+    item = project.doc_items.find_by!(title: "Room Photo")
+
+    get project_doc_item_path(project, item)
+
+    assert_response :success
+    assert_select "img[src=?][alt=?]", download_project_doc_item_path(project, item), "Room Photo"
+    assert_select "[data-controller=doc-viewer]", count: 0
+    assert_select "a[href=?]", download_project_doc_item_path(project, item), text: "Download"
+  end
+
+  test "other file types and non-members get no viewer" do
+    sign_in_as_volunteer
+    project = enable_docs_tool!(projects(:community_meal))
+    post project_doc_items_path(project), params: {
+      doc_item: { kind: "file", title: "Plain Text", file: fixture_file_upload("sample_upload.txt", "text/plain") }
+    }
+    item = project.doc_items.find_by!(title: "Plain Text")
+
+    get project_doc_item_path(project, item)
+    assert_response :success
+    assert_select "[data-controller=doc-viewer]", count: 0
+    assert_select "img", count: 0
+    assert_select "a[href=?]", download_project_doc_item_path(project, item), text: "Download"
+
+    sign_in_as_outsider
+    get project_doc_item_path(project, item)
+    assert_response :not_found
+  end
+
   test "a non-member gets 404 on the file download route" do
     sign_in_as_volunteer
     project = enable_docs_tool!(projects(:community_meal))

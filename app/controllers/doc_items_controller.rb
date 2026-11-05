@@ -1,9 +1,9 @@
 class DocItemsController < ApplicationController
   before_action :set_project
-  before_action :set_doc_item, only: %i[ edit update destroy download ]
+  before_action :set_doc_item, only: %i[ show edit update destroy download ]
   before_action :authorize_manage_docs, except: :download
   before_action :authorize_update_doc_item, only: %i[ edit update ]
-  before_action :authorize_download, only: :download
+  before_action :authorize_download, only: %i[ show download ]
   before_action :authorize_destroy_doc_item, only: :destroy
   before_action :require_uploaded_file, only: %i[ create update ]
 
@@ -20,6 +20,12 @@ class DocItemsController < ApplicationController
     else
       render :new, status: :unprocessable_content
     end
+  end
+
+  def show
+    raise ActiveRecord::RecordNotFound unless @doc_item.file?
+
+    @viewer_kind = viewer_kind
   end
 
   def edit
@@ -48,6 +54,16 @@ class DocItemsController < ApplicationController
   end
 
   private
+    # Decided from the claimed type only to choose a viewer; bytes still come from #download, which sniffs.
+    def viewer_kind
+      content_type = @doc_item.file.content_type
+      if content_type == "application/pdf"
+        :pdf
+      elsif content_type.start_with?("image/") && ActiveStorage.content_types_allowed_inline.include?(content_type)
+        :image
+      end
+    end
+
     def set_project
       @project = Policy.visible_projects(Current.person).find(params[:project_id])
     end
