@@ -15,10 +15,10 @@ module Planner
     def voice_instructions
       card = session.current_card&.stringify_keys
       current_card = if card
-        {
+        redact({
           question: card.fetch("question"),
           options: card.fetch("options")
-        }
+        })
       else
         { state: "The plan is ready for review. Say one warm, short closing line and do not call a tool." }
       end
@@ -40,11 +40,11 @@ module Planner
       def context
         if session.build_as_you_go?
           payload = session.planning_context.merge("past_projects" => past_projects)
-          return JSON.parse(Planner::NameRedactor.new(Current.organization).call(JSON.generate(payload)))
+          return redact(payload)
         end
         project_name, project_description, enabled_tools = current_project_values
 
-        {
+        payload = {
           project_name:,
           project_description:,
           leader_description: session.description,
@@ -61,6 +61,12 @@ module Planner
           past_projects: past_projects,
           current_suggestions: safe_suggestions
         }
+        redact(payload)
+      end
+
+      def redact(payload)
+        redactor = Planner::NameRedactor.new(Current.organization)
+        payload.deep_transform_values { |value| value.is_a?(String) ? redactor.call(value) : value }
       end
 
       def current_project_values
