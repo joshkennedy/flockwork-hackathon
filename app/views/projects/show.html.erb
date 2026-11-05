@@ -9,7 +9,9 @@
 <% can_duplicate = Policy.can?(Current.person, :duplicate, @project) %>
 <% can_update = Policy.can?(Current.person, :update, @project) %>
 <% can_transfer = lifecycle_access && Policy.can?(Current.person, :transfer_ownership, @project) && @ownership_transfer_leaders.any? %>
-<% guidance = project_guidance(@project, Current.person) %>
+<% can_unarchive = Policy.can?(Current.person, :unarchive, @project) %>
+<%# An archived Project is read-only, so it has no open need to point at. %>
+<% guidance = project_guidance(@project, Current.person) unless @project.archived_at? %>
 <% claim_slot = guidance&.dig(:slot) if Policy.can?(Current.person, :claim_slot, @project) %>
 <%# Exactly one ink button per view: a header action that must come first (resume, join) wins; then the guidance action; else Plan More. %>
 <% header_primary = @resumable_planner_session.present? || can_join %>
@@ -70,6 +72,15 @@
     </nav>
   </header>
 
+  <% if @project.archived_at? %>
+    <div class="mt-6 flex flex-col gap-3 rounded-tile border border-border bg-frame px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between" data-archived-notice>
+      <p class="text-ink">This Project is archived and read-only.<% if can_unarchive %> Unarchive it to make changes.<% end %></p>
+      <% if can_unarchive %>
+        <%= button_to "Unarchive to edit", unarchive_project_path(@project), class: "btn btn-secondary shrink-0" %>
+      <% end %>
+    </div>
+  <% end %>
+
   <% status_items = project_status_items(@project) %>
   <% if status_items.any? || Policy.can?(Current.person, :view_team, @project) %>
     <dl class="status-strip mt-6">
@@ -126,10 +137,12 @@
               <section class="tool-section" aria-labelledby="project-notes-heading">
                 <h2 id="project-notes-heading" class="text-ink">Notes</h2>
                 <%= render "notes/list", notes: @project_notes %>
-                <%= render "notes/form",
-                  notable: @project,
-                  visibilities: @note_visibilities,
-                  form_url: project_notes_path(@project) %>
+                <% if @note_visibilities.any? %>
+                  <%= render "notes/form",
+                    notable: @project,
+                    visibilities: @note_visibilities,
+                    form_url: project_notes_path(@project) %>
+                <% end %>
               </section>
             <% elsif lookup_context.exists?(tab, ["projects/tools"], true) %>
               <%= render "projects/tools/#{tab}", project: @project %>

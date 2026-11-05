@@ -21,6 +21,6 @@ class ProjectDebriefsController < ApplicationController
   private
     def set_project
       @project = Policy.visible_projects(Current.person).find(params[:project_id])
-      raise ActiveRecord::RecordNotFound unless @project.done_at? && Policy.can?(Current.person, :duplicate, @project)
+      raise ActiveRecord::RecordNotFound unless @project.done_at? && Policy.can?(Current.person, :edit_debrief, @project)
     end
 end

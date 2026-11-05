@@ -30,18 +30,6 @@ class ArchivedProjectReadOnlyTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "the Owner and Admins can still write to an archived Project" do
-    sign_in_as_leader
-    assert_difference "Task.count", 1 do
-      post project_tasks_path(@project), params: { task: { title: "Owner task" } }
-    end
-
-    sign_in_as_admin
-    assert_difference "Task.count", 1 do
-      post project_tasks_path(@project), params: { task: { title: "Admin task" } }
-    end
-  end
-
   test "archived Projects send no email notifications but still record them" do
     volunteer = people(:volunteer)
 

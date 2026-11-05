@@ -146,7 +146,7 @@ module Policy
       person.admin? || record.memberships.exists?(person: person)
     when :manage_recipients
       person.admin? || record.memberships.leader.exists?(person: person)
-    when :manage_public_link, :duplicate, :plan
+    when :manage_public_link, :duplicate, :plan, :edit_debrief
       project_leader_or_admin?(person, record)
     when :comment
       person.admin? || record.memberships.exists?(person: person)
@@ -155,11 +155,12 @@ module Policy
     end
   end
 
-  # Archived Projects are read-only for everyone but the Owner and Admins; :unarchive stays with the Owner via the case below.
-  ARCHIVED_READ_ACTIONS = %i[ show view_team view_recipients view_notes unarchive transfer_ownership ].freeze
+  # Archived Projects are read-only for everyone, Owner and Admins included; :unarchive stays with the Owner via the case below.
+  # :duplicate only reads the archived Project to start a new one (next year's event is the usual source).
+  ARCHIVED_READ_ACTIONS = %i[ show view_team view_recipients view_notes unarchive duplicate ].freeze
 
-  def archived_locked?(person, project)
-    project.archived_at.present? && !person.admin? && project.owner_id != person.id
+  def archived_locked?(_person, project)
+    project.archived_at.present?
   end
   private :archived_locked?
 
