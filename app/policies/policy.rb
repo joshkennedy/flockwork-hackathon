@@ -115,6 +115,7 @@ module Policy
     end
 
     return false unless record.deleted_at.nil?
+    return false if archived_locked?(person, record) && !action.in?(ARCHIVED_READ_ACTIONS)
 
     case action
     when :show
@@ -154,10 +155,19 @@ module Policy
     end
   end
 
+  # Archived Projects are read-only for everyone but the Owner and Admins; :unarchive stays with the Owner via the case below.
+  ARCHIVED_READ_ACTIONS = %i[ show view_team view_recipients view_notes unarchive transfer_ownership ].freeze
+
+  def archived_locked?(person, project)
+    project.archived_at.present? && !person.admin? && project.owner_id != person.id
+  end
+  private :archived_locked?
+
   def budget_line_can?(person, action, budget_line)
     project = budget_line.project
     return false unless project.organization_id == person.organization_id
     return false unless project.deleted_at.nil?
+    return false if archived_locked?(person, project)
 
     case action
     when :manage_budget
@@ -174,6 +184,7 @@ module Policy
     project = task.project
     return false unless project.organization_id == person.organization_id
     return false unless project.deleted_at.nil?
+    return false if archived_locked?(person, project)
 
     team_member = project.memberships.exists?(person: person)
     responsible = task.assignee_id == person.id || project_leader_or_admin?(person, project)
@@ -205,6 +216,7 @@ module Policy
   def can_manage_membership?(person, action, membership)
     project = membership.project
     return false unless project.organization_id == person.organization_id && project.deleted_at.nil?
+    return false if archived_locked?(person, project)
     return false if membership.person_id == project.owner_id
 
     case action
@@ -221,6 +233,7 @@ module Policy
     project = message.project
     return false unless project.organization_id == person.organization_id
     return false unless project.deleted_at.nil?
+    return false if archived_locked?(person, project)
     return false unless person.admin? || project.memberships.exists?(person: person)
 
     case action
@@ -267,6 +280,8 @@ module Policy
     when :download
       person.admin? || project.memberships.exists?(person: person)
     when :destroy
+      return false if archived_locked?(person, project)
+
       person.admin? || record.author_id == person.id || project.memberships.leader.exists?(person: person)
     else
       false
@@ -309,6 +324,7 @@ module Policy
     project = note.project
     return false unless project&.organization_id == person.organization_id
     return false if project.deleted_at.present?
+    return false if archived_locked?(person, project)
     return true if person.admin?
     return false unless project.memberships.exists?(person: person)
     return true if note.team? || note.leaders?
