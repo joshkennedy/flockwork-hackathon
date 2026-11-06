@@ -68,6 +68,11 @@ typography:
     fontWeight: 450
     fontSize: 13px
     lineHeight: 18px
+  stat:
+    fontFamily: Mona Sans
+    fontWeight: 600
+    fontSize: 20px
+    lineHeight: 24px
   label:
     fontFamily: Mona Sans
     fontWeight: 500
@@ -314,3 +319,4 @@ Badges 4px, buttons and inputs 6px, nav items 8px, tiles 10px, panels and popove
 | 2026-11-03 | Every visible button label uses Title Case; non-button interface copy remains sentence case | Josh requested Title Case for all buttons |
 | 2026-11-04 | Redirects back to the same page morph in place and keep scroll (`turbo_refreshes_with :morph`); a Project page refreshes live when anyone changes it or its Tools; flash moves to toasts; destructive actions confirm in a styled dialog | Josh asked for the refinement layer: notices were lost on pages that never rendered flash, and every action reloaded the page to the top |
 | 2026-11-04 | Skills on People (seeded list plus free tags, set by the Person or an Admin) and Skills needed on Projects; the Team tab suggests up to five People by plain rules, and Leaders see only matched skills | Josh picked the AI-enablement follow-up: the Planner plans roles and now Skills needed, while ranking People stays in Ruby per ADR 0002 |
+| 2026-11-06 | Status-strip values use a 20/24 Mona Sans 600 `stat` size; no-photo Project thumbnails are tinted by the Project's lead Tool with that Tool's icon; Rename moves from beside the Project title into the ⋯ menu | Josh approved these from the UI council review: the org-wide counts did not read as the headline, the gray folder tiles read as broken images, and the inline link crowded the only display heading |

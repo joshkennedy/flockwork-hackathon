@@ -347,7 +347,7 @@ class PlannerTest < ActionDispatch::IntegrationTest
 
     get new_project_planner_session_path(project)
     assert_response :success
-    assert_select ".privacy-line", text: /not your people directory/
+    assert_select ".privacy-line", text: /It never sees your people.\s*Leave names and care details out of answers/
     assert_select ".privacy-line", text: /speech service/
 
     post project_planner_sessions_path(project), params: {

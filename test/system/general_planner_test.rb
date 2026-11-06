@@ -62,7 +62,6 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     assert_equal "tasks", planner_session.acceptance_tool
     assert_current_path project_path(planner_session.project, added_plan: planner_session.id)
     assert_selector "h1", text: "Playground repair day"
-    assert_link "Rename", href: edit_project_path(planner_session.project)
     within "section[aria-labelledby='tool-tasks']" do
       assert_text "Confirm volunteer crew"
     end
@@ -71,6 +70,8 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     section_top = page.evaluate_script("document.querySelector('[aria-labelledby=tool-tasks]').getBoundingClientRect().top")
     assert_operator section_top, :>=, 0
     assert_operator section_top, :<, page.evaluate_script("window.innerHeight")
+    find("summary[aria-label='More project actions']").click
+    assert_link "Rename", href: edit_project_path(planner_session.project)
   end
 
   test "a relative task date can be resolved directly at the finish" do

@@ -61,3 +61,7 @@
 
 # Generated orb portal URLs are specific to each thread.
 /.amp/portals/
+
+# UI council: per-round captures and third-party reference shots stay local; annotated/, final/ and the ledger are committed.
+/ui-council/round-*/
+/ui-council/references/

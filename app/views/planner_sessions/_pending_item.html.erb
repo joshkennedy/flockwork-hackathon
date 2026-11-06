@@ -14,7 +14,7 @@
     </div>
     <% unless planner_session.generation_busy? %>
       <details class="meal-slot-editor" <%= "open" if errors.any? %>>
-        <%= disclosure_summary "Edit", class: "btn btn-text" %>
+        <summary class="btn btn-text disclosure-summary">Edit</summary>
         <div class="meal-slot-edit-panel">
           <%= form_with url: pending_item_project_planner_session_path(project, planner_session), method: :patch,
             namespace: "pending_#{item.fetch('id')}", class: "grid gap-4" do |form| %>

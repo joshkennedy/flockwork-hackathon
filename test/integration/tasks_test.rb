@@ -204,7 +204,7 @@ class TasksTest < ActionDispatch::IntegrationTest
     assert_equal [ "Soon cleanup Task", "Later meal Task", "Undated meal Task" ], titles
     assert_select "[data-task-title='Soon cleanup Task']" do
       assert_select "p", text: /Building Cleanup/
-      assert_select "button", text: "Done"
+      assert_select "button.task-check[aria-label=?]", "Mark Soon cleanup Task done"
     end
     assert_no_match "Finished meal Task", response.body
     assert_no_match "Other Organization Task", response.body

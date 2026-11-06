@@ -13,10 +13,10 @@
         <h1 class="text-ink"><%= @person.name %></h1>
         <p class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-meta text-ink-2">
           <% if @person.email.present? %>
-            <%= link_to @person.email, "mailto:#{@person.email}", class: "break-all hover:text-ink" %>
+            <%= link_to @person.email, "mailto:#{@person.email}", class: "link break-all" %>
           <% end %>
           <% if @person.phone.present? %>
-            <%= link_to @person.phone, "tel:#{@person.phone.gsub(/[^\d+]/, "")}", class: "whitespace-nowrap hover:text-ink" %>
+            <%= link_to @person.phone, "tel:#{@person.phone.gsub(/[^\d+]/, "")}", class: "link whitespace-nowrap" %>
           <% end %>
         </p>
         <% if @person.pending_email.present? %>

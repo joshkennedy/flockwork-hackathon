@@ -54,7 +54,7 @@
       <% if later.any? %>
         <%# Kept open when nothing nearer exists, so a far-off sheet is never hidden behind a click. %>
         <details data-signup-later <%= "open" if this_week.empty? && next_week.empty? %>>
-          <%= disclosure_summary "Later Slots", meta: "#{pluralize(later.size, "slot")}, #{later.count { |slot| !slot.full? }} open", class: "disclosure-bar" %>
+          <%= disclosure_summary "Later Slots", meta: "#{pluralize(later.size, "slot")}, #{pluralize(later.sum { |slot| [ slot.capacity - slot.claims_count, 0 ].max }, "spot")} open", class: "disclosure-bar" %>
           <ul class="mt-2"><%= render partial: "projects/tools/signup_slot", collection: later, as: :slot, locals: { project: } %></ul>
         </details>
       <% end %>

@@ -1,12 +1,9 @@
 <%# Choosing or dropping a file submits it; the server checks the real type and size. %>
 <%= form_with model: project, url: project_banner_path(project), method: :patch, multipart: true,
       data: { controller: "banner-upload", action: "dragover->banner-upload#over dragleave->banner-upload#leave drop->banner-upload#drop" },
-      class: "flex flex-wrap items-center justify-between gap-3 rounded-tile border border-dashed border-ghost-border bg-ghost-fill p-4 data-[dragging]:border-ink data-[dragging]:bg-sunlit-soft" do |form| %>
-  <div class="min-w-0">
-    <p class="text-heading text-ink">Add a banner image</p>
-    <p class="text-meta text-ink-2">Drop an image here or choose one. JPEG, PNG, WebP or HEIC, up to 10 MB.</p>
-  </div>
-  <label class="btn btn-secondary cursor-pointer focus-within:outline-2 focus-within:outline-ink">
+      class: "flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-tile border border-dashed border-ghost-border bg-ghost-fill px-4 py-2 data-[dragging]:border-ink data-[dragging]:bg-sunlit-soft" do |form| %>
+  <p class="min-w-0 text-meta text-ink-2"><span class="font-medium text-ink">Add a banner image</span> · Drop one here or choose one. JPEG, PNG, WebP or HEIC, up to 10 MB.</p>
+  <label class="btn btn-secondary btn-sm cursor-pointer focus-within:outline-2 focus-within:outline-ink">
     Choose Image
     <%= form.file_field :banner, accept: Project::BANNER_TYPES.join(","), class: "sr-only", data: { banner_upload_target: "input", action: "change->banner-upload#submit" } %>
   </label>
