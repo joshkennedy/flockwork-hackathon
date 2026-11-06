@@ -24,7 +24,7 @@
                   <span class="flex h-full items-center gap-4 px-4 py-3">
                     <span class="min-w-0 flex-1">
                       <span class="block font-semibold text-ink"><%= project.name %></span>
-                      <span class="mt-0.5 block text-meta text-ink-2"><%= pluralize(open_spots, slot_noun(slots)) %> still open · next <%= slots.first.date.strftime("%a, %b %-d") %></span>
+                      <span class="mt-0.5 block text-meta text-ink-2"><%= pluralize(open_spots, SlotsHelper.count_noun(slots)) %> still open · next <%= slots.first.date.strftime("%a, %b %-d") %></span>
                     </span>
                     <span class="status-chip shrink-0 max-sm:hidden"><%= slot_window(slots.first.date) %></span>
                   </span>

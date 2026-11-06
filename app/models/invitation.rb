@@ -1,6 +1,6 @@
 class Invitation < ApplicationRecord
   include RefreshesDashboard
-  include OrganizationScoped
+  belongs_to :organization
 
   belongs_to :project
   belongs_to :person

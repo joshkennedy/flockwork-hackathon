@@ -115,7 +115,7 @@ module Policy
     end
 
     return false unless record.deleted_at.nil?
-    return false if archived_locked?(person, record) && !action.in?(ARCHIVED_READ_ACTIONS)
+    return false if record.archived_at.present? && !action.in?(ARCHIVED_READ_ACTIONS)
 
     case action
     when :show
@@ -159,16 +159,11 @@ module Policy
   # :duplicate only reads the archived Project to start a new one (next year's event is the usual source).
   ARCHIVED_READ_ACTIONS = %i[ show view_team view_recipients view_notes unarchive duplicate ].freeze
 
-  def archived_locked?(_person, project)
-    project.archived_at.present?
-  end
-  private :archived_locked?
-
   def budget_line_can?(person, action, budget_line)
     project = budget_line.project
     return false unless project.organization_id == person.organization_id
     return false unless project.deleted_at.nil?
-    return false if archived_locked?(person, project)
+    return false if project.archived_at.present?
 
     case action
     when :manage_budget
@@ -185,7 +180,7 @@ module Policy
     project = task.project
     return false unless project.organization_id == person.organization_id
     return false unless project.deleted_at.nil?
-    return false if archived_locked?(person, project)
+    return false if project.archived_at.present?
 
     team_member = project.memberships.exists?(person: person)
     responsible = task.assignee_id == person.id || project_leader_or_admin?(person, project)
@@ -219,7 +214,7 @@ module Policy
   def can_manage_membership?(person, action, membership)
     project = membership.project
     return false unless project.organization_id == person.organization_id && project.deleted_at.nil?
-    return false if archived_locked?(person, project)
+    return false if project.archived_at.present?
     return false if membership.person_id == project.owner_id
 
     case action
@@ -236,7 +231,7 @@ module Policy
     project = message.project
     return false unless project.organization_id == person.organization_id
     return false unless project.deleted_at.nil?
-    return false if archived_locked?(person, project)
+    return false if project.archived_at.present?
     return false unless person.admin? || project.memberships.exists?(person: person)
 
     case action
@@ -290,7 +285,7 @@ module Policy
     when :download
       person.admin? || project.memberships.exists?(person: person)
     when :destroy, :update
-      return false if archived_locked?(person, project)
+      return false if project.archived_at.present?
 
       person.admin? || record.author_id == person.id || project.memberships.leader.exists?(person: person)
     else
@@ -336,7 +331,7 @@ module Policy
     project = note.project
     return false unless project&.organization_id == person.organization_id
     return false if project.deleted_at.present?
-    return false if archived_locked?(person, project)
+    return false if project.archived_at.present?
     return true if person.admin?
     return false unless project.memberships.exists?(person: person)
     return true if note.team? || note.leaders?

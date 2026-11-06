@@ -89,7 +89,6 @@ export default class extends Controller {
     this.element.toggleAttribute("data-open")
   }
 
-  // Hides the touch toolbar once focus leaves the banner.
   collapse(event) {
     if (!this.element.contains(event.relatedTarget)) this.element.removeAttribute("data-open")
   }
@@ -99,7 +98,6 @@ export default class extends Controller {
     this.altFieldTarget.form.requestSubmit()
   }
 
-  // The popover opens under its button, right-aligned, and takes focus for typing.
   positionAlt() {
     if (!this.altPopoverTarget.matches(":popover-open")) return
 

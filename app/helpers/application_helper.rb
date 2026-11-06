@@ -66,7 +66,6 @@ module ApplicationHelper
     Current.session.organization_choice_eligible? && Person.where(email: Current.session.verified_email).many?
   end
 
-  # First letter of the first and last name ("Maria Lopez" → "ML"); one word gives one letter, a name with no letters gives "?".
   def person_initials(name)
     words = name.to_s.split
     letters = [ words.first, (words.last if words.size > 1) ].compact.filter_map { |word| word[/[[:alpha:]]/] }

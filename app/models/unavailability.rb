@@ -1,5 +1,5 @@
 class Unavailability < ApplicationRecord
-  include OrganizationScoped
+  belongs_to :organization
 
   NOTE_LIMIT = 200
 
@@ -22,7 +22,6 @@ class Unavailability < ApplicationRecord
     starts_on <= date && ends_on >= date
   end
 
-  # "Mar 1 to 14", or "Mar 28 to Apr 2" across months. A year appears only where it is not this one.
   def range_label
     today = Date.current
     starts = starts_on.strftime(starts_on.year == today.year ? "%b %-d" : "%b %-d, %Y")

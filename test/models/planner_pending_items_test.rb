@@ -16,6 +16,22 @@ class PlannerPendingItemsTest < ActiveSupport::TestCase
     assert_equal "Meal series identity changed; the existing preview was preserved", error.message
   end
 
+  test "creating pending work updates a Project collection that is already loaded" do
+    @project.slots.load
+    original_ids = @project.slots.map(&:id)
+    item = {
+      "kind" => "slot",
+      "fields" => { "label" => "Bring dinner", "date" => "2027-03-01", "time" => "18:30", "capacity" => 2 }
+    }
+
+    created = Planner::PendingItems.create!(@project, item)
+
+    assert_equal original_ids + [ created.id ], @project.slots.map(&:id)
+    assert_equal "Bring dinner", @project.slots.last.label
+    assert_equal 2, @project.slots.last.capacity
+    assert_equal Date.new(2027, 3, 1), @project.slots.last.date
+  end
+
   test "duplicate series identities are rejected" do
     error = assert_raises(ArgumentError) do
       reconcile(added: [ slot_run(source_key: "meal-slots"), slot_run(source_key: "meal-slots") ])

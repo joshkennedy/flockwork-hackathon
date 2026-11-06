@@ -46,7 +46,7 @@ class StaffingSuggestions
       "#{matched}, serving_load ASC, people.name COLLATE \"C\" ASC"
     end
 
-    def active_sql = "projects.done_at IS NULL AND projects.archived_at IS NULL AND projects.deleted_at IS NULL"
+    def active_sql = "projects.id IN (#{Project.active.select(:id).to_sql})"
 
     # Overlap with the Project's dates; with either date unknown, being away cannot rule anyone out.
     def away_during_project

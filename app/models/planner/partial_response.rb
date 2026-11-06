@@ -60,7 +60,6 @@ module Planner
         end
       end
 
-      # Returns the index after the next non-skipped character, or nil when the buffer ends first.
       def skip(pos, chars)
         pos += 1 while pos < @text.length && chars.include?(@text[pos])
         pos if pos < @text.length

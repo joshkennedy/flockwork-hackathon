@@ -46,7 +46,7 @@ export default class extends Controller {
           interimTranscript += transcript
         }
       }
-      this.fieldTarget.value = this.displayValue(this.committedText, interimTranscript)
+      this.fieldTarget.value = this.appendTranscript(this.committedText, interimTranscript)
     }
 
     this.recognition.onend = () => this.finishListening()
@@ -77,10 +77,4 @@ export default class extends Controller {
     return `${existing} ${chunk}`
   }
 
-  displayValue(committed, interim) {
-    const chunk = interim.trim()
-    if (chunk.length === 0) return committed
-    if (committed.length === 0) return chunk
-    return `${committed} ${chunk}`
-  }
 }

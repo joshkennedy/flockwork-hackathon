@@ -1,5 +1,5 @@
 class Note < ApplicationRecord
-  include OrganizationScoped
+  belongs_to :organization
 
   VISIBILITY_LABELS = {
     "team" => "Team",

@@ -1,9 +1,8 @@
 class Project < ApplicationRecord
   include RefreshesDashboard
   include OrganizationOwnedBlobs
-  include OrganizationScoped
+  belongs_to :organization
 
-  TOOLS = %w[tasks schedule signup_sheet budget recipients messages docs list].freeze
   TOOL_LABELS = {
     "tasks" => "Tasks",
     "schedule" => "Schedule",
@@ -14,6 +13,7 @@ class Project < ApplicationRecord
     "docs" => "Docs & Files",
     "list" => "List"
   }.freeze
+  TOOLS = TOOL_LABELS.keys.freeze
 
   belongs_to :owner, class_name: "Person"
   broadcasts_refreshes_to ->(project) { project }
@@ -128,12 +128,6 @@ class Project < ApplicationRecord
     self.banner_focus_y = 0.5
     self.banner_focus_manual = false
     self.banner_alt_text = nil
-  end
-
-  def banner_dimension_error_message
-    return unless banner.attached?
-
-    banner_dimension_error_message_for(banner.blob)
   end
 
   def banner_dimension_error_message_for(blob)

@@ -3,7 +3,7 @@ require "net/http"
 require "set"
 
 module DirectorySources
-  class PlanningCenter < Base
+  class PlanningCenter
     PEOPLE_URL = "https://api.planningcenteronline.com/people/v2/people?include=emails,phone_numbers&per_page=100".freeze
     MAX_PAGES = 50
 

@@ -138,7 +138,7 @@ class PlannerMealSessionTest < ActiveSupport::TestCase
     second["user_edits"]["time"] = "18:30"
     @planner_session.update!(
       pending_items: existing,
-      generation_state: "running",
+      generation_state: "queued",
       generation_revision: 1
     )
     response = response(
@@ -147,7 +147,8 @@ class PlannerMealSessionTest < ActiveSupport::TestCase
       removed_ids: [ second.fetch("id") ]
     )
 
-    assert @planner_session.send(:apply_generation!, revision: 1, response:)
+    use_provider(response)
+    assert current { @planner_session.generate!(revision: 1) }
     conflict = @planner_session.reload.pending_items.second
     assert_equal "removed_by_revision", conflict.dig("conflict", "type")
 

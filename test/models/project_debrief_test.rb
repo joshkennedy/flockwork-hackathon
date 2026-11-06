@@ -2,8 +2,13 @@ require "test_helper"
 
 class ProjectDebriefTest < ActiveSupport::TestCase
   setup do
+    @original_provider = Rails.configuration.x.planner_provider
     @source = projects(:community_meal)
     @source.update!(done_at: Time.current)
+  end
+
+  teardown do
+    Rails.configuration.x.planner_provider = @original_provider
   end
 
   test "answers are optional and each Project has one debrief" do
@@ -53,7 +58,11 @@ class ProjectDebriefTest < ActiveSupport::TestCase
     Current.set(session: Session.new(person: people(:leader))) do
       [ 1, 3 ].each do |version|
         session = current.planner_sessions.new(started_by: people(:leader), description: "Plan setup", flow_version: version)
-        context = Planner::ContextBuilder.new(session).send(:context)
+        response = Planner::Response.new(card: nil, finished: true, added: [], removed_ids: [])
+        provider = Planner::Providers::Fake.new([ response, response ])
+        Rails.configuration.x.planner_provider = provider
+        Planner::ContextBuilder.new(session).ask
+        context = provider.contexts.last
         history = context[version == 1 ? :past_projects : "past_projects"]
         json = history.to_json
         assert_includes json, "[name] prepared clear roles"
@@ -72,7 +81,8 @@ class ProjectDebriefTest < ActiveSupport::TestCase
       end
       @source.update!(done_at: nil)
       session = current.planner_sessions.new(started_by: people(:leader), description: "Plan setup", flow_version: 1)
-      history = Planner::ContextBuilder.new(session).send(:past_projects)
+      Planner::ContextBuilder.new(session).ask
+      history = Rails.configuration.x.planner_provider.contexts.last.fetch(:past_projects)
       assert_not_includes history.to_json, "prepared clear roles"
     end
   end

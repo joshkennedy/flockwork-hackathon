@@ -14,7 +14,6 @@ module PeopleHelper
     tag.span(safe_join(chips), class: "inline-flex min-w-0 flex-wrap items-center gap-1.5")
   end
 
-  # "Oct 3", with the year only when it is not this year.
   def short_date(date)
     date.year == Date.current.year ? date.strftime("%b %-d") : date.strftime("%b %-d, %Y")
   end

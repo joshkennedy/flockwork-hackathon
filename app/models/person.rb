@@ -1,6 +1,6 @@
 class Person < ApplicationRecord
   include RefreshesStaffingSuggestions
-  include OrganizationScoped
+  belongs_to :organization
 
   NOTIFICATION_CHANNELS = {
     "in_app" => :in_app_preferences,

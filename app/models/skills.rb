@@ -10,7 +10,6 @@ module Skills
 
   module_function
 
-  # Accepts an array, a comma-separated string, or both mixed; blanks and repeats drop out.
   def normalize(value)
     Array(value).flat_map { |entry| entry.to_s.split(",") }
       .map { |skill| skill.squish.downcase.first(MAX_LENGTH) }

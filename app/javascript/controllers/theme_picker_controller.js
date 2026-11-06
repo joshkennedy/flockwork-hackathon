@@ -1,6 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Applies a church's theme the moment an Admin picks it, then saves it.
 export default class extends Controller {
   static targets = ["custom", "customChoice"]
   static values = { default: String }

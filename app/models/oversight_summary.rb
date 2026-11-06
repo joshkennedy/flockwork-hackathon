@@ -1,4 +1,3 @@
-# One plain sentence per Oversight card, built from counts and dates only.
 class OversightSummary
   class << self
     def facts_for(person, last_check_in: nil)
@@ -8,10 +7,6 @@ class OversightSummary
         "serving_since" => since&.to_date&.iso8601,
         "last_check_in_on" => last_check_in&.on&.iso8601
       }
-    end
-
-    def line(_person, facts)
-      template(facts)
     end
 
     def template(facts)

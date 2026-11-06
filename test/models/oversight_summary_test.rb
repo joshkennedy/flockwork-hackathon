@@ -6,7 +6,6 @@ class OversightSummaryTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
 
   setup do
-    @person = people(:volunteer)
     @facts = { "serving_load" => 4, "serving_since" => "2026-09-03", "last_check_in_on" => nil }
   end
 
@@ -26,14 +25,16 @@ class OversightSummaryTest < ActiveSupport::TestCase
     end
   end
 
-  test "the line uses current facts without enqueuing AI work" do
+  test "current facts produce a fresh summary without enqueuing AI work" do
     previous = ENV["OPENROUTER_API_KEY"]
     ENV["OPENROUTER_API_KEY"] = "configured"
 
-    assert_no_enqueued_jobs do
-      assert_equal OversightSummary.template(@facts), OversightSummary.line(@person, @facts)
-      changed = @facts.merge("serving_load" => 5)
-      assert_equal OversightSummary.template(changed), OversightSummary.line(@person, changed)
+    travel_to Date.new(2026, 11, 2) do
+      assert_no_enqueued_jobs do
+        assert_equal "Serving on 4 Active Projects since September, no check-in logged.", OversightSummary.template(@facts)
+        assert_equal "Serving on 5 Active Projects since September, no check-in logged.",
+          OversightSummary.template(@facts.merge("serving_load" => 5))
+      end
     end
   ensure
     ENV["OPENROUTER_API_KEY"] = previous

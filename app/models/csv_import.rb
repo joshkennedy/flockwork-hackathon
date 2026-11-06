@@ -53,7 +53,7 @@ class CsvImport
 
       table.each_with_index do |row, index|
         line_number = index + 2
-        outcome = import_row(row, line_number)
+        outcome = import_row(row)
 
         case outcome
         in [ :created ] then created_count += 1
@@ -65,7 +65,7 @@ class CsvImport
       Result.new(created_count, updated_count, rejected_rows, nil)
     end
 
-    def import_row(row, line_number)
+    def import_row(row)
       name = row["name"]&.strip
       return [ :rejected, "Name is missing" ] if name.blank?
 

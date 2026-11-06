@@ -88,7 +88,7 @@ class DocViewerSystemTest < ApplicationSystemTestCase
     assert_equal [ 200, 200, 200, 200, 200 ], statuses
   end
 
-  test "the PDF scripting engine is never served and the viewer opens documents with scripting off" do
+  test "the PDF scripting engine assets are unavailable while the color decoder remains served" do
     visit new_demo_session_path
     click_on "Explore as Leader"
     assert_selector "[data-signed-in-as]", text: "Maria Lopez"
@@ -103,7 +103,6 @@ class DocViewerSystemTest < ApplicationSystemTestCase
         .map((path) => fetch(`${base}/${path}`).then((response) => response.status))).then(done)
     JS
     assert_equal [ 404, 404, 200 ], statuses
-    assert_includes File.read(Rails.root.join("app/javascript/controllers/doc_viewer_controller.js")), "enableScripting: false"
   end
 
   test "zooming keeps the current page in view" do

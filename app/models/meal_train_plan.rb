@@ -59,6 +59,6 @@ class MealTrainPlan
           errors.add(:start_date, "must be a valid date")
         end
       end
-      errors.add(:time, "must be a valid delivery time") if time.present? && !time.match?(Planner::PendingItems::TIME)
+      errors.add(:time, "must be a valid delivery time") if time.present? && !time.match?(Planner::FieldValidation::TIME)
     end
 end

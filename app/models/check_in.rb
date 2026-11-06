@@ -1,5 +1,5 @@
 class CheckIn < ApplicationRecord
-  include OrganizationScoped
+  belongs_to :organization
 
   # A check-in this recent takes the person out of the "may need a check-in" list.
   RECENT_DAYS = 30

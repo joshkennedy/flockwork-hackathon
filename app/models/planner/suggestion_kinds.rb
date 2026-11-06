@@ -1,6 +1,6 @@
 module Planner
   module SuggestionKinds
-    TIME_PATTERN = "^([01]\\d|2[0-3]):[0-5]\\d$"
+    TIME_PATTERN = "^#{FieldValidation::TIME_PATTERN}$"
 
     KINDS = {
       "shift_project_dates" => {
@@ -291,11 +291,10 @@ module Planner
       raise ArgumentError, invalid.to_sentence if invalid.any?
     end
 
-    # Same checks as PendingItems for the kinds both flows share, so ask-mode can't store what build-as-you-go rejects.
     def invalid_field_messages(kind, fields)
-      messages = PendingItems.raw_field_errors(kind, fields)
+      messages = FieldValidation.errors(kind, fields)
       messages << "Skill is invalid" if kind == "skill" && !Skills.normalize(fields["name"]).one?
-      messages << "Columns are invalid" if kind == "list" && !PendingItems.valid_columns?(fields["columns"])
+      messages << "Columns are invalid" if kind == "list" && !FieldValidation.valid_columns?(fields["columns"])
       messages
     end
 

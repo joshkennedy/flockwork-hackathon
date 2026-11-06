@@ -150,8 +150,9 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
     old_token = project.public_token
     old_banner_blob_id = project.banner.blob_id
 
+    project.name = nil
     assert_raises(ActiveRecord::RecordInvalid) do
-      project.send(:revoke_with_banner_rotation!, name: nil, public_token: nil)
+      project.disable_public_link!
     end
 
     project.reload

@@ -1,6 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Light, dark, or match the device, remembered per device in a cookie.
 export default class extends Controller {
   pick(event) {
     const choice = event.target.value

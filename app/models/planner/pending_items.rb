@@ -10,10 +10,14 @@ module Planner
       "booking" => %w[description estimated_dollars], "purchase" => %w[description estimated_dollars],
       "list" => %w[name columns], "enable_tool" => %w[tool], "skill" => %w[name]
     }.freeze
-    TOOLS = { "slot" => "signup_sheet", "task" => "tasks", "schedule_item" => "schedule",
-      "booking" => "budget", "purchase" => "budget", "list" => "list" }.freeze
-    TIME = /\A(?:[01]\d|2[0-3]):[0-5]\d\z/
     SOURCE_KEY = /\A[a-zA-Z0-9_-]{1,80}\z/
+
+    Candidate = Data.define(:kind, :source_key, :fields, :metadata) do
+      def to_h
+        { "id" => Planner::PendingItems.stable_id(source_key), "source_key" => source_key, "kind" => kind,
+          "fields" => fields, "suggested_fields" => fields, "removed" => false, "user_edits" => {}, "conflict" => nil }.merge(metadata)
+      end
+    end
 
     module_function
 
@@ -68,6 +72,31 @@ module Planner
     end
 
     def visible(items) = items.reject { |item| item["removed"] }
+
+    def rebase_dates(items, from:, to:)
+      offset = from ? (to - from).to_i : nil
+      items.map do |item|
+        next item unless %w[slot schedule_item task].include?(item["kind"])
+        date_field = item["kind"] == "task" ? "due_on" : "date"
+        next item if item.fetch("user_edits", {}).key?(date_field)
+
+        date = item.dig("fields", date_field).presence
+        next item unless date.present? || item.key?("day_offset")
+        next item if from.nil? && date.present?
+        rebased = if date && offset
+          Date.iso8601(date) + offset
+        else
+          to + item.fetch("day_offset", 0).to_i
+        end
+        item.deep_merge(
+          "fields" => { date_field => rebased.iso8601 },
+          "suggested_fields" => { date_field => rebased.iso8601 }
+        )
+      rescue Date::Error, TypeError
+        item
+      end
+    end
+
     def fields_for(kind)
       definitions = Planner::SuggestionKinds.fields_for(kind == SLOT_KIND ? SLOT_RUN_KIND : kind).slice(*editable_fields(kind))
       definitions = definitions.merge("date" => { label: "Date", input: :date, schema: { type: "string" } }) if %w[slot schedule_item].include?(kind.to_s)
@@ -78,7 +107,10 @@ module Planner
     def editable_fields(kind) = EDITABLE.fetch(kind.to_s)
     def tool(item)
       item = item.deep_stringify_keys
-      item["kind"] == "enable_tool" ? item.dig("fields", "tool") : TOOLS[item.fetch("kind")]
+      return item.dig("fields", "tool") if item["kind"] == "enable_tool"
+
+      kind = item.fetch("kind")
+      Planner::SuggestionKinds::KINDS.dig(kind == SLOT_KIND ? SLOT_RUN_KIND : kind, :tool)
     end
     def summary(item)
       item = item.deep_stringify_keys
@@ -134,11 +166,6 @@ module Planner
     rescue ArgumentError, TypeError
       result || fields
     end
-    def sanitize_slot_fields(fields) = sanitize_fields(SLOT_KIND, fields)
-    def valid_slot(item, project:)
-      fields = item.fetch("fields")
-      Slot.new(project:, label: fields["label"], date: fields["date"], starts_at_time: fields["time"].presence, capacity: fields["capacity"])
-    end
 
     def normalize_provider_fields(kind, fields, project:)
       raw = fields.to_h.deep_stringify_keys
@@ -155,27 +182,25 @@ module Planner
       item = item.deep_stringify_keys
       fields = item["fields"]
       return [ "Item fields are missing" ] unless fields.is_a?(Hash)
-      raw_errors = raw_field_errors(item["kind"], fields)
+      raw_errors = FieldValidation.errors(item["kind"], fields)
       return raw_errors if raw_errors.any?
       if item["kind"] == "task" && item.key?("day_offset") && fields["due_on"].blank? && !item.fetch("user_edits", {}).key?("due_on")
         return [ "Choose a Project start date or a due date" ]
       end
       record = case item["kind"]
-      when "slot" then Slot.new(project:, label: fields["label"], date: fields["date"], starts_at_time: fields["time"].presence, capacity: fields["capacity"])
-      when "task" then Task.new(project:, title: fields["title"], details: fields["details"], due_on: fields["due_on"])
-      when "schedule_item" then ScheduleItem.new(project:, title: fields["title"], date: fields["date"], starts_at_time: fields["starts_at"].presence, ends_at_time: fields["ends_at"].presence, location: fields["location"].presence)
       when "booking", "purchase"
         return [ "Estimated cost is required" ] if fields["estimated_dollars"].blank?
-        BudgetLine.new(project:, kind: item["kind"], description: fields["description"], estimated: fields["estimated_dollars"])
+        build_record(project, item)
       when "list"
-        return [ "At least one valid column is required" ] unless valid_columns?(fields["columns"])
-        List.new(project:, name: fields["name"])
+        return [ "At least one valid column is required" ] unless FieldValidation.valid_columns?(fields["columns"])
+        build_record(project, item)
       when "enable_tool" then return Project::TOOLS.include?(fields["tool"]) ? [] : [ "Tool is invalid" ]
       when "shift_project_dates"
         ProjectDateShift.days(fields["days"])
         return []
       when "skill" then return Skills.normalize(fields["name"]).one? ? [] : [ "Skill is invalid" ]
-      else return [ "Unknown item type" ]
+      else
+        build_record(project, item) || (return [ "Unknown item type" ])
       end
       record.valid?
       record.errors.full_messages
@@ -188,25 +213,40 @@ module Planner
       fields = item.fetch("fields")
       case item.fetch("kind")
       when "shift_project_dates" then ProjectDateShift.new(project, days: fields.fetch("days")).call
-      when "slot" then project.slots.create!(label: fields["label"], date: fields["date"], starts_at_time: fields["time"].presence, capacity: fields["capacity"], schedule_item:)
-      when "task" then project.tasks.create!(title: fields["title"], details: fields["details"], due_on: fields["due_on"])
-      when "schedule_item" then project.schedule_items.create!(title: fields["title"], date: fields["date"], starts_at_time: fields["starts_at"].presence, ends_at_time: fields["ends_at"].presence, location: fields["location"].presence)
-      when "booking", "purchase" then project.budget_lines.create!(kind: item["kind"], description: fields["description"], estimated: fields["estimated_dollars"])
-      when "list"
-        project.lists.create!(name: fields["name"]).tap { |list| fields.fetch("columns").each { |column| list.columns.create!(name: column["name"], column_type: column["type"]) } }
       when "skill"
         project.update!(skills_needed: project.skills_needed + [ fields["name"] ])
         nil
+      else
+        association, attributes = record_definition(item, schedule_item:)
+        return unless association
+
+        record = project.public_send(association).create!(attributes)
+        if item["kind"] == "list"
+          fields.fetch("columns").each { |column| record.columns.create!(name: column["name"], column_type: column["type"]) }
+        end
+        record
       end
     end
 
+    def build_record(project, item, schedule_item: nil)
+      association, attributes = record_definition(item, schedule_item:)
+      project.public_send(association).klass.new(project:, **attributes) if association
+    end
+
+    def record_definition(item, schedule_item: nil)
+      fields = item.fetch("fields")
+      case item.fetch("kind")
+      when "slot" then [ :slots, { label: fields["label"], date: fields["date"], starts_at_time: fields["time"].presence, capacity: fields["capacity"], schedule_item: } ]
+      when "task" then [ :tasks, { title: fields["title"], details: fields["details"], due_on: fields["due_on"] } ]
+      when "schedule_item" then [ :schedule_items, { title: fields["title"], date: fields["date"], starts_at_time: fields["starts_at"].presence, ends_at_time: fields["ends_at"].presence, location: fields["location"].presence } ]
+      when "booking", "purchase" then [ :budget_lines, { kind: item["kind"], description: fields["description"], estimated: fields["estimated_dollars"] } ]
+      when "list" then [ :lists, { name: fields["name"] } ]
+      end
+    end
+    private_class_method :record_definition
+
     def candidate(kind: SLOT_KIND, fields:, source_key:, metadata: {})
-      Data.define(:kind, :source_key, :fields, :metadata) do
-        def to_h
-          { "id" => Planner::PendingItems.stable_id(source_key), "source_key" => source_key, "kind" => kind,
-            "fields" => fields, "suggested_fields" => fields, "removed" => false, "user_edits" => {}, "conflict" => nil }.merge(metadata)
-        end
-      end.new(kind, source_key, fields, metadata)
+      Candidate.new(kind, source_key, fields, metadata)
     end
     def stable_id(key) = Digest::SHA256.hexdigest(key).then { |h| "#{h[0, 8]}-#{h[8, 4]}-4#{h[13, 3]}-8#{h[17, 3]}-#{h[20, 12]}" }
     def source_key(item, index, occurrence) = "#{item['source_key'].presence || "meal-slots-#{index}"}:#{occurrence}"
@@ -217,7 +257,7 @@ module Planner
       count = fields["end_date"].present? ? (start ? (Date.iso8601(fields["end_date"]) - start).to_i + 1 : 0) : fields.fetch("end_day_offset", 0) - fields.fetch("start_day_offset", 0) + 1
       return [] unless count.between?(1, 60)
       count.times.map do |index|
-        candidate(source_key: source_key(item, source_index, index), fields: sanitize_slot_fields(
+        candidate(source_key: source_key(item, source_index, index), fields: sanitize_fields(SLOT_KIND,
           "label" => fields["label"], "date" => start && (start + index).iso8601, "time" => fields["time"], "capacity" => fields.fetch("capacity", 1),
           "schedule_item_source_key" => fields["schedule_item_source_key"]
         ), metadata: { "day_offset" => fields.fetch("start_day_offset", 0) + index })
@@ -239,7 +279,7 @@ module Planner
       raise ArgumentError unless fields.is_a?(Hash) && fields.values.none? { |v| v.is_a?(String) && v.bytesize > 10_000 }
       if kind == SLOT_RUN_KIND
         raise ArgumentError unless fields["label"].is_a?(String) && fields["label"].present? && fields.fetch("capacity", 1).is_a?(Integer) && fields.fetch("capacity", 1).between?(1, 10_000)
-        raise ArgumentError unless fields["time"].blank? || fields["time"].is_a?(String) && fields["time"].match?(TIME)
+        raise ArgumentError unless fields["time"].blank? || fields["time"].is_a?(String) && fields["time"].match?(FieldValidation::TIME)
         reference = fields["schedule_item_source_key"]
         raise ArgumentError unless reference.nil? || reference.is_a?(String) && reference.match?(SOURCE_KEY)
         if fields["start_date"].present?
@@ -255,7 +295,7 @@ module Planner
         if offset_name && !fields[offset_name].nil? && !(fields[offset_name].is_a?(Integer) && fields[offset_name].between?(-365, 365))
           raise ArgumentError, "Date offsets must be whole days within a year"
         end
-        invalid = raw_field_errors(kind, fields)
+        invalid = FieldValidation.errors(kind, fields)
         raise ArgumentError, invalid.to_sentence if invalid.any?
         normalized, = normalize_provider_fields(kind, fields, project:)
         draft = errors(candidate(kind:, fields: normalized, source_key: "validation").to_h, project:)
@@ -266,35 +306,6 @@ module Planner
       end
     end
 
-    def raw_field_errors(kind, fields)
-      errors = []
-      required_text = case kind
-      when "task", "schedule_item" then [ "title" ]
-      when "booking", "purchase" then [ "description" ]
-      when "list", "skill" then [ "name" ]
-      else []
-      end
-      required_text.each { |name| errors << "#{name.humanize} is invalid" unless fields[name].is_a?(String) && fields[name].present? }
-      %w[date due_on].each do |name|
-        next unless fields[name].present?
-        Date.iso8601(fields[name]) if fields[name].is_a?(String)
-        errors << "#{name.humanize} is invalid" unless fields[name].is_a?(String)
-      rescue Date::Error
-        errors << "#{name.humanize} is invalid"
-      end
-      %w[time starts_at ends_at].each do |name|
-        errors << "#{name.humanize} is invalid" if fields[name].present? && (!fields[name].is_a?(String) || !fields[name].match?(TIME))
-      end
-      if %w[booking purchase].include?(kind) && fields["estimated_dollars"].present?
-        value = BigDecimal(fields["estimated_dollars"].to_s, exception: false)
-        errors << "Estimated cost is invalid" unless value&.finite? && value >= 0
-      end
-      if kind == "enable_tool"
-        errors << "Tool is invalid" unless fields["tool"].is_a?(String) && Project::TOOLS.include?(fields["tool"])
-      end
-      errors
-    end
-    def valid_columns?(columns) = columns.is_a?(Array) && columns.size.between?(1, 20) && columns.all? { |c| c.is_a?(Hash) && c["name"].is_a?(String) && c["name"].present? && ListColumn.column_types.key?(c["type"]) }
     def preserved_by_leader?(item) = item.fetch("removed", false) || item.fetch("user_edits", {}).present?
   end
 end

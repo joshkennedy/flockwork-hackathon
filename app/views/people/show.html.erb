@@ -38,7 +38,6 @@
             <h2 id="edit-person-heading" class="text-ink">Edit details</h2>
             <button type="button" class="btn btn-icon" aria-label="Close" data-action="slideout#close"><%= icon(:close) %></button>
           </div>
-          <%# Lazy: the form loads the first time the panel opens. %>
           <%= turbo_frame_tag "edit-person", src: edit_person_path(@person), loading: :lazy do %>
             <p class="mt-6 text-meta text-ink-2">Loading…</p>
           <% end %>

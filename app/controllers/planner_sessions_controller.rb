@@ -20,7 +20,7 @@ class PlannerSessionsController < ApplicationController
     )
 
     if @planner_session.save
-      @planner_session.start!
+      @planner_session.run_step!
       redirect_to planner_destination
     else
       render :new, status: :unprocessable_content

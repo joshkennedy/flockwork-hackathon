@@ -99,7 +99,7 @@ class PlannerSessionTest < ActiveSupport::TestCase
         suggestions: existing
       )
 
-      Current.set(session: current_session) { planner_session.start! }
+      Current.set(session: current_session) { planner_session.run_step! }
       planner_session.reload
     end
 

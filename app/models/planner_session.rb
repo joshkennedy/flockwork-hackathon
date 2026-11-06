@@ -9,7 +9,7 @@ class PlannerSession < ApplicationRecord
   enum :status, { asking: 0, reviewing: 1, accepted: 2, abandoned: 3 }
 
   validates :description, presence: true
-  PLANNING_KINDS = %w[meal_train retreat workday children_program class other].freeze
+  PLANNING_KINDS = Planner::ProjectKinds::CHOICES.keys.freeze
 
   validates :flow_version, inclusion: { in: [ 1, 2, 3, 4 ] }
   validates :planning_kind, inclusion: { in: PLANNING_KINDS }
@@ -158,27 +158,7 @@ class PlannerSession < ApplicationRecord
       project.save!
 
       if new_start && old_start != new_start
-        offset = old_start ? (new_start - old_start).to_i : nil
-        self.pending_items = pending_items.map do |item|
-          next item unless %w[slot schedule_item task].include?(item["kind"])
-          date_field = item["kind"] == "task" ? "due_on" : "date"
-          next item if item.fetch("user_edits", {}).key?(date_field)
-
-          date = item.dig("fields", date_field).presence
-          next item unless date.present? || item.key?("day_offset")
-          next item if old_start.nil? && date.present?
-          rebased = if date && offset
-            Date.iso8601(date) + offset
-          else
-            new_start + item.fetch("day_offset", 0).to_i
-          end
-          item.deep_merge(
-            "fields" => { date_field => rebased.iso8601 },
-            "suggested_fields" => { date_field => rebased.iso8601 }
-          )
-        rescue Date::Error, TypeError
-          item
-        end
+        self.pending_items = Planner::PendingItems.rebase_dates(pending_items, from: old_start, to: new_start)
       end
 
       self.generation_revision += 1
@@ -364,8 +344,7 @@ class PlannerSession < ApplicationRecord
       if errors.any?
         if meal_planner?
           item = items.find { |candidate| errors.key?(candidate.fetch("id")) }
-          fields = item.fetch("fields")
-          invalid = Slot.new(project:, label: fields["label"], date: fields["date"], starts_at_time: fields["time"].presence, capacity: fields["capacity"])
+          invalid = Planner::PendingItems.build_record(project, item)
           invalid.valid?
           raise ActiveRecord::RecordInvalid, invalid
         end
@@ -392,15 +371,6 @@ class PlannerSession < ApplicationRecord
     end
   end
 
-  def start!
-    run_step!
-  end
-
-  def answer!(text)
-    record_answer!(text)
-    run_step!
-  end
-
   def record_answer!(text)
     card = current_card&.stringify_keys
     raise ArgumentError, "There is no current Planner card" unless card
@@ -420,7 +390,16 @@ class PlannerSession < ApplicationRecord
   end
 
   def run_step!
-    request_next_response
+    response = begin
+      Planner::ContextBuilder.new(self).ask
+    rescue StandardError => error
+      reload
+      update!(last_error: error.message) if asking?
+      return false
+    end
+
+    apply_response!(response)
+    true
   end
 
   def skip_to_review!
@@ -589,19 +568,6 @@ class PlannerSession < ApplicationRecord
 
     def ensure_not_busy!
       raise ArgumentError, "Generation is still in progress" if generation_busy?
-    end
-
-    def request_next_response
-      response = begin
-        Planner::ContextBuilder.new(self).ask
-      rescue StandardError => error
-        reload
-        update!(last_error: error.message) if asking?
-        return false
-      end
-
-      apply_response!(response)
-      true
     end
 
     def apply_response!(response)

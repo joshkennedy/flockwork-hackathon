@@ -30,7 +30,7 @@ module ProjectsHelper
     items << [ "When", project_date_range(project.starts_on, project.ends_on) ] if project.starts_on || project.ends_on
 
     if project.enabled_tools.include?("signup_sheet") && (slots = project.slots.to_a).any?
-      items << [ "Covered", "#{slots.sum(&:claims_count)} of #{pluralize(slots.sum(&:capacity), slot_noun(slots))}" ]
+      items << [ "Covered", "#{slots.sum(&:claims_count)} of #{pluralize(slots.sum(&:capacity), SlotsHelper.count_noun(slots))}" ]
       next_open = upcoming_open_slots(slots).first
       items << [ "Next open", next_open ? next_open.date.strftime("%a, %b %-d") : "All covered" ]
     elsif project.enabled_tools.include?("tasks") && (open_tasks = project.tasks.open.to_a).any?
@@ -65,7 +65,7 @@ module ProjectsHelper
       spots = open_slots.sum { |slot| slot.capacity - slot.claims_count }
       if spots.positive?
         next_slot = open_slots.find { |slot| slot.slot_claims.none? { |claim| claim.person_id == person.id } }
-        noun = slot_noun(open_slots)
+        noun = SlotsHelper.count_noun(open_slots)
         return {
           kind: :spots,
           title: noun == "spot" ? "#{pluralize(spots, "spot")} still open" : "#{pluralize(spots, noun)} still #{spots == 1 ? "needs" : "need"} someone",
@@ -88,11 +88,5 @@ module ProjectsHelper
   private
     def upcoming_open_slots(slots)
       slots.reject(&:full?).select { |slot| slot.date >= Date.current }.sort_by { |slot| [ slot.date, slot.starts_at_time.to_s ] }
-    end
-
-    # Counts are in spots: "dinner" when every Slot is one person with a shared label, else "spot".
-    def slot_noun(slots)
-      labels = slots.map { |slot| slot.label.downcase }.uniq
-      labels.one? && slots.all? { |slot| slot.capacity == 1 } ? labels.first : "spot"
     end
 end

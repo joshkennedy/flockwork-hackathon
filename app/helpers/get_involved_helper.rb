@@ -37,7 +37,7 @@ module GetInvolvedHelper
   def momentum_line(slots)
     return if slots.empty?
 
-    total = pluralize(slots.sum(&:capacity), slot_noun(slots))
+    total = pluralize(slots.sum(&:capacity), SlotsHelper.count_noun(slots))
     filled = "#{slots.sum(&:claims_count)} of #{total} filled"
     next_open = slots.reject(&:full?).first
     next_open ? "#{filled} · next open #{next_open.date.strftime("%a, %b %-d")}" : "#{filled} · all covered"

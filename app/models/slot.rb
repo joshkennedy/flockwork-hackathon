@@ -27,10 +27,6 @@ class Slot < ApplicationRecord
     where(project_id: project_ids).this_week.with_open_spots.includes(:project).chronological.group_by(&:project)
   end
 
-  def self.grouped_by_date
-    chronological.group_by(&:date)
-  end
-
   def claim(person)
     claim = nil
 
