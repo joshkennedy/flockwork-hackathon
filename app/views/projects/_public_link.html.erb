@@ -18,7 +18,11 @@
         <%= button_to "Turn Off", disable_public_link_project_path(project), class: "btn btn-danger", form: { data: { turbo_confirm: "Turn off the public link? Anyone who has it loses access." } } %>
       </div>
     <% else %>
-      <%= button_to "Turn On Public Link", enable_public_link_project_path(project), class: "mt-4 btn btn-secondary" %>
+      <% if local_assigns[:offered_above] %>
+        <p class="mt-3 text-meta text-ink">Public link is off.</p>
+      <% else %>
+        <%= button_to "Turn On Public Link", enable_public_link_project_path(project), class: "mt-4 btn btn-secondary" %>
+      <% end %>
     <% end %>
   </section>
 <% end %>

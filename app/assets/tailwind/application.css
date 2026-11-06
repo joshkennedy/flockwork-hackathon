@@ -75,6 +75,9 @@
   --text-display-phone--line-height: 30px;
   --text-display-phone--font-weight: 400;
   --text-display-phone--letter-spacing: -0.01em;
+  --text-stat: 20px;
+  --text-stat--line-height: 24px;
+  --text-stat--font-weight: 600;
   --text-heading: 15px;
   --text-heading--line-height: 20px;
   --text-heading--font-weight: 600;
@@ -115,7 +118,7 @@
   --color-page: #191918;
   --color-panel: #1D1D1B;
   --color-border: #2E2D2A;
-  --color-border-strong: #5A5853;
+  --color-border-strong: #6B6964;
   --color-hairline: #262523;
   --color-ink: #F2F1ED;
   --color-on-ink: #141413;
@@ -318,12 +321,20 @@
   .guidance-strip { @apply flex flex-col gap-3 rounded-tile bg-sunlit-soft px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between; }
   .status-strip { @apply grid grid-cols-2 rounded-tile border border-border bg-panel/75 sm:grid-cols-4; }
   .status-strip > div { @apply border-hairline px-4 py-3 max-sm:odd:border-r sm:not-last:border-r; }
+  /* A linked cell is wholly clickable (the label's link stretches over it); a chevron, not an underline, says it goes somewhere. */
+  .status-strip-linked { @apply relative first:rounded-l-tile last:rounded-r-tile; transition: background var(--duration-hover); }
+  .status-strip-link { @apply absolute inset-0 rounded-[inherit]; }
+  .status-strip-linked dd::after { content: "›"; @apply ms-1.5 text-ink-3; }
+  .status-strip-linked:has(.status-strip-link:focus-visible) { @apply outline-2 outline-offset-2 outline-ink; }
+  .status-strip-link:focus-visible { outline: none; }
   .status-strip dt { @apply text-label text-ink-2; }
-  .status-strip dd { @apply mt-1 font-semibold; }
+  .status-strip dd { @apply mt-1 text-stat text-ink; }
   /* The one decorative surface: blurred tool-color blobs plus grain, faded out
      before content starts. Tint carries meaning (see DESIGN.md, Header wash). */
   /* wash_controller gives each page its own blob layout and drifts there from the previous page's. */
   .header-wash { @apply pointer-events-none absolute inset-x-0 top-0 h-[300px] overflow-hidden rounded-t-panel; mask-image: linear-gradient(#000 35%, transparent); --wash-a: rgb(245 176 0 / .2); --wash-b: rgb(232 89 12 / .09); }
+  /* DESIGN.md: the wash never sits behind the Planner. */
+  .header-wash.wash-none { opacity: 0; }
   .header-wash.wash-admin { --wash-a: rgb(14 165 164 / .16); --wash-b: rgb(245 176 0 / .14); }
   .header-wash.wash-volunteer { --wash-a: rgb(232 89 12 / .14); --wash-b: rgb(245 176 0 / .18); }
   .header-wash::before, .header-wash::after { content: ""; position: absolute; border-radius: 50%; filter: blur(24px); }
@@ -333,6 +344,7 @@
   /* Hover stays off touch screens, where it sticks after a tap. Kept above the
      disabled, pressed and current rules so those still win. */
   @media (hover: hover) {
+    .status-strip-linked:hover { @apply bg-hairline; }
     .btn-primary:hover { @apply bg-ink-hover; }
     .btn-secondary:hover { @apply bg-ghost-fill; }
     .btn-text:hover { @apply bg-hairline text-ink; }
@@ -344,7 +356,6 @@
     .tab-link:hover { @apply text-ink; }
     .answer-tile:hover { @apply border-border-strong; }
     button.project-kind-tile:hover { @apply border-border-strong bg-ghost-fill; }
-    .meal-builder-text-action:hover { @apply bg-hairline text-ink; }
     /* Only a linked pill gets hover, and avatars lift only inside links and buttons; static avatars never move. */
     a.person-pill:hover { @apply bg-nav-active; }
     :is(a, button, summary):hover .avatar-person { transform: translateY(-1px); }
@@ -386,7 +397,7 @@
   details[open] > :not(summary, .popover-in) { animation: disclose var(--duration-hover) var(--ease-enter); }
   .tool-section { @apply border-t border-hairline pt-7; }
   .tool-section h2 { @apply flex items-center gap-2; }
-  .privacy-line { @apply mt-7 flex items-start gap-2 text-meta text-ink-2; }
+  .privacy-line { @apply mt-7 flex items-start gap-2 text-meta text-ink-2; text-wrap: pretty; }
   .dictation-field { position: relative; }
   .dictation-field:has(button:not([hidden])) :is(input, textarea) { padding-right: 44px; }
   .dictation-field > button { position: absolute; right: 4px; top: 4px; }
@@ -450,7 +461,6 @@
   .meal-builder-organization { @apply mt-7 grid min-w-0 gap-7; }
   .meal-builder :is(.btn, summary) { min-height: 44px; }
   .meal-builder-guide { @apply min-w-0; }
-  .meal-builder-text-action { @apply -ms-2 inline-flex min-h-11 cursor-pointer items-center rounded-control px-2 text-meta font-semibold text-ink-2; }
   .meal-builder-status { @apply text-meta text-ink-2; }
   .meal-mobile-update { @apply mt-5 rounded-nav border border-dashed border-ghost-border bg-ghost-fill px-3 py-3; }
   .meal-answer-summary { @apply rounded-control border border-border bg-panel; }
@@ -467,9 +477,11 @@
   .meal-preview-heading { @apply flex items-start justify-between gap-4; }
   .meal-preview-view-all { @apply min-h-11 items-center; display: inline-flex; }
   .meal-preview-list { @apply overflow-hidden rounded-tile border border-dashed border-ghost-border bg-ghost-fill; }
-  .planner-tool-groups { @apply grid gap-5; }
-  .planner-tool-group { @apply min-w-0; }
-  .planner-tool-heading { @apply mb-2 flex items-center gap-2 text-heading text-ink; }
+  /* One ghost surface for the whole preview; tool groups are compact rows inside it, not a card per item. */
+  .planner-tool-groups { @apply divide-y divide-dashed divide-ghost-border overflow-hidden rounded-tile border border-dashed border-ghost-border bg-ghost-fill; }
+  .planner-tool-group { @apply min-w-0 pt-3; }
+  .planner-tool-heading { @apply flex items-center gap-2 px-4 text-label font-medium text-ink-2; }
+  .planner-tool-group .meal-preview-list { @apply rounded-none border-0 bg-transparent; }
   .meal-slot { @apply min-w-0 border-b border-ghost-border px-4 py-3; }
   .meal-slot:last-child { border-bottom: 0; }
   .meal-slot-changed { @apply bg-panel; box-shadow: inset 2px 0 0 var(--color-ink); animation: slot-changed var(--duration-keep) var(--ease-enter); }

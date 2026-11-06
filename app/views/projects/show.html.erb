@@ -17,6 +17,8 @@
 <% header_primary = @resumable_planner_session.present? || can_join %>
 <% guidance_action = guidance && ((guidance[:kind] == :spots && (can_share || claim_slot)) || guidance[:kind] == :tasks) %>
 <% guidance_primary = guidance_action && !header_primary && guidance[:kind] == :spots %>
+<%# When the guidance strip offers Turn On Public Link, the Sharing panel shows the link's state instead of a second button. %>
+<% public_link_in_strip = guidance_action && guidance[:kind] == :spots && can_share && @project.public_token.blank? %>
 <% tabs = project_tabs(@project) %>
 <% tabs << "notes" if Policy.can?(Current.person, :view_notes, @project) %>
 <% tabs << "team" if Policy.can?(Current.person, :view_team, @project) %>
@@ -30,7 +32,6 @@
     <div class="min-w-0 max-w-4xl">
       <div class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
         <h1 class="min-w-0 text-ink"><%= @project.name %></h1>
-        <%= link_to "Rename", edit_project_path(@project), class: "link touch-target text-meta" if can_update %>
       </div>
       <% if @project.description.present? %>
         <p class="mt-2 text-ink-2"><%= @project.description %></p>
@@ -53,6 +54,7 @@
       <% end %>
       <% if can_update || can_duplicate || lifecycle_actions.any? %>
         <%= actions_menu("More project actions") do %>
+          <%= link_to "Rename", edit_project_path(@project) if can_update %>
           <%= link_to "Edit Project", edit_project_path(@project) if can_update %>
           <%= link_to "Duplicate", new_project_duplicate_path(@project) if can_duplicate %>
           <%= render "projects/recurrence_action", project: @project %>
@@ -88,23 +90,21 @@
         <div><dt><%= label %></dt><dd><%= value %></dd></div>
       <% end %>
       <% if Policy.can?(Current.person, :view_team, @project) %>
-        <div><dt>Team</dt><dd><%= link_to pluralize(@project.memberships.size, "person"), team_project_path(@project), class: "link touch-target" %></dd></div>
+        <div class="status-strip-linked"><dt>Team<%= link_to "", team_project_path(@project), class: "status-strip-link", aria: { label: "Team, #{pluralize(@project.memberships.size, "person")}" } %></dt><dd><%= pluralize(@project.memberships.size, "person") %></dd></div>
       <% end %>
     </dl>
   <% end %>
 
-  <%= render "projects/risk", project: @project if can_plan %>
+  <%= render "projects/risk", project: @project if can_plan && !guidance %>
 
   <% if guidance %>
     <div class="guidance-strip mt-3" data-project-guidance>
       <div>
         <p class="font-semibold"><%= guidance[:title] %></p>
         <% if guidance[:detail] %>
-          <p class="text-meta text-ink-2"><%= guidance[:detail] %></p>
+          <p class="text-meta text-ink-2"><%= guidance[:detail] %><%= " A public link shows open spots to anyone you send it to." if public_link_in_strip %></p>
         <% end %>
-        <% if guidance[:kind] == :spots && can_share && @project.public_token.blank? %>
-          <p class="text-meta text-ink-2">A public link shows open spots to anyone you send it to. Team names and private Tools stay hidden.</p>
-        <% end %>
+        <%= render "projects/risk", project: @project, inline: true if can_plan %>
       </div>
       <% if guidance_action %>
         <% button_class = "btn #{guidance_primary ? 'btn-primary' : 'btn-secondary'} shrink-0" %>
@@ -165,7 +165,7 @@
               <h2 id="sharing-heading" class="text-heading text-ink">
                 Sharing and ownership<span class="font-normal text-ink-2"><%= " · Public link on" if @project.public_token.present? %></span>
               </h2>
-              <%= render "public_link", project: @project if can_share %>
+              <%= render "public_link", project: @project, offered_above: public_link_in_strip if can_share %>
               <% if can_transfer %>
                 <%= form_with url: transfer_ownership_project_path(@project), method: :patch, class: "mt-5 flex flex-wrap items-end gap-3" do |form| %>
                   <%= form.label :new_owner_id, "Transfer ownership to", class: "block text-label font-medium text-ink" %>

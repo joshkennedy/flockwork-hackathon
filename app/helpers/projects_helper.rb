@@ -12,6 +12,17 @@ module ProjectsHelper
     end
   end
 
+  # Literal class names so Tailwind finds them: a faint wash of the Tool color behind a no-photo thumbnail.
+  THUMBNAIL_TINTS = {
+    "tasks" => "bg-tool-tasks/10", "schedule" => "bg-tool-schedule/10", "signup_sheet" => "bg-tool-signup/10",
+    "budget" => "bg-tool-budget/10", "list" => "bg-tool-list/10", "messages" => "bg-tool-messages/10", "docs" => "bg-tool-docs/10"
+  }.freeze
+
+  # The Project's leading Tool: its first tab, so a Tool with content wins, as on the Project page.
+  def project_lead_tool(project)
+    project_tabs(project).first
+  end
+
   def project_planned?(project)
     TOOL_RECORDS.values.any? { |records| project.public_send(records).exists? }
   end

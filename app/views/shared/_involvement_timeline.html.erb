@@ -8,9 +8,9 @@
         <thead>
           <tr class="border-b border-hairline text-meta text-ink-2">
             <th scope="col" class="py-3 pr-4 font-semibold">Year</th>
-            <th scope="col" class="px-2 py-3 text-right tabular-nums font-semibold">Projects</th>
-            <th scope="col" class="px-2 py-3 text-right tabular-nums font-semibold">Tasks</th>
-            <th scope="col" class="py-3 pl-4 text-right tabular-nums font-semibold">Slots</th>
+            <th scope="col" class="px-2 py-3 text-right font-semibold">Projects</th>
+            <th scope="col" class="px-2 py-3 text-right font-semibold">Tasks</th>
+            <th scope="col" class="py-3 pl-4 text-right font-semibold">Slots</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-hairline">
@@ -20,9 +20,9 @@
                 data-tasks="<%= entry[:tasks] %>"
                 data-slots="<%= entry[:slots] %>">
               <th scope="row" class="py-4 pr-4 font-semibold text-ink"><%= entry[:year] %></th>
-              <td class="px-2 py-4 text-right tabular-nums text-ink-2"><%= entry[:projects] %></td>
-              <td class="px-2 py-4 text-right tabular-nums text-ink-2"><%= entry[:tasks] %></td>
-              <td class="py-4 pl-4 text-right tabular-nums text-ink-2"><%= entry[:slots] %></td>
+              <td class="px-2 py-4 text-right text-ink-2"><%= entry[:projects] %></td>
+              <td class="px-2 py-4 text-right text-ink-2"><%= entry[:tasks] %></td>
+              <td class="py-4 pl-4 text-right text-ink-2"><%= entry[:slots] %></td>
             </tr>
           <% end %>
         </tbody>

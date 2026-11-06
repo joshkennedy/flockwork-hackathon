@@ -30,14 +30,14 @@
     <p role="alert" class="mb-5 rounded-control bg-danger-soft px-4 py-3 text-danger"><%= alert %></p>
   <% end %>
 
+  <% content_for :wash, "wash-none" %>
   <section class="meal-builder" aria-labelledby="meal-project-heading">
     <% if planner_session.generation_busy? %>
       <span data-meal-planner-target="busy" hidden></span>
     <% end %>
     <header class="meal-builder-header">
       <div class="min-w-0">
-        <p class="text-meta text-ink-2">Suggestions · not added yet</p>
-        <h1 id="meal-project-heading" class="mt-2 text-ink"><%= project.name %></h1>
+        <h1 id="meal-project-heading" class="text-ink"><%= project.name %></h1>
       </div>
 
       <% unless planner_session.generation_busy? %>
@@ -125,18 +125,19 @@
             </p>
           <% end %>
 
-          <div class="mt-5 grid gap-2">
-            <% options.each do |option| %>
+          <div class="mt-5 grid gap-2" data-controller="planner-answers" data-action="keydown@window->planner-answers#choose">
+            <% options.each_with_index do |option, index| %>
               <% selected = option == pending_answer %>
-              <%= button_to select_answer_project_planner_session_path(project, planner_session), params: { answer: option, expected_revision: planner_session.generation_revision }, class: "answer-tile meal-answer-tile", aria: { pressed: selected }, disabled: planner_session.generation_busy?, data: { turbo_submits_with: "Preparing…" } do %>
+              <%= button_to select_answer_project_planner_session_path(project, planner_session), params: { answer: option, expected_revision: planner_session.generation_revision }, class: "answer-tile meal-answer-tile", aria: { pressed: selected }, disabled: planner_session.generation_busy?, data: { turbo_submits_with: "Preparing…", planner_answers_target: "answer" } do %>
                 <span class="meal-answer-radio" aria-hidden="true"></span>
                 <span class="min-w-0 flex-1"><%= option %></span>
+                <span class="text-label text-ink-3" aria-hidden="true"><%= index + 1 %></span>
               <% end %>
             <% end %>
           </div>
 
-          <details class="mt-4" <%= "open" if custom_answer %>>
-            <summary class="meal-builder-text-action"><%= custom_answer ? "Change your answer" : "Answer in your own words" %></summary>
+          <details class="mt-3" <%= "open" if custom_answer %>>
+            <%= disclosure_summary custom_answer ? "Change Your Answer" : "Answer in Your Own Words", class: "-ms-2 btn btn-text" %>
             <%= form_with url: select_answer_project_planner_session_path(project, planner_session), class: "mt-3" do |form| %>
               <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
               <%= form.label :answer, "Your answer", class: "block text-label font-medium text-ink" %>
@@ -147,15 +148,15 @@
             <% end %>
           </details>
 
-          <div class="mt-6">
-            <% if planner_session.generation_busy? %>
+          <div class="mt-5 empty:hidden"><% if planner_session.generation_busy? %>
               <p class="meal-builder-status" data-meal-planner-target="status">Preparing Suggestions…</p>
             <% elsif planner_session.last_error.present? %>
               <%= render "planner_sessions/break", project:, planner_session: %>
             <% elsif planner_session.ready_to_continue? %>
               <p class="meal-builder-status" data-meal-planner-target="status">Preview updated. Change your choice or continue.</p>
-            <% end %>
-          </div>
+            <% elsif pending_answer.blank? %>
+              <p class="meal-builder-status" data-meal-planner-target="status">Choose an answer to continue.</p>
+            <% end %></div>
 
           <% if visible_items.any? %>
             <% mobile_item = visible_items.first %>
@@ -196,14 +197,17 @@
         <% end %>
 
         <% unless planner_session.accepted? %>
-          <% if planner_session.asking? && (planner_session.pending_answer&.fetch("step_index", 0) || planner_session.steps.length).positive? %>
-            <details class="mt-5">
-              <summary class="meal-builder-text-action">Back to earlier choices</summary>
-              <%= render "planner_sessions/meal_answers", project:, planner_session:, previous_only: true %>
-            </details>
-          <% end %>
-          <%= button_to "Save and Leave", save_and_leave_project_planner_session_path(project, planner_session), class: "-ms-3 mt-7 btn btn-text",
-            form: { data: { turbo_frame: "_top" } } %>
+          <%# The quiet exits share one row; an open Back takes the full width so its answers read below. %>
+          <div class="mt-6 flex flex-wrap items-start gap-x-4 border-t border-hairline pt-3">
+            <% if planner_session.asking? && (planner_session.pending_answer&.fetch("step_index", 0) || planner_session.steps.length).positive? %>
+              <details class="open:basis-full">
+                <%= disclosure_summary "Back to Earlier Choices", class: "-ms-2 btn btn-text" %>
+                <%= render "planner_sessions/meal_answers", project:, planner_session:, previous_only: true %>
+              </details>
+            <% end %>
+            <%= button_to "Save and Leave", save_and_leave_project_planner_session_path(project, planner_session), class: "-ms-3 btn btn-text",
+              form: { data: { turbo_frame: "_top" } } %>
+          </div>
         <% end %>
         <%= render "planner_sessions/privacy" %>
       </section>
