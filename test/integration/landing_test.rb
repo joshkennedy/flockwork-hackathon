@@ -32,6 +32,17 @@ class LandingTest < ActionDispatch::IntegrationTest
     assert_select ".lp-steps", count: 0
   end
 
+  test "landing places Flockwork between the roster and the day" do
+    get root_path
+    assert_select ".lp-between h2", "Everything between the idea and the day."
+    assert_select ".lp-between .lp-track-end", count: 2
+    assert_select ".lp-between .lp-track-end", text: /Planning Center, Breeze, or whatever you use/
+    assert_select ".lp-between .lp-track-step", count: 4
+    assert_select ".lp-between .lp-track-step", text: "Send one link"
+    assert_select ".lp-between .lp-track-card h3", "The planning"
+    assert_select ".lp-between", text: /nobody types a roster twice/
+  end
+
   test "signed in visitors go to their home" do
     sign_in_as_leader
     get root_path

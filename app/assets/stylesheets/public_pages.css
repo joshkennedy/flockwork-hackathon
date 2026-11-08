@@ -88,6 +88,28 @@
 .lp-returning { margin-top: 20px; font-size: 14px; color: #4A3320; }
 .lp-returning .link { color: #2B1A0C; text-decoration-color: rgba(43,26,12,.4); }
 
+/* In-between timeline */
+.lp-track { position: relative; height: 340px; margin-top: 56px; list-style: none; padding: 0; container-type: inline-size; }
+.lp-track::before { content: ""; position: absolute; left: 0; right: 0; bottom: 96px; height: 4px; background: var(--color-border); }
+.lp-track::after { content: ""; position: absolute; left: 20%; right: 20%; bottom: 96px; height: 4px; background: var(--color-sunlit); }
+.lp-track-end, .lp-track-step { position: absolute; top: 260px; font-size: 14px; line-height: 1.4; color: var(--color-ink-3); }
+.lp-track-end { width: 200px; }
+.lp-track-end b { display: block; font-size: 16px; color: var(--color-ink); }
+.lp-track-start { left: 0; }
+.lp-track-finish { right: 0; text-align: right; }
+.lp-track-step { transform: translateX(-50%); width: 110px; text-align: center; font-weight: 600; color: var(--color-ink); }
+.lp-track-step::before { content: ""; position: absolute; left: 50%; top: -22px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: var(--color-sunlit); border: 2px solid var(--color-ink); box-sizing: border-box; }
+.lp-track-step:nth-of-type(2) { left: 32%; }
+.lp-track-step:nth-of-type(3) { left: 44%; }
+.lp-track-step:nth-of-type(4) { left: 56%; }
+.lp-track-step:nth-of-type(5) { left: 68%; }
+.lp-track-card { position: absolute; left: 50%; bottom: 140px; transform: translateX(-50%); width: 440px; padding: 24px; border-radius: 12px; background: var(--color-ink); color: var(--color-on-ink); box-shadow: 0 8px 24px rgba(20,20,19,.12), 0 2px 6px rgba(20,20,19,.06); }
+.lp-track-card::after { content: ""; position: absolute; left: 50%; bottom: -44px; width: 60cqw; height: 44px; transform: translateX(-50%); border: 2px solid var(--color-mark); border-bottom: 0; border-radius: 8px 8px 0 0; }
+.lp-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; background: var(--color-sunlit); font-size: 12px; font-weight: 600; /* Sunlit is the same in both themes, so the badge text stays dark rather than following ink. */ color: #141413; }
+.lp-track-card h3 { margin-top: 12px; font-size: 22px; line-height: 1.2; }
+.lp-track-card p { margin-top: 8px; font-size: 15px; line-height: 1.55; }
+.lp-track-note { margin-top: 24px; font-size: 14px; color: var(--color-ink-3); }
+
 @media (max-width: 760px) {
   .public-header, .public-footer { padding: 24px 16px; }
   .public-header nav { gap: 18px; font-size: 13px; }
@@ -99,6 +121,15 @@
   .lp-hero-scene { margin-top: 28px; }
   .lp-section { padding: 80px 16px 0; }
   .lp-bento { grid-template-columns: 1fr; }
+  .lp-track { height: auto; display: flex; flex-direction: column; gap: 20px; padding-left: 28px; container-type: normal; }
+  .lp-track::before { left: 0; right: auto; top: 0; bottom: 0; width: 4px; height: auto; }
+  .lp-track::after { display: none; }
+  .lp-track-end, .lp-track-step, .lp-track-card { position: static; transform: none; width: auto; text-align: left; }
+  .lp-track > li:nth-of-type(n) { top: auto; right: auto; bottom: auto; left: auto; }
+  .lp-track-end, .lp-track-step { position: relative; }
+  .lp-track-step::before { left: -28px; top: 4px; margin-left: -4px; }
+  .lp-track-step::after { content: ""; position: absolute; left: -28px; top: -10px; bottom: -10px; width: 4px; background: var(--color-sunlit); }
+  .lp-track-card::after { display: none; }
   .lp-card-tall { grid-row: auto; }
   .lp-card-copy { padding: 20px 20px 0; }
       .lp-close { margin: 80px 16px 48px; padding: 64px 20px; }
