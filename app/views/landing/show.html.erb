@@ -20,6 +20,8 @@
 
 <%= render "landing/between" %>
 
+<%= render "landing/planner" %>
+
 <%= render "landing/tour" %>
 
 <section class="lp-section" aria-labelledby="people-title">
@@ -29,23 +31,25 @@
   </div>
   <div class="lp-bento">
     <article class="lp-card lp-card-tall">
-      <div class="lp-card-copy"><h3>Anyone can pick a spot</h3><p>Send one link. People see what's still open and choose the day that works for them.</p></div>
+      <div class="lp-card-copy"><h3>One link, from any phone</h3><p>Send it in a text or a bulletin. People see what’s still open and take the day that works for them.</p></div>
       <%= render "landing/scene", name: "card-signup", width: 456, height: 720, class: "lp-scene", alt: "The public sign-up page for the Alvarez family meal train on a phone, where someone picks a dinner that had one spot left" %>
     </article>
     <article class="lp-card">
-      <div class="lp-card-copy"><h3>Know your people</h3><p>See who's serving, who's away and who hasn't been asked yet. Bring them in from Planning Center or a CSV.</p></div>
+      <div class="lp-card-copy"><h3>Know your people</h3><p>See who’s serving, who’s away and who hasn’t been asked yet. Bring them in from Planning Center or a CSV.</p></div>
       <%= render "landing/scene", name: "card-people", width: 640, height: 280, class: "lp-scene", alt: "The People directory switching from Everyone to Not yet asked, which lists the people no one has invited yet" %>
     </article>
     <article class="lp-card">
-      <div class="lp-card-copy"><h3>Notice who's carrying too much</h3><p>See who's serving on too many projects and who could use a check-in. Plain counts, never scores.</p></div>
+      <div class="lp-card-copy"><h3>Notice who’s carrying too much</h3><p>See who’s on too many projects before they burn out. Plain counts, never scores, and a check-in is one tap.</p></div>
       <%= render "landing/scene", name: "card-oversight", width: 640, height: 280, class: "lp-scene", alt: "Maria Lopez serves on four active projects with no check-in logged. A check-in is logged, and the card reads Checked in today by Daniel Okafor" %>
     </article>
   </div>
 </section>
 
+<%= render "landing/why" %>
+
 <section class="lp-close" aria-labelledby="close-title">
-  <h2 id="close-title">Let's bring it together.</h2>
-  <p>Start with one project, then invite the people who make it happen.</p>
+  <h2 id="close-title">Say yes to the next one.</h2>
+  <p>Start with one project. Invite the people who make it happen.</p>
   <%= link_to "Plan Your First Project", sign_up_path, class: "btn btn-primary" %>
   <p class="lp-returning">Already part of a church here? <%= link_to "Sign in", new_sign_in_request_path, class: "link font-medium" %></p>
 </section>

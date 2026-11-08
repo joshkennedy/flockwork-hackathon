@@ -1,0 +1,8 @@
+.fw-tour-planner .ftp-section { margin-top: 28px; max-width: 672px; }
+.fw-tour-planner .ftp-heading { font-size: 20px; line-height: 28px; font-weight: 600; }
+.fw-tour-planner .ftp-lede { margin-top: 8px; color: var(--color-ink-2); }
+.fw-tour-planner .ftp-label { margin-top: 24px; font-size: 14px; line-height: 20px; font-weight: 500; }
+.fw-tour-planner .ftp-field { display: block; margin-top: 8px; width: 100%; }
+.fw-tour-planner .ftp-go { margin-top: 24px; }
+.fw-tour-planner .ftp-privacy { display: flex; align-items: flex-start; gap: 8px; margin-top: 28px; font-size: 13px; line-height: 18px; color: var(--color-ink-2); }
+.fw-tour-planner .ftp-privacy > span > span { display: block; }

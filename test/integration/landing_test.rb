@@ -71,4 +71,22 @@ class LandingTest < ActionDispatch::IntegrationTest
     assert_select ".lp-tour .lp-tour-screen h3", "Spots that fill themselves"
     assert_select ".lp-tour .lp-tour-screen h3", "A budget you can actually see"
   end
+
+  test "landing introduces the planner as the way in" do
+    get root_path
+    assert_select ".lp-planner h2", "Start with one sentence."
+    assert_select ".lp-planner p", text: /never sees your people directory/
+    assert_select ".lp-planner img[src*=?]", "marketing/tour-planner"
+  end
+
+  test "landing reframes the people cards and explains why it exists" do
+    get root_path
+    assert_select ".lp-bento h3", "One link, from any phone"
+    assert_select ".lp-bento h3", "Notice who’s carrying too much"
+    assert_select ".lp-why h2", "Built up in love."
+    assert_select ".lp-why", text: /Ephesians 4:15–16/
+    assert_select ".lp-why", text: /says yes more often/
+    assert_select ".lp-close h2", "Say yes to the next one."
+    assert_select ".lp-close a.btn-primary[href=?]", sign_up_path, text: "Plan Your First Project"
+  end
 end
