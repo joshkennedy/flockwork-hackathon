@@ -58,4 +58,17 @@ class LandingTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_content
     assert_select "a[href=?]", new_sign_in_request_path, text: "Request a New Sign-In Link"
   end
+
+  test "landing shows all four project tools without a click" do
+    get root_path
+    assert_select ".lp-tour h2", "One project holds the whole thing."
+    assert_select ".lp-tour .lp-rail-item", count: 4
+    assert_select ".lp-tour .lp-tour-screen", count: 4
+    assert_select ".lp-tour .lp-tour-screen[hidden]", count: 0
+    %w[tour-signup tour-tasks tour-schedule tour-budget].each do |name|
+      assert_select ".lp-tour img[src*=?]", "marketing/#{name}"
+    end
+    assert_select ".lp-tour .lp-tour-screen h3", "Spots that fill themselves"
+    assert_select ".lp-tour .lp-tour-screen h3", "A budget you can actually see"
+  end
 end
