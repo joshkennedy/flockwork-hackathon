@@ -63,6 +63,7 @@ class LandingTest < ActionDispatch::IntegrationTest
     get root_path
     assert_select ".lp-tour h2", "One project holds the whole thing."
     assert_select ".lp-tour .lp-rail-item", count: 4
+    assert_select ".lp-rail button[type=button]", count: 4
     assert_select ".lp-tour .lp-tour-screen", count: 4
     assert_select ".lp-tour .lp-tour-screen[hidden]", count: 0
     %w[tour-signup tour-tasks tour-schedule tour-budget].each do |name|
@@ -88,5 +89,11 @@ class LandingTest < ActionDispatch::IntegrationTest
     assert_select ".lp-why", text: /says yes more often/
     assert_select ".lp-close h2", "Say yes to the next one."
     assert_select ".lp-close a.btn-primary[href=?]", sign_up_path, text: "Plan Your First Project"
+  end
+
+  test "landing tells the story in the spec's order" do
+    get root_path
+    ids = css_select("section[aria-labelledby]").map { |section| section["aria-labelledby"] }
+    assert_equal %w[landing-title between-title planner-title tour-title people-title why-title close-title], ids
   end
 end

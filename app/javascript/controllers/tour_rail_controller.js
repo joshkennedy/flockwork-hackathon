@@ -26,7 +26,9 @@ export default class extends Controller {
 
   light(name) {
     this.itemTargets.forEach((item) => {
-      item.setAttribute("aria-pressed", item.dataset.tourRailScreenParam === name)
+      const match = item.dataset.tourRailScreenParam === name
+      item.toggleAttribute("aria-current", match)
+      if (match) item.setAttribute("aria-current", "true")
     })
   }
 }

@@ -12,8 +12,9 @@
   <div class="lp-tour-grid">
     <nav class="lp-rail" aria-label="Project tools">
       <% tools.each do |key, title, line| %>
-        <button type="button" class="lp-rail-item" aria-pressed="false" data-tour-rail-target="item" data-action="tour-rail#jump" data-tour-rail-screen-param="<%= key %>">
+        <button type="button" class="lp-rail-item" data-tour-rail-target="item" data-action="tour-rail#jump" data-tour-rail-screen-param="<%= key %>">
           <strong><%= title %></strong>
+          <span class="sr-only">. </span>
           <span><%= line %></span>
         </button>
       <% end %>
