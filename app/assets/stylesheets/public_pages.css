@@ -73,7 +73,7 @@
 .lp-tour-grid { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 48px; margin-top: 40px; }
 .lp-rail { position: sticky; top: 96px; align-self: start; display: grid; gap: 4px; }
 .lp-rail-item { display: block; width: 100%; padding: 12px 16px; text-align: left; background: none; border: 0; border-left: 2px solid var(--color-border); cursor: pointer; transition: border-color 150ms; }
-.lp-rail-item strong { display: block; font-size: 15px; font-weight: 600; color: var(--color-ink-3); transition: color 150ms; }
+.lp-rail-item strong { display: block; font-size: 15px; font-weight: 600; color: var(--color-ink-2); transition: color 150ms; }
 .lp-rail-item span { display: block; margin-top: 2px; font-size: 13px; line-height: 1.5; color: var(--color-ink-2); }
 .lp-rail-item[aria-pressed="true"] { border-left-color: var(--color-ink); }
 .lp-rail-item[aria-pressed="true"] strong { color: var(--color-ink); }
