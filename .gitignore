@@ -65,3 +65,6 @@
 # UI council: per-round captures and third-party reference shots stay local; annotated/, final/ and the ledger are committed.
 /ui-council/round-*/
 /ui-council/references/
+
+# brainstorm mockups
+.superpowers/
