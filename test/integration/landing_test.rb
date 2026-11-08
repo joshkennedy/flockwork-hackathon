@@ -40,6 +40,8 @@ class LandingTest < ActionDispatch::IntegrationTest
     assert_select ".lp-between .lp-track-step", count: 4
     assert_select ".lp-between .lp-track-step", text: "Send one link"
     assert_select ".lp-between .lp-track-card h3", "The planning"
+    assert_select ".lp-between .lp-intro p", "Planning Center knows who’s in your church. It’ll check them in when they arrive. The weeks of planning in between have been running on email, a spreadsheet and a group text. That’s the part Flockwork takes."
+    assert_select ".lp-between .lp-track-card p", /Who’s bringing what\..*What it’s costing\./
     assert_select ".lp-between", text: /nobody types a roster twice/
   end
 
