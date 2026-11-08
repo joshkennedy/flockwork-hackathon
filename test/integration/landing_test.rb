@@ -1,20 +1,26 @@
 require "test_helper"
 
 class LandingTest < ActionDispatch::IntegrationTest
-  test "landing explains the planner never reads the people directory" do
+  test "landing opens with the category headline and both calls to action" do
     get root_path
     assert_response :success
-    assert_select "p", text: /plans from Project details, never your people directory/
+    assert_select "title", "Flockwork · Project planning for your church"
+    assert_select "h1", "Project planning for your church."
+    assert_select ".lp-hero a.btn-primary[href=?]", sign_up_path, text: "Plan Your First Project"
+    assert_select ".lp-hero a.btn-secondary[href=?]", new_demo_session_path, text: "See It With Real Data"
+    assert_select ".lp-hero", text: /say yes to more of them/
+    assert_select ".lp-hero", text: /Free to start/, count: 0
+    assert_select "form", count: 0
   end
 
-  test "public landing links to separate signup, sign in and demo" do
+  test "landing footer carries the tagline and the public links" do
     get root_path
-    assert_response :success
-    assert_select "h1", "Ministry,together."
-    assert_select "a[href=?]", sign_up_path
-    assert_select "a[href=?]", new_sign_in_request_path
-    assert_select "a[href=?]", new_demo_session_path
-    assert_select "form", count: 0
+    assert_select ".public-footer span", "Project planning for your church."
+    assert_select ".public-footer a[href=?]", new_sign_in_request_path, text: "Sign In"
+    assert_select ".public-footer a[href=?]", new_demo_session_path, text: "See the Demo"
+  end
+
+  test "sign up page posts to organizations" do
     get sign_up_path
     assert_response :success
     assert_select "form[action=?]", organizations_path

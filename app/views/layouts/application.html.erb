@@ -70,7 +70,7 @@
       </header>
       <% if controller_name == "landing" %>
         <main id="main-content" class="marketing"><%= yield %></main>
-        <footer class="public-footer"><span>A shared space for the work of church.</span><%= link_to "Flockwork", root_path %></footer>
+        <footer class="public-footer"><span>Project planning for your church.</span><nav class="public-footer-links" aria-label="Footer"><%= link_to "Sign In", new_sign_in_request_path %><%= link_to "See the Demo", new_demo_session_path %></nav><%= link_to "Flockwork", root_path %></footer>
       <% else %>
         <%# Sign-in, sign-up and invitation pages: the form beside the recorded sign-up scene. %>
         <main id="main-content" class="auth-split">

@@ -1,6 +1,6 @@
-<% content_for :title, "Flockwork · Ministry, together" %>
+<% content_for :title, "Flockwork · Project planning for your church" %>
 <% content_for :head do %>
-  <meta name="description" content="A shared space where church teams plan and run ministry together. Organize projects, volunteer sign-ups and your people in Flockwork.">
+  <meta name="description" content="Project planning for your church. Meal trains, VBS, workdays, retreats: Flockwork makes them easier to plan and simpler to fill, so you can say yes to more of them.">
 <% end %>
 <% tour = [
   [ "signup_sheet", "Sign-ups", "tour-signup", "Each spot shows who's in and how many are still needed.", "The Vacation Bible School sign-up sheet: Ana Torres takes a check-in helper spot on Tuesday, December 29, and its spots left go from 3 to 2" ],
@@ -14,11 +14,11 @@
     <svg><filter id="wash-grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .08 0 0 0 0 .08 0 0 0 0 .07 0 0 0 .1 0"/></filter><rect width="100%" height="100%" filter="url(#wash-grain)"/></svg>
   </div>
   <div class="lp-hero-copy">
-    <h1 id="landing-title">Ministry,<br>together.</h1>
-    <p>Meal trains, workdays, VBS and next Sunday. Flockwork gives your church one place to plan the work and fill the spots.</p>
+    <h1 id="landing-title">Project planning for your church.</h1>
+    <p>Meal trains, VBS, workdays, retreats: all the ways a church looks after its own. Flockwork makes them easier to plan and simpler to fill, so you can say yes to more of them.</p>
     <div class="lp-actions">
-      <%= link_to "Create Your Church", sign_up_path, class: "btn btn-primary" %>
-      <%= link_to "Explore the Demo", new_demo_session_path, class: "btn btn-secondary" %>
+      <%= link_to "Plan Your First Project", sign_up_path, class: "btn btn-primary" %>
+      <%= link_to "See It With Real Data", new_demo_session_path, class: "btn btn-secondary" %>
     </div>
   </div>
   <%= render "landing/scene", name: "hero", width: 1110, height: 640, class: "lp-hero-scene", loading: "eager", fetchpriority: "high",
@@ -76,6 +76,6 @@
 <section class="lp-close" aria-labelledby="close-title">
   <h2 id="close-title">Let's bring it together.</h2>
   <p>Start with one project, then invite the people who make it happen.</p>
-  <%= link_to "Create Your Church", sign_up_path, class: "btn btn-primary" %>
+  <%= link_to "Plan Your First Project", sign_up_path, class: "btn btn-primary" %>
   <p class="lp-returning">Already part of a church here? <%= link_to "Sign in", new_sign_in_request_path, class: "link font-medium" %></p>
 </section>
