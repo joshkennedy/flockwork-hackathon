@@ -43,7 +43,8 @@ class OrganizationsController < ApplicationController
     if @admin.valid?(:organization_creation) && @organization.save
       start_new_session_for @admin, auth_method: "signup"
       WelcomeMailer.welcome(@admin).deliver_later
-      redirect_to home_path
+      # A new church starts at its first Project, which is what the landing page's CTA promises.
+      redirect_to new_project_path
     else
       flash.now[:alert] = (@organization.errors.full_messages + @admin.errors.full_messages).to_sentence
       render :new, status: :unprocessable_content

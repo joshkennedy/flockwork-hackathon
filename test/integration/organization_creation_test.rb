@@ -1,10 +1,10 @@
 require "test_helper"
 
 class OrganizationCreationTest < ActionDispatch::IntegrationTest
-  test "creating an Organization makes the creator its Admin, signs them in, and lands on its home" do
+  test "creating an Organization makes the creator its Admin, signs them in, and lands on New Project" do
     post organizations_path, params: { church_name: "Hope Church", your_name: "Casey Creator", email: "Casey@Hope.test" }
 
-    assert_redirected_to home_path
+    assert_redirected_to new_project_path
     follow_redirect!
     assert_select "[data-organization-name]", "Hope Church"
     assert_select "[data-signed-in-as]", "Casey Creator"
