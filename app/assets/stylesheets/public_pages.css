@@ -150,7 +150,8 @@
   .public-header, .public-footer { padding: 24px 16px; }
   .public-header nav { gap: 18px; font-size: 13px; }
   .public-header nav a:first-child { display: none; }
-  .public-footer { align-items: start; font-size: 12px; }
+  .public-footer { flex-wrap: wrap; gap: 12px 20px; font-size: 12px; }
+  .public-footer > span { flex: 1 1 100%; }
     .lp-hero { padding: 32px 16px 0; }
   .lp-hero-copy p { font-size: 16px; }
   .lp-actions .btn { flex: 1 1 100%; min-height: 48px; font-size: 15px; }
