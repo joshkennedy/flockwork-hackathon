@@ -67,15 +67,8 @@
 .lp-scene img { display: block; width: 100%; height: auto; }
 .lp-section { max-width: var(--lp-max); margin: 0 auto; padding: 120px 24px 0; }
 .lp-intro { max-width: 640px; }
-.lp-intro h2, .lp-steps h2 { font-size: clamp(28px, 3.4vw, 40px); line-height: 1.15; }
+.lp-intro h2 { font-size: clamp(28px, 3.4vw, 40px); line-height: 1.15; }
 .lp-intro p { margin-top: 14px; font-size: 17px; line-height: 1.6; color: var(--color-ink-2); }
-
-.lp-tabs { margin: 32px 0 20px; }
-.lp-tabs .tab-link { gap: 8px; font-size: 14px; cursor: pointer; transition: color var(--duration-hover), border-color var(--duration-hover); }
-.lp-tabs .tab-link:hover { color: var(--color-ink); }
-.lp-tabs .tab-link[aria-pressed="true"] { border-color: var(--color-ink); color: var(--color-ink); }
-.lp-tour-screen { margin: 0; }
-.lp-tour-screen figcaption { margin-top: 14px; font-size: 14px; color: var(--color-ink-2); }
 
 .lp-bento { display: grid; grid-template-columns: 5fr 7fr; gap: 16px; margin-top: 40px; }
 .lp-card { display: flex; flex-direction: column; min-width: 0; padding-bottom: 12px; background: var(--color-frame); border-radius: 16px; overflow: hidden; }
@@ -84,10 +77,6 @@
 .lp-card-copy { padding: 24px 24px 0; max-width: 30em; }
 .lp-card-copy p { margin-top: 6px; font-size: 15px; line-height: 1.6; color: var(--color-ink-2); }
 
-.lp-steps ol { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 40px; padding: 0; list-style: none; counter-reset: step; }
-.lp-steps li { counter-increment: step; padding-top: 20px; border-top: 1px solid var(--color-border); }
-.lp-steps li::before { content: counter(step); display: block; margin-bottom: 12px; font-size: 14px; font-weight: 600; color: var(--color-ink-2); }
-.lp-steps p { margin-top: 6px; font-size: 15px; line-height: 1.6; color: var(--color-ink-2); }
 
 /* The closer sits on the same plate as the recorded scenes: three color fields and a halftone screen. */
 .lp-close { position: relative; isolation: isolate; overflow: hidden; max-width: var(--lp-max); margin: 120px auto 96px; padding: 96px 24px; text-align: center; border-radius: 16px; color: #2B1A0C;
@@ -109,8 +98,7 @@
   .lp-actions .btn { flex: 1 1 100%; min-height: 48px; font-size: 15px; }
   .lp-hero-scene { margin-top: 28px; }
   .lp-section { padding: 80px 16px 0; }
-  .lp-tabs { gap: 20px; }
-  .lp-bento, .lp-steps ol { grid-template-columns: 1fr; }
+  .lp-bento { grid-template-columns: 1fr; }
   .lp-card-tall { grid-row: auto; }
   .lp-card-copy { padding: 20px 20px 0; }
       .lp-close { margin: 80px 16px 48px; padding: 64px 20px; }

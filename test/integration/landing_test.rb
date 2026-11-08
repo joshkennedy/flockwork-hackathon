@@ -26,6 +26,12 @@ class LandingTest < ActionDispatch::IntegrationTest
     assert_select "form[action=?]", organizations_path
   end
 
+  test "landing has no tabbed tour and no numbered steps" do
+    get root_path
+    assert_select "[data-controller=product-tour]", count: 0
+    assert_select ".lp-steps", count: 0
+  end
+
   test "signed in visitors go to their home" do
     sign_in_as_leader
     get root_path

@@ -2,13 +2,6 @@
 <% content_for :head do %>
   <meta name="description" content="Project planning for your church. Meal trains, VBS, workdays, retreats: Flockwork makes them easier to plan and simpler to fill, so you can say yes to more of them.">
 <% end %>
-<% tour = [
-  [ "signup_sheet", "Sign-ups", "tour-signup", "Each spot shows who's in and how many are still needed.", "The Vacation Bible School sign-up sheet: Ana Torres takes a check-in helper spot on Tuesday, December 29, and its spots left go from 3 to 2" ],
-  [ "tasks", "Tasks", "tour-tasks", "Tasks have an owner and a due date. Nobody wonders whose job it was.", "Vacation Bible School tasks: an unassigned task gets someone on it, then another is checked off and moves to Done" ],
-  [ "schedule", "Schedule", "tour-schedule", "The week's plan by day, with times and rooms.", "The Vacation Bible School schedule by day, where a snack break at 10:15 AM in Fellowship Hall slots into Monday in time order" ],
-  [ "budget", "Budget", "tour-budget", "Estimates and actual spending, side by side.", "The Vacation Bible School budget: the actual cost of craft supplies is entered and the actual total updates beside the estimate" ]
-] %>
-
 <section class="lp-hero" aria-labelledby="landing-title">
   <div class="header-wash" aria-hidden="true" data-controller="wash">
     <svg><filter id="wash-grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .08 0 0 0 0 .08 0 0 0 0 .07 0 0 0 .1 0"/></filter><rect width="100%" height="100%" filter="url(#wash-grain)"/></svg>
@@ -23,24 +16,6 @@
   </div>
   <%= render "landing/scene", name: "hero", width: 1110, height: 640, class: "lp-hero-scene", loading: "eager", fetchpriority: "high",
         alt: "Daniel’s Home lists Grace Fellowship’s active projects: a meal train, Vacation Bible School, a church workday and a women’s retreat. On her phone, Ruth signs up to bring dinner for the meal train, and its row on Home goes from 15 to 14 dinners still needing someone" %>
-</section>
-
-<section class="lp-section lp-tour" aria-labelledby="tour-title" data-controller="product-tour">
-  <div class="lp-intro">
-    <h2 id="tour-title">One project holds the whole thing.</h2>
-    <p>The sign-ups, tasks, schedule and budget sit together in the project they belong to. Messages, notes and lists go there too.</p>
-  </div>
-  <div class="tab-bar lp-tabs" role="group" aria-label="Show a project tool">
-    <% tour.each do |tool, label, *| %>
-      <button type="button" class="tab-link" data-product-tour-target="button" data-action="product-tour#select" data-screen="<%= tool %>" aria-pressed="false"><%= planner_tool_icon(tool) %><%= label %></button>
-    <% end %>
-  </div>
-  <% tour.each do |tool, _label, image, caption, alt| %>
-    <figure class="lp-tour-screen" data-product-tour-target="screen" data-screen="<%= tool %>">
-      <%= render "landing/scene", name: image, width: 1100, height: 560, class: "lp-scene", alt: %>
-      <figcaption><%= caption %></figcaption>
-    </figure>
-  <% end %>
 </section>
 
 <section class="lp-section" aria-labelledby="people-title">
@@ -62,15 +37,6 @@
       <%= render "landing/scene", name: "card-oversight", width: 640, height: 280, class: "lp-scene", alt: "Maria Lopez serves on four active projects with no check-in logged. A check-in is logged, and the card reads Checked in today by Daniel Okafor" %>
     </article>
   </div>
-</section>
-
-<section class="lp-section lp-steps" aria-labelledby="steps-title">
-  <h2 id="steps-title">From a first idea to the day itself.</h2>
-  <ol>
-    <li><h3>Start a project</h3><p>Name it and add what it needs. Or tell the AI planner what you're organizing and keep only the suggestions you want. It plans from Project details, never your people directory.</p></li>
-    <li><h3>Bring your team</h3><p>Invite leaders and helpers. Everyone works from the same plan, not a dozen text threads.</p></li>
-    <li><h3>Share the sign-ups</h3><p>Send the public link. Spots fill up, and you can see what's still uncovered.</p></li>
-  </ol>
 </section>
 
 <section class="lp-close" aria-labelledby="close-title">
