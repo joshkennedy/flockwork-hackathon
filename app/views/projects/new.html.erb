@@ -72,10 +72,10 @@
                   "Children’s Program" => "Like a week of VBS mornings",
                   "Class" => "Like a six-week Bible study with a meal"
                 }.fetch(title) %></span>
-              <span class="mt-3 flex flex-wrap items-center gap-x-1 gap-y-1 text-meta text-ink-2">
-                <% tools.each_with_index do |tool, index| %>
-                  <% if index.positive? %><span aria-hidden="true">·</span><% end %>
-                  <span class="inline-flex items-center gap-1"><%= planner_tool_icon(tool, size: 14) %><%= Project::TOOL_LABELS.fetch(tool) %></span>
+              <%# Each tool's icon separates it from the last, so a wrapped row needs no dots to read as a list. %>
+              <span class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-meta text-ink-2">
+                <% tools.each do |tool| %>
+                  <span class="inline-flex items-center gap-1 whitespace-nowrap"><%= planner_tool_icon(tool, size: 14) %><%= Project::TOOL_LABELS.fetch(tool) %></span>
                 <% end %>
               </span>
             <% end %>
