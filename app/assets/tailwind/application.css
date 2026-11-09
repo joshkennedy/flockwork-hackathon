@@ -357,7 +357,7 @@
     .nav-item:hover { @apply bg-nav-active text-ink; }
     .tab-link:hover { @apply text-ink; }
     .answer-tile:hover { @apply border-border-strong; }
-    button.project-kind-tile:hover { @apply border-border-strong bg-ghost-fill; transform: translateY(-1px); }
+    button.project-kind-tile:hover { @apply border-border-strong bg-ghost-fill; }
     /* Only a linked pill gets hover, and avatars lift only inside links and buttons; static avatars never move. */
     a.person-pill:hover { @apply bg-nav-active; }
     :is(a, button, summary):hover .avatar-person { transform: translateY(-1px); }
@@ -424,7 +424,7 @@
   .project-kind-tile { @apply flex w-full flex-col items-start rounded-tile border border-border bg-panel p-5 text-left shadow-raised; transition: border-color var(--duration-hover), background-color var(--duration-hover), box-shadow var(--duration-press), transform var(--duration-press); }
   .project-kind-ghost { @apply border-dashed border-ghost-border bg-ghost-fill text-ink-2; }
   .project-kind-grid { @apply grid items-start gap-3 sm:grid-cols-2 lg:grid-cols-3; }
-  .project-kind-title { font-size: 17px; line-height: 22px; font-weight: 600; }
+  .project-kind-title { @apply text-heading; }
   .project-kind-section { @apply grid grid-cols-1 items-center gap-x-5 sm:grid-cols-[1fr_auto]; }
   .project-kind-intro { @apply min-w-0 sm:contents; }
   .project-kind-section > .project-kind-grid { @apply sm:col-span-2; }
@@ -668,6 +668,6 @@
   .meal-skeleton, .meal-pulse-dot, .meal-answer-tile[aria-pressed="true"]:disabled .meal-answer-radio,
   .meal-answer-tile[aria-pressed="true"][aria-disabled="true"] .meal-answer-radio, .voice-orb-core { animation: none !important; }
   .voice-orb-ring, .voice-orb-core { transition: none !important; transform: translate(-50%, -50%) !important; }
-  .btn:active, .answer-tile:active, button.project-kind-tile:hover, button.project-kind-tile:active { transform: none; }
+  .btn:active, .answer-tile:active, button.project-kind-tile:active { transform: none; }
   :is(a, button, summary):hover .avatar-person { transform: none; }
 }

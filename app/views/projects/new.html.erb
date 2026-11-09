@@ -55,7 +55,7 @@
           [ "Workday", "Rally hands for a day of shared work.", :tasks, "text-tool-tasks", start_planner_projects_path, :post, { planning_kind: "workday" }, %w[tasks signup_sheet list] ],
           [ "Children’s Program", "Plan the dates, helpers and supplies for kids.", :people, "text-tool-list", start_planner_projects_path, :post, { planning_kind: "children_program" }, %w[schedule signup_sheet list] ],
           [ "Class", "Plan each session, its teacher and materials.", :docs, "text-tool-docs", start_planner_projects_path, :post, { planning_kind: "class" }, %w[schedule signup_sheet docs] ],
-          [ "Something Else", "Describe it in one sentence and we'll shape it.", :plus, "text-ink-2", new_project_path, :get, { planning_kind: "other" }, [] ]
+          [ "Something Else", "Describe it in one sentence and the Planner will shape it.", :plus, "text-ink-2", new_project_path, :get, { planning_kind: "other" }, [] ]
         ].each do |title, description, glyph, color, path, method, parameters, tools| %>
           <% tile_id = "project-kind-#{title.parameterize}" %>
           <% title_id = "#{tile_id}-title" %>
@@ -75,7 +75,7 @@
               <span class="mt-3 flex flex-wrap items-center gap-x-1 gap-y-1 text-meta text-ink-2">
                 <% tools.each_with_index do |tool, index| %>
                   <% if index.positive? %><span aria-hidden="true">·</span><% end %>
-                  <span class="inline-flex items-center gap-1"><%= planner_tool_icon(tool, size: 14) %><%= { "list" => "Lists", "docs" => "Docs" }.fetch(tool) { planner_tool_label(tool) } %></span>
+                  <span class="inline-flex items-center gap-1"><%= planner_tool_icon(tool, size: 14) %><%= Project::TOOL_LABELS.fetch(tool) %></span>
                 <% end %>
               </span>
             <% end %>
