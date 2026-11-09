@@ -29,6 +29,10 @@ export default class extends Controller {
     this.intentionalClose = false
     this.answerInFlight = false
     this.continueInFlight = false
+    this.responseActive = false
+    this.responseDraining = false
+    this.pendingIntro = false
+    this.pendingResponseDone = false
     this.lastContinuedRevision = null
     this.currentStatus = "Listening…"
     this.assistantText = ""
@@ -83,6 +87,10 @@ export default class extends Controller {
     this.intentionalClose = false
     this.answerInFlight = false
     this.continueInFlight = false
+    this.responseActive = false
+    this.responseDraining = false
+    this.pendingIntro = false
+    this.pendingResponseDone = false
     this.lastContinuedRevision = null
     this.assistantText = ""
     this.userText = ""
@@ -115,7 +123,7 @@ export default class extends Controller {
       this.setupAudio(stream)
       await this.openSocket(voiceSession)
       this.configureSession(voiceSession)
-      this.send({ type: "response.create" })
+      this.createResponse()
     } catch (error) {
       streamPromise.then((stream) => stream.getTracks().forEach((track) => track.stop())).catch(() => {})
       this.fail(this.messageFor(error))
@@ -140,6 +148,7 @@ export default class extends Controller {
       await this.continueBuilder()
       return
     }
+    if (phase === "busy") this.setStatus("Adding to your plan…")
 
     const nextKey = this.cardKey()
     if (nextKey === this.lastCardKey) return
@@ -159,7 +168,11 @@ export default class extends Controller {
       this.setStatus("Listening…")
       this.configureSession(voiceSession)
       this.closing = this.cardStateTarget.dataset.voiceState === "reviewing"
-      this.send({ type: "response.create" })
+      if (this.responseActive || this.responseDraining) {
+        this.pendingIntro = true
+      } else {
+        this.createResponse()
+      }
     } catch (error) {
       this.fail(this.messageFor(error))
     }
@@ -295,6 +308,11 @@ export default class extends Controller {
         this.handleFunctionCall(event)
         break
       case "response.done":
+        if (this.pendingResponseDone) {
+          this.pendingResponseDone = false
+          break
+        }
+        this.responseActive = false
         this.responseFinished()
         break
       case "error":
@@ -333,9 +351,17 @@ export default class extends Controller {
         values.expected_revision = revision
       }
       const url = this.hasSelectAnswerUrlValue ? this.selectAnswerUrlValue : this.answerUrlValue
+      if (this.hasSelectAnswerUrlValue) {
+        this.sendFunctionOutput(event.call_id)
+        if (this.responseActive) {
+          this.responseActive = false
+          this.pendingResponseDone = true
+        }
+        this.createResponse()
+      }
       const response = await this.postForm(url, values)
       if (this.hasSelectAnswerUrlValue) await this.replaceBuilder(response)
-      this.sendFunctionOutput(event.call_id)
+      if (!this.hasSelectAnswerUrlValue) this.sendFunctionOutput(event.call_id)
     } catch (error) {
       this.fail(this.messageFor(error))
     } finally {
@@ -354,14 +380,28 @@ export default class extends Controller {
     })
   }
 
+  createResponse() {
+    if (this.responseActive) return false
+
+    this.responseActive = true
+    this.send({ type: "response.create" })
+    return true
+  }
+
   responseFinished() {
+    this.responseDraining = true
     const delay = Math.max(0, ((this.nextPlaybackTime || 0) - (this.audioContext?.currentTime || 0)) * 1000)
     window.setTimeout(() => {
+      this.responseDraining = false
       if (!this.active) return
-      if (this.closing) {
+      if (this.pendingIntro) {
+        this.pendingIntro = false
+        this.createResponse()
+      } else if (this.closing) {
         this.stopConversation()
       } else if (!this.answerInFlight) {
-        this.setStatus("Listening…")
+        const phase = this.hasCardStateTarget ? this.cardStateTarget.dataset.voicePhase : null
+        this.setStatus([ "busy", "ready" ].includes(phase) ? "Adding to your plan…" : "Listening…")
       }
     }, delay)
   }
@@ -481,6 +521,10 @@ export default class extends Controller {
 
     this.active = false
     this.closing = false
+    this.responseActive = false
+    this.responseDraining = false
+    this.pendingIntro = false
+    this.pendingResponseDone = false
     this.intentionalClose = true
     window.clearTimeout(this.voiceReleaseTimer)
     this.processor?.disconnect()

@@ -35,9 +35,18 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
 
         const update = window.__voiceSessionUpdates
         const script = window.__voiceScripts[update - 1]
-        if (!script || window.__voiceRespondedUpdates.includes(update)) return
-        window.__voiceRespondedUpdates.push(update)
+        const answered = window.__voiceRespondedUpdates.includes(update)
+        const playScript = script && !answered
+        if (playScript) window.__voiceRespondedUpdates.push(update)
         window.setTimeout(() => {
+          if (!playScript) {
+            this.onmessage({ data: JSON.stringify({
+              type: "response.output_audio_transcript.delta",
+              delta: "Got it, adding that to your plan."
+            }) })
+            this.onmessage({ data: JSON.stringify({ type: "response.done" }) })
+            return
+          }
           this.onmessage({ data: JSON.stringify({
             type: "response.output_audio_transcript.delta",
             delta: script.question
@@ -201,13 +210,19 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
 
     assert_no_selector "[data-voice-planner-target='questionnaire']", visible: true
     assert_selector ".voice-orb", visible: true
+    assert_text "Got it, adding that to your plan.", wait: 5
     assert_text "Confirm volunteer crew", wait: 5
     assert_selector "[data-voice-planner-target='questionnaire']", text: "Who should the work serve?", visible: :all, wait: 5
     assert page.evaluate_script(<<~JS)
-      window.__voiceEvents.some((event) =>
-        event.type === "conversation.item.create" &&
-        event.item?.type === "function_call_output"
-      )
+      (() => {
+        const outputIndex = window.__voiceEvents.findIndex((event) =>
+          event.type === "conversation.item.create" && event.item?.type === "function_call_output"
+        )
+        const responseIndex = window.__voiceEvents.findIndex((event, index) =>
+          index > outputIndex && event.type === "response.create"
+        )
+        return outputIndex >= 0 && responseIndex > outputIndex
+      })()
     JS
 
     click_on "End Conversation"
