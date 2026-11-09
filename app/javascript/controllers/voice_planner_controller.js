@@ -622,6 +622,10 @@ export default class extends Controller {
     this.userCaptionTargets.forEach((target) => {
       target.textContent = this.userText || "Listening…"
     })
+    this.assistantCaptionTargets.forEach((target) => {
+      const captions = target.closest(".voice-captions")
+      if (captions) captions.scrollTop = captions.scrollHeight
+    })
   }
 
   paintOrbs() {

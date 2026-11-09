@@ -129,7 +129,8 @@
         <% else %>
           <div data-voice-planner-target="questionnaire">
           <% if planner_session.current_card.present? %>
-          <% options = planner_session.current_card.fetch("options", []) %>
+          <%# The tile below is the catch-all, so a model-written "Something else" or "Other" option would duplicate it. %>
+          <% options = planner_session.current_card.fetch("options", []).grep_v(/\A\s*(something else|other)\W*\z/i) %>
           <% custom_answer = pending_answer.present? && options.exclude?(pending_answer) %>
           <p class="text-meta text-ink-2">Question <%= current_step %> of <%= PlannerSession::MAX_GENERATED_QUESTIONS %></p>
           <h2 id="meal-guide-heading" class="mt-2 text-lg font-semibold leading-snug text-ink"><%= planner_session.current_card.fetch("question") %></h2>

@@ -388,6 +388,26 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_select "button[disabled]", text: "Add to Project"
   end
 
+  test "the builder drops a model-written catch-all option because its own Something else tile covers it" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    planner_session = project.planner_sessions.create!(
+      started_by: people(:leader),
+      description: "Plan the workday.",
+      flow_version: 3,
+      planning_kind: "workday",
+      current_card: card("What matters first?", "Garden", "Other churches nearby", "Something else…")
+    )
+
+    get project_planner_session_path(project, planner_session)
+
+    assert_response :success
+    assert_select "button.answer-tile", text: /Garden/
+    assert_select "button.answer-tile", text: /Other churches nearby/
+    assert_select "button.answer-tile", text: /Something else/, count: 0
+    assert_select "summary.answer-tile", text: /Something else/
+  end
+
   test "build-as-you-go planning supports voice while meal setup rejects it" do
     sign_in_as_leader
     Rails.configuration.x.voice_client_secret_minter = FakeVoiceClientSecretMinter.new
