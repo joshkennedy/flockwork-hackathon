@@ -1,77 +1,56 @@
 <% content_for :title, "Start a Project" %>
-<% if @manual_project || @custom_planning %>
+<% if @manual_project %>
   <% content_for :breadcrumbs do %>
     <%= link_to "Start a Project", new_project_path, class: "shrink-0 whitespace-nowrap hover:text-ink" %>
     <span aria-hidden="true" class="shrink-0 text-ink-3">/</span>
-    <span class="truncate text-ink" aria-current="page"><%= @manual_project ? "Build It Myself" : "Something Else" %></span>
+    <span class="truncate text-ink" aria-current="page">Build It Myself</span>
   <% end %>
 <% end %>
 
-<div class="w-full max-w-5xl">
+<div class="<%= @manual_project ? "w-full max-w-5xl" : "meal-builder" %>">
   <%= page_header "Start a Project" %>
 
   <% if @manual_project %>
     <p class="mt-2 max-w-2xl text-ink-2">Set up the Project yourself. You can add or change its Tools later.</p>
     <div class="mt-7 max-w-2xl"><%= render "form", project: @project %></div>
-  <% elsif @custom_planning %>
-    <section class="mt-7 max-w-2xl" aria-labelledby="custom-project-heading">
-      <h2 id="custom-project-heading" class="text-ink">What are you organizing?</h2>
-
-      <%= form_with url: start_planner_projects_path, method: :post, class: "mt-6 space-y-6" do |form| %>
-        <%= form.hidden_field :planning_kind, value: "other" %>
-        <% if @description_error %>
-          <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
-            <p class="font-semibold">Fix these to continue:</p>
-            <ul class="mt-2 list-disc pl-5 text-meta"><li><%= @description_error %></li></ul>
-          </div>
-        <% end %>
-        <% description_hint_id = form.field_id(:description, :hint) %>
-        <% description_error_id = form.field_id(:description, :error) if @description_error %>
-        <div>
-          <%= form.label :description, "Describe it in one sentence", class: "block text-label font-medium text-ink" %>
-          <p id="<%= description_hint_id %>" class="mt-1 text-meta text-ink-2">Give the Planner one short sentence. Its first question will build on what you share.</p>
-          <%= form.text_field :description, name: "planner_session[description]", value: params.dig(:planner_session, :description), required: true, maxlength: 280, autofocus: true, class: "mt-2 block w-full field", placeholder: "Organize a spring cleanup.",
-            aria: { invalid: @description_error.present?, describedby: [ description_hint_id, description_error_id ].compact.join(" ") } %>
-          <% if @description_error %>
-            <p id="<%= description_error_id %>" class="mt-1 text-meta text-danger"><%= @description_error %></p>
-          <% end %>
-        </div>
-        <%= form.submit "Start Planning", class: "btn btn-primary", data: { turbo_submits_with: "Creating Project…" } %>
-      <% end %>
-
-      <%= render "planner_sessions/privacy" %>
-    </section>
   <% else %>
-    <section class="project-kind-section mt-7" aria-labelledby="project-kind-heading">
-      <div class="project-kind-intro">
-        <h2 id="project-kind-heading" class="text-ink">What are you organizing?</h2>
-        <%= link_to "Build It Myself", new_project_path(manual: true), class: "project-kind-manual btn btn-secondary btn-sm" %>
-      </div>
-      <div class="project-kind-grid mt-5">
-        <% [
-          [ "Meal Train", :heart, "text-tool-signup", start_meal_planner_projects_path, :post, {} ],
-          [ "Retreat", :schedule, "text-tool-schedule", start_planner_projects_path, :post, { planning_kind: "retreat" } ],
-          [ "Workday", :tasks, "text-tool-tasks", start_planner_projects_path, :post, { planning_kind: "workday" } ],
-          [ "Children’s Program", :people, "text-tool-list", start_planner_projects_path, :post, { planning_kind: "children_program" } ],
-          [ "Class", :docs, "text-tool-docs", start_planner_projects_path, :post, { planning_kind: "class" } ],
-          [ "Something Else", :plus, "text-ink-2", new_project_path, :get, { planning_kind: "other" } ]
-        ].each do |title, glyph, color, path, method, parameters| %>
-          <% tile_content = capture do %>
-            <%= icon(glyph, size: 28, class: color) %>
-            <span class="project-kind-title text-ink"><%= title %></span>
-          <% end %>
-          <% tile_class = class_names("project-kind-tile", "project-kind-ghost": method == :get) %>
-          <% if method == :get %>
-            <%= link_to new_project_path(planning_kind: "other"), class: tile_class do %>
-              <%= tile_content %>
-            <% end %>
-          <% else %>
-            <%= button_to path, method:, params: parameters, class: tile_class, data: { turbo_submits_with: "Creating Project…" } do %>
-              <%= tile_content %>
+    <% steps = [
+      { title: "What are you organizing?", state: :open },
+      { title: "Answer a few questions.", state: :upcoming },
+      { title: "Review and add.", state: :upcoming }
+    ] %>
+    <div class="mt-7">
+      <%= render layout: "shared/setup_steps", locals: { steps: } do %>
+        <div class="project-kind-list">
+          <% [
+            [ "Meal Train", :heart, "text-tool-signup", start_meal_planner_projects_path, {} ],
+            [ "Retreat", :schedule, "text-tool-schedule", start_planner_projects_path, { planning_kind: "retreat" } ],
+            [ "Workday", :tasks, "text-tool-tasks", start_planner_projects_path, { planning_kind: "workday" } ],
+            [ "Children’s Program", :people, "text-tool-list", start_planner_projects_path, { planning_kind: "children_program" } ],
+            [ "Class", :docs, "text-tool-docs", start_planner_projects_path, { planning_kind: "class" } ]
+          ].each do |title, glyph, color, path, parameters| %>
+            <%= button_to path, method: :post, params: parameters, class: "project-kind-row", data: { turbo_submits_with: "Creating Project…" } do %>
+              <%= icon(glyph, size: 20, class: color) %>
+              <span><%= title %></span>
             <% end %>
           <% end %>
-        <% end %>
-      </div>
-    </section>
+          <details class="project-kind-other" <%= "open" if @custom_planning || @description_error %>>
+            <summary class="project-kind-row"><%= icon(:plus, size: 20, class: "text-ink-2") %><span>Something Else</span></summary>
+            <%= form_with url: start_planner_projects_path, method: :post, class: "space-y-3 py-3" do |form| %>
+              <%= form.hidden_field :planning_kind, value: "other" %>
+              <% description_error_id = form.field_id(:description, :error) if @description_error %>
+              <%= form.label :description, "Describe it in a sentence", class: "block text-label font-medium text-ink" %>
+              <%= form.text_field :description, name: "planner_session[description]", value: params.dig(:planner_session, :description), required: true, maxlength: 280, class: "block w-full field", placeholder: "Organize a spring cleanup.",
+                aria: { invalid: @description_error.present?, describedby: description_error_id } %>
+              <% if @description_error %>
+                <p id="<%= description_error_id %>" role="alert" class="text-meta text-danger"><%= @description_error %></p>
+              <% end %>
+              <%= form.submit "Start", class: "btn btn-primary", data: { turbo_submits_with: "Creating Project…" } %>
+            <% end %>
+          </details>
+        </div>
+        <%= link_to "Or set it up yourself", new_project_path(manual: true), class: "mt-5 inline-flex min-h-11 items-center link text-meta text-ink-2" %>
+      <% end %>
+    </div>
   <% end %>
 </div>

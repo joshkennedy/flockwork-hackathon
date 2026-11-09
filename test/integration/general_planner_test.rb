@@ -64,6 +64,19 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_response :bad_request
   end
 
+  test "project creation shows the three setup steps with the kind chooser current" do
+    sign_in_as_leader
+    get new_project_path
+
+    assert_select "ol.setup-steps" do
+      assert_select "li", count: 3
+      assert_select "li[aria-current='step'] h2", text: "What are you organizing?"
+      assert_select "li[data-step-state='upcoming'] h2", text: "Answer a few questions."
+      assert_select "li[data-step-state='upcoming'] h2", text: "Review and add."
+    end
+    assert_select "details.project-kind-other[open]", count: 0
+  end
+
   test "Class appears in the chooser and starts with class-specific planning guidance" do
     sign_in_as_leader
 
@@ -95,6 +108,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
 
     get new_project_path(planning_kind: "other")
     assert_response :success
+    assert_select "details.project-kind-other[open]"
     assert_select "form[action='#{start_planner_projects_path}']" do
       assert_select "input[name='planner_session[description]']"
     end
@@ -105,7 +119,10 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
       }
     end
     assert_response :unprocessable_content
-    assert_select "[role='alert']", text: /Describe what you're organizing/
+    assert_select "details.project-kind-other[open]" do
+      assert_select "[role='alert']", text: /Describe what you're organizing/
+      assert_select "input[aria-invalid='true']"
+    end
 
     perform_enqueued_jobs(only: PlannerStepJob) do
       post start_planner_projects_path, params: {
