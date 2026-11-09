@@ -1,5 +1,5 @@
 import { Stage, type Act } from '../kit'
-import { Avatar, Plate } from './flockwork'
+import { Avatar } from './flockwork'
 import './card-shared.css'
 import './card-people.css'
 
@@ -41,7 +41,6 @@ export default function CardPeople() {
         const on = rect(`tab-${s.filter}`)
         return (
           <>
-          <Plate />
           <div className="fc-panel cp-panel">
             <div className="tab-bar cp-tabs" data-target="tabs">
               {TABS.map((tab, i) => {

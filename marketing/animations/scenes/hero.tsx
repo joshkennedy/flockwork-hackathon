@@ -54,7 +54,7 @@ export default function Hero() {
     <Stage<S> width={1110} height={640} initial={START} poster={{ claimed: true, synced: true }} script={script} cursor={{ at: { x: 1000, y: 600 }, style: 'touch' }} fidelity="realistic" className="fw fw-plated fw-hero">
       {(s) => (
         <>
-          <Plate />
+          <Plate tone="sunrise" />
           <Window sidebar={<Sidebar active="Home" />} sidebarWidth={180} className="fh-window">
             <div className="fw-crumbs">Home</div>
             <div className="fh-body">

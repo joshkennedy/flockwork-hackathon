@@ -1,6 +1,6 @@
 import { Collapse, Phone, Stage, type Act } from '../kit'
 import family from '../assets/alvarez-family.jpg'
-import { Icon, Plate, Wordmark } from './flockwork'
+import { Icon, Plate, Wordmark, type PlateTone } from './flockwork'
 import './card-shared.css'
 import './card-signup.css'
 
@@ -26,13 +26,13 @@ const scriptFor = (rest: { x: number; y: number }) => async (a: Act<S>) => {
 }
 
 /** The scene at any size: the sign-in page's panel reuses it larger (scenes/auth.tsx). */
-export function SignupScene({ width = 456, height = 720, phone = 330, className = '' }: { width?: number; height?: number; phone?: number; className?: string }) {
+export function SignupScene({ width = 456, height = 720, phone = 330, tone, className = '' }: { width?: number; height?: number; phone?: number; tone?: PlateTone; className?: string }) {
   const rest = restFor(width, height)
   return (
     <Stage<S> width={width} height={height} initial={{ claimed: false }} poster={{ claimed: true }} script={scriptFor(rest)} cursor={{ at: rest, style: 'touch', idle: false }} fidelity="realistic" className={`fw fw-plated fw-cards fw-card-signup ${className}`}>
       {(s) => (
         <>
-        <Plate />
+        {tone && <Plate tone={tone} />}
         <Phone width={phone} frame="pro" className="cs-phone" style={{ left: (width - phone) / 2 }}>
           <div className="cs-screen">
             <Wordmark />

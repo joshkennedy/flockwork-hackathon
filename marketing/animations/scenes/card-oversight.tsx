@@ -1,5 +1,5 @@
 import { Bar, Stage, type Act } from '../kit'
-import { Avatar, PersonPill, Plate } from './flockwork'
+import { Avatar, PersonPill } from './flockwork'
 import './card-shared.css'
 import './card-oversight.css'
 
@@ -25,7 +25,6 @@ export default function CardOversight() {
     <Stage<S> width={640} height={280} initial={{ logged: false }} poster={{ logged: true }} script={script} cursor={{ at: { x: 590, y: 250 }, idle: false }} fidelity="realistic" className="fw fw-plated fw-cards fw-card-oversight">
       {(s) => (
         <>
-        <Plate />
         <div className="fc-panel co-panel">
           <div className="co-label">May need a check-in</div>
           <div className="co-card">

@@ -26,7 +26,7 @@ const Item = ({ title, meta }: { title: string; meta: string }) => (
 
 export default function TourSchedule() {
   return (
-    <Stage<S> width={1100} height={560} initial={{ added: false }} poster={{ added: true }} script={script} fidelity="realistic" className="fw fw-plated fw-tour-schedule">
+    <Stage<S> width={920} height={520} initial={{ added: false }} poster={{ added: true }} script={script} fidelity="realistic" className="fw fw-plated fw-tour-schedule">
       {(s) => (
         <TourWindow tab="schedule">
           <ToolHead icon="schedule" color="text-tool-schedule" title="Schedule" add="Add Item" />

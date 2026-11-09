@@ -50,13 +50,21 @@ body { margin: 0; background: var(--color-page); }
 .fw .fw-crumbs { height: 44px; display: flex; align-items: center; gap: 6px; padding: 0 24px; border-bottom: 1px solid var(--color-hairline); font-size: 12px; color: var(--color-ink-2); }
 .fw .fw-crumbs span { color: var(--color-ink-3); }
 
-/* Plate: the stage's warm ground. Put <Plate /> first in a Stage and give the stage
-   .fw-plated so its corners round and the plate clips. Three soft amber fields and grain,
-   one palette for every scene, from the app's sunlit wash. */
+/* Plate: the stage's colored ground. Put <Plate /> first in a Stage and give the stage
+   .fw-plated so its corners round and the plate clips. Three soft color fields, a halftone
+   dot screen and grain. Only the hero and the callouts (the Planner, the auth pages) sit on a plate;
+   the tour and bento scenes sit straight on the page. */
 .fw.fw-plated .ss-stage { overflow: hidden; border-radius: 16px; background: transparent; isolation: isolate; }
-.fw .fw-plate { position: absolute; inset: 0; z-index: -1; overflow: hidden; border-radius: 16px; background: #F1C48F; }
+.fw .fw-plate { position: absolute; inset: 0; z-index: -1; overflow: hidden; border-radius: 16px; background: var(--plate-base); }
 .fw .fw-plate::before, .fw .fw-plate::after, .fw .fw-plate__c { content: ""; position: absolute; border-radius: 50%; filter: blur(70px); }
-.fw .fw-plate::before { width: 70%; height: 95%; left: -14%; top: -28%; background: #FFF0CC; }
-.fw .fw-plate::after { width: 75%; height: 90%; right: -18%; bottom: -38%; background: #DE7B45; }
-.fw .fw-plate__c { width: 55%; height: 75%; right: -6%; top: -30%; background: #F8D27E; opacity: .9; }
+.fw .fw-plate::before { width: 70%; height: 95%; left: -14%; top: -28%; background: var(--plate-a); }
+.fw .fw-plate::after { width: 75%; height: 90%; right: -18%; bottom: -38%; background: var(--plate-b); }
+.fw .fw-plate__c { width: 55%; height: 75%; right: -6%; top: -30%; background: var(--plate-c); opacity: .9; }
+.fw .fw-plate__dots { position: absolute; inset: 0; z-index: 2; background-image: radial-gradient(rgba(255,255,255,.7) 1px, transparent 1.6px); background-size: 6px 6px; mix-blend-mode: overlay; opacity: .55; }
 .fw .fw-plate__grain { position: absolute; inset: 0; z-index: 3; width: 100%; height: 100%; mix-blend-mode: multiply; }
+/* Palettes from the app's own sunlit, tool and avatar colors, pushed brighter for marketing */
+.fw .fw-plate--sunrise { --plate-base: #F2B77C; --plate-a: #FFE9A8; --plate-b: #E4683F; --plate-c: #9CCDEB; }
+.fw .fw-plate--meadow { --plate-base: #A9D2A4; --plate-a: #EEF3B8; --plate-b: #3F9E87; --plate-c: #F5C66B; }
+.fw .fw-plate--lake { --plate-base: #94C7E3; --plate-a: #E3F3F7; --plate-b: #4F86D1; --plate-c: #9FDCC8; }
+.fw .fw-plate--clay { --plate-base: #E5A98F; --plate-a: #FBE2C9; --plate-b: #B8553B; --plate-c: #F4C46A; }
+.fw .fw-plate--dusk { --plate-base: #BDB6DF; --plate-a: #F5D9C6; --plate-b: #7385C4; --plate-c: #E9A6B8; }

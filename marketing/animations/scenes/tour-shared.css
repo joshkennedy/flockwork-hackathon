@@ -1,9 +1,11 @@
-.fw .ft-window { will-change: transform; position: absolute; left: 48px; top: 48px; right: 48px; height: 640px; box-shadow: 0 0 0 1px rgba(20,20,19,.08), 0 24px 48px -16px rgba(60,30,10,.35); }
-.fw .ft-window .ss-window__main > .ss-window__bar { display: none; }
+/* The window fills the stage and runs past its bottom edge; the landing page fades that edge out. */
+.fw .ft-window { will-change: transform; position: absolute; left: 1px; top: 1px; right: 1px; height: 640px; box-shadow: 0 0 0 1px rgba(20,20,19,.1); }
+/* A crop of the project, not a whole app window, so no title bar or traffic lights. */
+.fw .ft-window .ss-window__bar { display: none; }
 .fw .ft-body { padding: 24px 28px; }
 .fw .ft-title { font-size: 28px; line-height: 34px; }
 .fw .ft-lede { margin-top: 6px; color: var(--color-ink-2); }
-.fw .ft-tabs { margin-top: 18px; }
+.fw .ft-tabs { margin-top: 0; }
 .fw .ft-tabs .tab-link { gap: 6px; font-size: 13px; }
 .fw .ft-columns { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; padding-top: 8px; }
 .fw .ft-aside { display: flex; flex-direction: column; gap: 12px; padding-top: 8px; }

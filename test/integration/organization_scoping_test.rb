@@ -38,6 +38,6 @@ class OrganizationScopingTest < ActionDispatch::IntegrationTest
     get root_path
 
     assert_select "a[href=?]", new_sign_in_request_path, text: "Sign in"
-    assert_select "a[href=?]", new_demo_session_path, text: "See the demo"
+    assert_select "a[href=?]", new_demo_session_path, text: "Demo"
   end
 end

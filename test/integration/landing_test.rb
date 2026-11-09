@@ -17,7 +17,7 @@ class LandingTest < ActionDispatch::IntegrationTest
     get root_path
     assert_select ".lp-footer .lp-footer-tag", text: /Project planning for your church\./
     assert_select ".lp-footer a[href=?]", new_sign_in_request_path, text: "Sign in"
-    assert_select ".lp-footer a[href=?]", new_demo_session_path, text: "See the demo"
+    assert_select ".lp-footer a[href=?]", new_demo_session_path, text: "Demo"
     assert_select ".lp-footer .lp-footer-word", "Flockwork"
     assert_select ".public-header nav a.btn-secondary[href=?]", sign_up_path, text: "Plan Your First Project"
     assert_select ".public-header nav a.btn-primary", count: 0
@@ -92,8 +92,7 @@ class LandingTest < ActionDispatch::IntegrationTest
   test "landing shows all four project tools without a click" do
     get root_path
     assert_select ".lp-tour h2", "One project holds the whole thing."
-    assert_select ".lp-tour .lp-rail-item", count: 4
-    assert_select ".lp-rail button[type=button]", count: 4
+    assert_select ".lp-tour .lp-tour-screen figcaption h3", count: 4
     assert_select ".lp-tour .lp-tour-screen", count: 4
     assert_select ".lp-tour .lp-tour-screen[hidden]", count: 0
     %w[tour-signup tour-tasks tour-schedule tour-budget].each do |name|

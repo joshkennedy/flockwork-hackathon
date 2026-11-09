@@ -65,7 +65,7 @@ export default function TourPlanner() {
     <Stage<S> width={1100} height={560} initial={START} poster={{ text: SENTENCE, asked: 3, answered: 3, rows: 4, added: true }} script={script} cursor={{ at: REST }} fidelity="realistic" className="fw fw-plated fw-tour-planner">
       {(s) => (
         <>
-          <Plate />
+          <Plate tone="dusk" />
           <Window sidebar={<Sidebar active="Projects" />} sidebarWidth={180} className="ft-window">
             <div className="fw-crumbs">Projects <span>/</span> Start a Project</div>
             <div className="ft-body ftp-layers">

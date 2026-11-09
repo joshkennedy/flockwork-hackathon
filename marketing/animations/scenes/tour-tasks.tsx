@@ -46,7 +46,7 @@ function Open({ title, who, due, ring, done }: { title: string; who: React.React
 
 export default function TourTasks() {
   return (
-    <Stage<S> width={1100} height={560} initial={START} poster={{ assigned: true, checked: true, moved: true }} script={script} cursor={{ at: { x: 900, y: 420 } }} fidelity="realistic" className="fw fw-plated fw-tour-tasks">
+    <Stage<S> width={920} height={520} initial={START} poster={{ assigned: true, checked: true, moved: true }} script={script} cursor={{ at: { x: 820, y: 420 } }} fidelity="realistic" className="fw fw-plated fw-tour-tasks">
       {(s) => (
         <TourWindow tab="tasks">
           <ToolHead icon="tasks" color="text-tool-tasks" title="Tasks" add="Add Task" />

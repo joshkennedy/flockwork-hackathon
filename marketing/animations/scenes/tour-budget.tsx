@@ -31,7 +31,7 @@ function Line({ title, est, children }: { title: string; est: string; children?:
 
 export default function TourBudget() {
   return (
-    <Stage<S> width={1100} height={560} initial={{ spent: false, rolled: false }} poster={{ spent: true, rolled: true }} script={script} fidelity="realistic" className="fw fw-plated fw-tour-budget">
+    <Stage<S> width={920} height={520} initial={{ spent: false, rolled: false }} poster={{ spent: true, rolled: true }} script={script} fidelity="realistic" className="fw fw-plated fw-tour-budget">
       {(s) => {
         const actual = s.rolled ? 398.4 : 0
         return (

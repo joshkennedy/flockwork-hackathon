@@ -4,30 +4,20 @@
   [ "schedule", "A schedule everyone has", "The week’s plan by day, with times and rooms.", "tour-schedule", "The Vacation Bible School schedule by day, where a snack break at 10:15 AM in Fellowship Hall slots into Monday in time order" ],
   [ "budget", "A budget you can actually see", "Estimates and actual spending, side by side.", "tour-budget", "The Vacation Bible School budget: the actual cost of craft supplies is entered and the actual total updates beside the estimate" ]
 ] %>
-<section class="lp-band lp-tour" aria-labelledby="tour-title" data-controller="tour-rail">
+<%# Each tool is one row: what it does on the left, the tool recorded on the right. %>
+<section class="lp-band lp-tour" aria-labelledby="tour-title">
   <div class="lp-section">
     <div class="lp-intro">
       <h2 id="tour-title">One project holds the whole thing.</h2>
       <p>The sign-ups, tasks, schedule and budget sit together in the project they belong to. Messages, notes and lists go there too.</p>
     </div>
-    <div class="lp-tour-grid">
-      <nav class="lp-rail" aria-label="Project tools">
-        <% tools.each do |key, title, line| %>
-          <button type="button" class="lp-rail-item" data-tour-rail-target="item" data-action="tour-rail#jump" data-tour-rail-screen-param="<%= key %>">
-            <strong><%= title %></strong>
-            <span class="sr-only">. </span>
-            <span><%= line %></span>
-          </button>
-        <% end %>
-      </nav>
-      <div class="lp-tour-screens">
-        <% tools.each do |key, title, line, image, alt| %>
-          <figure class="lp-tour-screen" data-tour-rail-target="screen" data-screen="<%= key %>">
-            <figcaption><h3><%= title %></h3><p><%= line %></p></figcaption>
-            <%= render "landing/scene", name: image, width: 1100, height: 560, class: "lp-scene lp-float", alt: alt %>
-          </figure>
-        <% end %>
-      </div>
+    <div class="lp-tour-screens">
+      <% tools.each do |key, title, line, image, alt| %>
+        <figure class="lp-tour-screen" data-screen="<%= key %>">
+          <figcaption><h3><%= planner_tool_icon(key == "signup" ? "signup_sheet" : key) %><%= title %></h3><p><%= line %></p></figcaption>
+          <%= render "landing/scene", name: image, width: 920, height: 520, class: "lp-scene lp-tour-scene", alt: alt %>
+        </figure>
+      <% end %>
     </div>
   </div>
 </section>
