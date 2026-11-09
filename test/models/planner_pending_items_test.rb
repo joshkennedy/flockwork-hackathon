@@ -105,13 +105,24 @@ class PlannerPendingItemsTest < ActiveSupport::TestCase
     assert_equal "2027-03-05", planner_session.reload.pending_items.first.dig("fields", "date")
   end
 
+  test "new items keep the revision that first added them" do
+    original = reconcile(added: [ slot_run ], revision: 4)
+    revised = reconcile(existing: original, added: [ slot_run(time: "18:30") ], revision: 5)
+    unstamped = reconcile(added: [ slot_run ])
+
+    assert_equal [ 4 ], original.pluck("added_revision").uniq
+    assert_equal [ 4 ], revised.pluck("added_revision").uniq
+    assert_not unstamped.first.key?("added_revision")
+  end
+
   private
-    def reconcile(existing: [], added:, removed_ids: [])
+    def reconcile(existing: [], added:, removed_ids: [], revision: nil)
       Planner::PendingItems.reconcile(
         existing:,
         added:,
         removed_ids:,
-        project: @project
+        project: @project,
+        revision:
       )
     end
 

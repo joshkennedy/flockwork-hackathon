@@ -213,6 +213,7 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
     assert_text "Got it, adding that to your plan.", wait: 5
     assert_text "Confirm volunteer crew", wait: 5
     assert_selector "[data-voice-planner-target='questionnaire']", text: "Who should the work serve?", visible: :all, wait: 5
+    assert_text "Added · Confirm volunteer crew", wait: 5
     assert page.evaluate_script(<<~JS)
       (() => {
         const outputIndex = window.__voiceEvents.findIndex((event) =>

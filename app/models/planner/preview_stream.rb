@@ -52,7 +52,8 @@ module Planner
           existing: @planner_session.pending_items,
           added:,
           removed_ids: [],
-          project:
+          project:,
+          revision: @planner_session.generation_revision
         ).then { |items| Planner::PendingItems.visible(items) }
       rescue *SKIPPED_ITEM_ERRORS
         nil

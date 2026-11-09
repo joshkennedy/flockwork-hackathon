@@ -6,6 +6,7 @@
   <% pending_answer = planner_session.pending_answer&.fetch("text", nil) %>
   <% removed_item = planner_session.pending_items.select { |item| item["removed"] }.max_by { |item| item["removed_revision"].to_i } %>
   <% visible_items = planner_session.visible_pending_items %>
+  <% recently_added_items = planner_session.recently_added_items %>
   <% general_planner = !planner_session.meal_planner? %>
   <% pending_errors = general_planner ? planner_session.pending_item_errors : {} %>
   <% visible_pending_errors = planner_session.reviewing? ? pending_errors : {} %>
@@ -237,6 +238,11 @@
               <span class="voice-orb-core"></span>
             </div>
             <p class="voice-orb-status" data-voice-planner-target="status" aria-live="polite">Listening…</p>
+            <% if voice_phase == "choose" && recently_added_items.any? %>
+              <% recent_summaries = recently_added_items.first(3).map { |item| planner_pending_summary(item) } %>
+              <% recent_summaries << "and #{recently_added_items.size - 3} more" if recently_added_items.size > 3 %>
+              <p class="text-meta text-ink-2">Added · <%= safe_join(recent_summaries, " · ") %></p>
+            <% end %>
             <div class="voice-captions" aria-live="polite">
               <p><span class="font-semibold text-ink">Grok:</span> <span data-voice-planner-target="assistantCaption">Waiting to speak…</span></p>
               <p><span class="font-semibold text-ink">You:</span> <span data-voice-planner-target="userCaption">Listening…</span></p>

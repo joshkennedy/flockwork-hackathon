@@ -105,6 +105,33 @@ class PlannerGeneralSessionTest < ActiveSupport::TestCase
     end
   end
 
+  test "recently added items returns the newest visible batch" do
+    first_batch = Planner::PendingItems.reconcile(
+      existing: [],
+      added: [ item("task", "first", "title" => "Set up tables", "details" => "", "due_on" => nil) ],
+      removed_ids: [],
+      project: @session.project,
+      revision: 3
+    )
+    second_batch = Planner::PendingItems.reconcile(
+      existing: first_batch,
+      added: [
+        item("task", "first", "title" => "Set up tables", "details" => "", "due_on" => nil),
+        item("purchase", "paint", "description" => "Buy paint", "estimated_dollars" => nil)
+      ],
+      removed_ids: [],
+      project: @session.project,
+      revision: 4
+    )
+    @session.update!(pending_items: second_batch)
+
+    assert_equal [ "Buy paint" ], @session.recently_added_items.map { |item| Planner::PendingItems.summary(item) }
+
+    second_batch.last["removed"] = true
+    @session.update!(pending_items: second_batch)
+    assert_equal [ "Set up tables" ], @session.recently_added_items.map { |item| Planner::PendingItems.summary(item) }
+  end
+
   test "setting the first Project start date preserves explicit dates and an explicitly cleared due date" do
     @session.project.update!(starts_on: nil, ends_on: nil)
     pending = Planner::PendingItems.expand([

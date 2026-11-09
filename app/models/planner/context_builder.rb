@@ -24,16 +24,19 @@ module Planner
       else
         { state: "The first question is being prepared. Say one short line about that and do not call a tool." }
       end
-      builder_guidance = if session.build_as_you_go?
-        "After answer_card, the Project preview updates on screen and the next question follows. Acknowledge the answer in a few words, then wait."
+      builder = session.build_as_you_go?
+      builder_guidance = if builder
+        "This Leader may be on a phone and not looking at the screen. When they answer, call answer_card at once and say one short acknowledgement such as 'Got it, adding that to your plan', then wait. When a new question arrives, first say in one short clause what was just added (from just_added, group by kind, no more than three things), then ask the question. Keep every turn under two sentences."
       end
+      voice_context = context
+      voice_context = redact(voice_context.merge("just_added" => recently_added_summaries)) if builder
 
       <<~INSTRUCTIONS
         #{VOICE_GUIDANCE}
         #{builder_guidance}
 
         Planner context:
-        #{JSON.generate(context)}
+        #{JSON.generate(voice_context)}
 
         Current card:
         #{JSON.generate(current_card)}
@@ -73,6 +76,15 @@ module Planner
       def redact(payload)
         redactor = Planner::NameRedactor.new(Current.organization)
         payload.deep_transform_values { |value| value.is_a?(String) ? redactor.call(value) : value }
+      end
+
+      def recently_added_summaries
+        session.recently_added_items.first(5).map do |item|
+          Planner::PendingItems.summary(item)
+        rescue KeyError, ArgumentError
+          item.dig("fields", "title").presence || item.dig("fields", "name").presence ||
+            item.dig("fields", "description").presence || "Untitled item"
+        end
       end
 
       def current_project_values

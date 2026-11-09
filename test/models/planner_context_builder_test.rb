@@ -113,6 +113,41 @@ class PlannerContextBuilderTest < ActiveSupport::TestCase
     end
   end
 
+  test "builder voice instructions describe only the latest added batch" do
+    leader = people(:leader)
+    project = projects(:community_meal)
+    planner_session = project.planner_sessions.create!(
+      started_by: leader,
+      description: "Plan a workday.",
+      flow_version: 3,
+      planning_kind: "workday",
+      current_card: { "question" => "What happens next?", "options" => [ "Continue" ] }
+    )
+    earlier = Planner::PendingItems.reconcile(
+      existing: [],
+      added: [ pending_item("task", "tables", "title" => "Set up tables", "details" => "", "due_on" => nil) ],
+      removed_ids: [], project:, revision: 2
+    )
+    latest = Planner::PendingItems.reconcile(
+      existing: earlier,
+      added: [
+        pending_item("task", "tables", "title" => "Set up tables", "details" => "", "due_on" => nil),
+        pending_item("purchase", "paint", "description" => "Buy paint", "estimated_dollars" => nil)
+      ],
+      removed_ids: [], project:, revision: 3
+    )
+    planner_session.update!(pending_items: latest)
+    current_session = leader.sessions.create!(ip_address: "127.0.0.1", user_agent: "test")
+
+    instructions = Current.set(session: current_session) do
+      Planner::ContextBuilder.new(planner_session).voice_instructions
+    end
+    context_json = instructions.match(/Planner context:\n(.+)\n\nCurrent card:/).captures.first
+
+    assert_equal [ "Buy paint" ], JSON.parse(context_json).fetch("just_added")
+    assert_includes instructions, "Got it, adding that to your plan"
+  end
+
   test "randomized Planner contexts never contain generated Person data" do
     random = Random.new(18)
     organization = organizations(:st_example)
@@ -199,4 +234,10 @@ class PlannerContextBuilderTest < ActiveSupport::TestCase
     assert_equal %w[cooking driving], project.reload.skills_needed
     assert_equal tools, project.enabled_tools
   end
+
+
+  private
+    def pending_item(kind, source_key, fields)
+      { "kind" => kind, "source_key" => source_key, "fields" => fields }
+    end
 end

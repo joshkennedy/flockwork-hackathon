@@ -23,10 +23,11 @@ module Planner
 
     # Model responses are deltas: an item the model leaves out of `added` stays, and only
     # `removed_ids` removes saved draft work.
-    def reconcile(existing:, added:, removed_ids:, project:)
+    def reconcile(existing:, added:, removed_ids:, project:, revision: nil)
       validate_snapshot!(added, existing:, project:)
       incoming = expand(added, project:)
       raise ArgumentError, "Planner preview is too large" if incoming.size > 200
+      existing_ids = existing.to_set { |item| item.fetch("id") }
       incoming_by_key = incoming.index_by(&:source_key)
       result = existing.map do |item|
         candidate = incoming_by_key.delete(item.fetch("source_key"))
@@ -40,6 +41,11 @@ module Planner
         item.merge("conflict" => { "type" => "removed_by_revision", "suggested_fields" => nil })
       end
       raise ArgumentError, "Planner preview is too large" if result.size > 200
+      unless revision.nil?
+        result = result.map do |item|
+          existing_ids.include?(item.fetch("id")) ? item : item.merge("added_revision" => revision)
+        end
+      end
 
       result
     end
@@ -270,9 +276,10 @@ module Planner
         prior = previous.fetch("suggested_fields", previous.fetch("fields"))[field]
         result[field] = { "edited" => value, "suggested" => candidate.fields[field] } if candidate.fields[field] != value && (candidate.fields[field] != prior || previous.dig("conflict", "fields", field))
       end
-      candidate.to_h.merge("id" => previous.fetch("id"), "fields" => candidate.fields.merge(edits), "suggested_fields" => candidate.fields,
+      merged = candidate.to_h.merge("id" => previous.fetch("id"), "fields" => candidate.fields.merge(edits), "suggested_fields" => candidate.fields,
         "removed" => previous.fetch("removed", false), "user_edits" => edits, "conflict" => conflicts.presence && { "type" => "field_changes", "fields" => conflicts },
         "removed_revision" => previous["removed_revision"])
+      previous.key?("added_revision") ? merged.merge("added_revision" => previous["added_revision"]) : merged
     end
 
     def validate_fields!(kind, fields, project:)

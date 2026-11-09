@@ -396,7 +396,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_equal "grok-voice-latest", payload.fetch("model")
     assert_equal "answer_card", payload.fetch("tools").sole.fetch("name")
     assert_includes payload.fetch("instructions"), "What matters first?"
-    assert_includes payload.fetch("instructions"), "Project preview updates on screen"
+    assert_includes payload.fetch("instructions"), "This Leader may be on a phone"
 
     Rails.configuration.x.voice_client_secret_minter = -> { raise "voice instructions must not mint a secret" }
     get voice_instructions_project_planner_session_path(project, planner_session), as: :json

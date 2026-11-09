@@ -81,6 +81,14 @@ class PlannerSession < ApplicationRecord
     Planner::PendingItems.visible(pending_items)
   end
 
+  def recently_added_items
+    visible = visible_pending_items
+    latest_revision = visible.filter_map { |item| item["added_revision"] }.max
+    return [] if latest_revision.nil?
+
+    visible.select { |item| item["added_revision"] == latest_revision }
+  end
+
   def pending_item_count
     visible_pending_items.size
   end
@@ -508,7 +516,8 @@ class PlannerSession < ApplicationRecord
           existing: pending_items,
           added: response.added,
           removed_ids: response.removed_ids,
-          project:
+          project:,
+          revision: generation_revision
         )
         next_card = response.finished || steps.length >= MAX_GENERATED_QUESTIONS ? nil : response.card&.deep_stringify_keys
         if pending_answer.present?
