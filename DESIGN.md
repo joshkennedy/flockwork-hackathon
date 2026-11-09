@@ -270,7 +270,7 @@ Badges 4px, buttons and inputs 6px, nav items 8px, tiles 10px, panels and popove
 
 ## Marketing pages
 
-The landing page and every public page built from it (feature, use-case and pricing pages) follow these rules. They are what moved the landing page in the 2026-11-09 council run; the scores live in `ui-council/landing/ledger.csv`.
+The landing page and every public page built from it (feature, use-case and pricing pages) follow these rules. They are what moved the landing page in the 2026-11-09 council run.
 
 - **One measure:** content sits on `--lp-max` (1168px) with 24px gutters (16px on phones). The header, every section, photo rows and the footer share one left edge. Only the in-between intro and the close are centered.
 - **Type:** Mattone for the h1 and h2 only (h1 `clamp(44px, 6.6vw, 84px)`, h2 28 to 48px), sentence case, ending in a period. Body copy 17 to 19px at 1.6. h3 17 to 20px, 600.

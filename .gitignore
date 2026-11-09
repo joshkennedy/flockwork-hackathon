@@ -63,8 +63,11 @@
 /.amp/portals/
 
 # UI council: per-round captures and third-party reference shots stay local; annotated/, final/ and the ledger are committed.
-/ui-council/round-*/
-/ui-council/references/
+# Planning, decisions and review notes stay local, never in the repo
+/plans/
+/docs/
+/ui-council/
+/.ai/
 
 # brainstorm mockups
 .superpowers/
