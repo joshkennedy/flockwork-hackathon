@@ -14,10 +14,11 @@
     <span hidden data-toast-entry data-toast-kind="alert"><%= alert %></span>
   <% end %>
 
-  <%= form_with url: people_csv_import_path, method: :post, multipart: true, class: "mt-6 space-y-4" do |form| %>
+  <%= form_with url: people_csv_import_path, method: :post, multipart: true, class: "mt-6 space-y-4",
+        data: { controller: "upload", upload_key_value: "people-csv", action: "turbo:submit-start->upload#start turbo:submit-end->upload#finish direct-upload:start->upload#start direct-upload:progress->upload#progress direct-upload:error->upload#directError" } do |form| %>
     <div>
       <%= form.label :csv_file, "CSV file", class: "block text-label font-medium text-ink-2" %>
-      <%= form.file_field :csv_file, accept: ".csv,text/csv", required: true, class: "mt-1 block w-full text-meta text-ink-2" %>
+      <%= form.file_field :csv_file, accept: ".csv,text/csv", required: true, class: "mt-1 block w-full text-meta text-ink-2", data: { upload_target: "input" } %>
     </div>
     <%= form.submit "Import", class: "btn btn-primary" %>
   <% end %>

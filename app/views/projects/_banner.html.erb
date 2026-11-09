@@ -88,8 +88,9 @@
           <% end %>
 
           <%# Hidden form that the Replace button and drops submit through. %>
-          <%= form_with model: project, url: project_banner_path(project), method: :patch, multipart: true, class: "hidden" do |form| %>
-            <%= form.file_field :banner, accept: Project::BANNER_TYPES.join(","), tabindex: -1, class: "sr-only", data: { banner_upload_target: "input", action: "change->banner-upload#submit" } %>
+          <%= form_with model: project, url: project_banner_path(project), method: :patch, multipart: true, class: "hidden",
+                data: { controller: "upload", upload_key_value: "project-banner-#{project.id}", action: "turbo:submit-start->upload#start turbo:submit-end->upload#finish direct-upload:start->upload#start direct-upload:progress->upload#progress direct-upload:error->upload#directError" } do |form| %>
+            <%= form.file_field :banner, accept: Project::BANNER_TYPES.join(","), tabindex: -1, class: "sr-only", data: { banner_upload_target: "input", upload_target: "input", action: "change->banner-upload#submit" } %>
           <% end %>
         <% end %>
 

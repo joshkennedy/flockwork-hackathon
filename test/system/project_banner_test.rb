@@ -59,6 +59,7 @@ class ProjectBannerSystemTest < ApplicationSystemTestCase
 
     find("input[type=file][name='project[banner]']", visible: :all).set(file_fixture("banner_small.png").to_s)
 
+    assert_selector ".tst-viewport [role=status]", text: "Uploaded banner_small.png", visible: :all
     assert_text "This photo can't be shown yet."
     perform_enqueued_jobs only: ProjectBannerFocusJob
     ProjectBannerVariantsJob.perform_now(@project.reload)
