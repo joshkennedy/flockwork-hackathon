@@ -467,12 +467,13 @@
   .voice-orb { --voice-level: 0; position: relative; width: 120px; height: 120px; }
   .voice-orb-ring, .voice-orb-core { position: absolute; left: 50%; top: 50%; border-radius: 50%; transform: translate(-50%, -50%); }
   .voice-orb-ring { background: var(--color-sunlit); transition: transform 100ms ease-out, opacity 150ms ease-out; }
-  .voice-orb-ring-outer { width: 100%; height: 100%; opacity: calc(.16 + var(--voice-level) * .24); transform: translate(-50%, -50%) scale(calc(1 + var(--voice-level) * .35)); }
-  .voice-orb-ring-middle { width: 76%; height: 76%; opacity: calc(.28 + var(--voice-level) * .24); transform: translate(-50%, -50%) scale(calc(1 + var(--voice-level) * .24)); }
-  .voice-orb-ring-inner { width: 54%; height: 54%; opacity: calc(.44 + var(--voice-level) * .24); transform: translate(-50%, -50%) scale(calc(1 + var(--voice-level) * .14)); }
-  .voice-orb-core { width: 34%; height: 34%; background: var(--color-ink); }
-  .voice-orb.is-speaking .voice-orb-ring { background: var(--color-ink); }
-  .voice-orb.is-speaking .voice-orb-core { background: var(--color-sunlit); }
+  /* Rings are stepped so they read as bands, not one disk: the inner ring is solid and the two outside it stay translucent. */
+  .voice-orb-ring-outer { width: 100%; height: 100%; opacity: calc(.14 + var(--voice-level) * .3); transform: translate(-50%, -50%) scale(calc(1 + var(--voice-level) * .35)); }
+  .voice-orb-ring-middle { width: 72%; height: 72%; opacity: calc(.34 + var(--voice-level) * .3); transform: translate(-50%, -50%) scale(calc(1 + var(--voice-level) * .22)); }
+  .voice-orb-ring-inner { width: 46%; height: 46%; opacity: 1; transform: translate(-50%, -50%) scale(calc(1 + var(--voice-level) * .1)); }
+  .voice-orb-core { width: 26%; height: 26%; background: var(--color-ink); transition: transform 100ms ease-out; }
+  .voice-orb.is-speaking .voice-orb-core { transform: translate(-50%, -50%) scale(calc(1 + var(--voice-level) * .25)); }
+  .voice-orb.is-thinking .voice-orb-ring-outer, .voice-orb.is-thinking .voice-orb-ring-middle { opacity: .2; }
   .voice-orb-status { @apply text-heading text-ink; }
   .voice-captions { @apply grid w-full gap-2 text-left text-meta text-ink-2; }
   .meal-builder-status { @apply flex items-center gap-2 text-meta text-ink-2; }
