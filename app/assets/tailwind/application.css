@@ -450,7 +450,8 @@
   .meal-setup { @apply w-full; max-width: 880px; margin-inline: auto; }
   .meal-setup-toolbar { @apply flex flex-wrap items-center justify-between gap-3; }
   .meal-setup-identity { @apply mt-4; }
-  .meal-setup-name { @apply w-full min-w-0 rounded-control border border-control-border bg-panel px-4 py-3 text-ink; font-family: var(--font-display); font-size: 24px; line-height: 36px; transition: border-color var(--duration-hover), background-color var(--duration-hover); }
+  /* Reads as the page title at rest; the border and fill appear on hover and focus so it is discoverable as editable. */
+  .meal-setup-name { @apply -mx-3 w-[calc(100%+1.5rem)] min-w-0 rounded-control border border-transparent bg-transparent px-3 py-1 text-ink; font-family: var(--font-display); font-size: 24px; line-height: 36px; transition: border-color var(--duration-hover), background-color var(--duration-hover); }
   .meal-setup-name:hover { @apply border-border-strong bg-ghost-fill; }
   .meal-setup-name:focus { @apply border-ink bg-panel; outline: 2px solid var(--color-ink); outline-offset: 3px; }
   .meal-setup-layout { @apply mt-7 min-w-0; }
@@ -491,8 +492,8 @@
   .meal-builder .setup-step[data-step-state="open"] .setup-step-title { @apply font-medium text-ink; }
   .meal-builder .setup-step[data-step-state="done"] .setup-step-number { @apply bg-frame text-ink-2; }
   .meal-builder .meal-answer-tile { font-weight: 450; }
-  .meal-builder .voice-planner-launch { @apply gap-3 border-0 bg-ghost-fill text-ink-2 shadow-none; }
-  .meal-builder .voice-planner-launch:hover { @apply bg-frame text-ink; }
+  /* The sunlit disc is the page's one warm accent: voice is the hands-free path, so its entry stays easy to find. */
+  .voice-planner-mic { @apply grid size-10 shrink-0 place-items-center rounded-full bg-sunlit text-ink; }
   .meal-builder .meal-preview-heading h2 { @apply text-body font-medium text-ink-2; }
   .meal-builder .meal-preview-empty { @apply border-0 bg-transparent px-0 py-3 text-meta text-ink-2; }
   .meal-slot-editor > summary { list-style: none; }
