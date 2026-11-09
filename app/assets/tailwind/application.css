@@ -410,8 +410,8 @@
   .suggestion.kept { @apply border-solid border-border bg-panel text-ink shadow-raised; }
   .suggestion.kept .kept-check { animation: keep-check var(--duration-keep) var(--ease-enter); }
   @starting-style { .suggestion.kept { background-color: var(--color-ghost-fill); border-color: var(--color-ghost-border); color: var(--color-ink-2); } }
-  .project-kind-tile { @apply block min-h-28 w-full rounded-tile border border-border bg-panel p-5 text-left shadow-raised; transition: border-color var(--duration-hover), background-color var(--duration-hover), box-shadow var(--duration-press), transform var(--duration-press); }
-  .project-kind-grid { @apply grid max-w-3xl gap-3 sm:grid-cols-2; }
+  .project-kind-tile { @apply flex h-full w-full flex-col items-start rounded-tile border border-border bg-panel p-4 text-left sm:min-h-24 shadow-raised; transition: border-color var(--duration-hover), background-color var(--duration-hover), box-shadow var(--duration-press), transform var(--duration-press); }
+  .project-kind-grid { @apply grid gap-3 sm:grid-cols-2 lg:grid-cols-3; }
   button.project-kind-tile:active { transform: translateY(1px); box-shadow: var(--shadow-secondary-active); }
   .meal-builder { @apply w-full; width: min(880px, 100%); margin-inline: auto; }
   .meal-setup { @apply w-full; max-width: 880px; margin-inline: auto; }
@@ -463,8 +463,16 @@
   .meal-builder-guide { @apply min-w-0; }
   [data-voice-active="true"] [data-voice-planner-target="questionnaire"] { display: none; }
   [data-voice-active="true"] [data-voice-planner-target="panel"] { display: grid; }
-  .voice-planner-panel { @apply justify-items-center gap-4 py-3 text-center; }
-  .voice-orb { --voice-level: 0; position: relative; width: 120px; height: 120px; }
+  @media (width < 768px) {
+    [data-voice-active="true"] :is(.meal-builder-rename, .meal-builder-exits, .meal-builder-guide > .privacy-line) { display: none; }
+    [data-voice-active="true"] .voice-planner-panel { display: flex; flex-direction: column; align-items: center; height: max(520px, calc(100dvh - 277px - max(4px, env(safe-area-inset-bottom)))); padding-bottom: 0; }
+    .voice-planner-panel > :not(.voice-captions) { flex-shrink: 0; }
+    .voice-planner-panel .voice-captions { min-height: 72px; overflow-y: auto; }
+    .meal-builder .voice-planner-launch { width: 100%; min-height: 48px; }
+    .meal-builder .voice-planner-end { width: 100%; min-height: 48px; margin-top: auto; }
+  }
+  .voice-planner-panel { @apply justify-items-center content-start gap-4 py-7 text-center; }
+  .voice-orb { --voice-level: 0; position: relative; width: 168px; height: 168px; }
   .voice-orb-ring, .voice-orb-core { position: absolute; left: 50%; top: 50%; border-radius: 50%; transform: translate(-50%, -50%); }
   .voice-orb-ring { background: var(--color-sunlit); transition: transform 100ms ease-out, opacity 150ms ease-out; }
   /* Rings are stepped so they read as bands, not one disk: the inner ring is solid and the two outside it stay translucent. */
@@ -474,8 +482,8 @@
   .voice-orb-core { width: 26%; height: 26%; background: var(--color-ink); transition: transform 100ms ease-out; }
   .voice-orb.is-speaking .voice-orb-core { transform: translate(-50%, -50%) scale(calc(1 + var(--voice-level) * .25)); }
   .voice-orb.is-thinking .voice-orb-ring-outer, .voice-orb.is-thinking .voice-orb-ring-middle { opacity: .2; }
-  .voice-orb-status { @apply text-heading text-ink; }
-  .voice-captions { @apply grid w-full gap-2 text-left text-meta text-ink-2; }
+  .voice-orb-status { @apply text-xl font-semibold leading-7 text-ink; }
+  .voice-captions { @apply grid w-full gap-2 text-left text-base leading-6 text-ink; overflow-wrap: anywhere; }
   .meal-builder-status { @apply flex items-center gap-2 text-meta text-ink-2; }
   .meal-pulse-dot { @apply size-2 shrink-0 rounded-full bg-ink; }
   .meal-mobile-update { @apply mt-5 rounded-nav border border-dashed border-ghost-border bg-ghost-fill px-3 py-3; }
@@ -515,6 +523,8 @@
   .meal-slot-conflict-actions { @apply mt-3 border-t border-danger/20 pt-3; }
   .meal-preview-empty { @apply rounded-tile border border-dashed border-ghost-border bg-ghost-fill px-4 py-7; }
   .meal-building { @apply mt-4 flex flex-col gap-2.5 rounded-tile border border-dashed border-ghost-border bg-ghost-fill px-4 py-4; }
+  .meal-building:first-child { margin-top: 0; }
+  .meal-building .meal-pulse-dot { @apply bg-sunlit; }
   .meal-skeleton { height: 12px; width: 60%; border-radius: 6px; background: var(--color-ghost-border); }
   .meal-skeleton-short { width: 36%; }
   @media (prefers-reduced-motion: no-preference) {
@@ -599,7 +609,7 @@
     .meal-preview { @apply border-t-0 border-l pl-10 pt-0; }
     .meal-preview-view-all { display: none; }
     .meal-mobile-update { display: none; }
-    .voice-orb { width: 160px; height: 160px; }
+    .voice-orb { width: 184px; height: 184px; }
   }
 }
 

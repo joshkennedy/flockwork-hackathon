@@ -347,8 +347,8 @@ class PlannerTest < ActionDispatch::IntegrationTest
 
     get new_project_planner_session_path(project)
     assert_response :success
-    assert_select ".privacy-line", text: /It never sees your people.\s*Leave names and care details out of answers/
-    assert_select ".privacy-line", text: /speech service/
+    assert_select ".privacy-line", text: /It never sees your people./
+    assert_select ".privacy-line", text: /Voice sends your audio to xAI/
 
     post project_planner_sessions_path(project), params: {
       planner_session: { description: "Prepare the neighborhood meal." }
@@ -356,9 +356,9 @@ class PlannerTest < ActionDispatch::IntegrationTest
     planner_session = project.planner_sessions.last!
     get project_planner_session_path(project, planner_session)
     assert_response :success
-    assert_includes response.body, "Your audio is sent to xAI"
+    assert_includes response.body, "Voice sends your audio to xAI"
     assert_includes response.body, "Talk It Through"
-    assert_operator response.body.index("Your audio is sent to xAI"), :<, response.body.index("Talk It Through")
+    assert_operator response.body.index("Voice sends your audio to xAI"), :<, response.body.index("Talk It Through")
   end
 
   test "a Leader mints a voice session from safe Planner context and the current card" do

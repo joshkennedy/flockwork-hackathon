@@ -47,6 +47,11 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
       assert_equal expected_names.fetch(planning_kind), planner_session.project.name
       assert_equal "queued", planner_session.generation_state
       assert_empty planner_session.project.enabled_tools
+
+      get project_planner_session_path(planner_session.project, planner_session)
+      assert_select "[data-meal-planner-target='status']", count: 1, text: "Drafting your plan…"
+      assert_select ".meal-preview-empty", count: 0
+      assert_select ".meal-building .meal-skeleton", count: 3
     end
 
     assert_equal original, existing.reload.attributes
@@ -283,7 +288,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_select "p##{schedule_error_id}", text: "Date can't be blank"
   end
 
-  test "review links the start-date blocker to its invalid field" do
+  test "review explains the missing start date without marking it invalid" do
     sign_in_as_leader
     project, planner_session = build_reviewing_session(
       planning_kind: "workday",
@@ -297,8 +302,10 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "button[disabled][aria-describedby=?]", note_id, text: "Add to Project"
     assert_select "label[for='#{field_id}']", text: "Project start date"
-    assert_select "input##{field_id}.field-error[aria-invalid='true']"
-    assert_select "p##{note_id} a[href='##{field_id}'][data-turbo='false']",
+    assert_select "input##{field_id}"
+    assert_select "input##{field_id}.field-error, input##{field_id}[aria-invalid]", count: 0
+    assert_select "p##{note_id} a", count: 0
+    assert_select "p##{note_id}",
       text: "Set the start date above to add these items."
   end
 

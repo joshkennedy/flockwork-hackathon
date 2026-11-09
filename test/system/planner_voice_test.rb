@@ -165,7 +165,7 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
     JS
     click_on "Talk It Through"
 
-    assert_text "Your audio is sent to xAI. Describe the work without names or private care details."
+    assert_text "Voice sends your audio to xAI. Describe the work without names or private care details."
     assert_text "How should the Team prepare?"
     assert_text "You: We'll cook together"
     assert_text "What should happen after cooking?", wait: 5
@@ -212,6 +212,7 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
     sign_in_leader_in_browser
 
     visit new_project_path
+    page.current_window.resize_to(390, 844)
     click_button "Workday"
     assert_text "What should this workday accomplish?"
     page.execute_script(<<~JS)
@@ -225,6 +226,9 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
     assert_equal [ "screen" ], page.evaluate_script("window.__wakeLockRequests")
     assert_no_selector "[data-voice-planner-target='questionnaire']", visible: true
     assert_selector ".voice-orb", visible: true
+    assert_no_selector ".meal-builder-rename, .meal-builder-exits, .meal-builder-guide > .privacy-line", visible: true
+    assert_selector ".voice-captions", text: "Planner"
+    assert_selector ".voice-planner-end.btn-primary", text: "End Conversation"
     assert_text "Got it, adding that to your plan.", wait: 5
     assert_text "Confirm volunteer crew", wait: 5
     assert_selector "[data-voice-planner-target='questionnaire']", text: "Who should the work serve?", visible: :all, wait: 5
@@ -246,6 +250,7 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
     assert_equal 1, page.evaluate_script("window.__wakeLockReleases")
     assert_selector "[data-voice-planner-target='questionnaire']", visible: true
     assert_text "Who should the work serve?"
+    assert_selector ".meal-builder-rename, .meal-builder-exits, .meal-builder-guide > .privacy-line", count: 3, visible: true
   end
 
   private

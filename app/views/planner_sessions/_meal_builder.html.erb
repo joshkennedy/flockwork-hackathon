@@ -12,7 +12,6 @@
   <% visible_pending_errors = planner_session.reviewing? ? pending_errors : {} %>
   <% needs_start_date = planner_session.reviewing? && project.starts_on.blank? &&
     visible_items.any? { |item| item.key?("day_offset") && item.dig("fields", item["kind"] == "task" ? "due_on" : "date").blank? && !item.fetch("user_edits", {}).key?(item["kind"] == "task" ? "due_on" : "date") } %>
-  <% review_start_date_id = "review_date_starts_on" %>
   <% addable = if general_planner
     visible_items.any? && pending_errors.blank? && visible_items.none? { |item| item["conflict"].present? }
   else
@@ -94,7 +93,7 @@
               <%= form.label :starts_on, general_planner ? "Project start date" : "First meal date", class: "block text-label font-medium text-ink" %>
               <div class="mt-2 flex flex-col gap-3 sm:flex-row">
                 <%= form.date_field :starts_on, id: "starts_on", name: "project[starts_on]", required: true,
-                  class: "block min-w-0 flex-1 field field-error", aria: { invalid: true, describedby: dom_id(planner_session, :start_date_hint) } %>
+                  class: "block min-w-0 flex-1 field", aria: { describedby: dom_id(planner_session, :start_date_hint) } %>
                 <%= form.submit "Set Date", class: "btn btn-secondary", data: { turbo_submits_with: "Setting Date…" } %>
               </div>
               <p id="<%= dom_id(planner_session, :start_date_hint) %>" class="mt-2 text-meta text-ink-2"><%= general_planner ? "Items are dated from this day." : "Every meal slot is dated from this day." %></p>
@@ -119,10 +118,7 @@
               elsif visible_items.any? { |item| item["conflict"].present? }
                 "Resolve the highlighted change before adding."
               elsif needs_start_date
-                link_to(
-                  general_planner ? "Set the start date above to add these items." : "Set the first meal date above to add these slots.",
-                  "##{review_start_date_id}", class: "link", data: { turbo: false }
-                )
+                general_planner ? "Set the start date above to add these items." : "Set the first meal date above to add these slots."
               elsif general_planner
                 safe_join(planner_acceptance_blockers(visible_items, pending_errors).map { |blocker|
                   link_to(blocker.fetch(:text), "##{blocker.fetch(:id)}", class: "link", data: { turbo: false })
@@ -141,11 +137,11 @@
           <h2 id="meal-guide-heading" class="mt-2 text-lg font-semibold leading-snug text-ink"><%= planner_session.current_card.fetch("question") %></h2>
 
           <div hidden data-voice-planner-target="launcher" class="mt-4">
-            <button type="button" class="btn btn-secondary" data-action="voice-planner#start" data-voice-planner-target="startButton">
+            <button type="button" class="btn btn-secondary voice-planner-launch" data-action="voice-planner#start" data-voice-planner-target="startButton">
               <%= icon(:mic) %>
               <span>Talk It Through</span>
             </button>
-            <p class="mt-2 text-meta text-ink-2">Your audio is sent to xAI. Describe the work without names or private care details.</p>
+            <p class="mt-2 text-meta text-ink-2">Voice sends your audio to xAI. Describe the work without names or private care details.</p>
           </div>
 
           <div class="mt-5 grid gap-2" data-controller="planner-answers" data-action="keydown@window->planner-answers#choose">
@@ -154,7 +150,7 @@
               <%= button_to select_answer_project_planner_session_path(project, planner_session), params: { answer: option, expected_revision: planner_session.generation_revision }, class: "answer-tile meal-answer-tile", aria: { pressed: selected }, disabled: planner_session.generation_busy?, data: { turbo_submits_with: "Preparing…", planner_answers_target: "answer" } do %>
                 <span class="meal-answer-radio" aria-hidden="true"></span>
                 <span class="min-w-0 flex-1"><%= option %></span>
-                <span class="text-label text-ink-3" aria-hidden="true"><%= index + 1 %></span>
+                <span class="hidden text-label text-ink-3 sm:inline" aria-hidden="true"><%= index + 1 %></span>
               <% end %>
             <% end %>
 
@@ -168,7 +164,7 @@
                     <span class="block text-meta text-ink-2">Change your answer</span>
                   <% end %>
                 </span>
-                <span class="text-label text-ink-3" aria-hidden="true"><%= options.size + 1 %></span>
+                <span class="hidden text-label text-ink-3 sm:inline" aria-hidden="true"><%= options.size + 1 %></span>
               </summary>
               <%= form_with url: select_answer_project_planner_session_path(project, planner_session), class: "meal-own-answer-form" do |form| %>
                 <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
@@ -181,15 +177,15 @@
             </details>
           </div>
 
-          <div class="mt-5 empty:hidden"><% if planner_session.generation_busy? %>
-              <p class="meal-builder-status" data-meal-planner-target="status"><span class="meal-pulse-dot" aria-hidden="true"></span>Preparing Suggestions…</p>
-            <% elsif planner_session.last_error.present? %>
+          <% unless planner_session.generation_busy? %>
+          <div class="mt-5 empty:hidden"><% if planner_session.last_error.present? %>
               <%= render "planner_sessions/break", project:, planner_session: %>
             <% elsif planner_session.ready_to_continue? %>
               <p class="meal-builder-status" data-meal-planner-target="status">Preview updated. Change your choice or continue.</p>
             <% elsif pending_answer.blank? %>
               <p class="meal-builder-status" data-meal-planner-target="status">Choose an answer to continue.</p>
             <% end %></div>
+          <% end %>
 
           <% if visible_items.any? %>
             <% mobile_item = visible_items.first %>
@@ -225,7 +221,7 @@
             <div class="mt-4"><%= render "planner_sessions/break", project:, planner_session: %></div>
           <% else %>
             <h2 id="meal-guide-heading" class="text-lg font-semibold text-ink">Preparing your first choice…</h2>
-            <p class="mt-3 meal-builder-status" data-meal-planner-target="status">The Planner is shaping questions around <%= general_planner ? "this Project" : "this meal train" %>.</p>
+            <p class="mt-3 meal-builder-status">The Planner is shaping questions around <%= general_planner ? "this Project" : "this meal train" %>.</p>
           <% end %>
           <% end %>
           </div>
@@ -238,22 +234,23 @@
               <span class="voice-orb-core"></span>
             </div>
             <p class="voice-orb-status" data-voice-planner-target="status" aria-live="polite">Listening…</p>
+            <p class="text-meta text-ink-2">Voice sends your audio to xAI. Describe the work without names or private care details.</p>
             <% if voice_phase == "choose" && recently_added_items.any? %>
               <% recent_summaries = recently_added_items.first(3).map { |item| planner_pending_summary(item) } %>
               <% recent_summaries << "and #{recently_added_items.size - 3} more" if recently_added_items.size > 3 %>
               <p class="text-meta text-ink-2">Added · <%= safe_join(recent_summaries, " · ") %></p>
             <% end %>
             <div class="voice-captions" aria-live="polite">
-              <p><span class="font-semibold text-ink">Grok:</span> <span data-voice-planner-target="assistantCaption">Waiting to speak…</span></p>
-              <p><span class="font-semibold text-ink">You:</span> <span data-voice-planner-target="userCaption">Listening…</span></p>
+              <p><span class="block text-meta text-ink-2">Planner</span> <span data-voice-planner-target="assistantCaption">Waiting to speak…</span></p>
+              <p><span class="block text-meta text-ink-2">You</span> <span data-voice-planner-target="userCaption">Listening…</span></p>
             </div>
-            <button type="button" class="btn btn-secondary" data-action="voice-planner#end">End Conversation</button>
+            <button type="button" class="btn btn-primary voice-planner-end" data-action="voice-planner#end">End Conversation</button>
           </section>
         <% end %>
 
         <% unless planner_session.accepted? %>
           <%# The quiet exits share one row; an open Back takes the full width so its answers read below. %>
-          <div class="mt-6 flex flex-wrap items-start gap-x-4 border-t border-hairline pt-3">
+          <div class="meal-builder-exits mt-6 flex flex-wrap items-start gap-x-4 border-t border-hairline pt-3">
             <% if planner_session.asking? && (planner_session.pending_answer&.fetch("step_index", 0) || planner_session.steps.length).positive? %>
               <details class="open:basis-full">
                 <%= disclosure_summary "Back to Earlier Choices", class: "-ms-2 btn btn-text" %>

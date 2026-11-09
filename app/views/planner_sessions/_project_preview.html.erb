@@ -24,7 +24,7 @@
           </section>
         <% end %>
       </div>
-    <% else %>
+    <% elsif !planner_session.generation_busy? %>
       <div class="meal-preview-empty">
         <p class="font-semibold text-ink">Choose what matters first.</p>
         <p class="mt-1 text-meta text-ink-2">Tasks, dates, costs, and lists will stay visible here before anything is added.</p>
@@ -33,9 +33,13 @@
 
     <% if planner_session.generation_busy? %>
       <div class="meal-building">
-        <p class="meal-builder-status"><span class="meal-pulse-dot" aria-hidden="true"></span>Building the Project preview…</p>
-        <div class="meal-skeleton" aria-hidden="true"></div>
-        <div class="meal-skeleton meal-skeleton-short" aria-hidden="true"></div>
+        <p class="meal-builder-status" data-meal-planner-target="status"><span class="meal-pulse-dot bg-sunlit" aria-hidden="true"></span>Drafting your plan…</p>
+        <% [ [ :budget, "text-tool-budget" ], [ :tasks, "text-tool-tasks" ], [ :schedule, "text-tool-schedule" ] ].each_with_index do |(glyph, color), index| %>
+          <div class="flex items-center gap-2" aria-hidden="true">
+            <%= icon(glyph, class: "#{color} opacity-50") %>
+            <div class="meal-skeleton <%= "meal-skeleton-short" if index == 2 %>"></div>
+          </div>
+        <% end %>
       </div>
     <% end %>
 

@@ -28,30 +28,20 @@
   <% else %>
     <section class="mt-7" aria-labelledby="project-kind-heading">
       <h2 id="project-kind-heading" class="text-ink">What are we organizing?</h2>
+      <p class="mt-2 text-ink-2">Pick one and the Planner will ask a few questions and draft the plan with you.</p>
       <div class="project-kind-grid mt-5">
-        <%= button_to start_meal_planner_projects_path, method: :post, class: "project-kind-tile", data: { turbo_submits_with: "Creating Project…" } do %>
-          <span class="font-semibold text-ink">Meal Train</span>
-          <span class="mt-1 block text-meta text-ink-2">Build a dated sign-up sheet for meals.</span>
-        <% end %>
-        <%= button_to start_planner_projects_path, method: :post, params: { planning_kind: "retreat" }, class: "project-kind-tile", data: { turbo_submits_with: "Creating Project…" } do %>
-          <span class="font-semibold text-ink">Retreat</span>
-          <span class="mt-1 block text-meta text-ink-2">Shape the schedule, tasks, bookings, and supplies.</span>
-        <% end %>
-        <%= button_to start_planner_projects_path, method: :post, params: { planning_kind: "workday" }, class: "project-kind-tile", data: { turbo_submits_with: "Creating Project…" } do %>
-          <span class="font-semibold text-ink">Workday</span>
-          <span class="mt-1 block text-meta text-ink-2">Organize jobs, materials, and ways to help.</span>
-        <% end %>
-        <%= button_to start_planner_projects_path, method: :post, params: { planning_kind: "children_program" }, class: "project-kind-tile", data: { turbo_submits_with: "Creating Project…" } do %>
-          <span class="font-semibold text-ink">Children’s Program</span>
-          <span class="mt-1 block text-meta text-ink-2">Plan dates, volunteers, supplies, and details.</span>
-        <% end %>
-        <%= button_to start_planner_projects_path, method: :post, params: { planning_kind: "class" }, class: "project-kind-tile", data: { turbo_submits_with: "Creating Project…" } do %>
-          <span class="flex items-center gap-2 font-semibold text-ink"><%= icon(:docs) %>Class</span>
-          <span class="mt-1 block text-meta text-ink-2">Plan sessions, teachers, food, and take-home materials.</span>
-        <% end %>
-        <%= button_to new_project_path, method: :get, params: { planning_kind: "other" }, class: "project-kind-tile" do %>
-          <span class="font-semibold text-ink">Something Else</span>
-          <span class="mt-1 block text-meta text-ink-2">Describe your idea in one sentence.</span>
+        <% [
+          [ "Meal Train", "Line up meals for a family who needs them.", :schedule, "text-tool-signup", start_meal_planner_projects_path, :post, {} ],
+          [ "Retreat", "Plan the days, the place and what to bring.", :schedule, "text-tool-schedule", start_planner_projects_path, :post, { planning_kind: "retreat" } ],
+          [ "Workday", "Rally hands for a day of shared work.", :tasks, "text-tool-tasks", start_planner_projects_path, :post, { planning_kind: "workday" } ],
+          [ "Children’s Program", "Plan the dates, helpers and supplies for kids.", :list, "text-tool-list", start_planner_projects_path, :post, { planning_kind: "children_program" } ],
+          [ "Class", "Plan each session, its teacher and materials.", :docs, "text-tool-docs", start_planner_projects_path, :post, { planning_kind: "class" } ],
+          [ "Something Else", "Describe it in one sentence and we'll shape it.", :plus, "text-ink-2", new_project_path, :get, { planning_kind: "other" } ]
+        ].each do |title, description, glyph, color, path, method, parameters| %>
+          <%= button_to path, method:, params: parameters, class: "project-kind-tile", data: ({ turbo_submits_with: "Creating Project…" } unless method == :get) do %>
+            <span class="flex items-start gap-2 text-heading text-ink"><%= icon(glyph, class: "mt-0.5 #{color}") %><%= title %></span>
+            <span class="mt-1 block text-meta text-ink-2"><%= description %></span>
+          <% end %>
         <% end %>
       </div>
 
