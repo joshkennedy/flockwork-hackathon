@@ -114,7 +114,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     assert_equal Date.new(2027, 4, 9), PlannerSession.order(:id).last!.project.tasks.sole.due_on
   end
 
-  test "Project Details stays within phone gutters and above review content" do
+  test "Project name saves with Enter and blur and restores empty names on a phone" do
     Rails.configuration.x.planner_provider = Planner::Providers::Fake.new([
       response(card: card("What matters first?", "Preparation", "Supplies", "Schedule")),
       response(finished: true, added: [ item("task", "prepare", title: "Prepare the room", details: "", due_on: "2027-04-09") ])
@@ -123,36 +123,27 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     page.current_window.resize_to(390, 844)
     visit new_project_path
     click_button "Workday"
+    assert_text "What matters first?"
+    field = find(".meal-setup-name")
+    field.set("Spring workday")
+    field.send_keys(:enter)
+    assert_selector "#meal-project-heading", text: "Spring workday", visible: :all
+    assert_equal "Spring workday", PlannerSession.order(:id).last!.project.name
+
+    fill_in "Project name", with: ""
+    find("#meal-guide-heading").click
+    assert_field "Project name", with: "Spring workday"
+
     click_button "Preparation"
     assert_text "Preview updated. Continue when ready."
     click_button "Finish with This"
-    find("summary", text: "Project Details").click
-
-    popover = page.evaluate_script(<<~JS)
-      (() => {
-        const popover = document.querySelector(".meal-builder-popover");
-        const input = popover.querySelector("input[name='project[starts_on]']");
-        const rect = popover.getBoundingClientRect();
-        const inputRect = input.getBoundingClientRect();
-        const topElement = document.elementFromPoint(
-          inputRect.left + inputRect.width / 2,
-          inputRect.top + inputRect.height / 2
-        );
-        return {
-          left: rect.left,
-          right: rect.right,
-          inputWidth: inputRect.width,
-          inputIsTopmost: topElement === input,
-          zIndex: Number.parseInt(getComputedStyle(popover).zIndex, 10)
-        };
-      })()
-    JS
-
-    assert_operator popover.fetch("left"), :>=, 16
-    assert_operator popover.fetch("right"), :<=, 374
-    assert_operator popover.fetch("inputWidth"), :>=, 300
-    assert_operator popover.fetch("zIndex"), :>=, 40
-    assert popover.fetch("inputIsTopmost")
+    assert_text "Here’s what will be added"
+    fill_in "Project name", with: "Saturday workday"
+    find("#meal-guide-heading").click
+    assert_selector "#meal-project-heading", text: "Saturday workday", visible: :all
+    assert_field "Project name", with: "Saturday workday"
+    assert_no_selector "summary", text: "Project Details"
+    assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
   end
 
   private

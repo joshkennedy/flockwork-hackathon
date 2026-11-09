@@ -15,6 +15,26 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     Rails.configuration.x.voice_client_secret_minter = @original_voice_client_secret_minter
   end
 
+  test "planning details saves a title into the builder field without changing the start date" do
+    sign_in_as_leader
+    use_provider(response(card: card("What matters most?")))
+    post start_planner_projects_path, params: { planning_kind: "class" }
+    perform_enqueued_jobs
+    planner_session = PlannerSession.order(:id).last!
+    project = planner_session.project
+    project.update!(starts_on: Date.new(2027, 4, 1))
+
+    patch planning_details_project_planner_session_path(project, planner_session), params: {
+      project: { name: "Sunday class" }, expected_revision: planner_session.generation_revision
+    }
+    assert_response :see_other
+    follow_redirect!
+    assert_select "input.meal-setup-name[aria-label='Project name'][value='Sunday class']"
+    assert_select ".meal-builder-rename", count: 0
+    assert_equal "Sunday class", project.reload.name
+    assert_equal Date.new(2027, 4, 1), project.starts_on
+  end
+
   test "each general planning kind starts a new v3 shell asynchronously without changing existing projects" do
     sign_in_as_leader
     existing = projects(:community_meal)

@@ -229,7 +229,7 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
     assert_no_selector "nav[aria-label='Breadcrumbs']", visible: true
     assert_no_selector ".search-trigger", visible: true
     assert_in_delta 72, page.evaluate_script("parseFloat(getComputedStyle(document.querySelector('.voice-orb-core')).width)"), 0.1
-    assert_no_selector ".meal-builder-rename, .meal-builder-exits", visible: true
+    assert_no_selector ".meal-builder-header .meal-setup-name, .meal-builder-exits", visible: true
     assert_selector ".voice-captions", text: "Planner"
     assert_selector ".voice-planner-end.btn-primary", text: "End Conversation"
     assert_text "Got it, adding that to your plan.", wait: 5
@@ -255,7 +255,7 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
     assert_selector ".search-trigger", visible: true
     assert_selector "[data-voice-planner-target='questionnaire']", visible: true
     assert_text "Who should the work serve?"
-    assert_selector ".meal-builder-rename, .meal-builder-exits", count: 2, visible: true
+    assert_selector ".meal-builder-header .meal-setup-name, .meal-builder-exits", count: 2, visible: true
   end
 
   private

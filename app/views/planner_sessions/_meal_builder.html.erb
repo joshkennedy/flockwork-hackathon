@@ -49,21 +49,16 @@
       <span data-meal-planner-target="busy" hidden></span>
     <% end %>
     <header class="meal-builder-header">
-      <div class="min-w-0">
-        <h1 id="meal-project-heading" class="text-ink"><%= project.name %></h1>
-      </div>
-
-      <details class="meal-builder-rename <%= "invisible" if planner_session.generation_busy? %>">
-        <%= disclosure_summary "Project Details", class: "btn btn-text" %>
-        <%= form_with url: planning_details_project_planner_session_path(project, planner_session), method: :patch, class: "meal-builder-popover popover-in" do |form| %>
-          <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
-          <%= form.label :name, "Project name", class: "block text-label font-medium text-ink" %>
-          <%= form.text_field :name, name: "project[name]", value: project.name, required: true, class: "mt-2 block w-full field" %>
-          <%= form.label :starts_on, general_planner ? "Start date" : "First meal date", class: "mt-4 block text-label font-medium text-ink" %>
-          <%= form.date_field :starts_on, name: "project[starts_on]", value: project.starts_on, class: "mt-2 block w-full field" %>
-          <%= form.submit "Save Details", class: "mt-3 btn btn-secondary", data: { turbo_submits_with: "Saving…" } %>
-        <% end %>
-      </details>
+      <h1 id="meal-project-heading" class="sr-only"><%= project.name %></h1>
+      <% name_form_id = dom_id(planner_session, :project_name) %>
+      <%= label_tag "#{name_form_id}_field", "Project name", class: "sr-only" %>
+      <%= text_field_tag "project[name]", project.name, form: name_form_id, id: "#{name_form_id}_field",
+        class: "meal-setup-name", aria: { label: "Project name" }, disabled: planner_session.generation_busy?,
+        data: { project_name_target: "field", action: "change->project-name#save blur->project-name#save keydown.enter->project-name#save" } %>
+      <%= form_with url: planning_details_project_planner_session_path(project, planner_session), method: :patch,
+        id: name_form_id, html: { hidden: true }, data: { project_name_target: "form" } do |form| %>
+        <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
+      <% end %>
     </header>
 
     <div class="meal-builder-organization">
@@ -113,8 +108,7 @@
           <%= form_with url: accept_project_planner_session_path(project, planner_session), method: :post,
             class: "mt-5", data: { turbo_frame: "_top" } do |form| %>
             <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
-            <%= form.label :name, "Project name", class: "block text-label font-medium text-ink" %>
-            <%= form.text_field :name, name: "project[name]", value: project.name, required: true, class: "mt-2 block w-full field" %>
+            <%= hidden_field_tag "project[name]", project.name %>
             <%= form.button "Add to Project", class: "mt-4 btn btn-primary", disabled: !addable,
               aria: ({ describedby: dom_id(planner_session, :add_note) } unless addable),
               data: { turbo_submits_with: "Adding #{pluralize(planner_session.pending_item_count, "Item")}…" } %>

@@ -2,7 +2,8 @@
 
 <div
   class="w-full"
-  data-controller="voice-planner"
+  data-controller="voice-planner project-name"
+  data-action="submit->project-name#waitForSave:capture turbo:submit-end->project-name#submitted"
   data-voice-planner-voice-session-url-value="<%= voice_session_project_planner_session_path(@project, @planner_session) %>"
   data-voice-planner-voice-instructions-url-value="<%= voice_instructions_project_planner_session_path(@project, @planner_session) %>"
   data-voice-planner-select-answer-url-value="<%= select_answer_project_planner_session_path(@project, @planner_session) %>"
