@@ -26,7 +26,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     page.current_window.resize_to(390, 844)
     capture_setup("new-390")
     find("summary", text: "Something Else").click
-    fill_in "Describe it in a sentence", with: "Organize a cleanup."
+    fill_in "Describe it and the Planner will take it from there", with: "Organize a cleanup."
     assert_button "Start"
     find("summary", text: "Something Else").click
     page.current_window.resize_to(1440, 1000)

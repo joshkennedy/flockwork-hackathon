@@ -36,20 +36,22 @@
           <% end %>
           <details class="project-kind-other" <%= "open" if @custom_planning || @description_error %>>
             <summary class="project-kind-row"><%= icon(:plus, size: 20, class: "text-ink-2") %><span>Something Else</span></summary>
-            <%= form_with url: start_planner_projects_path, method: :post, class: "space-y-3 py-3" do |form| %>
+            <%= form_with url: start_planner_projects_path, method: :post, class: "project-kind-other-form" do |form| %>
               <%= form.hidden_field :planning_kind, value: "other" %>
               <% description_error_id = form.field_id(:description, :error) if @description_error %>
-              <%= form.label :description, "Describe it in a sentence", class: "block text-label font-medium text-ink" %>
-              <%= form.text_field :description, name: "planner_session[description]", value: params.dig(:planner_session, :description), required: true, maxlength: 280, class: "block w-full field", placeholder: "Organize a spring cleanup.",
-                aria: { invalid: @description_error.present?, describedby: description_error_id } %>
+              <%= form.label :description, "Describe it and the Planner will take it from there", class: "block text-label font-medium text-ink" %>
+              <div class="mt-2 flex flex-col gap-2 sm:flex-row">
+                <%= form.text_field :description, name: "planner_session[description]", value: params.dig(:planner_session, :description), required: true, maxlength: 280, class: "block min-w-0 flex-1 field", placeholder: "Organize a spring cleanup.",
+                  aria: { invalid: @description_error.present?, describedby: description_error_id } %>
+                <%= form.submit "Start", class: "btn btn-primary", data: { turbo_submits_with: "Creating Project…" } %>
+              </div>
               <% if @description_error %>
-                <p id="<%= description_error_id %>" role="alert" class="text-meta text-danger"><%= @description_error %></p>
+                <p id="<%= description_error_id %>" role="alert" class="mt-2 text-meta text-danger"><%= @description_error %></p>
               <% end %>
-              <%= form.submit "Start", class: "btn btn-primary", data: { turbo_submits_with: "Creating Project…" } %>
             <% end %>
           </details>
         </div>
-        <%= link_to "Or set it up yourself", new_project_path(manual: true), class: "mt-5 inline-flex min-h-11 items-center link text-meta text-ink-2" %>
+        <%= link_to "Skip the Planner and build it yourself", new_project_path(manual: true), class: "mt-5 inline-flex min-h-11 items-center link text-meta text-ink-2" %>
       <% end %>
     </div>
   <% end %>

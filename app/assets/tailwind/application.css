@@ -441,6 +441,8 @@
   .project-kind-other[open] > .project-kind-row::after { transform: rotate(45deg); }
   .project-kind-row:hover { @apply bg-ghost-fill; }
   .project-kind-other > summary { list-style: none; }
+  /* Indented to the row text (16px padding + 20px icon + 12px gap) so the input reads as part of Something Else. */
+  .project-kind-other-form { @apply px-4 pb-4 sm:ps-12; }
   .project-kind-other > summary::-webkit-details-marker { display: none; }
   @media (min-width: 640px) {
     .setup-step-body { margin-left: 36px; }
