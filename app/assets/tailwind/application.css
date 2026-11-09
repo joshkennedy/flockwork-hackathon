@@ -481,7 +481,9 @@
     .voice-planner-panel > :not(.voice-captions) { flex-shrink: 0; }
     /* The latest line is the one being spoken, so the captions scroll from the bottom and the orb gives up height first. */
     .voice-planner-panel .voice-captions { min-height: 72px; overflow-y: auto; align-content: end; margin-top: auto; }
-    .voice-planner-panel .voice-orb { width: calc(72px / .26); height: calc(72px / .26); }
+    /* 200px keeps the rings inside a phone column; the margin leaves room for the outer ring's 1.35x swell at full level. */
+    .voice-planner-panel .voice-orb { width: 200px; height: 200px; margin-block: 36px; }
+    .voice-planner-panel .voice-orb-core { width: 36%; height: 36%; }
     .meal-builder .voice-planner-launch { width: 100%; min-height: 64px; }
     .meal-builder .voice-planner-end { width: 100%; min-height: 56px; }
   }
