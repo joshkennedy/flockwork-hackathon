@@ -6,6 +6,8 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
     window.__voiceScripts = []
     window.__voiceSessionUpdates = 0
     window.__voiceRespondedUpdates = []
+    window.__wakeLockRequests = []
+    window.__wakeLockReleases = 0
     window.__NativeWebSocket = window.WebSocket
 
     class FakeWebSocket {
@@ -89,6 +91,18 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
       configurable: true,
       value: {
         getUserMedia: async () => ({ getTracks: () => [ { stop() {} } ] })
+      }
+    })
+    Object.defineProperty(navigator, "wakeLock", {
+      configurable: true,
+      value: {
+        request: async (type) => {
+          window.__wakeLockRequests.push(type)
+          return {
+            released: false,
+            release: async () => { window.__wakeLockReleases += 1 }
+          }
+        }
       }
     })
   JS
@@ -208,6 +222,7 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
 
     click_on "Talk It Through"
 
+    assert_equal [ "screen" ], page.evaluate_script("window.__wakeLockRequests")
     assert_no_selector "[data-voice-planner-target='questionnaire']", visible: true
     assert_selector ".voice-orb", visible: true
     assert_text "Got it, adding that to your plan.", wait: 5
@@ -228,6 +243,7 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
 
     click_on "End Conversation"
 
+    assert_equal 1, page.evaluate_script("window.__wakeLockReleases")
     assert_selector "[data-voice-planner-target='questionnaire']", visible: true
     assert_text "Who should the work serve?"
   end

@@ -42,11 +42,13 @@ export default class extends Controller {
     this.lastCardKey = this.cardKey()
     this.updateLaunchers()
 
+    document.addEventListener("visibilitychange", this.visibilityChanged)
     this.cardObserver = new MutationObserver(() => this.plannerChanged())
     this.cardObserver.observe(this.element, { childList: true, subtree: true })
   }
 
   disconnect() {
+    document.removeEventListener("visibilitychange", this.visibilityChanged)
     this.cardObserver?.disconnect()
     this.stopConversation()
   }
@@ -85,6 +87,7 @@ export default class extends Controller {
 
     this.clearError()
     this.active = true
+    this.requestWakeLock()
     this.intentionalClose = false
     this.answerInFlight = false
     this.continueInFlight = false
@@ -526,10 +529,33 @@ export default class extends Controller {
     if (nextFrame && currentFrame.isConnected) currentFrame.replaceWith(nextFrame)
   }
 
+  requestWakeLock = () => {
+    if (!this.active || document.visibilityState !== "visible" || this.wakeLock && !this.wakeLock.released) return
+
+    navigator.wakeLock?.request("screen").then((wakeLock) => {
+      if (this.active) {
+        this.wakeLock = wakeLock
+      } else {
+        wakeLock.release().catch(() => {})
+      }
+    }).catch(() => {})
+  }
+
+  releaseWakeLock() {
+    const wakeLock = this.wakeLock
+    this.wakeLock = null
+    wakeLock?.release().catch(() => {})
+  }
+
+  visibilityChanged = () => {
+    if (document.visibilityState === "visible" && this.active) this.requestWakeLock()
+  }
+
   stopConversation() {
-    if (!this.active && !this.socket && !this.stream && !this.audioContext) return
+    if (!this.active && !this.socket && !this.stream && !this.audioContext && !this.wakeLock) return
 
     this.active = false
+    this.releaseWakeLock()
     this.closing = false
     this.responseActive = false
     this.responseDraining = false
