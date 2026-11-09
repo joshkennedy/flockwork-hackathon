@@ -522,8 +522,8 @@
     .meal-pulse-dot,
     .meal-answer-tile[aria-pressed="true"]:disabled .meal-answer-radio,
     .meal-answer-tile[aria-pressed="true"][aria-disabled="true"] .meal-answer-radio { animation: meal-shimmer 1.6s ease-in-out infinite; }
-    .voice-orb:not(.has-level):not(.is-thinking) .voice-orb-ring-outer,
-    .voice-orb.is-thinking .voice-orb-ring { animation: meal-shimmer 1.6s ease-in-out infinite; }
+    /* The loop runs on the core: meal-shimmer sets opacity, which would overwrite the rings' level-driven bands. */
+    .voice-orb:not(.has-level) .voice-orb-core { animation: meal-shimmer 1.6s ease-in-out infinite; }
   }
   .planner-column-row { @apply grid items-end gap-3 rounded-nav bg-ghost-fill p-3 sm:grid-cols-[minmax(0,1fr)_10rem_auto]; }
   .planner-column-remove:disabled { visibility: hidden; }
@@ -621,8 +621,8 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   .meal-skeleton, .meal-pulse-dot, .meal-answer-tile[aria-pressed="true"]:disabled .meal-answer-radio,
-  .meal-answer-tile[aria-pressed="true"][aria-disabled="true"] .meal-answer-radio { animation: none !important; }
-  .voice-orb-ring { transition: none !important; }
+  .meal-answer-tile[aria-pressed="true"][aria-disabled="true"] .meal-answer-radio, .voice-orb-core { animation: none !important; }
+  .voice-orb-ring, .voice-orb-core { transition: none !important; transform: translate(-50%, -50%) !important; }
   .btn:active, .answer-tile:active { transform: none; }
   :is(a, button, summary):hover .avatar-person { transform: none; }
 }
