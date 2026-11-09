@@ -486,7 +486,15 @@
     .meal-setup-actions { position: static; }
     .meal-setup-preview { margin-top: 0; }
   }
-  .meal-builder-header { @apply flex items-start justify-between gap-5 border-b border-hairline pb-6; }
+  .meal-builder-header { @apply min-w-0; }
+  .meal-builder .setup-step-title { @apply text-body font-normal text-ink-2; }
+  .meal-builder .setup-step[data-step-state="open"] .setup-step-title { @apply font-medium text-ink; }
+  .meal-builder .setup-step[data-step-state="done"] .setup-step-number { @apply bg-frame text-ink-2; }
+  .meal-builder .meal-answer-tile { font-weight: 450; }
+  .meal-builder .voice-planner-launch { @apply gap-3 border-0 bg-ghost-fill text-ink-2 shadow-none; }
+  .meal-builder .voice-planner-launch:hover { @apply bg-frame text-ink; }
+  .meal-builder .meal-preview-heading h2 { @apply text-body font-medium text-ink-2; }
+  .meal-builder .meal-preview-empty { @apply border-0 bg-transparent px-0 py-3 text-meta text-ink-2; }
   .meal-slot-editor > summary { list-style: none; }
   .meal-slot-editor > summary::-webkit-details-marker { display: none; }
   .meal-builder-organization { @apply mt-7 grid min-w-0 gap-7; }
@@ -500,7 +508,7 @@
     [data-voice-active="true"] .voice-planner-panel { display: flex; flex-direction: column; align-items: center; gap: 8px; height: max(580px, calc(100dvh - 177px - max(4px, env(safe-area-inset-bottom)))); padding-bottom: 0; }
     body:has([data-voice-active="true"] .meal-builder) nav[aria-label="Breadcrumbs"] { display: none !important; }
     [data-voice-active="true"] .meal-builder-header { padding-bottom: 8px; }
-    [data-voice-active="true"] #meal-project-heading { font-family: var(--font-sans); font-size: 15px; line-height: 20px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    [data-voice-active="true"] #meal-project-heading { @apply not-sr-only; font-family: var(--font-sans); font-size: 15px; line-height: 20px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     [data-voice-active="true"] .meal-builder-organization { margin-top: 12px; }
     .voice-planner-panel > :not(.voice-captions) { flex-shrink: 0; }
     /* The latest line is the one being spoken, so the captions scroll from the bottom and the orb gives up height first. */
@@ -545,7 +553,7 @@
   .meal-own-answer > summary::-webkit-details-marker { display: none; }
   .meal-own-answer > summary[aria-disabled="true"] { @apply cursor-wait text-ink-2 shadow-none; transform: none; }
   .meal-own-answer-form { @apply mt-3 ps-11; }
-  .meal-preview { @apply min-w-0 border-t border-hairline pt-7; }
+  .meal-preview { @apply min-w-0; }
   .meal-preview-heading { @apply flex items-start justify-between gap-4; }
   .meal-preview-view-all { @apply min-h-11 items-center; display: inline-flex; }
   .meal-preview-list { @apply overflow-hidden rounded-tile border border-dashed border-ghost-border bg-ghost-fill; }
@@ -636,8 +644,6 @@
     .list-table .list-row-actions { @apply -ml-3! justify-start!; }
     .list-table .list-comment-row > td { @apply px-0! pb-2!; }
     .list-table > thead th { @apply border-0! px-0!; }
-    .meal-builder-header { @apply items-start; }
-
     .meal-builder-guide .btn-primary { width: 100%; }
     .meal-slot { @apply px-3; }
     .meal-slot-summary { @apply items-center; }
@@ -646,7 +652,6 @@
 
   @media (width >= 1024px) {
     .meal-builder-organization { grid-template-columns: 340px minmax(0, 1fr); gap: 48px; }
-    .meal-preview { @apply border-t-0 border-l pl-10 pt-0; }
     .meal-preview-view-all { display: none; }
     .meal-mobile-update { display: none; }
     .voice-orb { width: 200px; height: 200px; }

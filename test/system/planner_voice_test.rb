@@ -165,7 +165,7 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
     JS
     click_on "Talk It Through"
 
-    assert_text "Voice sends your audio to xAI. Describe the work without names or private care details."
+    assert_no_text "Voice sends your audio to xAI. Describe the work without names or private care details."
     assert_text "How should the Team prepare?"
     assert_text "You: We'll cook together"
     assert_text "What should happen after cooking?", wait: 5
@@ -230,6 +230,7 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
     assert_no_selector ".search-trigger", visible: true
     assert_in_delta 72, page.evaluate_script("parseFloat(getComputedStyle(document.querySelector('.voice-orb-core')).width)"), 0.1
     assert_no_selector ".meal-builder-header .meal-setup-name, .meal-builder-exits", visible: true
+    assert_selector "#meal-project-heading", text: "Workday", visible: true
     assert_selector ".voice-captions", text: "Planner"
     assert_selector ".voice-planner-end.btn-primary", text: "End Conversation"
     assert_text "Got it, adding that to your plan.", wait: 5

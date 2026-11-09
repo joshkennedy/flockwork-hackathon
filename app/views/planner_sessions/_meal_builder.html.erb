@@ -145,8 +145,8 @@
 
           <div hidden data-voice-planner-target="launcher" class="mt-4">
             <button type="button" class="voice-planner-launch" data-action="voice-planner#start" data-voice-planner-target="startButton">
-              <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-sunlit"><%= icon(:mic, size: 20, class: "text-ink") %></span>
-              <span><span class="block font-semibold">Talk It Through</span><span class="block text-meta font-normal text-ink-2">Hands-free, one question at a time</span></span>
+              <%= icon(:mic, size: 20, class: "shrink-0") %>
+              <span><span class="block font-medium">Talk It Through</span><span class="block text-meta font-normal text-ink-2">Hands-free, one question at a time</span></span>
             </button>
           </div>
 
@@ -259,7 +259,7 @@
 
         <% unless planner_session.accepted? %>
           <%# The quiet exits share one row; an open Back takes the full width so its answers read below. %>
-          <div class="meal-builder-exits mt-6 flex-wrap items-start gap-x-4 border-t border-hairline pt-3">
+          <div class="meal-builder-exits mt-3 flex-wrap items-start gap-x-4">
             <% if planner_session.asking? && (planner_session.pending_answer&.fetch("step_index", 0) || planner_session.steps.length).positive? %>
               <details class="open:basis-full">
                 <%= disclosure_summary "Back to Earlier Choices", class: "-ms-2 btn btn-text" %>
