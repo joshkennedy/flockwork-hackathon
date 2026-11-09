@@ -80,9 +80,6 @@
         <% if planner_session.reviewing? %>
           <p class="text-meta text-ink-2">Ready to finish</p>
           <h2 id="meal-guide-heading" class="mt-2 text-lg font-semibold text-ink"><%= general_planner ? "Here’s what will be added" : "Here’s your meal train" %></h2>
-          <p class="mt-3 text-ink-2"><%=
-            general_planner ? pluralize(planner_session.pending_item_count, "item") + " will be added to the Project." : pluralize(planner_session.pending_item_count, "meal slot") + " will be added to the Sign-up sheet."
-          %></p>
           <%= render "planner_sessions/meal_answers", project:, planner_session: %>
 
           <% if needs_start_date %>
@@ -115,8 +112,11 @@
                 general_planner ? "Restore a removed item before adding." : "Restore a removed meal before adding."
               elsif visible_items.any? { |item| item["conflict"].present? }
                 "Resolve the highlighted change before adding."
-              elsif needs_start_date
-                general_planner ? "Set the start date above to add these items." : "Set the first meal date above to add these slots."
+              elsif needs_start_date && visible_items.all? { |item|
+                errors = pending_errors.fetch(item.fetch("id"), [])
+                errors.empty? || (item.key?("day_offset") && (errors - [ "Date can't be blank", "Choose a Project start date or a due date" ]).empty?)
+              }
+                "Choose a start date to add this plan."
               elsif general_planner
                 safe_join(planner_acceptance_blockers(visible_items, pending_errors).map { |blocker|
                   link_to(blocker.fetch(:text), "##{blocker.fetch(:id)}", class: "link", data: { turbo: false })
@@ -210,7 +210,9 @@
           <% end %>
 
           <div class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
-            <%= button_to "Continue", continue_planning_project_planner_session_path(project, planner_session), params: { expected_revision: planner_session.generation_revision }, class: "btn btn-primary", disabled: !planner_session.ready_to_continue?, data: { turbo_submits_with: "Continuing…" } %>
+            <% if planner_session.generation_busy? || pending_answer.present? %>
+              <%= button_to planner_session.generation_busy? ? "Drafting…" : "Continue", continue_planning_project_planner_session_path(project, planner_session), params: { expected_revision: planner_session.generation_revision }, class: class_names("btn btn-primary", "meal-continue-drafting": planner_session.generation_busy?), disabled: !planner_session.ready_to_continue?, data: { turbo_submits_with: "Continuing…" } %>
+            <% end %>
             <% if visible_items.any? && !planner_session.generation_busy? %>
               <%= button_to "Finish with This", finish_planning_project_planner_session_path(project, planner_session), params: { expected_revision: planner_session.generation_revision }, class: "btn btn-text" %>
             <% end %>
@@ -227,7 +229,6 @@
           </div>
 
           <section hidden data-voice-planner-target="panel" class="voice-planner-panel" aria-label="Voice planning">
-            <p class="text-meta text-ink-2">Question <%= current_step %> of <%= PlannerSession::MAX_GENERATED_QUESTIONS %></p>
             <div class="voice-orb" data-voice-planner-target="orb" aria-hidden="true">
               <span class="voice-orb-ring voice-orb-ring-outer"></span>
               <span class="voice-orb-ring voice-orb-ring-middle"></span>
@@ -235,8 +236,9 @@
               <span class="voice-orb-core"></span>
             </div>
             <p class="voice-orb-status" data-voice-planner-target="status" aria-live="polite">Listening…</p>
+            <p class="text-meta text-ink-2">Question <%= current_step %> of <%= PlannerSession::MAX_GENERATED_QUESTIONS %></p>
             <div class="voice-captions" aria-live="polite">
-              <p class="text-sm leading-[21px] text-ink-2"><span class="block text-meta">You</span> <span data-voice-planner-target="userCaption">Listening…</span></p>
+              <p class="text-base leading-6 text-ink-2"><span class="block text-meta">You</span> <span data-voice-planner-target="userCaption">Listening…</span></p>
               <p class="text-xl leading-7 text-ink"><span class="block text-meta text-ink-2">Planner</span> <span data-voice-planner-target="assistantCaption">Waiting to speak…</span></p>
             </div>
             <% if voice_phase == "choose" && recently_added_items.any? %>

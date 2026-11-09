@@ -226,6 +226,9 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
     assert_equal [ "screen" ], page.evaluate_script("window.__wakeLockRequests")
     assert_no_selector "[data-voice-planner-target='questionnaire']", visible: true
     assert_selector ".voice-orb", visible: true
+    assert_no_selector "nav[aria-label='Breadcrumbs']", visible: true
+    assert_no_selector ".search-trigger", visible: true
+    assert_in_delta 72, page.evaluate_script("parseFloat(getComputedStyle(document.querySelector('.voice-orb-core')).width)"), 0.1
     assert_no_selector ".meal-builder-rename, .meal-builder-exits, .meal-builder-guide > .privacy-line", visible: true
     assert_selector ".voice-captions", text: "Planner"
     assert_selector ".voice-planner-end.btn-primary", text: "End Conversation"
@@ -248,6 +251,8 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
     click_on "End Conversation"
 
     assert_equal 1, page.evaluate_script("window.__wakeLockReleases")
+    assert_selector "nav[aria-label='Breadcrumbs']", visible: true
+    assert_selector ".search-trigger", visible: true
     assert_selector "[data-voice-planner-target='questionnaire']", visible: true
     assert_text "Who should the work serve?"
     assert_selector ".meal-builder-rename, .meal-builder-exits, .meal-builder-guide > .privacy-line", count: 3, visible: true

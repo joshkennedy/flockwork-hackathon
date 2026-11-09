@@ -120,6 +120,30 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_equal "What should the plan include?", planner_session.reload.current_card.fetch("question")
   end
 
+  test "Continue appears while drafting and becomes ready after the answer is prepared" do
+    use_provider(
+      response(card: card("What should this day accomplish?")),
+      response(card: card("Who is helping?"), added: all_provider_items)
+    )
+    sign_in_as_leader
+    project, planner_session = start_and_generate("workday")
+
+    get project_planner_session_path(project, planner_session)
+    assert_select "button", text: "Continue", count: 0
+    assert_select ".meal-builder-status", text: "Choose an answer to continue."
+
+    post select_answer_project_planner_session_path(project, planner_session), params: {
+      answer: "Repair the playground", expected_revision: planner_session.generation_revision
+    }
+    get project_planner_session_path(project, planner_session)
+    assert_select "button.meal-continue-drafting[disabled]", text: "Drafting…"
+
+    perform_enqueued_jobs(only: PlannerStepJob)
+    get project_planner_session_path(project, planner_session)
+    assert_select "button.btn-primary:not([disabled])", text: "Continue"
+    assert_select "button", text: "Finish with This"
+  end
+
   test "a full snapshot previews and atomically accepts every provider item kind with explicit dates" do
     use_provider(
       response(card: card("What should this day accomplish?")),
@@ -310,7 +334,24 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_select "input##{field_id}.field-error, input##{field_id}[aria-invalid]", count: 0
     assert_select "p##{note_id} a", count: 0
     assert_select "p##{note_id}",
-      text: "Set the start date above to add these items."
+      text: "Choose a start date to add this plan."
+  end
+
+  test "review keeps other blockers visible when a start date is also missing" do
+    sign_in_as_leader
+    project, planner_session = build_reviewing_session(
+      planning_kind: "workday",
+      items: [
+        item("task", "task-1", title: "Confirm crew", details: "", due_in_days: -1),
+        item("booking", "booking-1", description: "Book venue", estimated_dollars: nil)
+      ]
+    )
+    note_id = ActionView::RecordIdentifier.dom_id(planner_session, :add_note)
+
+    get project_planner_session_path(project, planner_session)
+
+    assert_select "p##{note_id} a", text: "1 budget line needs an estimated cost"
+    assert_select "p##{note_id}", text: "Choose a start date to add this plan.", count: 0
   end
 
   test "setting the first Project start date preserves explicit item dates and a cleared due date" do

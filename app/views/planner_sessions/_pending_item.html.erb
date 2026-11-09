@@ -4,7 +4,7 @@
 <article id="pending-item-<%= item.fetch("id") %>" data-controller="comment-thread" class="meal-slot planner-pending-row <%= "meal-slot-conflict" if item["conflict"].present? %>">
   <div class="meal-slot-summary">
     <div class="min-w-0 flex-1">
-      <p class="font-semibold text-ink">
+      <p class="planner-pending-title font-semibold text-ink">
         <%= planner_pending_summary(item) %>
         <% if errors.any? %>
           <span class="badge-need ml-2"><%= errors.include?("Estimated cost is required") ? "Needs an estimate" : "Needs details" %></span>
@@ -13,7 +13,7 @@
       <%= render "planner_sessions/pending_item_meta", item:, planner_session: %>
     </div>
     <% unless planner_session.generation_busy? %>
-      <details class="actions-menu absolute right-0 top-0">
+      <details class="actions-menu planner-pending-actions absolute right-0">
         <summary class="btn btn-icon" aria-label="Item actions"><%= icon(:more) %></summary>
         <div class="actions-menu-panel popover-in">
           <button type="button" data-action="comment-thread#toggle" data-comment-thread-target="trigger" aria-expanded="false" aria-controls="pending-editor-<%= item.fetch("id") %>">Edit</button>

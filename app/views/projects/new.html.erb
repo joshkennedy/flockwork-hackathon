@@ -26,11 +26,10 @@
       <%= render "planner_sessions/privacy" %>
     </section>
   <% else %>
-    <section class="mt-7" aria-labelledby="project-kind-heading">
-      <div class="grid grid-cols-1 items-center gap-x-5 sm:grid-cols-[1fr_auto]">
+    <section class="project-kind-section mt-7" aria-labelledby="project-kind-heading">
+      <div class="project-kind-intro">
         <h2 id="project-kind-heading" class="text-ink">What are you organizing?</h2>
         <p class="mt-2 text-ink-2 sm:col-span-2 sm:row-start-2">Pick one and the Planner will ask a few questions and draft the plan with you.</p>
-        <%= link_to "Build It Myself", new_project_path(manual: true), class: "btn btn-text mt-2 justify-self-start sm:col-start-2 sm:row-start-1 sm:mt-0 sm:justify-self-end", title: "Set up the Project and its Tools yourself, with the same fields." %>
       </div>
       <div class="project-kind-grid mt-5">
         <% [
@@ -42,10 +41,10 @@
           [ "Something Else", "Describe it in one sentence and we'll shape it.", :plus, "text-ink-2", new_project_path, :get, { planning_kind: "other" }, [] ]
         ].each do |title, description, glyph, color, path, method, parameters, tools| %>
           <%= button_to path, method:, params: parameters, class: class_names("project-kind-tile", "project-kind-ghost": tools.empty?), data: ({ turbo_submits_with: "Creating Project…" } unless method == :get) do %>
-            <span class="flex items-center gap-2 text-heading text-ink"><%= icon(glyph, size: 24, class: color) %><%= title %></span>
+            <span class="project-kind-title flex items-center gap-2 text-ink"><%= icon(glyph, size: 24, class: color) %><%= title %></span>
             <span class="mt-1 block text-meta text-ink-2"><%= description %></span>
             <% if tools.any? %>
-              <span class="mt-2 block text-meta text-ink-3"><%= {
+              <span class="mt-2 block text-meta text-ink-2"><%= {
                 "Meal Train" => "Like two weeks of dinners after a new baby",
                 "Retreat" => "Like a weekend away for 40 at a camp",
                 "Workday" => "Like a Saturday fixing up the playground",
@@ -63,6 +62,7 @@
         <% end %>
       </div>
 
+      <%= link_to "Build It Myself", new_project_path(manual: true), class: "project-kind-manual btn btn-secondary btn-sm", title: "Set up the Project and its Tools yourself, with the same fields." %>
     </section>
   <% end %>
 </div>
