@@ -7,6 +7,7 @@
   --color-page: #FAFAF8;
   --color-panel: #FFFFFF;
   --color-border: #E6E4E0;
+  --color-control-border: #939089;
   --color-border-strong: #B0ADA7;
   --color-hairline: #EFEEEB;
   --color-ink: #141413;
@@ -118,6 +119,7 @@
   --color-page: #191918;
   --color-panel: #1D1D1B;
   --color-border: #2E2D2A;
+  --color-control-border: #6B6964;
   --color-border-strong: #6B6964;
   --color-hairline: #262523;
   --color-ink: #F2F1ED;
@@ -382,7 +384,7 @@
   .switch:checked { background: var(--color-ink); box-shadow: none; }
   .switch:checked::before { background: var(--color-panel); transform: translateX(20px); }
   .switch:focus-visible { outline: 2px solid var(--color-ink); outline-offset: 3px; }
-  .field { @apply min-h-input-h-phone min-w-0 rounded-control border border-border bg-panel px-3 py-2 text-body-phone text-ink sm:min-h-input-h sm:py-1.5 sm:text-body; }
+  .field { @apply min-h-input-h-phone min-w-0 rounded-control border border-control-border bg-panel px-3 py-2 text-body-phone text-ink sm:min-h-input-h sm:py-1.5 sm:text-body; }
   .field-error, [aria-invalid="true"] .field { border-color: var(--color-danger); }
   :is(textarea, trix-editor).field { min-height: 112px; }
   .nav-item { @apply flex min-h-control-h items-center gap-3 rounded-nav px-3 py-1.5 text-meta text-ink-2; transition: background-color var(--duration-hover), color var(--duration-hover); }
@@ -433,7 +435,7 @@
   .meal-setup { @apply w-full; max-width: 880px; margin-inline: auto; }
   .meal-setup-toolbar { @apply flex flex-wrap items-center justify-between gap-3; }
   .meal-setup-identity { @apply mt-4; }
-  .meal-setup-name { @apply w-full min-w-0 rounded-control border border-border bg-panel px-4 py-3 text-ink; font-family: var(--font-display); font-size: 24px; line-height: 36px; transition: border-color var(--duration-hover), background-color var(--duration-hover); }
+  .meal-setup-name { @apply w-full min-w-0 rounded-control border border-control-border bg-panel px-4 py-3 text-ink; font-family: var(--font-display); font-size: 24px; line-height: 36px; transition: border-color var(--duration-hover), background-color var(--duration-hover); }
   .meal-setup-name:hover { @apply border-border-strong bg-ghost-fill; }
   .meal-setup-name:focus { @apply border-ink bg-panel; }
   .meal-setup-layout { @apply mt-7 min-w-0; }

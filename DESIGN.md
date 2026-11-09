@@ -7,6 +7,7 @@ colors:
   page: "#FAFAF8"
   panel: "#FFFFFF"
   border: "#E6E4E0"
+  control-border: "#939089"
   border-strong: "#B0ADA7"
   hairline: "#EFEEEB"
   ink: "#141413"
@@ -129,7 +130,7 @@ components:
     textColor: "{colors.danger}"
   input:
     backgroundColor: "{colors.panel}"
-    borderColor: "{colors.border}"
+    borderColor: "{colors.control-border}"
     rounded: "{rounded.control}"
     height: "{spacing.input-h}"
   tile-raised:
@@ -183,9 +184,13 @@ components:
 
 ## Colors
 
-**Strategy:** Restrained. Ink carries text and the one primary action per view. Sunlit appears only as a fill (`sunlit-soft` behind "1 spot left" and team notes) or as an icon (the kept check), never as text on white. Danger is for destructive text actions only. Tool colors appear only on 14–16px Tool icons, the way Linear colors status icons.
+**Strategy:** Restrained. Ink carries text and the one primary action per view. Sunlit appears only as a fill (`sunlit-soft` behind "1 spot left" and team notes) or as an icon (the kept check), never as text on white. Danger is for destructive text actions only. Tool colors appear only on Tool icons, the way Linear colors status icons.
 **Light or dark:** Both, chosen per device on Profile (Light, Dark, Match device; kept in an `appearance` cookie, default follows the OS). Dark sets `data-dark` on `<html>` and swaps every token for warm near-blacks: frame #141413, page #191918, panel #1D1D1B, border #2E2D2A, ink #F2F1ED, ink-2 #AAA8A2, sunlit-soft #3A2D0E. Ink stays the primary action, so primary buttons turn light with dark text. Shadows deepen and gain a faint top highlight so raised tiles still read as raised. The default mark brightens to sunlit in dark; a church's own color is set inline and stays as picked. Disabled buttons sit on `nav-active` in dark, since `frame` is darker than `panel` there. Both layouts set `theme-color` (frame in light, #141413 in dark) so phone browser bars match.
 Contrast (measured in the preview): `ink-2` on `panel` 6.49:1, `ink-2` on `frame` 5.80:1. `ink-3` is only for non-essential hints (keyboard numbers, breadcrumb separators), never body text.
+
+| Token | Light | Dark | Purpose |
+| --- | --- | --- | --- |
+| `control-border` | `#939089` | `#6B6964` | Input and control boundaries, 3:1 on panel |
 
 **Mark (Formation):** three round-capped chevrons flying in a V on a 24-unit grid; the lead bird is 1.15x the size of the two `ink` followers (stroke 2.8, lead 3.22). The lead is `mark` (#D69000, a deeper sunlit: plain sunlit is only 1.8:1 on `page` and disappears); on dark it goes back to bright `sunlit`. The lockup is `layouts/_wordmark`, an inline SVG set 15px tall beside the wordmark with an 8px gap so its strokes match Mattone Bold; the lead reads `--color-mark`, which each layout sets on `<body>` from the church's `mark_color`. An Admin picks it on Settings from seven presets (Deep sunlit, Copper, Clay, Berry, Teal, Forest, Cobalt) or a custom hex. The mark color only recolors the mark: in-app `sunlit` keeps its meaning for open needs and the kept check. The favicon is served by `IconsController` at `/icon.svg?c=<hex>` (followers white in dark browser chrome; the default lead also brightens to sunlit there). `public/icon.png` is the app icon: the mark on a full-bleed `page` tile, so iOS never fills the corners black. Never add a fourth bird or set the mark without its colored lead.
 
@@ -223,7 +228,7 @@ Badges 4px, buttons and inputs 6px, nav items 8px, tiles 10px, panels and popove
 - **Meal setup:** one All Details form with a single large editable Project-name field, then Meal and Schedule groups. The name field replaces the displayed title and duplicate name input; it is the sole interactive exception to the Mattone display rule. Omit the subtitle and repeated meal label. Use the existing `page` tone behind the Sign-up sheet; date, meal and row action share fixed columns. Ellipses open floating edit popovers with Remove at the leading edge and Cancel/primary Save at the trailing edge. Popovers stay within the viewport and preserve row heights. Structured values produce dated slots without AI. Fields save automatically, with save status at the top right opposite a visible Back to Project button. Clearing the name saves a quiet draft and keeps the meal preview visible; a name is required before Add. Keep Add below the form, sticky during long-sheet review, with explicit editing-state feedback. Back to Project and other navigation flush pending saves. Failed saves keep typed input visible and offer Retry Saving. Retain removal/Undo, conflict resolution and atomic acceptance. Do not show question cards, Continue, Finish with This, Save and Leave or the Planner privacy paragraph.
 - **General Planner choices:** answer tiles retain their raised treatment and show an unmistakable selected radio and ink border. A typed answer is the selected answer too: it shows as "Your answer" above the choices, and Continue advances after the same preparation. Selecting an answer prepares the visible preview; Continue only advances after that preparation completes. While the Planner works, the preview shows dashed skeleton rows with the text "Building the Sign-up sheet…", and each complete item appears as its own row as it is generated (rows appear in order and never repeat). The skeleton stays until the step finishes, and Continue is enabled only after the final result replaces the streamed rows. Back, Finish with This, and Save and Leave are quiet actions. The final primary changes to Add to Project in the same organization.
 - **Slot (phone):** claimed Slots are flat rows (date 14/600, "✓ Ruth Bennett" in `ink-2`); open Slots are raised tiles with date, a `badge-need` ("1 spot left") and a full-width primary "I Can Bring Dinner"; after claiming the tile flattens and shows "You're bringing dinner" with the sunlit check.
-- **Inputs:** 36px tall (44px phone), 6px radius, `border`, placeholder in `ink-2`; the dictation mic is an icon button inside the field.
+- **Inputs:** 36px tall (44px phone), 6px radius, `control-border`, placeholder in `ink-2`; the dictation mic is an icon button inside the field.
 - **Button grammar:** every visible button label uses Title Case. Four kinds of action, one look each. The view's next step: ink primary, one per view, in the header or guidance strip. Add to a section: small secondary with a plus, right of the section heading, always "Add …". Do the thing (Volunteer-facing): small secondary worded as the person would say it ("I Can Bring Dinner"). Manage it: a ⋯ icon button opening a menu (Edit, Duplicate, Archive, then Delete last in `danger`). No inline Edit/Delete on rows, no bare-text section actions. List columns follow the same rule: one ⋯ menu per column header.
 - **Disclosure grammar:** native disclosure triangles are hidden. A text disclosure uses a plain-language label plus the house plus mark, which turns into a close mark while open, with a quiet tonal hover. A folded group of rows uses the full-width tonal disclosure bar with its count or status on a second line. Attached action menus use an ellipsis. Actions such as comments use a compact text button with a purpose-built icon and an action label ("Add Comment"), never an unstyled noun. Sections needed to understand the current screen, including Sharing and ownership, stay open rather than becoming disclosures.
 - **Sidebar:** the wordmark, then nav items in this order: Home, Projects, Get involved, People and Oversight (Admin only), then Notifications with its unread count in `ink`. Settings is not in the nav. The current page is `nav-active` with `aria-current="page"`. The church name lives only in the account row at the bottom; someone in several Organizations gets "Switch Church" in the account menu.
