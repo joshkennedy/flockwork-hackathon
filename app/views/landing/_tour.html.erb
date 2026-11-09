@@ -25,7 +25,7 @@
         <% tools.each do |key, title, line, image, tone, alt| %>
           <figure class="lp-tour-screen" data-tour-rail-target="screen" data-screen="<%= key %>" data-tone="<%= tone %>">
             <figcaption><h3><%= title %></h3><p><%= line %></p></figcaption>
-            <%= render "landing/scene", name: image, width: 1100, height: 560, class: "lp-scene", alt: alt %>
+            <%= render "landing/scene", name: image, width: 1100, height: 560, class: "lp-scene lp-float", alt: alt %>
           </figure>
         <% end %>
       </div>

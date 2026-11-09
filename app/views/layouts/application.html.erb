@@ -66,7 +66,7 @@
         <nav aria-label="Main navigation">
           <%= link_to "See the demo", new_demo_session_path %>
           <%= link_to "Sign in", new_sign_in_request_path %>
-          <% if controller_name == "landing" %><%= link_to "Plan Your First Project", sign_up_path, class: "btn btn-primary btn-sm" %><% end %>
+          <% if controller_name == "landing" %><%= link_to "Plan Your First Project", sign_up_path, class: "btn btn-secondary btn-sm" %><% end %>
         </nav>
       </header>
       <% if controller_name == "landing" %>

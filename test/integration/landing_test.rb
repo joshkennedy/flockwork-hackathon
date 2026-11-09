@@ -19,7 +19,10 @@ class LandingTest < ActionDispatch::IntegrationTest
     assert_select ".lp-footer a[href=?]", new_sign_in_request_path, text: "Sign In"
     assert_select ".lp-footer a[href=?]", new_demo_session_path, text: "See the Demo"
     assert_select ".lp-footer .lp-footer-word", "Flockwork"
-    assert_select ".public-header nav a.btn[href=?]", sign_up_path, text: "Plan Your First Project"
+    assert_select ".public-header nav a.btn-secondary[href=?]", sign_up_path, text: "Plan Your First Project"
+    assert_select ".public-header nav a.btn-primary", count: 0
+    get new_sign_in_request_path
+    assert_select ".public-header nav a[href=?]", sign_up_path, count: 0
   end
 
   test "sign up page posts to organizations" do

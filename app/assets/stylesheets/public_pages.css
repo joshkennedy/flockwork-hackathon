@@ -16,7 +16,7 @@
 .public-header a:hover {
   color:var(--color-ink-2)
 }
-.public-header nav .btn:hover { color: var(--color-on-ink); }
+.public-header nav .btn:hover { color: var(--color-ink); }
 .auth-error {
   background:var(--color-danger-soft);
   color:var(--color-danger);
@@ -43,19 +43,22 @@
 
 /* Landing. Layout borrows from product sites that lead with real UI; every color is a DESIGN.md token.
    The page alternates surfaces so it has a beat: warm field, white band, ink band, tinted scroll, photo, plate, wordmark. */
-.marketing { --lp-max: 1160px; --lp-float: 0 24px 48px rgba(20,20,19,.16); }
+.marketing, .lp-footer { --lp-max: 1160px; --lp-float: 0 24px 48px rgba(20,20,19,.16); }
 .marketing .btn { min-height: 40px; padding: 0 18px; font-size: 14px; }
 .marketing h1, .marketing h2 { font-family: var(--font-display); font-weight: 400; letter-spacing: -.01em; text-wrap: balance; }
 .marketing h3 { font-size: 17px; line-height: 24px; font-weight: 600; }
-/* Recorded scenes carry their own colored plate and rounded corners (marketing/animations); the shadow follows the alpha. */
+/* Recorded scenes carry their own colored plate and 16px corners (marketing/animations/flockwork.css); a floating
+   scene gets a box-shadow on the same radius, never a filter, which browsers would re-run on every animated frame. */
 .lp-scene { display: block; }
 .lp-scene img { display: block; width: 100%; height: auto; }
+.lp-float img { border-radius: 16px; box-shadow: var(--lp-float); }
 .lp-section { max-width: var(--lp-max); margin: 0 auto; padding: 140px 24px 0; }
 .lp-intro { max-width: 640px; }
 .lp-intro h2 { font-size: clamp(28px, 3.4vw, 40px); line-height: 1.15; }
 .lp-intro p { margin-top: 14px; font-size: 17px; line-height: 1.6; color: var(--color-ink-2); }
 /* A band runs edge to edge; its inner .lp-section keeps the measure and drops the section's top padding. */
 .lp-band { margin-top: 140px; padding: 120px 0; }
+.lp-band + .lp-band { margin-top: 0; }
 .lp-band > .lp-section { padding-top: 0; }
 
 /* Hero: the wash becomes a warm field that fills the first viewport, and the scene breaks its bottom edge. */
@@ -68,7 +71,7 @@
 .lp-hero h1 { font-size: clamp(44px, 6.6vw, 84px); line-height: 1.02; }
 .lp-hero-copy p { max-width: 34em; margin: 24px auto 32px; font-size: 19px; line-height: 1.6; color: var(--color-ink-2); }
 .lp-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; }
-.lp-hero-scene { display: block; max-width: 1200px; margin: 56px auto 0; filter: drop-shadow(var(--lp-float)); }
+.lp-hero-scene { display: block; max-width: 1200px; margin: 56px auto 0; }
 .lp-hero-scene img { display: block; width: 100%; height: auto; }
 
 /* In-between: a white band with hairlines, so the timeline reads as a chapter rather than a diagram. */
@@ -78,11 +81,13 @@
 
 /* Planner: the one dark chapter. Copy left; the scene breaks the right edge of the viewport on desktop. */
 .lp-planner { position: relative; overflow: hidden; background: var(--color-ink); color: var(--color-on-ink); }
-.lp-planner::before { content: ""; position: absolute; left: -10%; top: -30%; width: 60%; height: 90%; border-radius: 50%; filter: blur(60px); background: radial-gradient(closest-side, rgb(245 176 0 / .22), transparent); pointer-events: none; }
 .lp-planner-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 56px; align-items: center; }
-.lp-planner .lp-intro h2 { color: var(--color-on-ink); font-size: clamp(32px, 4vw, 48px); }
-.lp-planner .lp-intro p { color: color-mix(in srgb, var(--color-on-ink) 78%, transparent); }
-.lp-planner .lp-scene { width: 124%; filter: drop-shadow(var(--lp-float)); }
+.lp-planner .lp-intro h2 { color: inherit; font-size: clamp(32px, 4vw, 48px); }
+.lp-planner .lp-intro p { color: color-mix(in srgb, currentColor 78%, transparent); }
+/* The scene overhangs its column by the page gutter plus 40px, so it runs off the viewport's right edge at any width. */
+.lp-planner .lp-scene { width: calc(100% + max(24px, (100vw - var(--lp-max)) / 2) + 40px); }
+/* In dark mode ink is the page, so the chapter becomes the one light panel instead of a glaring slab. */
+:root[data-dark] .lp-planner { background: var(--color-panel); color: var(--color-ink); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); }
 
 /* Tour: the section tints toward the current scene's plate while the rail tracks it. */
 .lp-tour { --tint: transparent; background: color-mix(in srgb, var(--tint) 12%, var(--color-frame)); transition: background-color 600ms ease-in-out; }
@@ -96,7 +101,6 @@
 .lp-rail-item[aria-current="true"]::before { opacity: 1; transform: none; }
 .lp-rail-item[aria-current="true"] strong { color: var(--color-ink); }
 .lp-tour-screens { display: grid; gap: 40px; }
-.lp-tour-screen .lp-scene { filter: drop-shadow(var(--lp-float)); }
 .lp-tour-screen figcaption { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .lp-tour, .lp-rail-item, .lp-rail-item::before, .lp-rail-item strong { transition: none; }
@@ -118,7 +122,8 @@
 
 /* Why: a statement beside a photograph of the people the work is for. */
 .lp-why { display: grid; grid-template-columns: 1fr 1fr; margin-top: 140px; min-height: 560px; }
-.lp-why-text { display: flex; flex-direction: column; justify-content: center; padding: 72px 64px 72px max(24px, calc((100vw - var(--lp-max)) / 2)); background: var(--color-sunlit-soft); }
+/* The text starts on the page's measure: half the gutter outside --lp-max, plus the section padding. */
+.lp-why-text { display: flex; flex-direction: column; justify-content: center; padding: 72px 64px 72px max(24px, calc((100vw - var(--lp-max)) / 2 + 24px)); background: var(--color-sunlit-soft); }
 .lp-why h2 { font-size: clamp(36px, 4.4vw, 56px); line-height: 1.05; }
 .lp-why .lp-why-ref { margin-top: 10px; font-size: 14px; color: var(--color-ink-2); }
 .lp-why p + p { margin-top: 14px; }
@@ -142,11 +147,11 @@
 .lp-footer-mark { display: block; width: 44px; height: auto; margin-bottom: 16px; }
 .lp-footer-tag { max-width: 26em; margin: 0; font-size: 15px; line-height: 1.55; color: var(--color-ink-2); }
 .lp-footer h2 { margin: 0 0 12px; font-family: inherit; font-size: 13px; font-weight: 600; letter-spacing: 0; }
-.lp-footer-cols a { display: block; margin-bottom: 8px; font-size: 14px; color: var(--color-ink-2); }
+.lp-footer-cols a { display: block; padding: 4px 0; font-size: 14px; color: var(--color-ink-2); }
 .lp-footer-cols a:hover { color: var(--color-ink); }
+.lp-footer-legal { max-width: var(--lp-max); margin: 40px auto 0; font-size: 13px; color: var(--color-ink-2); }
 /* "Flockwork" in Mattone Bold is about 7.9em wide, so 12.3% of the footer's width fills the measure without clipping. */
-.lp-footer-word { position: relative; max-width: var(--lp-max); margin: 56px auto -0.26em; font-family: var(--font-display); font-weight: 700; font-size: min(146px, 12.3cqw); line-height: 1; letter-spacing: -.02em; color: var(--color-ink); white-space: nowrap; }
-.lp-footer-legal { position: absolute; right: 24px; bottom: 18px; font-size: 12px; color: var(--color-ink-3); }
+.lp-footer-word { position: relative; max-width: var(--lp-max); margin: 24px auto -0.26em; font-family: var(--font-display); font-weight: 700; font-size: min(146px, 12.3cqw); line-height: 1; letter-spacing: -.02em; color: var(--color-ink); white-space: nowrap; }
 
 /* In-between timeline. The track is a flow box: the card sets its height, and a label zone sits
    under it. The line runs along the top of the label zone; the gold stretch and the bracket span
@@ -167,10 +172,7 @@
 .lp-track-step::before { content: ""; position: absolute; left: 50%; top: -22px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: var(--color-mark); z-index: 1; }
 .lp-track-card { position: relative; width: min(560px, 100%); margin: 0 auto; padding: 28px; border-radius: 12px; background: var(--color-ink); color: var(--color-on-ink); box-shadow: 0 8px 24px rgba(20,20,19,.12), 0 2px 6px rgba(20,20,19,.06); }
 .lp-track-card::after { content: ""; position: absolute; left: 50%; top: 100%; width: calc((100 - 2 * var(--gold-inset)) * 1cqw); height: var(--bracket-h); transform: translateX(-50%); border: 2px solid var(--color-mark); border-bottom: 0; border-radius: 8px 8px 0 0; }
-/* The badge is the mark on a sunlit square. Sunlit is the same in both themes, so the birds stay dark rather than following ink. */
-.lp-badge { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px; background: var(--color-sunlit); }
-.lp-badge svg { width: 18px; height: auto; }
-.lp-badge path { stroke: #141413; }
+.lp-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; background: var(--color-sunlit); font-size: 12px; font-weight: 600; /* Sunlit is the same in both themes, so the badge text stays dark rather than following ink. */ color: #141413; }
 .lp-track-card h3 { margin-top: 14px; font-size: 24px; line-height: 1.2; }
 .lp-track-card p { margin-top: 8px; font-size: 15px; line-height: 1.55; }
 .lp-track-note { margin-top: 24px; font-size: 14px; color: var(--color-ink-2); text-align: center; }
@@ -191,6 +193,8 @@
   .lp-track-note { text-align: left; }
   .lp-planner-grid { grid-template-columns: 1fr; gap: 40px; }
   .lp-planner .lp-scene { width: 100%; }
+  .lp-why { grid-template-columns: 1fr; min-height: 0; }
+  .lp-why img { order: -1; aspect-ratio: 3 / 2; height: auto; }
 }
 
 @media (max-width: 760px) {
@@ -207,14 +211,14 @@
   .lp-bento { grid-template-columns: 1fr; }
   .lp-card-tall { grid-row: auto; }
   .lp-card-copy { padding: 20px 20px 0; }
-  .lp-why { grid-template-columns: 1fr; margin-top: 80px; min-height: 0; }
-  .lp-why img { order: -1; aspect-ratio: 3 / 2; height: auto; }
+  .lp-why { margin-top: 80px; }
   .lp-why-text { padding: 40px 20px 48px; }
   .lp-close { margin: 80px 16px 0; padding: 64px 20px; }
   .marketing .lp-close .btn { width: 100%; min-height: 48px; font-size: 15px; }
   .lp-footer { padding: 40px 16px 0; }
   .lp-footer-cols { grid-template-columns: 1fr 1fr; gap: 24px; }
   .lp-footer-cols > :first-child { grid-column: 1 / -1; }
-  .lp-footer-word { margin-top: 32px; }
-  .lp-footer-legal { position: static; display: block; padding: 8px 0 12px; }
+  .lp-footer-cols a { padding: 8px 0; }
+  .lp-footer-legal { margin-top: 24px; }
+  .lp-footer-word { margin-top: 16px; }
 }
