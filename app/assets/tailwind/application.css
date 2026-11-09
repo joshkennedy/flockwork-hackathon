@@ -434,8 +434,11 @@
   .setup-step-change[open] { flex-basis: 100%; }
   .setup-step-change > summary { padding-inline: 0; list-style: none; }
   .setup-step-change > summary::-webkit-details-marker { display: none; }
-  .project-kind-list { @apply max-w-lg; }
-  .project-kind-row { @apply flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-control px-3 py-2 text-left font-medium text-ink; transition: background-color var(--duration-hover); }
+  /* The open step's choices sit in one raised card with divided rows and a trailing chevron, so each row reads as a tap target. */
+  .project-kind-list { @apply max-w-lg divide-y divide-hairline overflow-hidden rounded-tile border border-border bg-panel shadow-raised; }
+  .project-kind-row { @apply flex min-h-12 w-full cursor-pointer items-center gap-3 px-4 py-2 text-left font-medium text-ink; transition: background-color var(--duration-hover); }
+  .project-kind-row::after { content: ""; width: 7px; height: 7px; margin-inline-start: auto; border-right: 1.5px solid var(--color-ink-3); border-bottom: 1.5px solid var(--color-ink-3); transform: rotate(-45deg); flex-shrink: 0; }
+  .project-kind-other[open] > .project-kind-row::after { transform: rotate(45deg); }
   .project-kind-row:hover { @apply bg-ghost-fill; }
   .project-kind-other > summary { list-style: none; }
   .project-kind-other > summary::-webkit-details-marker { display: none; }

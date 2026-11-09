@@ -71,8 +71,8 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_select "ol.setup-steps" do
       assert_select "li", count: 3
       assert_select "li[aria-current='step'] h2", text: "What are you organizing?"
-      assert_select "li[data-step-state='upcoming'] h2", text: "Answer a few questions."
-      assert_select "li[data-step-state='upcoming'] h2", text: "Review and add."
+      assert_select "li[data-step-state='upcoming'] h2", text: "Answer a few questions"
+      assert_select "li[data-step-state='upcoming'] h2", text: "Review and add"
     end
     assert_select "details.project-kind-other[open]", count: 0
   end
@@ -147,7 +147,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
 
     get project_planner_session_path(project, planner_session)
     assert_select "ol.setup-steps" do
-      assert_select "li[aria-current='step'] .setup-step-title", text: "Answer a few questions."
+      assert_select "li[aria-current='step'] .setup-step-title", text: "Answer a few questions"
       assert_select "li[data-step-state='done']" do
         assert_select ".setup-step-title", text: "What are you organizing?"
         assert_select ".setup-step-detail", text: "Workday"
@@ -188,7 +188,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_predicate planner_session.reload, :reviewing?
 
     get project_planner_session_path(project, planner_session)
-    assert_select "li[aria-current='step'] .setup-step-title", text: "Review and add."
+    assert_select "li[aria-current='step'] .setup-step-title", text: "Review and add"
     assert_select "li[data-step-state='done']", count: 2
     assert_select "li[data-step-state='done'] .setup-step-detail", text: "1 answer"
     assert_select "li[data-step-state='done'] summary", text: "Change"

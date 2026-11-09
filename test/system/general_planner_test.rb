@@ -33,7 +33,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     click_button "Workday"
     assert_text "What should this workday accomplish?"
     assert_text "Your Project will take shape here"
-    assert_selector "li[aria-current='step']", text: "Answer a few questions."
+    assert_selector "li[aria-current='step']", text: "Answer a few questions"
     capture_setup("builder-asking-1440")
 
     click_button "Repair the playground"
@@ -65,7 +65,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
 
     click_button "Finish with This"
     assert_text "Here’s what will be added"
-    assert_selector "li[aria-current='step']", text: "Review and add."
+    assert_selector "li[aria-current='step']", text: "Review and add"
     assert_selector "li[data-step-state='done']", text: "1 answer"
     capture_setup("builder-reviewing-1440")
     find("summary[aria-label='Change earlier choices']").click
