@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { toast } from "ding"
 
 export default class extends Controller {
   static targets = ["editor", "query", "results"]
@@ -32,7 +33,10 @@ export default class extends Controller {
       const { people } = await response.json()
       this.renderResults(people)
     } catch (error) {
-      if (error.name !== "AbortError") this.renderResults([])
+      if (error.name !== "AbortError") {
+        this.clearResults()
+        toast.error("People search couldn’t load. Try again.")
+      }
     }
   }
 

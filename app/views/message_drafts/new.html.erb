@@ -1,7 +1,7 @@
 <% content_for :title, "Draft a Message" %>
 <h1>Draft a Message</h1>
 <p class="mt-2 text-meta text-ink-2">Review and edit the draft. Nothing is posted until you choose Post Message.</p>
-<% if @error %><p role="alert" class="mt-4 text-meta text-danger"><%= @error %></p><% end %>
+<% if @error %><span hidden data-toast-entry data-toast-kind="alert"><%= @error %></span><% end %>
 <% unless @message.body.present? %>
 <%= form_with url: project_message_draft_path(@project), class: "mt-5 space-y-3", data: { turbo: false } do |form| %>
   <%= form.label :purpose, "Draft type", for: "draft_purpose", class: "text-meta font-semibold" %>

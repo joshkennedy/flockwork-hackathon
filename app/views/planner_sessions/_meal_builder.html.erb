@@ -36,11 +36,11 @@
     "choose"
   end %>
 
-  <%# This frame swaps without the layout, so the alert shows here; delete keeps the layout toast from repeating it. %>
+  <%# This frame swaps without the layout, so its data entry lets the permanent Ding controller consume the alert. %>
   <% alert = flash[:alert] %>
   <% flash.delete(:alert) %>
   <% if alert.present? %>
-    <p role="alert" class="mb-5 rounded-control bg-danger-soft px-4 py-3 text-danger"><%= alert %></p>
+    <span hidden data-toast-entry data-toast-kind="alert"><%= alert %></span>
   <% end %>
 
   <% content_for :wash, "wash-none" %>

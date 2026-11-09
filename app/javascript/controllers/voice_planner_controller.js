@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { toast } from "ding"
 
 const SAMPLE_RATE = 24000
 
@@ -6,7 +7,6 @@ export default class extends Controller {
   static targets = [
     "assistantCaption",
     "cardState",
-    "error",
     "launcher",
     "orb",
     "panel",
@@ -581,13 +581,12 @@ export default class extends Controller {
 
   fail(message) {
     this.stopConversation()
-    this.errorTarget.textContent = message
-    this.errorTarget.hidden = false
+    this.errorToastId = toast.error(message)
   }
 
   clearError() {
-    this.errorTarget.textContent = ""
-    this.errorTarget.hidden = true
+    if (this.errorToastId) toast.dismiss(this.errorToastId)
+    this.errorToastId = null
   }
 
   updateLaunchers() {

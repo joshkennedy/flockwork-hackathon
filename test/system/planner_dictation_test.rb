@@ -37,6 +37,14 @@ class PlannerDictationSystemTest < ApplicationSystemTestCase
     window.SpeechRecognition = FakeSpeechRecognition
   JS
 
+  FAILED_SPEECH_RECOGNITION = <<~JS
+    class FailedSpeechRecognition {
+      start() { window.setTimeout(() => this.onerror?.({ error: "network" }), 10) }
+      stop() { this.onend?.() }
+    }
+    window.SpeechRecognition = FailedSpeechRecognition
+  JS
+
   setup do
     @project = projects(:community_meal)
   end
@@ -70,6 +78,19 @@ class PlannerDictationSystemTest < ApplicationSystemTestCase
     field = find("[data-dictation-target='field']")
     field.set("two drivers needed, edited")
     assert_equal "two drivers needed, edited", field.value
+  end
+
+  test "dictation errors use Ding and leave the field editable" do
+    page.driver.with_playwright_page do |playwright_page|
+      playwright_page.context.add_init_script(script: FAILED_SPEECH_RECOGNITION)
+    end
+
+    sign_in_leader_in_browser
+    visit new_project_planner_session_path(@project)
+    find("button[aria-label='Dictate']").click
+
+    assert_selector ".tst-viewport [role=alert]", text: "Dictation lost its connection. Try again.", visible: :all
+    assert_field "Describe this plan in one sentence"
   end
 
   private

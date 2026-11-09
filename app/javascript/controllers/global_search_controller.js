@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { toast } from "ding"
 
 export default class extends Controller {
   static targets = ["dialog", "query", "form", "results", "container", "status", "shortcut"]
@@ -83,10 +84,7 @@ export default class extends Controller {
     } catch (error) {
       if (error.name === "AbortError" || version !== this.version) return
       this.resultsTarget.replaceChildren()
-      const message = document.createElement("p")
-      message.className = "search-empty"
-      message.textContent = "Search couldn’t load. Press Enter to try again."
-      this.resultsTarget.append(message)
+      toast.error("Search couldn’t load. Press Enter to try again.")
       this.statusTarget.textContent = "Search unavailable"
     } finally {
       if (version === this.version) {

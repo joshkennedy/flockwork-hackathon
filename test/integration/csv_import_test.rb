@@ -53,14 +53,14 @@ class CsvImportTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_entity
-    assert_select "p[role=alert]", text: "That file isn't a CSV with a name column."
+    assert_select "[data-toast-entry][data-toast-kind=alert]", text: "That file isn't a CSV with a name column."
 
     assert_no_difference -> { organization.people.count } do
       upload_csv "people_import_no_name_column.csv"
     end
 
     assert_response :unprocessable_entity
-    assert_select "p[role=alert]", text: "That file isn't a CSV with a name column."
+    assert_select "[data-toast-entry][data-toast-kind=alert]", text: "That file isn't a CSV with a name column."
   end
 
   test "UTF-8 BOM does not break the name column" do
@@ -83,7 +83,7 @@ class CsvImportTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_entity
-    assert_select "p[role=alert]", text: "That CSV is too large."
+    assert_select "[data-toast-entry][data-toast-kind=alert]", text: "That CSV is too large."
     assert_not organization.people.exists?(email: "too-big@st-example.test")
   end
 
@@ -97,7 +97,7 @@ class CsvImportTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_entity
-    assert_select "p[role=alert]", text: "That CSV is too large."
+    assert_select "[data-toast-entry][data-toast-kind=alert]", text: "That CSV is too large."
     assert_not organization.people.exists?(email: "p1@st-example.test")
   end
 

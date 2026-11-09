@@ -30,7 +30,7 @@ class MessageDraftsTest < ActionDispatch::IntegrationTest
       post project_message_draft_path(project), params: { purpose: "open_spots" }
       assert_response :unprocessable_entity
       assert_select "option[value=open_spots][selected]"
-      assert_select "[role=alert]", text: /Drafting is unavailable/
+      assert_select "[data-toast-entry][data-toast-kind=alert]", text: /Drafting is unavailable/
       assert_no_match(/secret-key/, response.body)
     end
   end
@@ -61,7 +61,7 @@ class MessageDraftsTest < ActionDispatch::IntegrationTest
         another = Project.create_for(creator: people(:admin), attributes: { name: "Another draft Project", enabled_tools: [ "messages" ] })
         post project_message_draft_path(another), params: { purpose: "announcement" }
         assert_response :too_many_requests
-        assert_select "[role=alert]", text: /Wait ten minutes/
+        assert_select "[data-toast-entry][data-toast-kind=alert]", text: /Wait ten minutes/
         sign_in_as(:other_leader)
         post project_message_draft_path(project), params: { purpose: "announcement" }
         assert_response :success

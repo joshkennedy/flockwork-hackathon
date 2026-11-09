@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { toast } from "ding"
 
 export default class extends Controller {
   static targets = [ "field", "button", "listeningLabel" ]
@@ -50,7 +51,10 @@ export default class extends Controller {
     }
 
     this.recognition.onend = () => this.finishListening()
-    this.recognition.onerror = () => this.finishListening()
+    this.recognition.onerror = (event) => {
+      this.finishListening()
+      toast.error(this.errorMessage(event.error))
+    }
 
     this.setListening(true)
     this.recognition.start()
@@ -75,6 +79,13 @@ export default class extends Controller {
     if (chunk.length === 0) return existing
     if (existing.length === 0) return chunk
     return `${existing} ${chunk}`
+  }
+
+  errorMessage(error) {
+    if (error === "not-allowed" || error === "service-not-allowed") return "Microphone access was denied. You can keep typing."
+    if (error === "no-speech") return "No speech was heard. Try dictating again."
+    if (error === "network") return "Dictation lost its connection. Try again."
+    return "Dictation stopped. You can keep typing."
   }
 
 }

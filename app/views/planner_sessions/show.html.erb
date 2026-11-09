@@ -9,8 +9,6 @@
   <%= turbo_stream_from @planner_session, channel: PlannerStreamChannel,
     data: { planner_session_id: @planner_session.id } %>
 
-  <p hidden data-voice-planner-target="error" role="alert" class="mb-7 rounded-control bg-danger-soft px-4 py-3 text-danger"></p>
-
   <section hidden data-voice-planner-target="panel" class="tile-raised mb-7 p-4" aria-label="Voice planning">
     <div class="flex flex-wrap items-center justify-between gap-3">
       <p class="flex items-center gap-2 font-semibold text-ink">

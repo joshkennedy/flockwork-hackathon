@@ -114,7 +114,7 @@ class TasksTest < ActionDispatch::IntegrationTest
     assert_redirected_to project_path(project)
     assert_equal leader, task.reload.assignee
     follow_redirect!
-    assert_select "[role='alert']", text: "That Task is already assigned."
+    assert_select "[data-toast-entry][data-toast-kind=alert]", text: "That Task is already assigned."
   end
 
   test "a Leader cannot assign a Task to someone outside the Team" do
