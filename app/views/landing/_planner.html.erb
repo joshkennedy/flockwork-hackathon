@@ -1,8 +1,10 @@
-<section class="lp-section lp-planner" aria-labelledby="planner-title">
-  <div class="lp-intro">
-    <h2 id="planner-title">Start with one sentence.</h2>
-    <p>Tell the Planner what you’re organizing. It asks a few focused questions and builds the project: sign-ups, tasks, a schedule and a budget, as suggestions you keep or drop. It plans from the project details and never sees your people directory.</p>
+<section class="lp-band lp-planner" aria-labelledby="planner-title">
+  <div class="lp-section lp-planner-grid">
+    <div class="lp-intro">
+      <h2 id="planner-title">Start with one sentence.</h2>
+      <p>Tell the Planner what you’re organizing. It asks a few focused questions and builds the project: sign-ups, tasks, a schedule and a budget, as suggestions you keep or drop. It plans from the project details and never sees your people directory.</p>
+    </div>
+    <%= render "landing/scene", name: "tour-planner", width: 1100, height: 560, class: "lp-scene",
+          alt: "The Planner: ‘Vacation Bible School, June 8 to 12, about 40 kids’ is typed in, one question is answered, and the preview fills with suggested sign-ups, tasks, schedule and budget rows, ready to Add to Project" %>
   </div>
-  <%= render "landing/scene", name: "tour-planner", width: 1100, height: 560, class: "lp-scene",
-        alt: "The Planner: ‘Vacation Bible School, June 8 to 12, about 40 kids’ is typed in, one question is answered, and the preview fills with suggested sign-ups, tasks, schedule and budget rows, ready to Add to Project" %>
 </section>

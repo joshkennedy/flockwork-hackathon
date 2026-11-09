@@ -64,13 +64,14 @@
       <header class="public-header">
         <%= render "layouts/wordmark", path: root_path %>
         <nav aria-label="Main navigation">
-          <%= link_to "Explore the demo", new_demo_session_path %>
+          <%= link_to "See the demo", new_demo_session_path %>
           <%= link_to "Sign in", new_sign_in_request_path %>
+          <% if controller_name == "landing" %><%= link_to "Plan Your First Project", sign_up_path, class: "btn btn-primary btn-sm" %><% end %>
         </nav>
       </header>
       <% if controller_name == "landing" %>
         <main id="main-content" class="marketing"><%= yield %></main>
-        <footer class="public-footer"><span>Project planning for your church.</span><nav class="public-footer-links" aria-label="Footer"><%= link_to "Sign In", new_sign_in_request_path %><%= link_to "See the Demo", new_demo_session_path %></nav><%= link_to "Flockwork", root_path %></footer>
+        <%= render "landing/footer" %>
       <% else %>
         <%# Sign-in, sign-up and invitation pages: the form beside the recorded sign-up scene. %>
         <main id="main-content" class="auth-split">

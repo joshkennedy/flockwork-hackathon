@@ -15,9 +15,11 @@ class LandingTest < ActionDispatch::IntegrationTest
 
   test "landing footer carries the tagline and the public links" do
     get root_path
-    assert_select ".public-footer span", "Project planning for your church."
-    assert_select ".public-footer a[href=?]", new_sign_in_request_path, text: "Sign In"
-    assert_select ".public-footer a[href=?]", new_demo_session_path, text: "See the Demo"
+    assert_select ".lp-footer .lp-footer-tag", text: /Project planning for your church\./
+    assert_select ".lp-footer a[href=?]", new_sign_in_request_path, text: "Sign In"
+    assert_select ".lp-footer a[href=?]", new_demo_session_path, text: "See the Demo"
+    assert_select ".lp-footer .lp-footer-word", "Flockwork"
+    assert_select ".public-header nav a.btn[href=?]", sign_up_path, text: "Plan Your First Project"
   end
 
   test "sign up page posts to organizations" do

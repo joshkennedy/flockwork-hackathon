@@ -30,5 +30,8 @@ export default class extends Controller {
       item.toggleAttribute("aria-current", match)
       if (match) item.setAttribute("aria-current", "true")
     })
+    // The section tints toward the current scene's plate (data-tone), so the chapter changes color as you scroll.
+    const screen = this.screenTargets.find((screen) => screen.dataset.screen === name)
+    if (screen?.dataset.tone) this.element.style.setProperty("--tint", screen.dataset.tone)
   }
 }
