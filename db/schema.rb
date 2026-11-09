@@ -258,8 +258,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_630002) do
     t.string "skills", default: [], null: false, array: true
     t.jsonb "in_app_preferences", default: {}, null: false
     t.jsonb "sms_preferences", default: {}, null: false
-    t.string "pending_email"
     t.bigint "added_by_id"
+    t.string "pending_email"
     t.index ["added_by_id"], name: "index_people_on_added_by_id"
     t.index ["name"], name: "index_people_search", opclass: :gin_trgm_ops, using: :gin
     t.index ["organization_id", "email"], name: "index_people_on_organization_id_and_email", unique: true, where: "(email IS NOT NULL)"
