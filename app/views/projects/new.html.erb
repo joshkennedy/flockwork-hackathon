@@ -45,51 +45,28 @@
     <section class="project-kind-section mt-7" aria-labelledby="project-kind-heading">
       <div class="project-kind-intro">
         <h2 id="project-kind-heading" class="text-ink">What are you organizing?</h2>
-        <p class="mt-2 text-ink-2 sm:col-span-2 sm:row-start-2">Pick one and the Planner will ask a few questions and draft the plan with you.</p>
         <%= link_to "Build It Myself", new_project_path(manual: true), class: "project-kind-manual btn btn-secondary btn-sm" %>
       </div>
       <div class="project-kind-grid mt-5">
         <% [
-          [ "Meal Train", "Line up meals for a family who needs them.", :heart, "text-tool-signup", start_meal_planner_projects_path, :post, {}, %w[signup_sheet messages] ],
-          [ "Retreat", "Plan the days, the place and what to bring.", :schedule, "text-tool-schedule", start_planner_projects_path, :post, { planning_kind: "retreat" }, %w[schedule budget list] ],
-          [ "Workday", "Rally hands for a day of shared work.", :tasks, "text-tool-tasks", start_planner_projects_path, :post, { planning_kind: "workday" }, %w[tasks signup_sheet list] ],
-          [ "Children’s Program", "Plan the dates, helpers and supplies for kids.", :people, "text-tool-list", start_planner_projects_path, :post, { planning_kind: "children_program" }, %w[schedule signup_sheet list] ],
-          [ "Class", "Plan each session, its teacher and materials.", :docs, "text-tool-docs", start_planner_projects_path, :post, { planning_kind: "class" }, %w[schedule signup_sheet docs] ],
-          [ "Something Else", "Describe it in one sentence and the Planner will shape it.", :plus, "text-ink-2", new_project_path, :get, { planning_kind: "other" }, [] ]
-        ].each do |title, description, glyph, color, path, method, parameters, tools| %>
-          <% tile_id = "project-kind-#{title.parameterize}" %>
-          <% title_id = "#{tile_id}-title" %>
-          <% outcome_id = "#{tile_id}-outcome" %>
-          <% example_id = "#{tile_id}-example" if tools.any? %>
+          [ "Meal Train", :heart, "text-tool-signup", start_meal_planner_projects_path, :post, {} ],
+          [ "Retreat", :schedule, "text-tool-schedule", start_planner_projects_path, :post, { planning_kind: "retreat" } ],
+          [ "Workday", :tasks, "text-tool-tasks", start_planner_projects_path, :post, { planning_kind: "workday" } ],
+          [ "Children’s Program", :people, "text-tool-list", start_planner_projects_path, :post, { planning_kind: "children_program" } ],
+          [ "Class", :docs, "text-tool-docs", start_planner_projects_path, :post, { planning_kind: "class" } ],
+          [ "Something Else", :plus, "text-ink-2", new_project_path, :get, { planning_kind: "other" } ]
+        ].each do |title, glyph, color, path, method, parameters| %>
           <% tile_content = capture do %>
-            <span id="<%= title_id %>" class="project-kind-title flex items-center gap-2 text-ink"><%= icon(glyph, size: 24, class: color) %><%= title %></span>
-            <span id="<%= outcome_id %>" class="mt-1 block text-meta text-ink-2"><%= description %></span>
-            <% if tools.any? %>
-              <span id="<%= example_id %>" class="mt-2 block text-meta text-ink-2"><%= {
-                  "Meal Train" => "Like two weeks of dinners after a new baby",
-                  "Retreat" => "Like a weekend away for 40 at a camp",
-                  "Workday" => "Like a Saturday fixing up the playground",
-                  "Children’s Program" => "Like a week of VBS mornings",
-                  "Class" => "Like a six-week Bible study with a meal"
-                }.fetch(title) %></span>
-              <%# Each tool's icon separates it from the last, so a wrapped row needs no dots to read as a list. %>
-              <span class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-meta text-ink-2">
-                <% tools.each do |tool| %>
-                  <span class="inline-flex items-center gap-1 whitespace-nowrap"><%= planner_tool_icon(tool, size: 14) %><%= Project::TOOL_LABELS.fetch(tool) %></span>
-                <% end %>
-              </span>
-            <% end %>
+            <%= icon(glyph, size: 28, class: color) %>
+            <span class="project-kind-title text-ink"><%= title %></span>
           <% end %>
-          <% tile_options = {
-            class: class_names("project-kind-tile", "project-kind-ghost": tools.empty?),
-            aria: { labelledby: title_id, describedby: [ outcome_id, example_id ].compact.join(" ") }
-          } %>
+          <% tile_class = class_names("project-kind-tile", "project-kind-ghost": method == :get) %>
           <% if method == :get %>
-            <%= link_to new_project_path(planning_kind: "other"), **tile_options do %>
+            <%= link_to new_project_path(planning_kind: "other"), class: tile_class do %>
               <%= tile_content %>
             <% end %>
           <% else %>
-            <%= button_to path, method:, params: parameters, **tile_options, data: { turbo_submits_with: "Creating Project…" } do %>
+            <%= button_to path, method:, params: parameters, class: tile_class, data: { turbo_submits_with: "Creating Project…" } do %>
               <%= tile_content %>
             <% end %>
           <% end %>
