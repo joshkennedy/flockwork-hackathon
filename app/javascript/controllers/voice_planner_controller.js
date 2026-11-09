@@ -33,7 +33,7 @@ export default class extends Controller {
     this.responseActive = false
     this.responseDraining = false
     this.pendingIntro = false
-    this.pendingResponseDone = false
+    this.ackPending = false
     this.lastContinuedRevision = null
     this.currentStatus = "Listening…"
     this.assistantText = ""
@@ -94,7 +94,7 @@ export default class extends Controller {
     this.responseActive = false
     this.responseDraining = false
     this.pendingIntro = false
-    this.pendingResponseDone = false
+    this.ackPending = false
     this.lastContinuedRevision = null
     this.assistantText = ""
     this.userText = ""
@@ -321,11 +321,12 @@ export default class extends Controller {
         this.handleFunctionCall(event)
         break
       case "response.done":
-        if (this.pendingResponseDone) {
-          this.pendingResponseDone = false
+        this.responseActive = false
+        if (this.ackPending) {
+          this.ackPending = false
+          this.createResponse()
           break
         }
-        this.responseActive = false
         this.responseFinished()
         break
       case "error":
@@ -366,11 +367,9 @@ export default class extends Controller {
       const url = this.hasSelectAnswerUrlValue ? this.selectAnswerUrlValue : this.answerUrlValue
       if (this.hasSelectAnswerUrlValue) {
         this.sendFunctionOutput(event.call_id)
-        if (this.responseActive) {
-          this.responseActive = false
-          this.pendingResponseDone = true
-        }
-        this.createResponse()
+        // The tool call's own response is still open; a second response.create before its response.done is rejected.
+        if (this.responseActive) this.ackPending = true
+        else this.createResponse()
       }
       const response = await this.postForm(url, values)
       if (this.hasSelectAnswerUrlValue) await this.replaceBuilder(response)
@@ -560,7 +559,7 @@ export default class extends Controller {
     this.responseActive = false
     this.responseDraining = false
     this.pendingIntro = false
-    this.pendingResponseDone = false
+    this.ackPending = false
     this.intentionalClose = true
     window.clearTimeout(this.voiceReleaseTimer)
     this.processor?.disconnect()
