@@ -410,9 +410,10 @@
   .suggestion.kept { @apply border-solid border-border bg-panel text-ink shadow-raised; }
   .suggestion.kept .kept-check { animation: keep-check var(--duration-keep) var(--ease-enter); }
   @starting-style { .suggestion.kept { background-color: var(--color-ghost-fill); border-color: var(--color-ghost-border); color: var(--color-ink-2); } }
-  .project-kind-tile { @apply flex w-full flex-col items-start rounded-tile border border-border bg-panel p-4 text-left shadow-raised; transition: border-color var(--duration-hover), background-color var(--duration-hover), box-shadow var(--duration-press), transform var(--duration-press); }
-  .project-kind-ghost { @apply border-dashed border-ghost-border bg-ghost-fill text-ink-2 shadow-none; }
+  .project-kind-tile { @apply flex h-full min-h-44 w-full flex-col items-start rounded-tile border border-border bg-panel p-5 text-left shadow-raised; transition: border-color var(--duration-hover), background-color var(--duration-hover), box-shadow var(--duration-press), transform var(--duration-press); }
+  .project-kind-ghost { @apply border-dashed border-ghost-border bg-ghost-fill text-ink-2; }
   .project-kind-grid { @apply grid gap-3 sm:grid-cols-2 lg:grid-cols-3; }
+  .project-kind-grid > form { @apply flex; }
   button.project-kind-tile:active { transform: translateY(1px); box-shadow: var(--shadow-secondary-active); }
   .meal-builder { @apply w-full; width: min(880px, 100%); margin-inline: auto; }
   .meal-setup { @apply w-full; max-width: 880px; margin-inline: auto; }
@@ -470,21 +471,21 @@
     [data-voice-active="true"] .voice-planner-panel { display: flex; flex-direction: column; align-items: center; height: max(520px, calc(100dvh - 277px - max(4px, env(safe-area-inset-bottom)))); padding-bottom: 0; }
     .voice-planner-panel > :not(.voice-captions) { flex-shrink: 0; }
     .voice-planner-panel .voice-captions { min-height: 72px; overflow-y: auto; }
-    .meal-builder .voice-planner-launch { width: 100%; min-height: 48px; }
-    .meal-builder .voice-planner-end { width: 100%; min-height: 48px; margin-top: auto; }
+    .meal-builder .voice-planner-launch { width: 100%; min-height: 64px; }
+    .meal-builder .voice-planner-end { width: 100%; min-height: 56px; margin-top: auto; }
   }
-  .voice-planner-launch { @apply inline-flex items-center gap-3 rounded-tile border border-border bg-panel p-3.5 text-left text-ink shadow-raised; }
+  .voice-planner-launch { @apply inline-flex min-h-16 w-full items-center gap-3 rounded-tile border border-border bg-panel p-3.5 text-left text-ink shadow-raised; }
   .voice-planner-launch:hover { @apply border-border-strong; }
   .voice-planner-launch:focus-visible { outline: 2px solid var(--color-ink); outline-offset: 3px; }
   .voice-planner-panel { @apply justify-items-center content-start gap-4 py-7 text-center; }
-  .voice-orb { --voice-level: 0; position: relative; width: 168px; height: 168px; }
+  .voice-orb { --voice-level: 0; position: relative; width: 200px; height: 200px; }
   .voice-orb-ring, .voice-orb-core { position: absolute; left: 50%; top: 50%; border-radius: 50%; transform: translate(-50%, -50%); }
-  .voice-orb-ring { background: var(--color-sunlit); transition: transform 100ms ease-out, opacity 150ms ease-out; }
+  .voice-orb-ring { background: var(--color-sunlit-soft); transition: transform 100ms ease-out, opacity 150ms ease-out; }
   /* Rings are stepped so they read as bands, not one disk: the inner ring is solid and the two outside it stay translucent. */
   .voice-orb-ring-outer { width: 100%; height: 100%; opacity: calc(.14 + var(--voice-level) * .3); transform: translate(-50%, -50%) scale(calc(1 + var(--voice-level) * .35)); }
   .voice-orb-ring-middle { width: 72%; height: 72%; opacity: calc(.34 + var(--voice-level) * .3); transform: translate(-50%, -50%) scale(calc(1 + var(--voice-level) * .22)); }
   .voice-orb-ring-inner { width: 46%; height: 46%; opacity: 1; transform: translate(-50%, -50%) scale(calc(1 + var(--voice-level) * .1)); }
-  .voice-orb-core { width: 26%; height: 26%; background: var(--color-ink); transition: transform 100ms ease-out; }
+  .voice-orb-core { width: 26%; height: 26%; background: var(--color-sunlit); transition: transform 100ms ease-out; }
   .voice-orb.is-speaking .voice-orb-core { transform: translate(-50%, -50%) scale(calc(1 + var(--voice-level) * .25)); }
   .voice-orb.is-thinking .voice-orb-ring-outer, .voice-orb.is-thinking .voice-orb-ring-middle { opacity: .2; }
   .voice-orb-status { @apply text-xl font-semibold leading-7 text-ink; }
@@ -525,8 +526,7 @@
   .meal-slot-edit-panel { @apply mt-3 rounded-nav bg-panel p-4; }
   .meal-slot-conflict { @apply bg-danger-soft; }
   .planner-pending-row .meal-slot-summary { @apply relative block; }
-  .planner-pending-row .meal-slot-summary > div { padding-right: 64px; }
-  .planner-pending-row .meal-slot-editor > summary { position: absolute; top: 0; right: 0; }
+  .planner-pending-row .meal-slot-summary > div:first-child { padding-right: 44px; }
   .planner-pending-row .meal-slot-edit-panel { @apply mx-0 rounded-none bg-transparent p-0; }
   .meal-slot-conflict-actions { @apply mt-3 border-t border-danger/20 pt-3; }
   .meal-preview-empty { @apply rounded-tile border border-dashed border-ghost-border bg-ghost-fill px-4 py-7; }
@@ -617,7 +617,7 @@
     .meal-preview { @apply border-t-0 border-l pl-10 pt-0; }
     .meal-preview-view-all { display: none; }
     .meal-mobile-update { display: none; }
-    .voice-orb { width: 184px; height: 184px; }
+    .voice-orb { width: 200px; height: 200px; }
   }
 }
 

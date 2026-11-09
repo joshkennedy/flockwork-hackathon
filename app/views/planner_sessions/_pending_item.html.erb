@@ -1,38 +1,43 @@
 <% fields = item.fetch("fields") %>
 <% errors = Array(pending_errors.fetch(item.fetch("id"), [])) %>
 <% field_errors = planner_pending_field_errors(item, errors) %>
-<article id="pending-item-<%= item.fetch("id") %>" class="meal-slot planner-pending-row <%= "meal-slot-conflict" if item["conflict"].present? %>">
+<article id="pending-item-<%= item.fetch("id") %>" data-controller="comment-thread" class="meal-slot planner-pending-row <%= "meal-slot-conflict" if item["conflict"].present? %>">
   <div class="meal-slot-summary">
     <div class="min-w-0 flex-1">
-      <div class="flex flex-wrap items-center gap-2">
-        <p class="font-semibold text-ink"><%= planner_pending_summary(item) %></p>
+      <p class="font-semibold text-ink">
+        <%= planner_pending_summary(item) %>
         <% if errors.any? %>
-          <span class="badge-need"><%= errors.include?("Estimated cost is required") ? "Needs an estimate" : "Needs details" %></span>
+          <span class="badge-need ml-2"><%= errors.include?("Estimated cost is required") ? "Needs an estimate" : "Needs details" %></span>
         <% end %>
-      </div>
+      </p>
       <%= render "planner_sessions/pending_item_meta", item:, planner_session: %>
     </div>
     <% unless planner_session.generation_busy? %>
-      <details class="meal-slot-editor">
-        <summary class="btn btn-text disclosure-summary">Edit</summary>
-        <div class="meal-slot-edit-panel">
-          <% if field_errors[nil].present? %>
-            <ul class="mt-2 text-meta text-danger" aria-label="Needs attention">
-              <% field_errors.fetch(nil).each do |error| %><li><%= error %></li><% end %>
-            </ul>
-          <% end %>
-          <%= form_with url: pending_item_project_planner_session_path(project, planner_session), method: :patch,
-            namespace: "pending_#{item.fetch("id")}", class: "grid gap-4" do |form| %>
-            <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
-            <%= form.hidden_field :id, name: "item[id]", value: item.fetch("id") %>
-            <%= render "planner_sessions/pending_fields", item:, fields:, field_errors:, planner_session: %>
-            <div class="flex flex-wrap items-center justify-between gap-3">
-              <%= form.button "Save Changes", name: "item[decision]", value: "edit", class: "btn btn-secondary", data: { turbo_submits_with: "Saving…" } %>
-              <%= form.button "Remove", name: "item[decision]", value: "remove", class: "btn btn-danger", formnovalidate: true %>
-            </div>
-          <% end %>
+      <details class="actions-menu absolute right-0 top-0">
+        <summary class="btn btn-icon" aria-label="Item actions"><%= icon(:more) %></summary>
+        <div class="actions-menu-panel popover-in">
+          <button type="button" data-action="comment-thread#toggle" data-comment-thread-target="trigger" aria-expanded="false" aria-controls="pending-editor-<%= item.fetch("id") %>">Edit</button>
+          <%= button_to "Remove", pending_item_project_planner_session_path(project, planner_session), method: :patch,
+            params: { item: { id: item.fetch("id"), decision: "remove" }, expected_revision: planner_session.generation_revision }, class: "menu-danger text-danger" %>
         </div>
       </details>
+      <div hidden id="pending-editor-<%= item.fetch("id") %>" data-comment-thread-target="panel" class="meal-slot-edit-panel">
+        <% if field_errors[nil].present? %>
+          <ul class="mt-2 text-meta text-danger" aria-label="Needs attention">
+            <% field_errors.fetch(nil).each do |error| %><li><%= error %></li><% end %>
+          </ul>
+        <% end %>
+        <%= form_with url: pending_item_project_planner_session_path(project, planner_session), method: :patch,
+          namespace: "pending_#{item.fetch("id")}", class: "grid gap-4" do |form| %>
+          <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
+          <%= form.hidden_field :id, name: "item[id]", value: item.fetch("id") %>
+          <%= render "planner_sessions/pending_fields", item:, fields:, field_errors:, planner_session: %>
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <%= form.button "Save Changes", name: "item[decision]", value: "edit", class: "btn btn-secondary", data: { turbo_submits_with: "Saving…" } %>
+            <%= form.button "Remove", name: "item[decision]", value: "remove", class: "btn btn-danger", formnovalidate: true %>
+          </div>
+        <% end %>
+      </div>
     <% end %>
   </div>
 

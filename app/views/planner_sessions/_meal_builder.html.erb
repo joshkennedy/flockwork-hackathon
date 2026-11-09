@@ -136,10 +136,9 @@
 
           <div hidden data-voice-planner-target="launcher" class="mt-4">
             <button type="button" class="voice-planner-launch" data-action="voice-planner#start" data-voice-planner-target="startButton">
-              <%= icon(:mic, size: 20, class: "text-sunlit") %>
+              <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-sunlit"><%= icon(:mic, size: 20, class: "text-ink") %></span>
               <span><span class="block font-semibold">Talk It Through</span><span class="block text-meta font-normal text-ink-2">Hands-free, one question at a time</span></span>
             </button>
-            <p class="mt-2 text-meta text-ink-2">Audio goes to xAI. Leave out names and care details.</p>
           </div>
 
           <div class="mt-5 grid gap-2" data-controller="planner-answers" data-action="keydown@window->planner-answers#choose">
@@ -174,6 +173,8 @@
               <% end %>
             </details>
           </div>
+
+          <p class="mt-2 text-label text-ink-2">Audio goes to xAI. Leave out names and care details.</p>
 
           <% unless planner_session.generation_busy? %>
           <div class="mt-5 empty:hidden"><% if planner_session.last_error.present? %>
@@ -234,8 +235,8 @@
             </div>
             <p class="voice-orb-status" data-voice-planner-target="status" aria-live="polite">Listening…</p>
             <div class="voice-captions" aria-live="polite">
-              <p><span class="block text-meta text-ink-2">Planner</span> <span data-voice-planner-target="assistantCaption">Waiting to speak…</span></p>
-              <p><span class="block text-meta text-ink-2">You</span> <span data-voice-planner-target="userCaption">Listening…</span></p>
+              <p class="text-sm leading-[21px] text-ink-2"><span class="block text-meta">You</span> <span data-voice-planner-target="userCaption">Listening…</span></p>
+              <p class="text-xl leading-7 text-ink"><span class="block text-meta text-ink-2">Planner</span> <span data-voice-planner-target="assistantCaption">Waiting to speak…</span></p>
             </div>
             <% if voice_phase == "choose" && recently_added_items.any? %>
               <% recent_summaries = recently_added_items.first(3).map { |item| planner_pending_summary(item) } %>
