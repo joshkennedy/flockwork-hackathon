@@ -265,7 +265,8 @@ Badges 4px, buttons and inputs 6px, nav items 8px, tiles 10px, panels and popove
 - **Approach:** minimal-functional.
 - **Easing:** enter ease-out, exit ease-in, move ease-in-out.
 - **Duration:** press 100ms, hover/border/background 150ms, preview-update emphasis 180ms. Nothing longer than 300ms, with two exceptions: the header wash drifts for 1600ms (`cubic-bezier(0.45, 0, 0.25, 1)`) from the previous page's blob layout and tint to the new page's. Each page's layout comes from its path, the drift never delays content, and `prefers-reduced-motion` skips it.
-- **Building state:** the only loop is the skeleton shimmer in the Planner preview (1600ms, opacity only), shown while a step is being prepared, and it is a second exception to the 300ms rule. It stops under `prefers-reduced-motion`, and the text label carries the state without it.
+- **Building state:** the skeleton shimmer in the Planner preview loops for 1600ms with opacity only while a step is being prepared. It is a second exception to the 300ms rule. It stops under `prefers-reduced-motion`, and the text label carries the state without it.
+- **Voice orb:** the Planner voice orb is the one amplitude-driven loop. Its rings scale with live audio, breathe at idle over 1600ms, and stop under `prefers-reduced-motion` while the status text carries the state.
 - **The authored moment:** a changed choice produces a short tonal emphasis on the affected preview row after the new content is already visible. Content is never hidden waiting for an entrance animation. `prefers-reduced-motion` removes transforms and makes the tonal change instant.
 
 ## Marketing pages
@@ -289,6 +290,7 @@ The landing page and every public page built from it (feature, use-case and pric
 
 | Date | Decision | Rationale |
 |------|----------|-----------|
+| 2026-11-09 | Voice orb in the Planner is amplitude-driven and loops | Josh asked for a pulsing, vibrant, lifelike voice module on the build-as-you-go Planner |
 | 2026-11-04 | Meal trains use one All Details form and deterministic slot previews, with autosave and one final Add action | Josh chose All Details because alternating option clicks, typing and advancement is less efficient. Existing active meal drafts open in the new form with their pending work preserved. |
 | 2026-10-30 | First direction "Fellowship Ledger" (paper, Sentient, Atkinson) rejected | Josh: felt "AI", especially the fonts and colors |
 | 2026-10-30 | Direction "Warm Studio" adopted | Josh: premium but approachable, Basecamp meets Linear/ElevenLabs, respectable yet casual, tangible interactive elements with depth |

@@ -19,12 +19,18 @@ module Planner
           question: card.fetch("question"),
           options: card.fetch("options")
         })
-      else
+      elsif session.reviewing?
         { state: "The plan is ready for review. Say one warm, short closing line and do not call a tool." }
+      else
+        { state: "The first question is being prepared. Say one short line about that and do not call a tool." }
+      end
+      builder_guidance = if session.build_as_you_go?
+        "After answer_card, the Project preview updates on screen and the next question follows. Acknowledge the answer in a few words, then wait."
       end
 
       <<~INSTRUCTIONS
         #{VOICE_GUIDANCE}
+        #{builder_guidance}
 
         Planner context:
         #{JSON.generate(context)}

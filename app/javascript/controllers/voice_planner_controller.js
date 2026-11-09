@@ -8,7 +8,9 @@ export default class extends Controller {
     "cardState",
     "error",
     "launcher",
+    "orb",
     "panel",
+    "questionnaire",
     "startButton",
     "status",
     "userCaption"
@@ -16,6 +18,8 @@ export default class extends Controller {
 
   static values = {
     answerUrl: String,
+    continueUrl: String,
+    selectAnswerUrl: String,
     voiceSessionUrl: String
   }
 
@@ -24,6 +28,12 @@ export default class extends Controller {
     this.active = false
     this.intentionalClose = false
     this.answerInFlight = false
+    this.continueInFlight = false
+    this.lastContinuedRevision = null
+    this.currentStatus = "Listening…"
+    this.assistantText = ""
+    this.userText = ""
+    this.voiceLevel = 0
     this.lastCardKey = this.cardKey()
     this.updateLaunchers()
 
@@ -40,6 +50,30 @@ export default class extends Controller {
     this.updateLaunchers()
   }
 
+  cardStateTargetConnected() {
+    this.plannerChanged()
+  }
+
+  panelTargetConnected(element) {
+    element.hidden = !this.active
+  }
+
+  statusTargetConnected(element) {
+    element.textContent = this.currentStatus || "Listening…"
+  }
+
+  assistantCaptionTargetConnected(element) {
+    element.textContent = this.assistantText || "Waiting to speak…"
+  }
+
+  userCaptionTargetConnected(element) {
+    element.textContent = this.userText || "Listening…"
+  }
+
+  orbTargetConnected(element) {
+    this.paintOrb(element)
+  }
+
   async start(event) {
     event.preventDefault()
     if (!this.supported || this.active) return
@@ -48,11 +82,14 @@ export default class extends Controller {
     this.active = true
     this.intentionalClose = false
     this.answerInFlight = false
+    this.continueInFlight = false
+    this.lastContinuedRevision = null
     this.assistantText = ""
     this.userText = ""
-    this.panelTarget.hidden = false
-    this.assistantCaptionTarget.textContent = "Waiting to speak…"
-    this.userCaptionTarget.textContent = "Listening…"
+    this.voiceLevel = 0
+    this.element.dataset.voiceActive = "true"
+    if (this.hasPanelTarget) this.panelTarget.hidden = false
+    this.paintCaptions()
     this.setStatus("Listening…")
     this.updateLaunchers()
 
@@ -94,6 +131,16 @@ export default class extends Controller {
     this.updateLaunchers()
     if (!this.active || !this.hasCardStateTarget) return
 
+    const phase = this.cardStateTarget.dataset.voicePhase
+    if (phase === "error") {
+      this.fail("The Planner could not update your plan. You can keep typing.")
+      return
+    }
+    if (phase === "ready") {
+      await this.continueBuilder()
+      return
+    }
+
     const nextKey = this.cardKey()
     if (nextKey === this.lastCardKey) return
 
@@ -107,14 +154,33 @@ export default class extends Controller {
       }
       this.assistantText = ""
       this.userText = ""
-      this.assistantCaptionTarget.textContent = "Waiting to speak…"
-      this.userCaptionTarget.textContent = "Listening…"
+      this.voiceLevel = 0
+      this.paintCaptions()
       this.setStatus("Listening…")
       this.configureSession(voiceSession)
       this.closing = this.cardStateTarget.dataset.voiceState === "reviewing"
       this.send({ type: "response.create" })
     } catch (error) {
       this.fail(this.messageFor(error))
+    }
+  }
+
+  async continueBuilder() {
+    if (!this.hasContinueUrlValue || this.continueInFlight || !this.hasCardStateTarget) return
+
+    const revision = this.cardStateTarget.dataset.voiceRevision
+    if (!revision || revision === this.lastContinuedRevision) return
+
+    this.continueInFlight = true
+    this.lastContinuedRevision = revision
+    try {
+      const response = await this.postForm(this.continueUrlValue, { expected_revision: revision })
+      await this.replaceBuilder(response)
+    } catch (error) {
+      this.lastContinuedRevision = null
+      this.fail(this.messageFor(error))
+    } finally {
+      this.continueInFlight = false
     }
   }
 
@@ -185,6 +251,7 @@ export default class extends Controller {
 
       const samples = event.inputBuffer.getChannelData(0)
       const resampled = this.resample(samples, this.audioContext.sampleRate, SAMPLE_RATE)
+      if (this.currentStatus === "Listening…") this.updateVoiceLevel(this.rms(samples))
       this.send({ type: "input_audio_buffer.append", audio: this.pcm16Base64(resampled) })
     }
     this.mediaSource.connect(this.processor)
@@ -212,17 +279,17 @@ export default class extends Controller {
       case "response.output_audio_transcript.delta":
       case "response.audio_transcript.delta":
         this.assistantText += event.delta || ""
-        this.assistantCaptionTarget.textContent = this.assistantText
+        this.paintCaptions()
         break
       case "response.output_audio_transcript.done":
       case "response.audio_transcript.done":
         if (event.transcript) this.assistantText = event.transcript
-        this.assistantCaptionTarget.textContent = this.assistantText || "Finished speaking."
+        this.paintCaptions("Finished speaking.")
         break
       case "conversation.item.input_audio_transcription.updated":
       case "conversation.item.input_audio_transcription.completed":
         this.userText = event.transcript || this.userText
-        this.userCaptionTarget.textContent = this.userText || "Listening…"
+        this.paintCaptions()
         break
       case "response.function_call_arguments.done":
         this.handleFunctionCall(event)
@@ -237,7 +304,15 @@ export default class extends Controller {
   }
 
   async handleFunctionCall(event) {
-    if (event.name !== "answer_card" || this.answerInFlight) return
+    if (event.name !== "answer_card") return
+
+    const builderPhase = this.hasSelectAnswerUrlValue && this.hasCardStateTarget
+      ? this.cardStateTarget.dataset.voicePhase
+      : null
+    if (this.answerInFlight || [ "busy", "ready" ].includes(builderPhase)) {
+      this.sendFunctionOutput(event.call_id)
+      return
+    }
 
     let answer
     try {
@@ -249,34 +324,34 @@ export default class extends Controller {
     if (!answer) return
 
     this.answerInFlight = true
-    this.setStatus("Thinking…")
+    this.setStatus(this.hasSelectAnswerUrlValue ? "Adding to your plan…" : "Thinking…")
     try {
-      const body = new URLSearchParams({ answer, source: "voice" })
-      const response = await fetch(this.answerUrlValue, {
-        method: "POST",
-        headers: {
-          "Accept": "text/html",
-          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-          "X-CSRF-Token": this.csrfToken()
-        },
-        body,
-        credentials: "same-origin"
-      })
-      if (!response.ok) throw new Error("The spoken answer could not be saved. You can keep typing.")
-
-      this.send({
-        type: "conversation.item.create",
-        item: {
-          type: "function_call_output",
-          call_id: event.call_id,
-          output: JSON.stringify({ saved: true })
-        }
-      })
+      const values = { answer, source: "voice" }
+      if (this.hasSelectAnswerUrlValue) {
+        const revision = this.cardStateTarget.dataset.voiceRevision
+        if (!revision) throw new Error("The spoken answer could not be saved. You can keep typing.")
+        values.expected_revision = revision
+      }
+      const url = this.hasSelectAnswerUrlValue ? this.selectAnswerUrlValue : this.answerUrlValue
+      const response = await this.postForm(url, values)
+      if (this.hasSelectAnswerUrlValue) await this.replaceBuilder(response)
+      this.sendFunctionOutput(event.call_id)
     } catch (error) {
       this.fail(this.messageFor(error))
     } finally {
       this.answerInFlight = false
     }
+  }
+
+  sendFunctionOutput(callId) {
+    this.send({
+      type: "conversation.item.create",
+      item: {
+        type: "function_call_output",
+        call_id: callId,
+        output: JSON.stringify({ saved: true })
+      }
+    })
   }
 
   responseFinished() {
@@ -298,6 +373,8 @@ export default class extends Controller {
     const audioBuffer = this.audioContext.createBuffer(1, pcm.length, SAMPLE_RATE)
     const channel = audioBuffer.getChannelData(0)
     for (let index = 0; index < pcm.length; index += 1) channel[index] = pcm[index] / 32768
+    this.updateVoiceLevel(this.rms(channel))
+    this.scheduleVoiceLevelRelease()
 
     const source = this.audioContext.createBufferSource()
     source.buffer = audioBuffer
@@ -306,6 +383,30 @@ export default class extends Controller {
     source.start(startAt)
     this.nextPlaybackTime = startAt + audioBuffer.duration
     this.setStatus("Speaking…")
+  }
+
+  rms(samples) {
+    if (!samples.length) return 0
+
+    let sum = 0
+    for (let index = 0; index < samples.length; index += 1) sum += samples[index] * samples[index]
+    return Math.min(1, Math.sqrt(sum / samples.length) * 4)
+  }
+
+  updateVoiceLevel(level) {
+    const factor = level > this.voiceLevel ? 0.7 : 0.55
+    this.voiceLevel += (level - this.voiceLevel) * factor
+    if (this.voiceLevel < 0.01) this.voiceLevel = 0
+    this.paintOrbs()
+  }
+
+  scheduleVoiceLevelRelease() {
+    window.clearTimeout(this.voiceReleaseTimer)
+    this.voiceReleaseTimer = window.setTimeout(() => {
+      if (this.currentStatus !== "Speaking…") return
+      this.updateVoiceLevel(0)
+      if (this.voiceLevel > 0) this.scheduleVoiceLevelRelease()
+    }, 50)
   }
 
   resample(samples, sourceRate, targetRate) {
@@ -350,12 +451,38 @@ export default class extends Controller {
     }
   }
 
+  postForm(url, values) {
+    return fetch(url, {
+      method: "POST",
+      headers: {
+        "Accept": "text/html",
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+        "X-CSRF-Token": this.csrfToken()
+      },
+      body: new URLSearchParams(values),
+      credentials: "same-origin"
+    }).then((response) => {
+      if (!response.ok) throw new Error("The spoken answer could not be saved. You can keep typing.")
+      return response
+    })
+  }
+
+  async replaceBuilder(response) {
+    const currentFrame = this.hasCardStateTarget ? this.cardStateTarget.closest("turbo-frame") : null
+    if (!currentFrame) return
+
+    const document = new DOMParser().parseFromString(await response.text(), "text/html")
+    const nextFrame = document.getElementById(currentFrame.id)
+    if (nextFrame && currentFrame.isConnected) currentFrame.replaceWith(nextFrame)
+  }
+
   stopConversation() {
     if (!this.active && !this.socket && !this.stream && !this.audioContext) return
 
     this.active = false
     this.closing = false
     this.intentionalClose = true
+    window.clearTimeout(this.voiceReleaseTimer)
     this.processor?.disconnect()
     this.mediaSource?.disconnect()
     this.stream?.getTracks().forEach((track) => track.stop())
@@ -366,7 +493,10 @@ export default class extends Controller {
     this.stream = null
     this.audioContext = null
     this.socket = null
+    this.voiceLevel = 0
+    delete this.element.dataset.voiceActive
     if (this.hasPanelTarget) this.panelTarget.hidden = true
+    this.paintOrbs()
     this.updateLaunchers()
   }
 
@@ -384,8 +514,10 @@ export default class extends Controller {
   updateLaunchers() {
     if (!this.hasLauncherTarget) return
 
+    const phase = this.hasCardStateTarget ? this.cardStateTarget.dataset.voicePhase : null
+    const unavailablePhase = [ "waiting", "error", "reviewing" ].includes(phase)
     this.launcherTargets.forEach((launcher) => {
-      launcher.hidden = !this.supported || this.active
+      launcher.hidden = !this.supported || this.active || unavailablePhase
     })
     this.startButtonTargets.forEach((button) => {
       button.disabled = this.active
@@ -398,7 +530,31 @@ export default class extends Controller {
   }
 
   setStatus(status) {
-    if (this.hasStatusTarget) this.statusTarget.textContent = status
+    this.currentStatus = status
+    if ([ "Thinking…", "Adding to your plan…" ].includes(status)) this.voiceLevel = 0
+    this.statusTargets.forEach((target) => { target.textContent = status })
+    this.paintOrbs()
+  }
+
+  paintCaptions(fallback = null) {
+    this.assistantCaptionTargets.forEach((target) => {
+      target.textContent = this.assistantText || fallback || "Waiting to speak…"
+    })
+    this.userCaptionTargets.forEach((target) => {
+      target.textContent = this.userText || "Listening…"
+    })
+  }
+
+  paintOrbs() {
+    this.orbTargets.forEach((orb) => this.paintOrb(orb))
+  }
+
+  paintOrb(orb) {
+    orb.style.setProperty("--voice-level", this.voiceLevel || 0)
+    orb.classList.toggle("has-level", this.voiceLevel >= 0.03)
+    orb.classList.toggle("is-speaking", this.currentStatus === "Speaking…")
+    orb.classList.toggle("is-thinking", [ "Thinking…", "Adding to your plan…" ].includes(this.currentStatus))
+    orb.classList.toggle("is-listening", ![ "Speaking…", "Thinking…", "Adding to your plan…" ].includes(this.currentStatus))
   }
 
   csrfToken() {

@@ -461,6 +461,20 @@
   .meal-builder-organization { @apply mt-7 grid min-w-0 gap-7; }
   .meal-builder :is(.btn, summary) { min-height: 44px; }
   .meal-builder-guide { @apply min-w-0; }
+  [data-voice-active="true"] [data-voice-planner-target="questionnaire"] { display: none; }
+  [data-voice-active="true"] [data-voice-planner-target="panel"] { display: grid; }
+  .voice-planner-panel { @apply justify-items-center gap-4 py-3 text-center; }
+  .voice-orb { --voice-level: 0; position: relative; width: 120px; height: 120px; }
+  .voice-orb-ring, .voice-orb-core { position: absolute; left: 50%; top: 50%; border-radius: 50%; transform: translate(-50%, -50%); }
+  .voice-orb-ring { background: var(--color-sunlit); transition: transform 100ms ease-out, opacity 150ms ease-out; }
+  .voice-orb-ring-outer { width: 100%; height: 100%; opacity: calc(.16 + var(--voice-level) * .24); transform: translate(-50%, -50%) scale(calc(1 + var(--voice-level) * .35)); }
+  .voice-orb-ring-middle { width: 76%; height: 76%; opacity: calc(.28 + var(--voice-level) * .24); transform: translate(-50%, -50%) scale(calc(1 + var(--voice-level) * .24)); }
+  .voice-orb-ring-inner { width: 54%; height: 54%; opacity: calc(.44 + var(--voice-level) * .24); transform: translate(-50%, -50%) scale(calc(1 + var(--voice-level) * .14)); }
+  .voice-orb-core { width: 34%; height: 34%; background: var(--color-ink); }
+  .voice-orb.is-speaking .voice-orb-ring { background: var(--color-ink); }
+  .voice-orb.is-speaking .voice-orb-core { background: var(--color-sunlit); }
+  .voice-orb-status { @apply text-heading text-ink; }
+  .voice-captions { @apply grid w-full gap-2 text-left text-meta text-ink-2; }
   .meal-builder-status { @apply flex items-center gap-2 text-meta text-ink-2; }
   .meal-pulse-dot { @apply size-2 shrink-0 rounded-full bg-ink; }
   .meal-mobile-update { @apply mt-5 rounded-nav border border-dashed border-ghost-border bg-ghost-fill px-3 py-3; }
@@ -507,6 +521,8 @@
     .meal-pulse-dot,
     .meal-answer-tile[aria-pressed="true"]:disabled .meal-answer-radio,
     .meal-answer-tile[aria-pressed="true"][aria-disabled="true"] .meal-answer-radio { animation: meal-shimmer 1.6s ease-in-out infinite; }
+    .voice-orb:not(.has-level):not(.is-thinking) .voice-orb-ring-outer,
+    .voice-orb.is-thinking .voice-orb-ring { animation: meal-shimmer 1.6s ease-in-out infinite; }
   }
   .planner-column-row { @apply grid items-end gap-3 rounded-nav bg-ghost-fill p-3 sm:grid-cols-[minmax(0,1fr)_10rem_auto]; }
   .planner-column-remove:disabled { visibility: hidden; }
@@ -582,6 +598,7 @@
     .meal-preview { @apply border-t-0 border-l pl-10 pt-0; }
     .meal-preview-view-all { display: none; }
     .meal-mobile-update { display: none; }
+    .voice-orb { width: 160px; height: 160px; }
   }
 }
 
@@ -604,6 +621,7 @@
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   .meal-skeleton, .meal-pulse-dot, .meal-answer-tile[aria-pressed="true"]:disabled .meal-answer-radio,
   .meal-answer-tile[aria-pressed="true"][aria-disabled="true"] .meal-answer-radio { animation: none !important; }
+  .voice-orb-ring { transition: none !important; }
   .btn:active, .answer-tile:active { transform: none; }
   :is(a, button, summary):hover .avatar-person { transform: none; }
 }

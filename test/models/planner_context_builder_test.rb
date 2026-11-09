@@ -85,6 +85,34 @@ class PlannerContextBuilderTest < ActiveSupport::TestCase
     assert_equal "Ask [name] to coordinate.", fake.contexts.first.fetch("project_intent")
   end
 
+  test "voice instructions distinguish a waiting builder from review" do
+    leader = people(:leader)
+    project = projects(:community_meal)
+    waiting = project.planner_sessions.create!(
+      started_by: leader,
+      description: "Plan a workday.",
+      flow_version: 3,
+      planning_kind: "workday"
+    )
+    reviewing = project.planner_sessions.create!(
+      started_by: leader,
+      description: "Plan a workday.",
+      flow_version: 3,
+      planning_kind: "workday",
+      status: :reviewing
+    )
+    current_session = leader.sessions.create!(ip_address: "127.0.0.1", user_agent: "test")
+
+    Current.set(session: current_session) do
+      waiting_instructions = Planner::ContextBuilder.new(waiting).voice_instructions
+      reviewing_instructions = Planner::ContextBuilder.new(reviewing).voice_instructions
+
+      assert_includes waiting_instructions, "The first question is being prepared"
+      assert_not_includes waiting_instructions, "The plan is ready for review"
+      assert_includes reviewing_instructions, "The plan is ready for review"
+    end
+  end
+
   test "randomized Planner contexts never contain generated Person data" do
     random = Random.new(18)
     organization = organizations(:st_example)

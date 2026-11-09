@@ -50,7 +50,7 @@ class PlannerSessionsController < ApplicationController
   end
 
   def voice_session
-    raise ActiveRecord::RecordNotFound if @planner_session.build_as_you_go?
+    raise ActiveRecord::RecordNotFound if @planner_session.meal_setup?
     render json: Planner::VoiceSession.new(@planner_session).payload
   rescue Planner::VoiceClientSecretMinter::Error => error
     Rails.error.report(error, handled: true, severity: :warning)

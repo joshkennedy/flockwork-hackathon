@@ -3,7 +3,9 @@ require "application_system_test_case"
 class PlannerVoiceSystemTest < ApplicationSystemTestCase
   FAKE_VOICE_BROWSER = <<~JS
     window.__voiceEvents = []
-    window.__voiceAnswered = false
+    window.__voiceScripts = []
+    window.__voiceSessionUpdates = 0
+    window.__voiceRespondedUpdates = []
     window.__NativeWebSocket = window.WebSocket
 
     class FakeWebSocket {
@@ -25,24 +27,32 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
       send(payload) {
         const event = JSON.parse(payload)
         window.__voiceEvents.push(event)
-        if (event.type !== "response.create" || window.__voiceAnswered) return
+        if (event.type === "session.update") {
+          window.__voiceSessionUpdates += 1
+          return
+        }
+        if (event.type !== "response.create") return
 
-        window.__voiceAnswered = true
+        const update = window.__voiceSessionUpdates
+        const script = window.__voiceScripts[update - 1]
+        if (!script || window.__voiceRespondedUpdates.includes(update)) return
+        window.__voiceRespondedUpdates.push(update)
         window.setTimeout(() => {
           this.onmessage({ data: JSON.stringify({
             type: "response.output_audio_transcript.delta",
-            delta: "How should the Team prepare?"
+            delta: script.question
           }) })
           this.onmessage({ data: JSON.stringify({
             type: "conversation.item.input_audio_transcription.completed",
-            transcript: "We'll cook together"
+            transcript: script.answer
           }) })
           this.onmessage({ data: JSON.stringify({
             type: "response.function_call_arguments.done",
             name: "answer_card",
-            call_id: "voice-call-28",
-            arguments: JSON.stringify({ answer: "We'll cook together" })
+            call_id: `voice-call-${update}`,
+            arguments: JSON.stringify({ answer: script.answer })
           }) })
+          this.onmessage({ data: JSON.stringify({ type: "response.done" }) })
         }, 25)
       }
 
@@ -125,6 +135,11 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
     )
 
     visit project_planner_session_path(project, post_planner)
+    page.execute_script(<<~JS)
+      window.__voiceScripts = [
+        { question: "How should the Team prepare?", answer: "We'll cook together" }
+      ]
+    JS
     click_on "Talk It Through"
 
     assert_text "Your audio is sent to xAI. Describe the work without names or private care details."
@@ -138,6 +153,67 @@ class PlannerVoiceSystemTest < ApplicationSystemTestCase
     assert_no_selector "[data-voice-planner-target='panel']", visible: true
     assert_button "Talk It Through"
     assert_field "Or answer in your own words"
+  end
+
+  test "a Leader answers the build-as-you-go Planner by voice while the preview advances" do
+    Rails.configuration.x.planner_provider = Planner::Providers::Fake.new([
+      planner_response(
+        card: {
+          "question" => "What should this workday accomplish?",
+          "options" => [ "Repair the playground", "Prepare the garden", "Clean the building" ]
+        }
+      ),
+      planner_response(
+        card: {
+          "question" => "Who should the work serve?",
+          "options" => [ "Families", "Neighbors", "The whole church" ]
+        },
+        added: [
+          {
+            "kind" => "task",
+            "source_key" => "confirm-crew",
+            "fields" => {
+              "title" => "Confirm volunteer crew",
+              "details" => "Invite an open crew for the repair work.",
+              "due_on" => "2027-04-09"
+            }
+          }
+        ]
+      ),
+      planner_response(finished: true)
+    ])
+    Rails.configuration.x.voice_client_secret_minter = FakeVoiceClientSecretMinter.new
+    page.driver.with_playwright_page do |playwright_page|
+      playwright_page.context.add_init_script(script: FAKE_VOICE_BROWSER)
+    end
+    sign_in_leader_in_browser
+
+    visit new_project_path
+    click_button "Workday"
+    assert_text "What should this workday accomplish?"
+    page.execute_script(<<~JS)
+      window.__voiceScripts = [
+        { question: "What should this workday accomplish?", answer: "Repair the playground" }
+      ]
+    JS
+
+    click_on "Talk It Through"
+
+    assert_no_selector "[data-voice-planner-target='questionnaire']", visible: true
+    assert_selector ".voice-orb", visible: true
+    assert_text "Confirm volunteer crew", wait: 5
+    assert_selector "[data-voice-planner-target='questionnaire']", text: "Who should the work serve?", visible: :all, wait: 5
+    assert page.evaluate_script(<<~JS)
+      window.__voiceEvents.some((event) =>
+        event.type === "conversation.item.create" &&
+        event.item?.type === "function_call_output"
+      )
+    JS
+
+    click_on "End Conversation"
+
+    assert_selector "[data-voice-planner-target='questionnaire']", visible: true
+    assert_text "Who should the work serve?"
   end
 
   private

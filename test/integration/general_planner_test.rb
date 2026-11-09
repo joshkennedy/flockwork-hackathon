@@ -1,12 +1,18 @@
 require "test_helper"
 
 class GeneralPlannerTest < ActionDispatch::IntegrationTest
+  class FakeVoiceClientSecretMinter
+    def call = "general-planner-voice-secret"
+  end
+
   setup do
     @original_provider = Rails.configuration.x.planner_provider
+    @original_voice_client_secret_minter = Rails.configuration.x.voice_client_secret_minter
   end
 
   teardown do
     Rails.configuration.x.planner_provider = @original_provider
+    Rails.configuration.x.voice_client_secret_minter = @original_voice_client_secret_minter
   end
 
   test "each general planning kind starts a new v3 shell asynchronously without changing existing projects" do
@@ -371,7 +377,39 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_select "button[disabled]", text: "Add to Project"
   end
 
-  test "general planning enforces leader tenant privacy and v3 endpoint boundaries while v1 remains compatible" do
+  test "build-as-you-go planning supports voice while meal setup rejects it" do
+    sign_in_as_leader
+    Rails.configuration.x.voice_client_secret_minter = FakeVoiceClientSecretMinter.new
+    project = projects(:community_meal)
+    planner_session = project.planner_sessions.create!(
+      started_by: people(:leader),
+      description: "Plan the workday.",
+      flow_version: 3,
+      planning_kind: "workday",
+      current_card: card("What matters first?")
+    )
+
+    post voice_session_project_planner_session_path(project, planner_session), as: :json
+
+    assert_response :success
+    payload = @response.parsed_body
+    assert_equal "grok-voice-latest", payload.fetch("model")
+    assert_equal "answer_card", payload.fetch("tools").sole.fetch("name")
+    assert_includes payload.fetch("instructions"), "What matters first?"
+    assert_includes payload.fetch("instructions"), "Project preview updates on screen"
+
+    meal_setup = project.planner_sessions.create!(
+      started_by: people(:leader),
+      description: "Plan the meals.",
+      flow_version: 4,
+      planning_kind: "meal_train"
+    )
+    post voice_session_project_planner_session_path(project, meal_setup), as: :json
+
+    assert_response :not_found
+  end
+
+  test "general planning enforces leader tenant privacy and legacy endpoint boundaries while v1 remains compatible" do
     provider = use_provider(
       response(card: card("What support is needed?")),
       response(card: card("What happens next?"))
@@ -386,8 +424,6 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_not_includes JSON.generate(provider.contexts.last), "Leo Leader"
 
     post answer_project_planner_session_path(project, planner_session), params: { answer: "Private answer" }
-    assert_response :not_found
-    post voice_session_project_planner_session_path(project, planner_session)
     assert_response :not_found
     patch suggestion_project_planner_session_path(project, planner_session), params: {
       suggestion: { id: "anything", decision: "keep" }
