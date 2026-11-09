@@ -149,7 +149,7 @@
           </details>
 
           <div class="mt-5 empty:hidden"><% if planner_session.generation_busy? %>
-              <p class="meal-builder-status" data-meal-planner-target="status">Preparing Suggestions…</p>
+              <p class="meal-builder-status" data-meal-planner-target="status"><span class="meal-pulse-dot" aria-hidden="true"></span>Preparing Suggestions…</p>
             <% elsif planner_session.last_error.present? %>
               <%= render "planner_sessions/break", project:, planner_session: %>
             <% elsif planner_session.ready_to_continue? %>
