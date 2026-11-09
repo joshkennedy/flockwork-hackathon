@@ -5,9 +5,9 @@
         <span class="setup-step-number" aria-hidden="true"><%= step.fetch(:state) == :done ? icon(:check, size: 14) : index + 1 %></span>
         <span class="sr-only"><%= { done: "Done", open: "Current", upcoming: "Next" }.fetch(step.fetch(:state)) %>: </span>
         <h2 class="setup-step-title"><%= step.fetch(:title) %></h2>
-        <% if step[:detail].present? %><span class="setup-step-detail"><%= step[:detail] %></span><% end %>
+        <% if step[:detail].present? %><span class="setup-step-detail" title="<%= step[:detail] %>"><%= step[:detail] %></span><% end %>
+        <% if step[:change].present? %><%= step[:change] %><% end %>
       </div>
-      <% if step[:change].present? %><div class="setup-step-change"><%= step[:change] %></div><% end %>
       <% if step.fetch(:state) == :open %>
         <div class="setup-step-body"><%= yield %></div>
       <% end %>

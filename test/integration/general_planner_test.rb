@@ -146,6 +146,15 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     project, planner_session = start_and_generate("workday")
 
     get project_planner_session_path(project, planner_session)
+    assert_select "ol.setup-steps" do
+      assert_select "li[aria-current='step'] .setup-step-title", text: "Answer a few questions."
+      assert_select "li[data-step-state='done']" do
+        assert_select ".setup-step-title", text: "What are you organizing?"
+        assert_select ".setup-step-detail", text: "Workday"
+        assert_select ".sr-only", text: "Done:"
+      end
+      assert_select "li[aria-current='step']", count: 1
+    end
     assert_select "button", text: "Continue", count: 0
     assert_select ".meal-builder-status", text: "Choose an answer to continue."
 
@@ -179,6 +188,11 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_predicate planner_session.reload, :reviewing?
 
     get project_planner_session_path(project, planner_session)
+    assert_select "li[aria-current='step'] .setup-step-title", text: "Review and add."
+    assert_select "li[data-step-state='done']", count: 2
+    assert_select "li[data-step-state='done'] .setup-step-detail", text: "1 answer"
+    assert_select "li[data-step-state='done'] summary", text: "Change"
+    assert_select ".privacy-line", count: 1, text: /Audio goes to xAI/
     assert_select "form[action=?] input[name='project[name]'][value='Workday']",
       accept_project_planner_session_path(project, planner_session)
 

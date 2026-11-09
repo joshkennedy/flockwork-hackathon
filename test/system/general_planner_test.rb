@@ -18,15 +18,26 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
       response(finished: true, added: project_items)
     ])
     sign_in_as_leader_in_browser
-    page.current_window.resize_to(1200, 760)
+    page.current_window.resize_to(1440, 1000)
 
     visit new_project_path
+    assert_selector "li[aria-current='step']", text: "What are you organizing?"
+    capture_setup("new-1440")
+    page.current_window.resize_to(390, 844)
+    capture_setup("new-390")
+    find("summary", text: "Something Else").click
+    fill_in "Describe it in a sentence", with: "Organize a cleanup."
+    assert_button "Start"
+    find("summary", text: "Something Else").click
+    page.current_window.resize_to(1440, 1000)
     click_button "Workday"
     assert_text "What should this workday accomplish?"
     assert_text "Your Project will take shape here"
+    assert_selector "li[aria-current='step']", text: "Answer a few questions."
+    capture_setup("builder-asking-1440")
 
     click_button "Repair the playground"
-    assert_text "Preview updated. Change your choice or continue."
+    assert_text "Preview updated. Continue when ready."
     within ".meal-preview-heading" do
       assert_text "6 items"
     end
@@ -54,6 +65,15 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
 
     click_button "Finish with This"
     assert_text "Here’s what will be added"
+    assert_selector "li[aria-current='step']", text: "Review and add."
+    assert_selector "li[data-step-state='done']", text: "1 answer"
+    capture_setup("builder-reviewing-1440")
+    find("summary[aria-label='Change earlier choices']").click
+    within ".setup-step-change" do
+      find(".meal-answer-summary > summary").click
+      assert_button "Prepare the garden"
+    end
+    find("summary[aria-label='Change earlier choices']").click
     assert_field "Project name", with: "Workday"
     fill_in "Project name", with: "Playground repair day"
     click_button "Add to Project"
@@ -83,7 +103,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     visit new_project_path
     click_button "Workday"
     click_button "Preparation"
-    assert_text "Preview updated. Change your choice or continue."
+    assert_text "Preview updated. Continue when ready."
     assert_no_text "Choose a Project start date or a due date"
     click_button "Finish with This"
     fill_in "Project start date", with: "2027-04-10"
@@ -104,7 +124,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     visit new_project_path
     click_button "Workday"
     click_button "Preparation"
-    assert_text "Preview updated. Change your choice or continue."
+    assert_text "Preview updated. Continue when ready."
     click_button "Finish with This"
     find("summary", text: "Project Details").click
 
@@ -136,6 +156,14 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
   end
 
   private
+    def capture_setup(name)
+      return unless ENV["SETUP_SCREENSHOTS"]
+
+      directory = Rails.root.join("tmp/screenshots/mercury-stepper")
+      FileUtils.mkdir_p(directory)
+      page.save_screenshot(directory.join("#{name}.png"))
+    end
+
     def sign_in_as_leader_in_browser
       visit new_demo_session_path
       click_on "Explore as Leader"

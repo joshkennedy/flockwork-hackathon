@@ -429,16 +429,18 @@
   .setup-step[data-step-state="done"] .setup-step-number { @apply bg-ink text-on-ink; }
   .setup-step-title { @apply min-w-0 text-heading text-ink; }
   .setup-step[data-step-state="upcoming"] .setup-step-title { @apply font-normal text-ink-2; }
-  .setup-step-detail { @apply ml-auto text-meta text-ink-2; }
+  .setup-step-detail { @apply ml-auto min-w-0 flex-1 truncate text-right text-meta text-ink-2; }
   .setup-step-body { @apply mt-5 min-w-0; }
-  .setup-step-change { @apply mt-2; }
+  .setup-step-change[open] { flex-basis: 100%; }
+  .setup-step-change > summary { padding-inline: 0; list-style: none; }
+  .setup-step-change > summary::-webkit-details-marker { display: none; }
   .project-kind-list { @apply max-w-lg; }
   .project-kind-row { @apply flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-control px-3 py-2 text-left font-medium text-ink; transition: background-color var(--duration-hover); }
   .project-kind-row:hover { @apply bg-ghost-fill; }
   .project-kind-other > summary { list-style: none; }
   .project-kind-other > summary::-webkit-details-marker { display: none; }
   @media (min-width: 640px) {
-    .setup-step-body, .setup-step-change { margin-left: 36px; }
+    .setup-step-body { margin-left: 36px; }
   }
   .meal-builder { @apply w-full; width: min(880px, 100%); margin-inline: auto; }
   .meal-setup { @apply w-full; max-width: 880px; margin-inline: auto; }
