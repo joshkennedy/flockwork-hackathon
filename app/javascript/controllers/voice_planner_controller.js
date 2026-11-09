@@ -434,7 +434,7 @@ export default class extends Controller {
     const startAt = Math.max(this.audioContext.currentTime, this.nextPlaybackTime || 0)
     source.start(startAt)
     this.nextPlaybackTime = startAt + audioBuffer.duration
-    this.setStatus("Speaking…")
+    this.setStatus("Planner is speaking…")
   }
 
   rms(samples) {
@@ -455,7 +455,7 @@ export default class extends Controller {
   scheduleVoiceLevelRelease() {
     window.clearTimeout(this.voiceReleaseTimer)
     this.voiceReleaseTimer = window.setTimeout(() => {
-      if (this.currentStatus !== "Speaking…") return
+      if (this.currentStatus !== "Planner is speaking…") return
       this.updateVoiceLevel(0)
       if (this.voiceLevel > 0) this.scheduleVoiceLevelRelease()
     }, 50)
@@ -631,9 +631,9 @@ export default class extends Controller {
   paintOrb(orb) {
     orb.style.setProperty("--voice-level", this.voiceLevel || 0)
     orb.classList.toggle("has-level", this.voiceLevel >= 0.03)
-    orb.classList.toggle("is-speaking", this.currentStatus === "Speaking…")
+    orb.classList.toggle("is-speaking", this.currentStatus === "Planner is speaking…")
     orb.classList.toggle("is-thinking", [ "Thinking…", "Adding to your plan…" ].includes(this.currentStatus))
-    orb.classList.toggle("is-listening", ![ "Speaking…", "Thinking…", "Adding to your plan…" ].includes(this.currentStatus))
+    orb.classList.toggle("is-listening", ![ "Planner is speaking…", "Thinking…", "Adding to your plan…" ].includes(this.currentStatus))
   }
 
   csrfToken() {

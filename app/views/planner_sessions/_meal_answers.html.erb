@@ -5,7 +5,7 @@
       <details class="meal-answer-summary">
         <summary>
           <span class="text-ink-2"><%= step.fetch("question") %></span>
-          <span class="font-semibold text-ink"><%= step.fetch("answer") %><span class="ml-2 text-label text-ink-2">Change</span></span>
+          <span class="font-semibold text-ink"><%= step.fetch("answer") %><span class="ml-2 link text-label text-ink-2">Change</span></span>
         </summary>
         <div class="mt-2 grid gap-2">
           <% step.fetch("options", []).each do |option| %>

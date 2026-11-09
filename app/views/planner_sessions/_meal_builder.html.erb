@@ -53,8 +53,7 @@
         <h1 id="meal-project-heading" class="text-ink"><%= project.name %></h1>
       </div>
 
-      <% unless planner_session.generation_busy? %>
-      <details class="meal-builder-rename">
+      <details class="meal-builder-rename <%= "invisible" if planner_session.generation_busy? %>">
         <%= disclosure_summary "Project Details", class: "btn btn-text" %>
         <%= form_with url: planning_details_project_planner_session_path(project, planner_session), method: :patch, class: "meal-builder-popover popover-in" do |form| %>
           <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
@@ -65,7 +64,6 @@
           <%= form.submit "Save Details", class: "mt-3 btn btn-secondary", data: { turbo_submits_with: "Saving…" } %>
         <% end %>
       </details>
-      <% end %>
     </header>
 
     <div class="meal-builder-organization">
@@ -137,11 +135,11 @@
           <h2 id="meal-guide-heading" class="mt-2 text-lg font-semibold leading-snug text-ink"><%= planner_session.current_card.fetch("question") %></h2>
 
           <div hidden data-voice-planner-target="launcher" class="mt-4">
-            <button type="button" class="btn btn-secondary voice-planner-launch" data-action="voice-planner#start" data-voice-planner-target="startButton">
-              <%= icon(:mic) %>
-              <span>Talk It Through</span>
+            <button type="button" class="voice-planner-launch" data-action="voice-planner#start" data-voice-planner-target="startButton">
+              <%= icon(:mic, size: 20, class: "text-sunlit") %>
+              <span><span class="block font-semibold">Talk It Through</span><span class="block text-meta font-normal text-ink-2">Hands-free, one question at a time</span></span>
             </button>
-            <p class="mt-2 text-meta text-ink-2">Voice sends your audio to xAI. Describe the work without names or private care details.</p>
+            <p class="mt-2 text-meta text-ink-2">Audio goes to xAI. Leave out names and care details.</p>
           </div>
 
           <div class="mt-5 grid gap-2" data-controller="planner-answers" data-action="keydown@window->planner-answers#choose">
@@ -227,6 +225,7 @@
           </div>
 
           <section hidden data-voice-planner-target="panel" class="voice-planner-panel" aria-label="Voice planning">
+            <p class="text-meta text-ink-2">Question <%= current_step %> of <%= PlannerSession::MAX_GENERATED_QUESTIONS %></p>
             <div class="voice-orb" data-voice-planner-target="orb" aria-hidden="true">
               <span class="voice-orb-ring voice-orb-ring-outer"></span>
               <span class="voice-orb-ring voice-orb-ring-middle"></span>
@@ -234,23 +233,22 @@
               <span class="voice-orb-core"></span>
             </div>
             <p class="voice-orb-status" data-voice-planner-target="status" aria-live="polite">Listening…</p>
-            <p class="text-meta text-ink-2">Voice sends your audio to xAI. Describe the work without names or private care details.</p>
+            <div class="voice-captions" aria-live="polite">
+              <p><span class="block text-meta text-ink-2">Planner</span> <span data-voice-planner-target="assistantCaption">Waiting to speak…</span></p>
+              <p><span class="block text-meta text-ink-2">You</span> <span data-voice-planner-target="userCaption">Listening…</span></p>
+            </div>
             <% if voice_phase == "choose" && recently_added_items.any? %>
               <% recent_summaries = recently_added_items.first(3).map { |item| planner_pending_summary(item) } %>
               <% recent_summaries << "and #{recently_added_items.size - 3} more" if recently_added_items.size > 3 %>
               <p class="text-meta text-ink-2">Added · <%= safe_join(recent_summaries, " · ") %></p>
             <% end %>
-            <div class="voice-captions" aria-live="polite">
-              <p><span class="block text-meta text-ink-2">Planner</span> <span data-voice-planner-target="assistantCaption">Waiting to speak…</span></p>
-              <p><span class="block text-meta text-ink-2">You</span> <span data-voice-planner-target="userCaption">Listening…</span></p>
-            </div>
             <button type="button" class="btn btn-primary voice-planner-end" data-action="voice-planner#end">End Conversation</button>
           </section>
         <% end %>
 
         <% unless planner_session.accepted? %>
           <%# The quiet exits share one row; an open Back takes the full width so its answers read below. %>
-          <div class="meal-builder-exits mt-6 flex flex-wrap items-start gap-x-4 border-t border-hairline pt-3">
+          <div class="meal-builder-exits mt-6 flex-wrap items-start gap-x-4 border-t border-hairline pt-3">
             <% if planner_session.asking? && (planner_session.pending_answer&.fetch("step_index", 0) || planner_session.steps.length).positive? %>
               <details class="open:basis-full">
                 <%= disclosure_summary "Back to Earlier Choices", class: "-ms-2 btn btn-text" %>
@@ -261,7 +259,7 @@
               form: { data: { turbo_frame: "_top" } } %>
           </div>
         <% end %>
-        <%= render "planner_sessions/privacy" %>
+        <%= render "planner_sessions/privacy", voice_notice: false %>
       </section>
 
       <% if general_planner %>

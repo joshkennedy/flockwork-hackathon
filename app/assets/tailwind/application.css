@@ -410,7 +410,8 @@
   .suggestion.kept { @apply border-solid border-border bg-panel text-ink shadow-raised; }
   .suggestion.kept .kept-check { animation: keep-check var(--duration-keep) var(--ease-enter); }
   @starting-style { .suggestion.kept { background-color: var(--color-ghost-fill); border-color: var(--color-ghost-border); color: var(--color-ink-2); } }
-  .project-kind-tile { @apply flex h-full w-full flex-col items-start rounded-tile border border-border bg-panel p-4 text-left sm:min-h-24 shadow-raised; transition: border-color var(--duration-hover), background-color var(--duration-hover), box-shadow var(--duration-press), transform var(--duration-press); }
+  .project-kind-tile { @apply flex w-full flex-col items-start rounded-tile border border-border bg-panel p-4 text-left shadow-raised; transition: border-color var(--duration-hover), background-color var(--duration-hover), box-shadow var(--duration-press), transform var(--duration-press); }
+  .project-kind-ghost { @apply border-dashed border-ghost-border bg-ghost-fill text-ink-2 shadow-none; }
   .project-kind-grid { @apply grid gap-3 sm:grid-cols-2 lg:grid-cols-3; }
   button.project-kind-tile:active { transform: translateY(1px); box-shadow: var(--shadow-secondary-active); }
   .meal-builder { @apply w-full; width: min(880px, 100%); margin-inline: auto; }
@@ -460,6 +461,7 @@
   .meal-builder-popover { @apply absolute right-0 top-10 z-10 w-72 rounded-panel bg-panel p-4 shadow-float; }
   .meal-builder-organization { @apply mt-7 grid min-w-0 gap-7; }
   .meal-builder :is(.btn, summary) { min-height: 44px; }
+  .meal-builder-exits { display: flex; }
   .meal-builder-guide { @apply min-w-0; }
   [data-voice-active="true"] [data-voice-planner-target="questionnaire"] { display: none; }
   [data-voice-active="true"] [data-voice-planner-target="panel"] { display: grid; }
@@ -471,6 +473,9 @@
     .meal-builder .voice-planner-launch { width: 100%; min-height: 48px; }
     .meal-builder .voice-planner-end { width: 100%; min-height: 48px; margin-top: auto; }
   }
+  .voice-planner-launch { @apply inline-flex items-center gap-3 rounded-tile border border-border bg-panel p-3.5 text-left text-ink shadow-raised; }
+  .voice-planner-launch:hover { @apply border-border-strong; }
+  .voice-planner-launch:focus-visible { outline: 2px solid var(--color-ink); outline-offset: 3px; }
   .voice-planner-panel { @apply justify-items-center content-start gap-4 py-7 text-center; }
   .voice-orb { --voice-level: 0; position: relative; width: 168px; height: 168px; }
   .voice-orb-ring, .voice-orb-core { position: absolute; left: 50%; top: 50%; border-radius: 50%; transform: translate(-50%, -50%); }
@@ -519,7 +524,10 @@
   .meal-slot-editor[open] > summary { @apply ml-auto; width: max-content; }
   .meal-slot-edit-panel { @apply mt-3 rounded-nav bg-panel p-4; }
   .meal-slot-conflict { @apply bg-danger-soft; }
-  .meal-slot-error { @apply bg-danger-soft; }
+  .planner-pending-row .meal-slot-summary { @apply relative block; }
+  .planner-pending-row .meal-slot-summary > div { padding-right: 64px; }
+  .planner-pending-row .meal-slot-editor > summary { position: absolute; top: 0; right: 0; }
+  .planner-pending-row .meal-slot-edit-panel { @apply mx-0 rounded-none bg-transparent p-0; }
   .meal-slot-conflict-actions { @apply mt-3 border-t border-danger/20 pt-3; }
   .meal-preview-empty { @apply rounded-tile border border-dashed border-ghost-border bg-ghost-fill px-4 py-7; }
   .meal-building { @apply mt-4 flex flex-col gap-2.5 rounded-tile border border-dashed border-ghost-border bg-ghost-fill px-4 py-4; }

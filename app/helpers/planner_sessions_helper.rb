@@ -26,8 +26,8 @@ module PlannerSessionsHelper
     Project::TOOL_LABELS.fetch(tool, tool.to_s.humanize)
   end
 
-  def planner_tool_icon(tool)
-    icon(PLANNER_TOOL_ICONS.fetch(tool, tool.nil? ? :people : :projects), class: PLANNER_TOOL_COLORS.fetch(tool, "text-ink-2"))
+  def planner_tool_icon(tool, size: 16)
+    icon(PLANNER_TOOL_ICONS.fetch(tool, tool.nil? ? :people : :projects), size:, class: PLANNER_TOOL_COLORS.fetch(tool, "text-ink-2"))
   end
 
   def planner_pending_summary(item)

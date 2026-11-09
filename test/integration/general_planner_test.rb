@@ -280,10 +280,14 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_select "button[disabled][aria-describedby=?]", note_id, text: "Add to Project"
     assert_select "p##{note_id} a[href='##{budget_item_id}'][data-turbo='false']", text: "1 budget line needs an estimated cost"
     assert_select "p##{note_id} a[href='##{schedule_item_id}'][data-turbo='false']", text: "1 schedule item needs a date"
-    assert_select "article##{budget_item_id}.meal-slot-error details[open]"
+    assert_select "article##{budget_item_id} details:not([open])"
+    assert_select "article##{budget_item_id} .badge-need", text: "Needs an estimate"
+    assert_select "article##{budget_item_id}.meal-slot-error", count: 0
     assert_select "input##{budget_field_id}[aria-invalid='true'][aria-describedby=?]", budget_error_id
     assert_select "p##{budget_error_id}", text: "Estimated cost is required"
-    assert_select "article##{schedule_item_id}.meal-slot-error details[open]"
+    assert_select "article##{schedule_item_id} details:not([open])"
+    assert_select "article##{schedule_item_id} .badge-need", text: "Needs details"
+    assert_select "article##{schedule_item_id}.meal-slot-error", count: 0
     assert_select "input##{schedule_field_id}[aria-invalid='true'][aria-describedby=?]", schedule_error_id
     assert_select "p##{schedule_error_id}", text: "Date can't be blank"
   end
@@ -380,7 +384,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     get project_planner_session_path(project, planner_session)
 
     assert_response :success
-    assert_select "article.meal-slot-error", text: /Session does not match a planned or existing Schedule item/
+    assert_select "article.planner-pending-row .meal-slot-edit-panel", text: /Session does not match a planned or existing Schedule item/
     assert_select "button[disabled]", text: "Add to Project"
   end
 

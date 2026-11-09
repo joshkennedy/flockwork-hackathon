@@ -27,20 +27,28 @@
     </section>
   <% else %>
     <section class="mt-7" aria-labelledby="project-kind-heading">
-      <h2 id="project-kind-heading" class="text-ink">What are we organizing?</h2>
+      <h2 id="project-kind-heading" class="text-ink">What are you organizing?</h2>
       <p class="mt-2 text-ink-2">Pick one and the Planner will ask a few questions and draft the plan with you.</p>
       <div class="project-kind-grid mt-5">
         <% [
-          [ "Meal Train", "Line up meals for a family who needs them.", :schedule, "text-tool-signup", start_meal_planner_projects_path, :post, {} ],
-          [ "Retreat", "Plan the days, the place and what to bring.", :schedule, "text-tool-schedule", start_planner_projects_path, :post, { planning_kind: "retreat" } ],
-          [ "Workday", "Rally hands for a day of shared work.", :tasks, "text-tool-tasks", start_planner_projects_path, :post, { planning_kind: "workday" } ],
-          [ "Children’s Program", "Plan the dates, helpers and supplies for kids.", :list, "text-tool-list", start_planner_projects_path, :post, { planning_kind: "children_program" } ],
-          [ "Class", "Plan each session, its teacher and materials.", :docs, "text-tool-docs", start_planner_projects_path, :post, { planning_kind: "class" } ],
-          [ "Something Else", "Describe it in one sentence and we'll shape it.", :plus, "text-ink-2", new_project_path, :get, { planning_kind: "other" } ]
-        ].each do |title, description, glyph, color, path, method, parameters| %>
-          <%= button_to path, method:, params: parameters, class: "project-kind-tile", data: ({ turbo_submits_with: "Creating Project…" } unless method == :get) do %>
-            <span class="flex items-start gap-2 text-heading text-ink"><%= icon(glyph, class: "mt-0.5 #{color}") %><%= title %></span>
+          [ "Meal Train", "Line up meals for a family who needs them.", :heart, "text-tool-signup", start_meal_planner_projects_path, :post, {}, %w[signup_sheet messages] ],
+          [ "Retreat", "Plan the days, the place and what to bring.", :schedule, "text-tool-schedule", start_planner_projects_path, :post, { planning_kind: "retreat" }, %w[schedule budget list] ],
+          [ "Workday", "Rally hands for a day of shared work.", :tasks, "text-tool-tasks", start_planner_projects_path, :post, { planning_kind: "workday" }, %w[tasks signup_sheet list] ],
+          [ "Children’s Program", "Plan the dates, helpers and supplies for kids.", :people, "text-tool-list", start_planner_projects_path, :post, { planning_kind: "children_program" }, %w[schedule signup_sheet list] ],
+          [ "Class", "Plan each session, its teacher and materials.", :docs, "text-tool-docs", start_planner_projects_path, :post, { planning_kind: "class" }, %w[schedule signup_sheet docs] ],
+          [ "Something Else", "Describe it in one sentence and we'll shape it.", :plus, "text-ink-2", new_project_path, :get, { planning_kind: "other" }, [] ]
+        ].each do |title, description, glyph, color, path, method, parameters, tools| %>
+          <%= button_to path, method:, params: parameters, class: class_names("project-kind-tile", "project-kind-ghost": tools.empty?), data: ({ turbo_submits_with: "Creating Project…" } unless method == :get) do %>
+            <span class="flex items-start gap-2 text-heading text-ink"><%= icon(glyph, size: 20, class: "mt-0.5 #{color}") %><%= title %></span>
             <span class="mt-1 block text-meta text-ink-2"><%= description %></span>
+            <% if tools.any? %>
+              <span class="mt-3 flex flex-wrap items-center gap-x-1 gap-y-1 text-meta text-ink-2">
+                <% tools.each_with_index do |tool, index| %>
+                  <% if index.positive? %><span aria-hidden="true">·</span><% end %>
+                  <span class="inline-flex items-center gap-1"><%= planner_tool_icon(tool, size: 14) %><%= { "list" => "Lists", "docs" => "Docs" }.fetch(tool) { planner_tool_label(tool) } %></span>
+                <% end %>
+              </span>
+            <% end %>
           <% end %>
         <% end %>
       </div>

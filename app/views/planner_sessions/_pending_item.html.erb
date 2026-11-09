@@ -1,23 +1,28 @@
 <% fields = item.fetch("fields") %>
 <% errors = Array(pending_errors.fetch(item.fetch("id"), [])) %>
 <% field_errors = planner_pending_field_errors(item, errors) %>
-<article id="pending-item-<%= item.fetch("id") %>" class="meal-slot <%= "meal-slot-conflict" if item["conflict"].present? %> <%= "meal-slot-error" if errors.any? %>">
+<article id="pending-item-<%= item.fetch("id") %>" class="meal-slot planner-pending-row <%= "meal-slot-conflict" if item["conflict"].present? %>">
   <div class="meal-slot-summary">
     <div class="min-w-0 flex-1">
-      <p class="font-semibold text-ink"><%= planner_pending_summary(item) %></p>
+      <div class="flex flex-wrap items-center gap-2">
+        <p class="font-semibold text-ink"><%= planner_pending_summary(item) %></p>
+        <% if errors.any? %>
+          <span class="badge-need"><%= errors.include?("Estimated cost is required") ? "Needs an estimate" : "Needs details" %></span>
+        <% end %>
+      </div>
       <%= render "planner_sessions/pending_item_meta", item:, planner_session: %>
-      <% if field_errors[nil].present? %>
-        <ul class="mt-2 text-meta text-danger" aria-label="Needs attention">
-          <% field_errors.fetch(nil).each do |error| %><li><%= error %></li><% end %>
-        </ul>
-      <% end %>
     </div>
     <% unless planner_session.generation_busy? %>
-      <details class="meal-slot-editor" <%= "open" if errors.any? %>>
+      <details class="meal-slot-editor">
         <summary class="btn btn-text disclosure-summary">Edit</summary>
         <div class="meal-slot-edit-panel">
+          <% if field_errors[nil].present? %>
+            <ul class="mt-2 text-meta text-danger" aria-label="Needs attention">
+              <% field_errors.fetch(nil).each do |error| %><li><%= error %></li><% end %>
+            </ul>
+          <% end %>
           <%= form_with url: pending_item_project_planner_session_path(project, planner_session), method: :patch,
-            namespace: "pending_#{item.fetch('id')}", class: "grid gap-4" do |form| %>
+            namespace: "pending_#{item.fetch("id")}", class: "grid gap-4" do |form| %>
             <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
             <%= form.hidden_field :id, name: "item[id]", value: item.fetch("id") %>
             <%= render "planner_sessions/pending_fields", item:, fields:, field_errors:, planner_session: %>
