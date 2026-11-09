@@ -63,7 +63,8 @@
 
 /* Hero: the wash becomes a warm field that fills the first viewport, and the scene breaks its bottom edge. */
 .lp-hero { position: relative; isolation: isolate; padding: 72px 24px 0; text-align: center; }
-.lp-hero .header-wash { height: calc(100% - 220px); border-radius: 0 0 40px 40px; z-index: -1; mask-image: none;
+/* The field fades out behind the scene's lower half instead of ending on an edge. */
+.lp-hero .header-wash { height: calc(100% - 80px); border-radius: 0; z-index: -1; mask-image: linear-gradient(#000 62%, transparent);
   background: color-mix(in srgb, var(--color-sunlit-soft) 70%, var(--color-page)); --wash-a: rgb(245 176 0 / .34); --wash-b: rgb(232 89 12 / .2); }
 .lp-hero .header-wash::before { width: 900px; height: 520px; }
 .lp-hero .header-wash::after { width: 720px; height: 460px; }
@@ -73,6 +74,14 @@
 .lp-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; }
 .lp-hero-scene { display: block; max-width: 1200px; margin: 56px auto 0; }
 .lp-hero-scene img { display: block; width: 100%; height: auto; }
+
+/* Photo strip: five of the things the subline just named, edge to edge, scrolling sideways on phones. */
+.lp-photos { margin-top: 96px; padding: 0 24px; }
+.lp-photos-row { display: grid; grid-template-columns: 1.15fr 1fr 1fr 1.05fr 1fr; gap: 12px; max-width: 1320px; margin: 0 auto; }
+.lp-photos figure { margin: 0; }
+/* Fixed height so the five captions line up even though the columns differ in width. */
+.lp-photos img { display: block; width: 100%; height: 280px; object-fit: cover; border-radius: 16px; }
+.lp-photos figcaption { margin-top: 10px; font-size: 13px; color: var(--color-ink-2); }
 
 /* In-between: a white band with hairlines, so the timeline reads as a chapter rather than a diagram. */
 .lp-between { background: var(--color-panel); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); }
@@ -132,17 +141,18 @@
 .lp-why img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
 /* The closer sits on the same plate as the recorded scenes and lands on the footer, so the page ends once. */
-.lp-close { position: relative; isolation: isolate; overflow: hidden; max-width: var(--lp-max); margin: 140px auto 0; padding: 104px 24px; text-align: center; border-radius: 16px 16px 0 0; color: #2B1A0C;
+.lp-close { position: relative; isolation: isolate; overflow: hidden; margin: 160px 0 0; padding: 184px 24px; text-align: center; color: #2B1A0C;
   background: radial-gradient(60% 90% at 12% 10%, #FFE9A8, transparent 70%), radial-gradient(55% 80% at 92% 0%, #9CCDEB, transparent 70%), radial-gradient(70% 90% at 85% 100%, #E4683F, transparent 70%), #F2B77C; }
 .lp-close::after { content: ""; position: absolute; inset: 0; z-index: -1; background-image: radial-gradient(rgba(255,255,255,.7) 1px, transparent 1.6px); background-size: 6px 6px; mix-blend-mode: overlay; opacity: .55; }
-.lp-close > * { max-width: 640px; margin-left: auto; margin-right: auto; }
-.lp-close h2 { font-size: clamp(32px, 4.4vw, 52px); line-height: 1.1; }
-.lp-close > p:first-of-type { margin: 14px auto 28px; font-size: 17px; color: #4A3320; }
-.lp-returning { margin-top: 20px; font-size: 14px; color: #4A3320; }
+.lp-close > * { max-width: 760px; margin-left: auto; margin-right: auto; }
+.lp-close h2 { font-size: clamp(40px, 6vw, 76px); line-height: 1.04; }
+.lp-close > p:first-of-type { margin: 20px auto 36px; font-size: 20px; color: #4A3320; }
+.marketing .lp-close .btn { min-height: 52px; padding: 0 28px; font-size: 17px; }
+.lp-returning { margin-top: 24px; font-size: 15px; color: #4A3320; }
 .lp-returning .link { color: #2B1A0C; text-decoration-color: rgba(43,26,12,.4); }
 
 /* Footer: the mark, the tagline, two short columns, then the wordmark running off the bottom edge. */
-.lp-footer { position: relative; overflow: hidden; padding: 64px 24px 0; background: var(--color-frame); container-type: inline-size; }
+.lp-footer { position: relative; overflow: hidden; padding: 80px 24px 0; background: var(--color-frame); container-type: inline-size; }
 .lp-footer-cols { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 32px; max-width: var(--lp-max); margin: 0 auto; }
 .lp-footer-mark { display: block; width: 44px; height: auto; margin-bottom: 16px; }
 .lp-footer-tag { max-width: 26em; margin: 0; font-size: 15px; line-height: 1.55; color: var(--color-ink-2); }
@@ -171,7 +181,8 @@
 .lp-track-step { left: calc((var(--gold-inset) + (100 - 2 * var(--gold-inset)) * var(--i) / 5) * 1%); transform: translateX(-50%); width: 110px; text-align: center; font-weight: 600; color: var(--color-ink); }
 .lp-track-step::before { content: ""; position: absolute; left: 50%; top: -22px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: var(--color-mark); z-index: 1; }
 .lp-track-card { position: relative; width: min(560px, 100%); margin: 0 auto; padding: 28px; border-radius: 12px; background: var(--color-ink); color: var(--color-on-ink); box-shadow: 0 8px 24px rgba(20,20,19,.12), 0 2px 6px rgba(20,20,19,.06); }
-.lp-track-card::after { content: ""; position: absolute; left: 50%; top: 100%; width: calc((100 - 2 * var(--gold-inset)) * 1cqw); height: var(--bracket-h); transform: translateX(-50%); border: 2px solid var(--color-mark); border-bottom: 0; border-radius: 8px 8px 0 0; }
+/* One stem from the card down to the gold stretch, like a callout. */
+.lp-track-card::after { content: ""; position: absolute; left: 50%; top: 100%; width: 2px; height: var(--bracket-h); margin-left: -1px; background: var(--color-mark); }
 .lp-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; background: var(--color-sunlit); font-size: 12px; font-weight: 600; /* Sunlit is the same in both themes, so the badge text stays dark rather than following ink. */ color: #141413; }
 .lp-track-card h3 { margin-top: 14px; font-size: 24px; line-height: 1.2; }
 .lp-track-card p { margin-top: 8px; font-size: 15px; line-height: 1.55; }
@@ -216,8 +227,12 @@
   .lp-card-copy { padding: 20px 20px 0; }
   .lp-why { margin-top: 80px; }
   .lp-why-text { padding: 40px 20px 48px; }
-  .lp-close { margin: 80px 16px 0; padding: 64px 20px; }
-  .marketing .lp-close .btn { width: 100%; min-height: 48px; font-size: 15px; }
+  .lp-close { margin: 96px 0 0; padding: 104px 20px; }
+  .marketing .lp-close .btn { width: 100%; min-height: 52px; font-size: 16px; }
+  .lp-photos { margin-top: 64px; padding: 0 0 0 16px; }
+  .lp-photos-row { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 0 16px 8px 0; scrollbar-width: none; }
+  .lp-photos figure { flex: 0 0 72vw; scroll-snap-align: start; }
+  .lp-photos img { height: 54vw; }
   .lp-footer { padding: 40px 16px 0; }
   .lp-footer-cols { grid-template-columns: 1fr 1fr; gap: 24px; }
   .lp-footer-cols > :first-child { grid-column: 1 / -1; }

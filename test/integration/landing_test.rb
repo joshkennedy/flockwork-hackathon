@@ -99,6 +99,6 @@ class LandingTest < ActionDispatch::IntegrationTest
   test "landing tells the story in the spec's order" do
     get root_path
     ids = css_select("section[aria-labelledby]").map { |section| section["aria-labelledby"] }
-    assert_equal %w[landing-title between-title planner-title tour-title people-title why-title close-title], ids
+    assert_equal %w[landing-title photos-title between-title planner-title tour-title people-title why-title close-title], ids
   end
 end

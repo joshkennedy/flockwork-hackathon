@@ -1,0 +1,19 @@
+<%# Five of the things a church puts on, straight after the hero names them. Photos live in app/assets/images/marketing/photos. %>
+<% photos = [
+  [ "meal-train-porch", "Meal train", "A neighbor on a brick porch handing a bag of groceries and a dish to a young couple at their front door" ],
+  [ "vbs-field", "Vacation Bible School", "Kids sitting in the grass with open books in front of a wooden cross and a Vacation Bible School sign" ],
+  [ "womens-retreat", "Women’s retreat", "A circle of women sitting in the grass under trees, talking with cups in hand" ],
+  [ "mens-retreat", "Men’s retreat", "Men paddling two canoes across a calm lake" ],
+  [ "kids-crafts", "Kids’ night", "Children cutting colored paper at a long table in a church hall while two adults help" ]
+] %>
+<section class="lp-photos" aria-labelledby="photos-title">
+  <h2 id="photos-title" class="sr-only">All the ways a church looks after its own</h2>
+  <div class="lp-photos-row">
+    <% photos.each do |name, label, alt| %>
+      <figure>
+        <%= image_tag "marketing/photos/#{name}.webp", alt: alt, loading: "lazy", width: 1152, height: 768 %>
+        <figcaption><%= label %></figcaption>
+      </figure>
+    <% end %>
+  </div>
+</section>
