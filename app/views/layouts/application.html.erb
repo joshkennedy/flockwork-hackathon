@@ -19,9 +19,9 @@
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
-  <body data-controller="global-search" data-action="keydown@window->global-search#shortcut turbo:before-morph-element->global-search#keepOpen" style="<%= mark_color_style %>" class="min-h-screen <%="bg-frame" if authenticated? %>">
+  <body data-controller="global-search" data-action="keydown@window->global-search#shortcut turbo:before-morph-element->global-search#keepOpen" style="<%= mark_color_style %>" class="min-h-screen <%="bg-frame" if authenticated? && controller_name != "legal_pages" %>">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-panel focus:p-3">Skip to content</a>
-    <% if authenticated? %>
+    <% if authenticated? && controller_name != "legal_pages" %>
       <div class="min-h-screen p-2 pb-[calc(64px+env(safe-area-inset-bottom))] md:grid md:grid-cols-[232px_minmax(0,1fr)] md:pb-2">
         <aside class="sticky top-2 hidden h-[calc(100dvh-16px)] min-w-0 flex-col px-4 pb-3 pt-3.5 md:flex" aria-label="Organization">
           <%= render "layouts/wordmark", path: home_path, class: "mb-6 px-2" %>
@@ -69,7 +69,7 @@
           <% if controller_name == "landing" %><%= link_to "Plan Your First Project", sign_up_path, class: "btn btn-secondary btn-sm" %><% end %>
         </nav>
       </header>
-      <% if controller_name == "landing" %>
+      <% if controller_name.in?(%w[landing legal_pages]) %>
         <main id="main-content" class="marketing"><%= yield %></main>
         <%= render "landing/footer" %>
       <% else %>

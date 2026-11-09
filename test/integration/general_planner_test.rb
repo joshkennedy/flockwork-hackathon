@@ -192,7 +192,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_select "li[data-step-state='done']", count: 2
     assert_select "li[data-step-state='done'] .setup-step-detail", text: "1 answer"
     assert_select "li[data-step-state='done'] summary", text: "Change"
-    assert_select ".privacy-line", count: 1, text: /Audio goes to xAI/
+    assert_select ".privacy-line", count: 0
     assert_select "form[action=?] input[name='project[name]'][value='Workday']",
       accept_project_planner_session_path(project, planner_session)
 

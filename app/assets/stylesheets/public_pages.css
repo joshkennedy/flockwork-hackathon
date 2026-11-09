@@ -48,6 +48,15 @@
 .marketing .btn { min-height: 40px; padding: 0 18px; font-size: 14px; }
 .marketing h1, .marketing h2 { font-family: var(--font-display); font-weight: 400; letter-spacing: -.01em; text-wrap: balance; }
 .marketing h3 { font-size: 17px; line-height: 24px; font-weight: 600; }
+.legal-page { max-width: calc(var(--lp-max) + 48px); margin: 0 auto; padding: 48px 24px 96px; }
+.legal-page > * { max-width: 68ch; }
+.legal-page h1 { font-size: clamp(30px, 4vw, 48px); line-height: 1.2; }
+.legal-page h2 { margin-top: 40px; font-family: var(--font-sans); font-size: 20px; line-height: 28px; font-weight: 600; letter-spacing: normal; }
+.legal-page p { margin-top: 16px; font-size: 17px; line-height: 1.65; color: var(--color-ink-2); }
+.legal-page .legal-updated { margin-top: 12px; margin-bottom: 32px; font-size: 13px; }
+@media (max-width: 640px) {
+  .legal-page { padding: 32px 16px 64px; }
+}
 /* The hero and callout scenes carry their own colored plate and 16px corners (marketing/animations/flockwork.css); a floating
    scene gets a box-shadow on the same radius, never a filter, which browsers would re-run on every animated frame. */
 .lp-scene { display: block; }

@@ -1,0 +1,29 @@
+<% content_for :title, "Privacy policy · Flockwork" %>
+<% content_for :head do %>
+  <meta name="description" content="What Flockwork stores and what text planning, voice planning and browser dictation send to AI services.">
+  <link rel="canonical" href="<%= privacy_url %>">
+<% end %>
+<article class="legal-page">
+  <h1>Privacy policy.</h1>
+  <p class="legal-updated">Last updated November 9, 2026</p>
+  <p>Flockwork stores your organization’s workspace so its people can plan and carry out projects together.</p>
+
+  <h2>Information in Flockwork</h2>
+  <p>The workspace stores organization settings, people’s names and contact details, memberships and invitations, projects and their tools. Those tools include tasks, schedules, sign-up slots and claims, budgets, lists, messages and documents. Planning sessions store descriptions, answers and draft suggestions. Sign-in sessions also record browser information and IP addresses.</p>
+  <p>Access depends on organization, role and project membership. People records can include skills, availability and notes. Private care notes are not included in the Planner’s context.</p>
+
+  <h2>Text planning</h2>
+  <p>The Planner sees project details, not the people directory. Its context includes descriptions, answers, existing project work, skills needed and relevant work from up to five past projects, including debrief text where available. It does not receive directory records, people’s contact details or their individual skills.</p>
+  <p>Before sending Planner text, Flockwork replaces matching directory full names and first names with [name], including ambiguous names such as Grace or Hope. This does not detect every possible name or private detail. Do not put sensitive personal information in planning text.</p>
+  <p>Text planning is sent through OpenRouter to the configured language model. The default is Anthropic’s Claude Sonnet 5.5; deployments can configure a different provider or model.</p>
+
+  <h2>Talk It Through and dictation</h2>
+  <p>Talk It Through is optional. When you start it, your browser sends raw microphone audio directly to xAI’s realtime API. Spoken names or private details can reach xAI before Flockwork can redact them. Flockwork sends redacted project context to guide the conversation and redacts matching directory names from answers before storing them or sending them to the text planning model. You can end the conversation and continue by typing.</p>
+  <p>The separate Dictate control uses your browser’s speech recognition to put spoken words into a text field. Your browser or its speech service handles that audio; it is not the xAI conversation. Review the text before submitting it.</p>
+
+  <h2>Storage and questions</h2>
+  <%# PLACEHOLDER: Flockwork retention and deletion periods, and AI/browser provider retention terms, need confirmed operator policies. %>
+  <p>No retention period is specified on this page. AI and browser speech services process information outside Flockwork. Their handling of that information depends on the service and its settings.</p>
+  <%# PLACEHOLDER: The service operator's privacy contact and formal request process have not been supplied. %>
+  <p>For questions about your information, corrections or removal, contact your organization’s Flockwork admin. Ask the person who invited you or your organization’s office if you need help finding that admin.</p>
+</article>

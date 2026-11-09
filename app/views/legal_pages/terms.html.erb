@@ -1,0 +1,24 @@
+<% content_for :title, "Terms · Flockwork" %>
+<% content_for :head do %>
+  <meta name="description" content="Using Flockwork to plan your organization's projects and review AI suggestions.">
+  <link rel="canonical" href="<%= terms_url %>">
+<% end %>
+<article class="legal-page">
+  <h1>Terms.</h1>
+  <p class="legal-updated">Last updated November 9, 2026</p>
+  <p>Flockwork helps your organization plan projects, coordinate volunteers and keep the work in one place.</p>
+
+  <h2>Using your organization’s workspace</h2>
+  <p>Your access depends on your role and project membership. Admins manage the organization and its people. Leaders plan and manage their projects. Volunteers can take part in the projects available to them.</p>
+  <p>Only enter information you are authorized to share with your organization. Keep private care details out of Planner descriptions and answers.</p>
+
+  <h2>Review the Planner’s suggestions</h2>
+  <p>The Planner uses AI services to suggest project work. Suggestions can be incomplete or incorrect. Check names of tasks, dates, quantities and costs before adding them to your project. People choose who serves; the Planner proposes open roles.</p>
+  <p>Text planning sends project context through OpenRouter to a language model. Talk It Through sends microphone audio to xAI. Browser dictation uses your browser’s speech recognition. See the <%= link_to "Privacy policy", privacy_path, class: "link" %> for what each receives.</p>
+
+  <h2>Questions about your workspace</h2>
+  <%# PLACEHOLDER: The service operator's legal identity and direct contact address have not been supplied. %>
+  <p>Contact the person who administers Flockwork for your organization for questions about access, project content or use of your workspace. If you do not know who that is, ask the person who invited you or your organization’s office.</p>
+  <%# PLACEHOLDER: Governing terms, jurisdiction and any commercial terms require the service operator's confirmed policy. %>
+  <p>This page describes the current workspace and planning features. It does not specify a subscription price, service guarantee or governing jurisdiction.</p>
+</article>

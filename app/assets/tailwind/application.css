@@ -407,7 +407,6 @@
   details[open] > :not(summary, .popover-in) { animation: disclose var(--duration-hover) var(--ease-enter); }
   .tool-section { @apply border-t border-hairline pt-7; }
   .tool-section h2 { @apply flex items-center gap-2; }
-  .privacy-line { @apply mt-7 flex items-start gap-2 text-meta text-ink-2; text-wrap: pretty; }
   .dictation-field { position: relative; }
   .dictation-field:has(button:not([hidden])) :is(input, textarea) { padding-right: 44px; }
   .dictation-field > button { position: absolute; right: 4px; top: 4px; }
@@ -499,7 +498,7 @@
   [data-voice-active="true"] [data-voice-planner-target="questionnaire"] { display: none; }
   [data-voice-active="true"] [data-voice-planner-target="panel"] { display: grid; }
   @media (width < 768px) {
-    [data-voice-active="true"] :is(.meal-builder-rename, .meal-builder-exits, .meal-builder-guide > .privacy-line) { display: none; }
+    [data-voice-active="true"] :is(.meal-builder-rename, .meal-builder-exits) { display: none; }
     [data-voice-active="true"] .voice-planner-panel { display: flex; flex-direction: column; align-items: center; gap: 8px; height: max(580px, calc(100dvh - 177px - max(4px, env(safe-area-inset-bottom)))); padding-bottom: 0; }
     body:has([data-voice-active="true"] .meal-builder) nav[aria-label="Breadcrumbs"] { display: none !important; }
     [data-voice-active="true"] .meal-builder-header { padding-bottom: 8px; }

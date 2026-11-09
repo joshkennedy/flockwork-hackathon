@@ -38,6 +38,8 @@
         <%= icon(:settings) %><span>Settings</span>
       <% end %>
     <% end %>
+    <%= link_to "Terms", terms_path, class: "account-item" %>
+    <%= link_to "Privacy policy", privacy_path, class: "account-item" %>
     <hr class="my-1 border-hairline">
     <%= button_to session_path, method: :delete, class: "account-item" do %>
       <%= icon(:sign_out) %><span>Sign Out</span>
