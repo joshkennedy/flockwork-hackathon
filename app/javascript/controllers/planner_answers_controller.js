@@ -9,10 +9,14 @@ export default class extends Controller {
     if (!/^[1-9]$/.test(event.key)) return
 
     const answer = this.answerTargets[Number(event.key) - 1]
-    if (!answer || answer.disabled || !answer.getClientRects().length) return
+    if (!answer || answer.disabled || answer.getAttribute("aria-disabled") === "true" || !answer.getClientRects().length) return
 
     event.preventDefault()
     answer.focus()
     answer.click()
+  }
+
+  preventDisabled(event) {
+    if (event.currentTarget.getAttribute("aria-disabled") === "true") event.preventDefault()
   }
 }

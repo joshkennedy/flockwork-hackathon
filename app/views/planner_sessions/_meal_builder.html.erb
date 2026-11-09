@@ -119,12 +119,6 @@
           <p class="text-meta text-ink-2">Question <%= current_step %> of <%= PlannerSession::MAX_GENERATED_QUESTIONS %></p>
           <h2 id="meal-guide-heading" class="mt-2 text-lg font-semibold leading-snug text-ink"><%= planner_session.current_card.fetch("question") %></h2>
 
-          <% if custom_answer %>
-            <p class="mt-4 flex items-center justify-between gap-3 rounded-control bg-sunlit-soft px-4 py-3 text-body text-ink">
-              <span class="min-w-0">Your answer: <strong class="font-semibold"><%= pending_answer %></strong></span>
-            </p>
-          <% end %>
-
           <div class="mt-5 grid gap-2" data-controller="planner-answers" data-action="keydown@window->planner-answers#choose">
             <% options.each_with_index do |option, index| %>
               <% selected = option == pending_answer %>
@@ -134,19 +128,29 @@
                 <span class="text-label text-ink-3" aria-hidden="true"><%= index + 1 %></span>
               <% end %>
             <% end %>
-          </div>
 
-          <details class="mt-3" <%= "open" if custom_answer %>>
-            <%= disclosure_summary custom_answer ? "Change Your Answer" : "Answer in Your Own Words", class: "-ms-2 btn btn-text" %>
-            <%= form_with url: select_answer_project_planner_session_path(project, planner_session), class: "mt-3" do |form| %>
-              <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
-              <%= form.label :answer, "Your answer", class: "block text-label font-medium text-ink" %>
-              <div class="mt-2 flex flex-col gap-3 sm:flex-row">
-                <%= form.text_field :answer, required: true, value: pending_answer, disabled: planner_session.generation_busy?, class: "block min-w-0 flex-1 field" %>
-                <%= form.submit "Use Answer", disabled: planner_session.generation_busy?, class: "btn btn-secondary", data: { turbo_submits_with: "Preparing…" } %>
-              </div>
-            <% end %>
-          </details>
+            <details class="meal-own-answer" <%= "open" if custom_answer %>>
+              <summary class="answer-tile meal-answer-tile" aria-pressed="<%= custom_answer %>" aria-disabled="<%= planner_session.generation_busy? %>"
+                data-planner-answers-target="answer" data-action="click->planner-answers#preventDisabled">
+                <span class="meal-answer-radio" aria-hidden="true"></span>
+                <span class="min-w-0 flex-1">
+                  <span class="block truncate"><%= custom_answer ? pending_answer : "Something else…" %></span>
+                  <% if custom_answer %>
+                    <span class="block text-meta text-ink-2">Change your answer</span>
+                  <% end %>
+                </span>
+                <span class="text-label text-ink-3" aria-hidden="true"><%= options.size + 1 %></span>
+              </summary>
+              <%= form_with url: select_answer_project_planner_session_path(project, planner_session), class: "meal-own-answer-form" do |form| %>
+                <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
+                <%= form.label :answer, "Your answer", class: "block text-label font-medium text-ink" %>
+                <div class="mt-2 flex flex-col gap-3 sm:flex-row">
+                  <%= form.text_field :answer, required: true, value: pending_answer, disabled: planner_session.generation_busy?, class: "block min-w-0 flex-1 field" %>
+                  <%= form.submit "Use Answer", disabled: planner_session.generation_busy?, class: "btn btn-secondary", data: { turbo_submits_with: "Preparing…" } %>
+                </div>
+              <% end %>
+            </details>
+          </div>
 
           <div class="mt-5 empty:hidden"><% if planner_session.generation_busy? %>
               <p class="meal-builder-status" data-meal-planner-target="status"><span class="meal-pulse-dot" aria-hidden="true"></span>Preparing Suggestions…</p>
