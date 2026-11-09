@@ -71,6 +71,6 @@ class ProfileAwayDatesTest < ActionDispatch::IntegrationTest
 
     # Regression: the Profile page never rendered flash, so this notice was lost. The layout toast shows it.
     follow_redirect!
-    assert_select "#flash [role=status]", text: "Removed away dates."
+    assert_select "#flash [data-toast-entry][data-toast-kind=notice]", text: "Removed away dates."
   end
 end
