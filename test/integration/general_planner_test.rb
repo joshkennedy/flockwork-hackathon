@@ -398,6 +398,15 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_includes payload.fetch("instructions"), "What matters first?"
     assert_includes payload.fetch("instructions"), "Project preview updates on screen"
 
+    Rails.configuration.x.voice_client_secret_minter = -> { raise "voice instructions must not mint a secret" }
+    get voice_instructions_project_planner_session_path(project, planner_session), as: :json
+
+    assert_response :success
+    refresh_payload = @response.parsed_body
+    assert_equal "answer_card", refresh_payload.fetch("tools").sole.fetch("name")
+    assert_includes refresh_payload.fetch("instructions"), "What matters first?"
+    assert_not refresh_payload.key?("client_secret")
+
     meal_setup = project.planner_sessions.create!(
       started_by: people(:leader),
       description: "Plan the meals.",
@@ -405,6 +414,9 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
       planning_kind: "meal_train"
     )
     post voice_session_project_planner_session_path(project, meal_setup), as: :json
+
+    assert_response :not_found
+    get voice_instructions_project_planner_session_path(project, meal_setup), as: :json
 
     assert_response :not_found
   end

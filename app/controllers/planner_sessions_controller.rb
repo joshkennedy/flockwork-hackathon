@@ -57,6 +57,11 @@ class PlannerSessionsController < ApplicationController
     render json: { error: "Voice planning is unavailable right now. You can keep typing." }, status: :bad_gateway
   end
 
+  def voice_instructions
+    raise ActiveRecord::RecordNotFound if @planner_session.meal_setup?
+    render json: Planner::VoiceSession.new(@planner_session).refresh_payload
+  end
+
   def review
     return redirect_to project_planner_session_path(@project, @planner_session) if @planner_session.build_as_you_go?
     raise ActiveRecord::RecordNotFound unless @planner_session.reviewing?

@@ -25,9 +25,14 @@ module Planner
     end
 
     def payload
-      {
+      refresh_payload.merge(
         client_secret: Rails.configuration.x.voice_client_secret_minter.call,
-        model: MODEL,
+        model: MODEL
+      )
+    end
+
+    def refresh_payload
+      {
         instructions: Planner::ContextBuilder.new(planner_session).voice_instructions,
         tools: TOOLS
       }

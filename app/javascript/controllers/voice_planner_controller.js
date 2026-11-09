@@ -20,6 +20,7 @@ export default class extends Controller {
     answerUrl: String,
     continueUrl: String,
     selectAnswerUrl: String,
+    voiceInstructionsUrl: String,
     voiceSessionUrl: String
   }
 
@@ -155,12 +156,11 @@ export default class extends Controller {
 
     this.lastCardKey = nextKey
     try {
-      const voiceSession = await this.fetchVoiceSession()
+      const socketOpen = this.socket?.readyState === window.WebSocket.OPEN
+      const voiceSession = socketOpen ? await this.fetchVoiceInstructions() : await this.fetchVoiceSession()
       if (!this.active) return
 
-      if (!this.socket || this.socket.readyState !== window.WebSocket.OPEN) {
-        await this.openSocket(voiceSession)
-      }
+      if (!socketOpen) await this.openSocket(voiceSession)
       this.assistantText = ""
       this.userText = ""
       this.voiceLevel = 0
@@ -208,6 +208,16 @@ export default class extends Controller {
     })
     const payload = await response.json().catch(() => ({}))
     if (!response.ok) throw new Error(payload.error || "Voice planning could not start. You can keep typing.")
+    return payload
+  }
+
+  async fetchVoiceInstructions() {
+    const response = await fetch(this.voiceInstructionsUrlValue, {
+      headers: { "Accept": "application/json" },
+      credentials: "same-origin"
+    })
+    const payload = await response.json().catch(() => ({}))
+    if (!response.ok) throw new Error(payload.error || "Voice planning could not continue. You can keep typing.")
     return payload
   }
 

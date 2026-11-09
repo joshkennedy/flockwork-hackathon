@@ -68,6 +68,7 @@ Rails.application.routes.draw do
       member do
         post :answer
         post :voice_session
+        get :voice_instructions
         get :review
         post :skip_to_review
         post :abandon
