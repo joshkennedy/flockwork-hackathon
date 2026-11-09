@@ -25,14 +25,20 @@ export default class extends Controller {
     this.setOpen(this.panelTarget.hidden)
   }
 
+  openInvalid(event) {
+    event.preventDefault()
+    const focusTarget = document.getElementById(event.currentTarget.dataset.focusTargetId)
+    this.setOpen(true, "[aria-invalid='true'], input:not([type='hidden']), select, textarea, trix-editor", focusTarget)
+  }
+
   close() {
     this.setOpen(false)
     this.triggerTarget?.focus()
   }
 
-  setOpen(open) {
+  setOpen(open, focusSelector = "trix-editor, textarea", focusTarget = null) {
     this.panelTarget.hidden = !open
     this.triggerTargets.forEach((trigger) => trigger.setAttribute("aria-expanded", open))
-    if (open) requestAnimationFrame(() => this.panelTarget.querySelector("trix-editor, textarea")?.focus())
+    if (open) requestAnimationFrame(() => (focusTarget || this.panelTarget.querySelector(focusSelector))?.focus())
   }
 }

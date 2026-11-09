@@ -120,6 +120,13 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_match(/without asking for names or private details/, class_kind.fetch(:prompt))
     assert_match(/schedule_item_source_key/, class_kind.fetch(:prompt))
     assert_no_match(/cannot yet link/, class_kind.fetch(:prompt))
+    assert_equal({
+      "class" => "First class date",
+      "retreat" => "Retreat date",
+      "workday" => "Workday date",
+      "children_program" => "Program start date",
+      "other" => "Start date"
+    }, Planner::ProjectKinds::CHOICES.transform_values { |choice| choice.fetch(:date_label) }.except("meal_train"))
   end
 
   test "Something Else collects a description and redacts names before the first Planner card" do
@@ -351,13 +358,14 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "button[disabled][aria-describedby=?]", note_id, text: "Add to Project"
-    assert_select "p##{note_id} a[href='##{schedule_item_id}'][data-turbo='false']", text: "1 schedule item needs a date"
+    assert_select "p##{note_id}", text: "Fix the highlighted item to add"
+    assert_select "p##{note_id} a", count: 0
     assert_select "article##{budget_item_id} details:not([open])"
     assert_select "article##{budget_item_id} .badge-need", text: "Estimate later"
     assert_select "article##{budget_item_id}.meal-slot-error", count: 0
     assert_select "article##{budget_item_id} [aria-invalid='true']", count: 0
     assert_select "article##{schedule_item_id} details:not([open])"
-    assert_select "article##{schedule_item_id} .badge-need", text: "Needs details"
+    assert_select "article##{schedule_item_id} button.badge-need[data-action='comment-thread#openInvalid'][aria-controls='pending-editor-#{schedule_item.fetch("id")}']", text: "Needs details"
     assert_select "article##{schedule_item_id}.meal-slot-error", count: 0
     assert_select "input##{schedule_field_id}[aria-invalid='true'][aria-describedby=?]", schedule_error_id
     assert_select "p##{schedule_error_id}", text: "Date can't be blank"
@@ -375,13 +383,20 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     get project_planner_session_path(project, planner_session)
 
     assert_response :success
-    assert_select "button[disabled][aria-describedby=?]", note_id, text: "Add to Project"
-    assert_select "label[for='#{field_id}']", text: "Project start date"
+    assert_select "button[disabled][aria-describedby]", text: "Add to Project", count: 0
+    assert_select "button[disabled]", text: "Add to Project"
+    assert_select "label[for='#{field_id}']", text: "Workday date"
     assert_select "input##{field_id}"
+    assert_select "input##{field_id}[data-action='change->autosave#save']"
     assert_select "input##{field_id}.field-error, input##{field_id}[aria-invalid]", count: 0
-    assert_select "p##{note_id} a", count: 0
-    assert_select "p##{note_id}",
-      text: "Choose a start date to add this plan."
+    assert_select "p##{note_id}", count: 0
+    assert_select "h3", text: "Here’s what will be added", count: 0
+    assert_select "p", text: "Items are dated from this day.", count: 0
+    assert_select "form[data-controller='autosave'] input[data-autosave-target='submit'][value='Save Date']"
+    assert_select ".planner-review-actions" do
+      assert_select "button.btn-primary", text: "Add to Project"
+      assert_select "button.btn-secondary", text: "Finish Later"
+    end
   end
 
   test "review explains the missing start date when an estimate is unknown" do
@@ -398,7 +413,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     get project_planner_session_path(project, planner_session)
 
     assert_select "p##{note_id} a", count: 0
-    assert_select "p##{note_id}", text: "Choose a start date to add this plan."
+    assert_select "p##{note_id}", count: 0
   end
 
   test "setting the first Project start date preserves explicit item dates and a cleared due date" do

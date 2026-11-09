@@ -64,7 +64,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     end
 
     click_button "Finish with This"
-    assert_text "Here’s what will be added"
+    assert_no_text "Here’s what will be added"
     assert_selector "li[aria-current='step']", text: "Review and add"
     assert_selector "li[data-step-state='done']", text: "1 answer"
     capture_setup("builder-reviewing-1440")
@@ -106,8 +106,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     assert_text "Preview updated. Continue when ready."
     assert_no_text "Choose a Project start date or a due date"
     click_button "Finish with This"
-    fill_in "Project start date", with: "2027-04-10"
-    click_button "Set Date"
+    fill_in "Workday date", with: "2027-04-10"
     assert_text "Due April 9, 2027"
     click_button "Add to Project"
     assert_selector "#tool-tasks", focused: true
@@ -137,13 +136,62 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     click_button "Preparation"
     assert_text "Preview updated. Continue when ready."
     click_button "Finish with This"
-    assert_text "Here’s what will be added"
+    assert_selector "li[aria-current='step']", text: "Review and add"
+    assert_no_text "Here’s what will be added"
     fill_in "Project name", with: "Saturday workday"
-    find("#meal-guide-heading").click
+    find("#meal-preview-heading").click
     assert_selector "#meal-project-heading", text: "Saturday workday", visible: :all
     assert_field "Project name", with: "Saturday workday"
     assert_no_selector "summary", text: "Project Details"
     assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
+  end
+
+  test "a Class date autosaves and leaves only the review actions" do
+    Rails.configuration.x.planner_provider = Planner::Providers::Fake.new([
+      response(card: card("What should happen first?", "Prepare the first lesson", "Order materials", "Invite teachers")),
+      response(finished: true, added: [ item("task", "prepare", title: "Prepare the first lesson", details: "", due_in_days: -1) ])
+    ])
+    sign_in_as_leader_in_browser
+    visit new_project_path
+    click_button "Class"
+    click_button "Prepare the first lesson"
+    assert_text "Preview updated. Continue when ready."
+    click_button "Finish with This"
+
+    assert_field "First class date"
+    assert_button "Add to Project", disabled: true
+    assert_button "Finish Later"
+    assert_no_text "Here’s what will be added"
+    assert_no_text "Items are dated from this day."
+    assert_no_button "Save Date"
+    capture_class_review("before-date-1440", 1440, 1000)
+    capture_class_review("before-date-390", 390, 844)
+
+    fill_in "First class date", with: "2027-04-10"
+    assert_no_field "First class date"
+    assert_text "Due April 9, 2027"
+    assert_button "Add to Project", disabled: false
+    assert_button "Finish Later"
+    capture_class_review("after-date-1440", 1440, 1000)
+    capture_class_review("after-date-390", 390, 844)
+  end
+
+  test "a blocker badge opens its row editor and focuses the invalid field" do
+    Rails.configuration.x.planner_provider = Planner::Providers::Fake.new([
+      response(card: card("What should happen first?", "Set the schedule", "Prepare materials", "Invite teachers")),
+      response(finished: true, added: [ item("schedule_item", "opening", title: "Opening class", date: nil, starts_at: "09:00", ends_at: "10:00", location: "Classroom") ])
+    ])
+    sign_in_as_leader_in_browser
+    visit new_project_path
+    click_button "Class"
+    click_button "Set the schedule"
+    assert_text "Preview updated. Continue when ready."
+    click_button "Finish with This"
+
+    assert_no_field "First class date"
+    assert_text "Fix the highlighted item to add"
+    click_button "Needs details"
+    assert_field "Date", focused: true
   end
 
   private
@@ -154,6 +202,16 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
       FileUtils.mkdir_p(directory)
       page.save_screenshot(directory.join("#{name}.png"))
     end
+
+  def capture_class_review(name, width, height)
+    page.current_window.resize_to(width, height)
+    assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
+    return unless ENV["SETUP_SCREENSHOTS"]
+
+    directory = Rails.root.join("tmp/screenshots/class-review")
+    FileUtils.mkdir_p(directory)
+    page.save_screenshot(directory.join("#{name}.png"))
+  end
 
     def sign_in_as_leader_in_browser
       visit new_demo_session_path

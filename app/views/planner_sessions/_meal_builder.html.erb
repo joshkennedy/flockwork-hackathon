@@ -17,6 +17,12 @@
   else
     visible_items.any? && visible_items.all? { |item| item.dig("fields", "date").present? && item["conflict"].blank? }
   end %>
+  <% date_only_blocker = needs_start_date && visible_items.all? { |item|
+    errors = pending_errors.fetch(item.fetch("id"), [])
+    errors.empty? || (item.key?("day_offset") && (errors - [ "Date can't be blank", "Choose a Project start date or a due date" ]).empty?)
+  } %>
+  <% blocking_item_count = visible_items.count { |item| item["conflict"].present? || pending_errors.key?(item.fetch("id")) } %>
+  <% show_add_note = !addable && !date_only_blocker && blocking_item_count.positive? %>
   <% current_step = if planner_session.pending_answer.present?
     planner_session.pending_answer.fetch("step_index") + 1
   else
@@ -62,7 +68,8 @@
     </header>
 
     <div class="meal-builder-organization">
-      <section class="meal-builder-guide" aria-labelledby="meal-guide-heading"
+      <section class="meal-builder-guide"
+        <% if general_planner && planner_session.reviewing? %>aria-label="Review and add"<% else %>aria-labelledby="meal-guide-heading"<% end %>
         data-voice-planner-target="cardState"
         data-voice-state="<%= planner_session.status %>"
         data-voice-card="<%= planner_session.current_card&.fetch("question", nil) %>"
@@ -90,50 +97,37 @@
           <%= button_to "Retry Planning", retry_generation_project_planner_session_path(project, planner_session), params: { expected_revision: planner_session.generation_revision }, class: "mb-4 btn btn-secondary" %>
         <% end %>
         <% if planner_session.reviewing? %>
-          <h3 id="meal-guide-heading" class="text-heading text-ink"><%= general_planner ? "Here’s what will be added" : "Here’s your meal train" %></h3>
+          <% unless general_planner %><h3 id="meal-guide-heading" class="text-heading text-ink">Here’s your meal train</h3><% end %>
 
           <% if needs_start_date %>
-            <%= form_with url: planning_details_project_planner_session_path(project, planner_session), method: :patch, namespace: "review_date", class: "mt-5" do |form| %>
+            <%= form_with url: planning_details_project_planner_session_path(project, planner_session), method: :patch, namespace: "review_date", class: "mt-5",
+              data: { controller: "autosave" } do |form| %>
               <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
-              <%= form.label :starts_on, general_planner ? "Project start date" : "First meal date", class: "block text-label font-medium text-ink" %>
+              <%= form.label :starts_on, Planner::ProjectKinds::CHOICES.fetch(planner_session.planning_kind).fetch(:date_label), class: "block text-label font-medium text-ink" %>
               <div class="mt-2 flex flex-col gap-3 sm:flex-row">
                 <%= form.date_field :starts_on, id: "starts_on", name: "project[starts_on]", required: true,
-                  class: "block min-w-0 flex-1 field", aria: { describedby: dom_id(planner_session, :start_date_hint) } %>
-                <%= form.submit "Set Date", class: "btn btn-secondary", data: { turbo_submits_with: "Setting Date…" } %>
+                  class: "block min-w-0 flex-1 field", data: { action: "change->autosave#save" } %>
+                <%= form.submit "Save Date", class: "btn btn-secondary", data: { autosave_target: "submit", turbo_submits_with: "Saving Date…" } %>
               </div>
-              <p id="<%= dom_id(planner_session, :start_date_hint) %>" class="mt-2 text-meta text-ink-2"><%= general_planner ? "Items are dated from this day." : "Every meal slot is dated from this day." %></p>
             <% end %>
           <% end %>
 
-          <%= form_with url: accept_project_planner_session_path(project, planner_session), method: :post,
-            class: "mt-5", data: { turbo_frame: "_top" } do |form| %>
-            <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
-            <%= hidden_field_tag "project[name]", project.name %>
-            <%= form.button "Add to Project", class: "mt-4 btn btn-primary", disabled: !addable,
-              aria: ({ describedby: dom_id(planner_session, :add_note) } unless addable),
-              data: { turbo_submits_with: "Adding #{pluralize(planner_session.pending_item_count, "Item")}…" } %>
-          <% end %>
+          <div class="planner-review-actions mt-5 flex flex-wrap items-center gap-3">
+            <%= form_with url: accept_project_planner_session_path(project, planner_session), method: :post,
+              data: { turbo_frame: "_top" } do |form| %>
+              <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
+              <%= hidden_field_tag "project[name]", project.name %>
+              <%= form.button "Add to Project", class: "btn btn-primary", disabled: !addable,
+                aria: ({ describedby: dom_id(planner_session, :add_note) } if show_add_note),
+                data: { turbo_submits_with: "Adding #{pluralize(planner_session.pending_item_count, "Item")}…" } %>
+            <% end %>
+            <%= button_to "Finish Later", save_and_leave_project_planner_session_path(project, planner_session), class: "btn btn-secondary",
+              form: { data: { turbo_frame: "_top" } } %>
+          </div>
 
-          <% unless addable %>
+          <% if show_add_note %>
             <% add_note_id = dom_id(planner_session, :add_note) %>
-            <p id="<%= add_note_id %>" class="mt-3 text-meta text-ink-2"><%=
-              if visible_items.empty?
-                general_planner ? "Restore a removed item before adding." : "Restore a removed meal before adding."
-              elsif visible_items.any? { |item| item["conflict"].present? }
-                "Resolve the highlighted change before adding."
-              elsif needs_start_date && visible_items.all? { |item|
-                errors = pending_errors.fetch(item.fetch("id"), [])
-                errors.empty? || (item.key?("day_offset") && (errors - [ "Date can't be blank", "Choose a Project start date or a due date" ]).empty?)
-              }
-                "Choose a start date to add this plan."
-              elsif general_planner
-                safe_join(planner_acceptance_blockers(visible_items, pending_errors).map { |blocker|
-                  link_to(blocker.fetch(:text), "##{blocker.fetch(:id)}", class: "link", data: { turbo: false })
-                }, "; ")
-              else
-                "Fix the highlighted meals before adding."
-              end
-            %></p>
+            <p id="<%= add_note_id %>" class="mt-3 text-meta text-ink-2">Fix the highlighted <%= "item".pluralize(blocking_item_count) %> to add</p>
           <% end %>
         <% else %>
           <div data-voice-planner-target="questionnaire">
@@ -257,7 +251,7 @@
 
         <% end %>
 
-        <% unless planner_session.accepted? %>
+        <% unless planner_session.accepted? || planner_session.reviewing? %>
           <%# The quiet exits share one row; an open Back takes the full width so its answers read below. %>
           <div class="meal-builder-exits mt-3 flex-wrap items-start gap-x-4">
             <% if planner_session.asking? && (planner_session.pending_answer&.fetch("step_index", 0) || planner_session.steps.length).positive? %>
@@ -266,7 +260,7 @@
                 <%= render "planner_sessions/meal_answers", project:, planner_session:, previous_only: true %>
               </details>
             <% end %>
-            <%= button_to "Save and Leave", save_and_leave_project_planner_session_path(project, planner_session), class: "-ms-3 btn btn-text",
+            <%= button_to "Finish Later", save_and_leave_project_planner_session_path(project, planner_session), class: "btn btn-secondary",
               form: { data: { turbo_frame: "_top" } } %>
           </div>
         <% end %>
