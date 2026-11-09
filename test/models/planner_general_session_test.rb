@@ -82,14 +82,17 @@ class PlannerGeneralSessionTest < ActiveSupport::TestCase
     assert_raises(ArgumentError) { @session.accept_visible! }
   end
 
-  test "unknown budget remains editable but blocks acceptance" do
+  test "unknown budget remains editable and is accepted without an estimate" do
     pending = Planner::PendingItems.expand([
       item("purchase", "paint", "description" => "Paint", "estimated_dollars" => nil)
     ], project: @session.project).map(&:to_h)
     @session.update!(status: :reviewing, pending_items: pending)
 
-    assert_equal [ "Estimated cost is required" ], @session.pending_item_errors.fetch(pending.first.fetch("id"))
-    assert_raises(ArgumentError) { @session.accept_visible! }
+    assert_empty @session.pending_item_errors
+    assert_difference "BudgetLine.count", 1 do
+      @session.accept_visible!
+    end
+    assert_nil @session.project.budget_lines.find_by!(description: "Paint").estimated_cents
   end
 
   test "source keys cannot rekey an edited item or change its kind" do

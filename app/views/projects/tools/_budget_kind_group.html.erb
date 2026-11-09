@@ -15,7 +15,7 @@
             <div>
               <span class="block font-semibold"><%= line.description %></span>
               <span class="mt-1 block text-meta text-ink-2">
-                Est. <%= BudgetLine.format_cents(line.estimated_cents) %>
+                Est. <%= line.estimated_cents.nil? ? "Estimate unknown" : BudgetLine.format_cents(line.estimated_cents) %>
                 · Act. <%= line.actual_cents.nil? ? "" : BudgetLine.format_cents(line.actual_cents) %>
                 · <%= line.status.humanize %>
                 <% if line.responsible_person.present? %>

@@ -43,7 +43,6 @@ module PlannerSessionsHelper
   def planner_acceptance_blockers(items, pending_errors)
     remaining_ids = items.filter_map { |item| item.fetch("id") if pending_errors.key?(item.fetch("id")) }.to_set
     blockers = [
-      planner_blocker(remaining_ids, pending_errors, "Estimated cost is required", "budget line", "an estimated cost"),
       planner_blocker(remaining_ids, pending_errors, "Date can't be blank", "schedule item", "a date"),
       planner_blocker(remaining_ids, pending_errors, "Choose a Project start date or a due date", "task", "a due date or Project start date"),
       planner_blocker(remaining_ids, pending_errors, "At least one valid column is required", "list", "a valid column")
@@ -107,7 +106,6 @@ module PlannerSessionsHelper
     def planner_pending_error_field(item, error)
       message = error.to_s
       special_fields = {
-        "Estimated cost" => "estimated_dollars",
         "Choose a Project start date or a due date" => "due_on",
         "At least one valid column" => "columns"
       }

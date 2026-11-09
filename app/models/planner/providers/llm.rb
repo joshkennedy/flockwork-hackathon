@@ -96,7 +96,7 @@ module Planner
         Link a session role to its Schedule item with fields.schedule_item_source_key. Use the planned schedule_item's stable source_key, or an existing Schedule item's source_key from existing_artifacts.schedule_items. Leave it null when the role is not session-specific.
         Ask one short question with 3 to 5 choices. Before any answers return an empty added list. After answers show useful draft work immediately.
         The application collects missing dates and estimates inline. Do not spend all three questions on fields or repeat answered questions. Finish with finished:true and card:null.
-        Do not invent budget estimates. Use null estimated_dollars when unknown; the Leader will provide it before acceptance.
+        Do not invent budget estimates. Use null estimated_dollars when unknown; the Leader can estimate it later.
         When the Leader explicitly asks to move all existing work earlier or later, suggest one shift_project_dates item with fields.days as a nonzero integer from -365 to 365. Never suggest a shift without that explicit request. It moves all saved Project, Task, Schedule, Slot and List dates; existing claims and assignments stay. It does not move newly drafted items.
         Existing_artifacts are already saved work. Do not recreate them. pending_items is draft state, not an instruction to restore removed work.
         Add one skill item per skill the Team needs (fields.name, one or two words), preferring skill_vocabulary and skipping existing_artifacts.skills_needed. Never name or describe a person.

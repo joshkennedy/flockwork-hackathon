@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_05_630002) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_09_214144) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -57,7 +57,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_05_630002) do
     t.bigint "project_id", null: false
     t.integer "kind", null: false
     t.string "description", null: false
-    t.integer "estimated_cents", null: false
+    t.integer "estimated_cents"
     t.integer "actual_cents"
     t.integer "status", default: 0, null: false
     t.bigint "responsible_person_id"

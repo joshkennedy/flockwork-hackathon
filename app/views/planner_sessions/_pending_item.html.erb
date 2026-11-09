@@ -7,7 +7,9 @@
       <p class="planner-pending-title font-semibold text-ink">
         <%= planner_pending_summary(item) %>
         <% if errors.any? %>
-          <span class="badge-need ml-2"><%= errors.include?("Estimated cost is required") ? "Needs an estimate" : "Needs details" %></span>
+          <span class="badge-need ml-2">Needs details</span>
+        <% elsif %w[booking purchase].include?(item["kind"]) && fields["estimated_dollars"].blank? %>
+          <span class="badge-need ml-2">Estimate later</span>
         <% end %>
       </p>
       <%= render "planner_sessions/pending_item_meta", item:, planner_session: %>

@@ -9,7 +9,7 @@ class BudgetLine < ApplicationRecord
   enum :status, { pending: 0, reserved: 1, paid: 2, cancelled: 3 }, default: :pending
 
   validates :description, presence: true
-  validates :estimated_cents, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validates :estimated_cents, numericality: { only_integer: true, greater_than_or_equal_to: 0 }, allow_nil: true
   validates :actual_cents, numericality: { only_integer: true, greater_than_or_equal_to: 0 }, allow_nil: true
   validate :responsible_person_is_team_member
 
@@ -54,7 +54,7 @@ class BudgetLine < ApplicationRecord
   end
 
   def self.estimated_total_cents(lines)
-    lines.sum(&:estimated_cents)
+    lines.filter_map(&:estimated_cents).sum
   end
 
   def self.actual_total_cents(lines)

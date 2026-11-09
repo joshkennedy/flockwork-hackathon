@@ -309,7 +309,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_includes planner_session.reload.visible_pending_items.pluck("id"), schedule.fetch("id")
   end
 
-  test "unknown budget and missing dates block the whole acceptance transaction" do
+  test "missing dates block the whole acceptance transaction but an unknown budget does not" do
     sign_in_as_leader
     project, planner_session = build_reviewing_session(
       planning_kind: "retreat",
@@ -326,12 +326,12 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
       }
     end
     assert_response :see_other
-    assert_match(/Estimated cost is required/, flash[:alert])
+    assert_no_match(/Estimated cost is required/, flash[:alert])
     assert_match(/Date can't be blank/, flash[:alert])
     assert_predicate planner_session.reload, :reviewing?
   end
 
-  test "review identifies and links to the field blocking acceptance" do
+  test "review treats an unknown estimate as informational and links to the remaining blocker" do
     sign_in_as_leader
     project, planner_session = build_reviewing_session(
       planning_kind: "retreat",
@@ -342,8 +342,6 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     )
     budget_item, schedule_item = planner_session.visible_pending_items
     budget_item_id = "pending-item-#{budget_item.fetch("id")}"
-    budget_field_id = "pending_#{budget_item.fetch("id")}_estimated_dollars"
-    budget_error_id = "#{budget_field_id}_error"
     schedule_item_id = "pending-item-#{schedule_item.fetch("id")}"
     schedule_field_id = "pending_#{schedule_item.fetch("id")}_date"
     schedule_error_id = "#{schedule_field_id}_error"
@@ -353,13 +351,11 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "button[disabled][aria-describedby=?]", note_id, text: "Add to Project"
-    assert_select "p##{note_id} a[href='##{budget_item_id}'][data-turbo='false']", text: "1 budget line needs an estimated cost"
     assert_select "p##{note_id} a[href='##{schedule_item_id}'][data-turbo='false']", text: "1 schedule item needs a date"
     assert_select "article##{budget_item_id} details:not([open])"
-    assert_select "article##{budget_item_id} .badge-need", text: "Needs an estimate"
+    assert_select "article##{budget_item_id} .badge-need", text: "Estimate later"
     assert_select "article##{budget_item_id}.meal-slot-error", count: 0
-    assert_select "input##{budget_field_id}[aria-invalid='true'][aria-describedby=?]", budget_error_id
-    assert_select "p##{budget_error_id}", text: "Estimated cost is required"
+    assert_select "article##{budget_item_id} [aria-invalid='true']", count: 0
     assert_select "article##{schedule_item_id} details:not([open])"
     assert_select "article##{schedule_item_id} .badge-need", text: "Needs details"
     assert_select "article##{schedule_item_id}.meal-slot-error", count: 0
@@ -388,7 +384,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
       text: "Choose a start date to add this plan."
   end
 
-  test "review keeps other blockers visible when a start date is also missing" do
+  test "review explains the missing start date when an estimate is unknown" do
     sign_in_as_leader
     project, planner_session = build_reviewing_session(
       planning_kind: "workday",
@@ -401,8 +397,8 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
 
     get project_planner_session_path(project, planner_session)
 
-    assert_select "p##{note_id} a", text: "1 budget line needs an estimated cost"
-    assert_select "p##{note_id}", text: "Choose a start date to add this plan.", count: 0
+    assert_select "p##{note_id} a", count: 0
+    assert_select "p##{note_id}", text: "Choose a start date to add this plan."
   end
 
   test "setting the first Project start date preserves explicit item dates and a cleared due date" do

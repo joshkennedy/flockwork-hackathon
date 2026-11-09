@@ -195,7 +195,6 @@ module Planner
       end
       record = case item["kind"]
       when "booking", "purchase"
-        return [ "Estimated cost is required" ] if fields["estimated_dollars"].blank?
         build_record(project, item)
       when "list"
         return [ "At least one valid column is required" ] unless FieldValidation.valid_columns?(fields["columns"])
@@ -306,7 +305,6 @@ module Planner
         raise ArgumentError, invalid.to_sentence if invalid.any?
         normalized, = normalize_provider_fields(kind, fields, project:)
         draft = errors(candidate(kind:, fields: normalized, source_key: "validation").to_h, project:)
-        draft -= [ "Estimated cost is required" ] if %w[booking purchase].include?(kind)
         draft -= [ "Date can't be blank" ] if kind == "schedule_item"
         draft -= [ "At least one valid column is required" ] if kind == "list"
         raise ArgumentError, draft.to_sentence if draft.any?

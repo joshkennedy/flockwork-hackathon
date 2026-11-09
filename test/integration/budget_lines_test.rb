@@ -106,6 +106,22 @@ class BudgetLinesTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "an unknown estimate is omitted from totals and named on its row" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    project.budget_lines.create!(kind: :purchase, description: "Paint", estimated_cents: nil)
+
+    get project_path(project)
+
+    assert_response :success
+    assert_select "section[aria-labelledby='tool-budget']" do
+      assert_select "dd", text: "$1,250.00"
+      assert_select "li", text: /Paint/ do
+        assert_select ".text-ink-2", text: /Estimate unknown/
+      end
+    end
+  end
+
   test "dollar amounts round-trip exactly through forms and display" do
     sign_in_as_leader
     project = projects(:community_meal)
