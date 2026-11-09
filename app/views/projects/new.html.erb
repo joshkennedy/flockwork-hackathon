@@ -1,4 +1,11 @@
 <% content_for :title, "Start a Project" %>
+<% if @manual_project || @custom_planning %>
+  <% content_for :breadcrumbs do %>
+    <%= link_to "Start a Project", new_project_path, class: "shrink-0 whitespace-nowrap hover:text-ink" %>
+    <span aria-hidden="true" class="shrink-0 text-ink-3">/</span>
+    <span class="truncate text-ink" aria-current="page"><%= @manual_project ? "Build It Myself" : "Something Else" %></span>
+  <% end %>
+<% end %>
 
 <div class="w-full max-w-5xl">
   <%= page_header "Start a Project" %>
@@ -9,16 +16,25 @@
   <% elsif @custom_planning %>
     <section class="mt-7 max-w-2xl" aria-labelledby="custom-project-heading">
       <h2 id="custom-project-heading" class="text-ink">What are you organizing?</h2>
-      <p class="mt-2 text-ink-2">Give the Planner one short sentence. Its first question will build on what you share.</p>
 
       <%= form_with url: start_planner_projects_path, method: :post, class: "mt-6 space-y-6" do |form| %>
         <%= form.hidden_field :planning_kind, value: "other" %>
         <% if @description_error %>
-          <p role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger"><%= @description_error %></p>
+          <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
+            <p class="font-semibold">Fix these to continue:</p>
+            <ul class="mt-2 list-disc pl-5 text-meta"><li><%= @description_error %></li></ul>
+          </div>
         <% end %>
+        <% description_hint_id = form.field_id(:description, :hint) %>
+        <% description_error_id = form.field_id(:description, :error) if @description_error %>
         <div>
           <%= form.label :description, "Describe it in one sentence", class: "block text-label font-medium text-ink" %>
-          <%= form.text_field :description, name: "planner_session[description]", value: params.dig(:planner_session, :description), required: true, maxlength: 280, autofocus: true, class: "mt-2 block w-full field", placeholder: "Organize a spring cleanup." %>
+          <p id="<%= description_hint_id %>" class="mt-1 text-meta text-ink-2">Give the Planner one short sentence. Its first question will build on what you share.</p>
+          <%= form.text_field :description, name: "planner_session[description]", value: params.dig(:planner_session, :description), required: true, maxlength: 280, autofocus: true, class: "mt-2 block w-full field", placeholder: "Organize a spring cleanup.",
+            aria: { invalid: @description_error.present?, describedby: [ description_hint_id, description_error_id ].compact.join(" ") } %>
+          <% if @description_error %>
+            <p id="<%= description_error_id %>" class="mt-1 text-meta text-danger"><%= @description_error %></p>
+          <% end %>
         </div>
         <%= form.submit "Start Planning", class: "btn btn-primary", data: { turbo_submits_with: "Creating Project…" } %>
       <% end %>
@@ -30,6 +46,7 @@
       <div class="project-kind-intro">
         <h2 id="project-kind-heading" class="text-ink">What are you organizing?</h2>
         <p class="mt-2 text-ink-2 sm:col-span-2 sm:row-start-2">Pick one and the Planner will ask a few questions and draft the plan with you.</p>
+        <%= link_to "Build It Myself", new_project_path(manual: true), class: "project-kind-manual btn btn-secondary btn-sm" %>
       </div>
       <div class="project-kind-grid mt-5">
         <% [
@@ -40,17 +57,21 @@
           [ "Class", "Plan each session, its teacher and materials.", :docs, "text-tool-docs", start_planner_projects_path, :post, { planning_kind: "class" }, %w[schedule signup_sheet docs] ],
           [ "Something Else", "Describe it in one sentence and we'll shape it.", :plus, "text-ink-2", new_project_path, :get, { planning_kind: "other" }, [] ]
         ].each do |title, description, glyph, color, path, method, parameters, tools| %>
-          <%= button_to path, method:, params: parameters, class: class_names("project-kind-tile", "project-kind-ghost": tools.empty?), data: ({ turbo_submits_with: "Creating Project…" } unless method == :get) do %>
-            <span class="project-kind-title flex items-center gap-2 text-ink"><%= icon(glyph, size: 24, class: color) %><%= title %></span>
-            <span class="mt-1 block text-meta text-ink-2"><%= description %></span>
+          <% tile_id = "project-kind-#{title.parameterize}" %>
+          <% title_id = "#{tile_id}-title" %>
+          <% outcome_id = "#{tile_id}-outcome" %>
+          <% example_id = "#{tile_id}-example" if tools.any? %>
+          <% tile_content = capture do %>
+            <span id="<%= title_id %>" class="project-kind-title flex items-center gap-2 text-ink"><%= icon(glyph, size: 24, class: color) %><%= title %></span>
+            <span id="<%= outcome_id %>" class="mt-1 block text-meta text-ink-2"><%= description %></span>
             <% if tools.any? %>
-              <span class="mt-2 block text-meta text-ink-2"><%= {
-                "Meal Train" => "Like two weeks of dinners after a new baby",
-                "Retreat" => "Like a weekend away for 40 at a camp",
-                "Workday" => "Like a Saturday fixing up the playground",
-                "Children’s Program" => "Like a week of VBS mornings",
-                "Class" => "Like a six-week Bible study with a meal"
-              }.fetch(title) %></span>
+              <span id="<%= example_id %>" class="mt-2 block text-meta text-ink-2"><%= {
+                  "Meal Train" => "Like two weeks of dinners after a new baby",
+                  "Retreat" => "Like a weekend away for 40 at a camp",
+                  "Workday" => "Like a Saturday fixing up the playground",
+                  "Children’s Program" => "Like a week of VBS mornings",
+                  "Class" => "Like a six-week Bible study with a meal"
+                }.fetch(title) %></span>
               <span class="mt-3 flex flex-wrap items-center gap-x-1 gap-y-1 text-meta text-ink-2">
                 <% tools.each_with_index do |tool, index| %>
                   <% if index.positive? %><span aria-hidden="true">·</span><% end %>
@@ -59,10 +80,21 @@
               </span>
             <% end %>
           <% end %>
+          <% tile_options = {
+            class: class_names("project-kind-tile", "project-kind-ghost": tools.empty?),
+            aria: { labelledby: title_id, describedby: [ outcome_id, example_id ].compact.join(" ") }
+          } %>
+          <% if method == :get %>
+            <%= link_to new_project_path(planning_kind: "other"), **tile_options do %>
+              <%= tile_content %>
+            <% end %>
+          <% else %>
+            <%= button_to path, method:, params: parameters, **tile_options, data: { turbo_submits_with: "Creating Project…" } do %>
+              <%= tile_content %>
+            <% end %>
+          <% end %>
         <% end %>
       </div>
-
-      <%= link_to "Build It Myself", new_project_path(manual: true), class: "project-kind-manual btn btn-secondary btn-sm", title: "Set up the Project and its Tools yourself, with the same fields." %>
     </section>
   <% end %>
 </div>

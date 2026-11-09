@@ -385,7 +385,7 @@
   .switch:checked::before { background: var(--color-panel); transform: translateX(20px); }
   .switch:focus-visible { outline: 2px solid var(--color-ink); outline-offset: 3px; }
   .field { @apply min-h-input-h-phone min-w-0 rounded-control border border-control-border bg-panel px-3 py-2 text-body-phone text-ink sm:min-h-input-h sm:py-1.5 sm:text-body; }
-  .field-error, [aria-invalid="true"] .field { border-color: var(--color-danger); }
+  .field-error, .field[aria-invalid="true"] { border-color: var(--color-danger); }
   :is(textarea, trix-editor).field { min-height: 112px; }
   .nav-item { @apply flex min-h-control-h items-center gap-3 rounded-nav px-3 py-1.5 text-meta text-ink-2; transition: background-color var(--duration-hover), color var(--duration-hover); }
   .nav-item:is([aria-current="page"], [aria-current="true"]) { @apply bg-nav-active font-semibold text-ink; }
@@ -428,7 +428,7 @@
   .project-kind-section { @apply grid grid-cols-1 items-center gap-x-5 sm:grid-cols-[1fr_auto]; }
   .project-kind-intro { @apply min-w-0 sm:contents; }
   .project-kind-section > .project-kind-grid { @apply sm:col-span-2; }
-  .project-kind-manual { @apply mt-5 justify-self-start sm:col-start-2 sm:row-start-1 sm:mt-0 sm:justify-self-end; }
+  .project-kind-manual { @apply mt-5 justify-self-start sm:mt-0 sm:justify-self-end; }
   .project-kind-grid > form { @apply flex; }
   button.project-kind-tile:active { transform: translateY(1px); box-shadow: var(--shadow-secondary-active); }
   .meal-builder { @apply w-full; width: min(880px, 100%); margin-inline: auto; }

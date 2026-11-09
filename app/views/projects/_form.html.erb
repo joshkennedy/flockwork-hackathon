@@ -1,7 +1,7 @@
 <%= form_with model: project, class: "space-y-7" do |form| %>
   <% if project.errors.any? %>
     <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
-      <p class="font-semibold">Please fix the following:</p>
+      <p class="font-semibold">Fix these to continue:</p>
       <ul class="mt-2 list-disc space-y-1 pl-5 text-meta">
         <% project.errors.full_messages.each do |message| %>
           <li><%= message %></li>
@@ -11,24 +11,45 @@
   <% end %>
 
   <div>
+    <% name_error_id = form.field_id(:name, :error) if project.errors.include?(:name) %>
     <%= form.label :name, class: "block text-label font-medium text-ink" %>
-    <%= form.text_field :name, required: true, autofocus: true, class: "mt-2 block w-full field" %>
+    <%= form.text_field :name, required: true, autofocus: true, class: "mt-2 block w-full field",
+      aria: { invalid: name_error_id.present?, describedby: name_error_id } %>
+    <% if name_error_id %>
+      <p id="<%= name_error_id %>" class="mt-1 text-meta text-danger"><%= project.errors.full_messages_for(:name).to_sentence %></p>
+    <% end %>
   </div>
 
   <div>
+    <% description_hint_id = form.field_id(:description, :hint) %>
+    <% description_error_id = form.field_id(:description, :error) if project.errors.include?(:description) %>
     <%= form.label :description, class: "block text-label font-medium text-ink" %>
-    <p class="mt-1 text-meta text-ink-2">One sentence about the work this Team is planning.</p>
-    <%= form.text_area :description, rows: 3, class: "mt-2 block w-full field" %>
+    <p id="<%= description_hint_id %>" class="mt-1 text-meta text-ink-2">One sentence about the work this Team is planning.</p>
+    <%= form.text_area :description, rows: 3, class: "mt-2 block w-full field",
+      aria: { invalid: description_error_id.present?, describedby: [ description_hint_id, description_error_id ].compact.join(" ") } %>
+    <% if description_error_id %>
+      <p id="<%= description_error_id %>" class="mt-1 text-meta text-danger"><%= project.errors.full_messages_for(:description).to_sentence %></p>
+    <% end %>
   </div>
 
   <div class="grid gap-5 sm:grid-cols-2">
     <div>
+      <% starts_on_error_id = form.field_id(:starts_on, :error) if project.errors.include?(:starts_on) %>
       <%= form.label :starts_on, "Start date", class: "block text-label font-medium text-ink" %>
-      <%= form.date_field :starts_on, class: "mt-2 block w-full field" %>
+      <%= form.date_field :starts_on, class: "mt-2 block w-full field",
+        aria: { invalid: starts_on_error_id.present?, describedby: starts_on_error_id } %>
+      <% if starts_on_error_id %>
+        <p id="<%= starts_on_error_id %>" class="mt-1 text-meta text-danger"><%= project.errors.full_messages_for(:starts_on).to_sentence %></p>
+      <% end %>
     </div>
     <div>
+      <% ends_on_error_id = form.field_id(:ends_on, :error) if project.errors.include?(:ends_on) %>
       <%= form.label :ends_on, "End date", class: "block text-label font-medium text-ink" %>
-      <%= form.date_field :ends_on, class: "mt-2 block w-full field" %>
+      <%= form.date_field :ends_on, class: "mt-2 block w-full field",
+        aria: { invalid: ends_on_error_id.present?, describedby: ends_on_error_id } %>
+      <% if ends_on_error_id %>
+        <p id="<%= ends_on_error_id %>" class="mt-1 text-meta text-danger"><%= project.errors.full_messages_for(:ends_on).to_sentence %></p>
+      <% end %>
     </div>
   </div>
 
@@ -44,15 +65,22 @@
 
   <fieldset>
     <legend class="text-body-phone sm:text-body font-semibold text-ink">Tools</legend>
-    <p class="mt-1 text-meta text-ink-2">Choose what this Project needs.</p>
+    <% tools_hint_id = form.field_id(:enabled_tools, :hint) %>
+    <% tools_error_id = form.field_id(:enabled_tools, :error) if project.errors.include?(:enabled_tools) %>
+    <p id="<%= tools_hint_id %>" class="mt-1 text-meta text-ink-2">Choose what this Project needs.</p>
     <div class="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-2">
       <%= form.collection_check_boxes :enabled_tools, Project::TOOLS, :to_s, ->(tool) { Project::TOOL_LABELS.fetch(tool) } do |checkbox| %>
         <%= checkbox.label(class: "flex cursor-pointer items-center gap-3 py-1 text-label font-medium text-ink") do %>
-          <%= checkbox.check_box(class: "size-4 accent-ink") %>
+          <%= checkbox.check_box(class: "size-4 accent-ink", aria: {
+            invalid: tools_error_id.present?, describedby: [ tools_hint_id, tools_error_id ].compact.join(" ")
+          }) %>
           <%= checkbox.text %>
         <% end %>
       <% end %>
     </div>
+    <% if tools_error_id %>
+      <p id="<%= tools_error_id %>" class="mt-1 text-meta text-danger"><%= project.errors.full_messages_for(:enabled_tools).to_sentence %></p>
+    <% end %>
   </fieldset>
 
   <%= render "shared/skills_field", form:, attribute: :skills_needed, legend: "Skills needed",

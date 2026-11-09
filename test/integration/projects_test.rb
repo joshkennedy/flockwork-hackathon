@@ -21,6 +21,17 @@ class ProjectsTest < ActionDispatch::IntegrationTest
     assert_predicate project.memberships.find_by!(person: creator), :leader?
   end
 
+  test "an invalid manual Project ties its error to the name field" do
+    sign_in_as_leader
+
+    post projects_path, params: { project: { name: "" } }
+
+    assert_response :unprocessable_content
+    assert_select "[role='alert']", text: /Fix these to continue:/
+    assert_select "input#project_name[aria-invalid='true'][aria-describedby='project_name_error']"
+    assert_select "p#project_name_error.text-danger", text: "Name can't be blank"
+  end
+
   test "a Leader edits the Project name, description, and dates" do
     sign_in_as_leader
     project = projects(:community_meal)
