@@ -32,12 +32,15 @@
     </div>
   </div>
 
-  <div>
-    <%= form.label :open_team, "Open Team", class: "flex cursor-pointer items-center gap-3 text-label font-medium text-ink" do %>
-      <%= form.check_box :open_team, class: "size-4 accent-ink" %>
-      Anyone in the Organization can find this Project and join as a Volunteer
-    <% end %>
-  </div>
+  <%# The whole row is the label so any tap toggles it; the switch takes its name from the title and its detail from the hint. %>
+  <%= form.label :open_team, class: "setting-row" do %>
+    <span class="min-w-0">
+      <span id="<%= form.field_id(:open_team, :title) %>" class="block font-semibold text-ink">Open Team</span>
+      <span id="<%= form.field_id(:open_team, :hint) %>" class="mt-1 block text-meta text-ink-2">Anyone in the Organization can find this Project and join as a Volunteer.</span>
+    </span>
+    <%= form.check_box :open_team, role: "switch", class: "switch",
+      aria: { labelledby: form.field_id(:open_team, :title), describedby: form.field_id(:open_team, :hint) } %>
+  <% end %>
 
   <fieldset>
     <legend class="text-body-phone sm:text-body font-semibold text-ink">Tools</legend>

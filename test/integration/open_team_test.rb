@@ -6,7 +6,9 @@ class OpenTeamTest < ActionDispatch::IntegrationTest
     project = projects(:community_meal)
 
     get edit_project_path(project)
-    assert_select "input[name='project[open_team]'][type='checkbox']"
+    switch = css_select("input[name='project[open_team]'][type='checkbox'][role='switch']").sole
+    assert_select "##{switch["aria-labelledby"]}", text: "Open Team"
+    assert_select "##{switch["aria-describedby"]}", text: /join as a Volunteer/
 
     patch project_path(project), params: {
       project: {

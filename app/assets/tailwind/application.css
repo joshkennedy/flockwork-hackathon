@@ -373,6 +373,14 @@
   /* Status chips on People: a 4px badge, never a pill. "Never asked" is an open need, so it takes the sunlit fill. */
   .status-chip { @apply inline-flex items-center whitespace-nowrap rounded-badge bg-hairline px-1.5 py-0.5 text-label text-ink; }
   .status-chip-need { @apply bg-sunlit-soft; }
+  /* An on/off setting: a full-width row with a native checkbox drawn as a switch (role="switch"); position, not color alone, carries the state. */
+  .setting-row { @apply flex cursor-pointer items-center justify-between gap-4 rounded-tile border border-border bg-panel px-4 py-3.5; transition: border-color var(--duration-hover); }
+  .setting-row:hover { @apply border-border-strong; }
+  .switch { appearance: none; position: relative; flex-shrink: 0; width: 44px; height: 24px; margin: 0; border-radius: 999px; background: var(--color-border-strong); cursor: pointer; transition: background-color var(--duration-hover); }
+  .switch::before { content: ""; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: var(--color-panel); box-shadow: 0 1px 2px rgb(20 20 19 / .25); transition: transform var(--duration-hover) var(--ease-move); }
+  .switch:checked { background: var(--color-ink); }
+  .switch:checked::before { transform: translateX(20px); }
+  .switch:focus-visible { outline: 2px solid var(--color-ink); outline-offset: 3px; }
   .field { @apply min-h-input-h-phone min-w-0 rounded-control border border-border bg-panel px-3 py-2 text-body-phone text-ink sm:min-h-input-h sm:py-1.5 sm:text-body; }
   .field-error, [aria-invalid="true"] .field { border-color: var(--color-danger); }
   :is(textarea, trix-editor).field { min-height: 112px; }
