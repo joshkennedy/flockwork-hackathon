@@ -1,7 +1,7 @@
 // The frame every tour scene shares: the VBS project open in the app, one tab active.
 import type { ReactNode } from 'react'
 import { Window } from '../kit'
-import { Avatar, Icon, Plate, Sidebar, type IconName, type PlateTone } from './flockwork'
+import { Avatar, Icon, Plate, Sidebar, type IconName } from './flockwork'
 import './tour-shared.css'
 
 const TABS: [string, string][] = [['signup', 'Sign-up sheet'], ['tasks', 'Tasks'], ['schedule', 'Schedule'], ['list', 'List'], ['budget', 'Budget'], ['notes', 'Notes'], ['team', 'Team']]
@@ -16,10 +16,10 @@ export function ToolHead({ icon, color, title, add }: { icon: IconName; color: s
   )
 }
 
-export function TourWindow({ tab, tone, aside = true, children }: { tab: string; tone: PlateTone; aside?: boolean; children: ReactNode }) {
+export function TourWindow({ tab, aside = true, children }: { tab: string; aside?: boolean; children: ReactNode }) {
   return (
     <>
-    <Plate tone={tone} />
+    <Plate />
     <Window sidebar={<Sidebar active="Projects" />} sidebarWidth={180} className="ft-window">
       <div className="fw-crumbs">Projects <span>/</span> Vacation Bible School 2026</div>
       <div className="ft-body">

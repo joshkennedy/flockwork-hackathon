@@ -14,7 +14,8 @@ class ContentSecurityPolicyTest < ActionDispatch::IntegrationTest
     assert_includes policy, "connect-src 'self' wss://api.x.ai"
     assert_select "script[nonce='#{nonce}']"
     assert_select "script[src*=device_theme]"
-    assert_select "script:not([src]):not([type=importmap]):not([type=module])", false
+    # JSON-LD is a data block browsers never run, so it is the one other inline script allowed.
+    assert_select "script:not([src]):not([type=importmap]):not([type=module]):not([type='application/ld+json'])", false
     assert_select "script:not([nonce]):not([src])", false
   end
 

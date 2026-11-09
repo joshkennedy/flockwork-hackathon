@@ -7,7 +7,7 @@ class LandingTest < ActionDispatch::IntegrationTest
     assert_select "title", "Flockwork · Project planning for your church"
     assert_select "h1", "Project planning for your church."
     assert_select ".lp-hero a.btn-primary[href=?]", sign_up_path, text: "Plan Your First Project"
-    assert_select ".lp-hero a.btn-secondary[href=?]", new_demo_session_path, text: "See It With Real Data"
+    assert_select ".lp-hero a.btn-secondary[href=?]", new_demo_session_path, text: "See the Demo"
     assert_select ".lp-hero", text: /say yes to more of them/
     assert_select ".lp-hero", text: /Free to start/, count: 0
     assert_select "form", count: 0
@@ -16,13 +16,38 @@ class LandingTest < ActionDispatch::IntegrationTest
   test "landing footer carries the tagline and the public links" do
     get root_path
     assert_select ".lp-footer .lp-footer-tag", text: /Project planning for your church\./
-    assert_select ".lp-footer a[href=?]", new_sign_in_request_path, text: "Sign In"
-    assert_select ".lp-footer a[href=?]", new_demo_session_path, text: "See the Demo"
+    assert_select ".lp-footer a[href=?]", new_sign_in_request_path, text: "Sign in"
+    assert_select ".lp-footer a[href=?]", new_demo_session_path, text: "See the demo"
     assert_select ".lp-footer .lp-footer-word", "Flockwork"
     assert_select ".public-header nav a.btn-secondary[href=?]", sign_up_path, text: "Plan Your First Project"
     assert_select ".public-header nav a.btn-primary", count: 0
     get new_sign_in_request_path
     assert_select ".public-header nav a[href=?]", sign_up_path, count: 0
+  end
+
+  test "landing describes itself to search and answer engines" do
+    get root_path
+    assert_select "link[rel=canonical][href=?]", root_url
+    assert_select "meta[property='og:title'][content=?]", "Project planning for your church"
+    assert_select "meta[name='twitter:card'][content=summary_large_image]"
+    graph = JSON.parse(css_select("script[type='application/ld+json']").first.text)["@graph"]
+    assert_equal %w[Organization WebSite SoftwareApplication FAQPage], graph.map { |node| node["@type"] }
+    questions = graph.last["mainEntity"].map { |q| q["name"] }
+    assert_select ".lp-faq-item h3", count: questions.size
+    questions.each { |question| assert_select ".lp-faq-item h3", question }
+  end
+
+  test "sitemap and llms.txt point at the public pages" do
+    get "/sitemap.xml"
+    assert_response :success
+    assert_includes response.media_type, "xml"
+    assert_includes response.body, "<loc>#{root_url}</loc>"
+
+    get "/llms.txt"
+    assert_response :success
+    assert_equal "text/plain", response.media_type
+    assert_match(/\A# Flockwork/, response.body)
+    assert_includes response.body, new_demo_session_url
   end
 
   test "sign up page posts to organizations" do
@@ -99,6 +124,6 @@ class LandingTest < ActionDispatch::IntegrationTest
   test "landing tells the story in the spec's order" do
     get root_path
     ids = css_select("section[aria-labelledby]").map { |section| section["aria-labelledby"] }
-    assert_equal %w[landing-title photos-title between-title planner-title tour-title people-title why-title close-title], ids
+    assert_equal %w[landing-title photos-title between-title planner-title tour-title people-title why-title faq-title close-title], ids
   end
 end

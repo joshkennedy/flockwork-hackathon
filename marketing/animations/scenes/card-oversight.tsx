@@ -25,7 +25,7 @@ export default function CardOversight() {
     <Stage<S> width={640} height={280} initial={{ logged: false }} poster={{ logged: true }} script={script} cursor={{ at: { x: 590, y: 250 }, idle: false }} fidelity="realistic" className="fw fw-plated fw-cards fw-card-oversight">
       {(s) => (
         <>
-        <Plate tone="dusk" />
+        <Plate />
         <div className="fc-panel co-panel">
           <div className="co-label">May need a check-in</div>
           <div className="co-card">

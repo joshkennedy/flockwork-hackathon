@@ -41,7 +41,7 @@ export default function CardPeople() {
         const on = rect(`tab-${s.filter}`)
         return (
           <>
-          <Plate tone="meadow" />
+          <Plate />
           <div className="fc-panel cp-panel">
             <div className="tab-bar cp-tabs" data-target="tabs">
               {TABS.map((tab, i) => {

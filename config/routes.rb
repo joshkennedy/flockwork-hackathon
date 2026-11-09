@@ -2,6 +2,8 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
   root "landing#show"
+  get "sitemap.xml", to: "landing#sitemap", format: false, defaults: { format: :xml }
+  get "llms.txt", to: "landing#llms", format: false
   get "sign_up", to: "organizations#new", as: :sign_up
 
   get "p/:token", to: "public_projects#show", as: :public_project

@@ -48,7 +48,7 @@ export default function TourTasks() {
   return (
     <Stage<S> width={1100} height={560} initial={START} poster={{ assigned: true, checked: true, moved: true }} script={script} cursor={{ at: { x: 900, y: 420 } }} fidelity="realistic" className="fw fw-plated fw-tour-tasks">
       {(s) => (
-        <TourWindow tab="tasks" tone="lake">
+        <TourWindow tab="tasks">
           <ToolHead icon="tasks" color="text-tool-tasks" title="Tasks" add="Add Task" />
           <Collapse open={!s.moved}>
             <Open title="Prepare classroom supply bins" who={<PersonPill {...SAM} />} due="Due in 7 weeks" ring="ring" done={s.checked} />

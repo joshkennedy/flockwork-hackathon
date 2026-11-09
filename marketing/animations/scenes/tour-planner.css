@@ -1,6 +1,8 @@
 .fw-tour-planner .ftp-layers { display: grid; }
-.fw-tour-planner .ftp-layer { grid-area: 1 / 1; min-width: 0; transition: opacity 300ms cubic-bezier(0.25, 0.8, 0.25, 1); }
-.fw-tour-planner .ftp-layer[data-off] { opacity: 0; pointer-events: none; }
+/* Stacked layers swap in sequence, never crossfade: the outgoing one fades out first and the incoming
+   one waits for it, so two steps never show through each other mid-swap. */
+.fw-tour-planner .ftp-layer { grid-area: 1 / 1; min-width: 0; transition: opacity 160ms cubic-bezier(0.25, 0.8, 0.25, 1) 160ms; }
+.fw-tour-planner .ftp-layer[data-off] { opacity: 0; pointer-events: none; transition-delay: 0ms; }
 .fw-tour-planner .ftp-section { margin-top: 28px; max-width: 672px; }
 .fw-tour-planner .ftp-heading { font-size: 20px; line-height: 28px; font-weight: 600; }
 .fw-tour-planner .ftp-lede { margin-top: 8px; color: var(--color-ink-2); }
@@ -23,9 +25,9 @@
 .fw-tour-planner .ftp-ptitle { font-size: 16px; line-height: 24px; font-weight: 600; }
 .fw-tour-planner .ftp-psub { display: grid; font-size: 13px; line-height: 18px; color: var(--color-ink-2); }
 .fw-tour-planner .ftp-pbody { display: grid; margin-top: 14px; }
-.fw-tour-planner .ftp-pbody > * { grid-area: 1 / 1; align-self: start; transition: opacity 300ms cubic-bezier(0.25, 0.8, 0.25, 1); }
+.fw-tour-planner .ftp-pbody > * { grid-area: 1 / 1; align-self: start; transition: opacity 160ms cubic-bezier(0.25, 0.8, 0.25, 1) 160ms; }
 .fw-tour-planner .ftp-empty p { font-size: 14px; line-height: 20px; }
-.fw-tour-planner .ftp-pbody[data-on] .ftp-empty, .fw-tour-planner .ftp-pbody:not([data-on]) .ftp-groups { opacity: 0; }
+.fw-tour-planner .ftp-pbody[data-on] .ftp-empty, .fw-tour-planner .ftp-pbody:not([data-on]) .ftp-groups { opacity: 0; transition-delay: 0ms; }
 .fw-tour-planner .planner-tool-heading { font-size: 12px; line-height: 16px; }
 .fw-tour-planner .ftp-gicon { display: inline-flex; }
 .fw-tour-planner .ftp-gicon svg { width: 14px; height: 14px; }

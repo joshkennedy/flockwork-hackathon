@@ -28,7 +28,7 @@ export default function TourSignup() {
   return (
     <Stage<S> width={1100} height={560} initial={{ claimed: false }} poster={{ claimed: true }} script={script} fidelity="realistic" className="fw fw-plated fw-tour-signup">
       {(s) => (
-        <TourWindow tab="signup" tone="sunrise" aside={false}>
+        <TourWindow tab="signup" aside={false}>
           <ToolHead icon="schedule" color="text-tool-signup" title="Sign-up sheet" add="Add Slot" />
           {ROWS.map((row) => {
             const claimed = row.focus && s.claimed

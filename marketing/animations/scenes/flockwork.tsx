@@ -55,16 +55,13 @@ export function Sidebar({ active }: { active: string }) {
 
 
 /**
- * The colored ground a scene sits on (after conduit.ai's plates): soft blurred color
- * fields, a halftone dot texture and fine grain, inside the stage's rounded corners.
- * `tone` picks a palette from the app's own tool and avatar colors.
+ * The warm ground every scene sits on: soft blurred amber fields and fine grain, inside the
+ * stage's rounded corners. One plate for every scene, so the page reads as one brand.
  */
-export type PlateTone = 'sunrise' | 'meadow' | 'lake' | 'clay' | 'dusk'
-export function Plate({ tone = 'sunrise' }: { tone?: PlateTone }) {
+export function Plate() {
   return (
-    <div className={`fw-plate fw-plate--${tone}`} aria-hidden>
+    <div className="fw-plate" aria-hidden>
       <span className="fw-plate__c" />
-      <span className="fw-plate__dots" />
       <svg className="fw-plate__grain"><filter id="fw-grain"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch" /><feColorMatrix values="0 0 0 0 .1 0 0 0 0 .08 0 0 0 0 .06 0 0 0 .22 0" /></filter><rect width="100%" height="100%" filter="url(#fw-grain)" /></svg>
     </div>
   )

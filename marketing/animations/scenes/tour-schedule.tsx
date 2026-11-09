@@ -28,7 +28,7 @@ export default function TourSchedule() {
   return (
     <Stage<S> width={1100} height={560} initial={{ added: false }} poster={{ added: true }} script={script} fidelity="realistic" className="fw fw-plated fw-tour-schedule">
       {(s) => (
-        <TourWindow tab="schedule" tone="meadow">
+        <TourWindow tab="schedule">
           <ToolHead icon="schedule" color="text-tool-schedule" title="Schedule" add="Add Item" />
           {DAYS.map(({ day, items }, d) => (
             <div key={day} className="ftc-day">

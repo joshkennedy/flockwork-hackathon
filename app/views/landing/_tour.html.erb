@@ -1,9 +1,8 @@
-<%# Each tool carries its scene's plate base color (marketing/animations/flockwork.css), which tints the section while it is current. %>
 <% tools = [
-  [ "signup", "Spots that fill themselves", "Every spot shows who’s in and how many are still needed.", "tour-signup", "#F2B77C", "The Vacation Bible School sign-up sheet: Ana Torres takes a check-in helper spot on Tuesday, December 29, and its spots left go from 3 to 2" ],
-  [ "tasks", "Tasks with a name on them", "Tasks have an owner and a due date. Nobody wonders whose job it was.", "tour-tasks", "#94C7E3", "Vacation Bible School tasks: an unassigned task gets someone on it, then another is checked off and moves to Done" ],
-  [ "schedule", "A schedule everyone has", "The week’s plan by day, with times and rooms.", "tour-schedule", "#A9D2A4", "The Vacation Bible School schedule by day, where a snack break at 10:15 AM in Fellowship Hall slots into Monday in time order" ],
-  [ "budget", "A budget you can actually see", "Estimates and actual spending, side by side.", "tour-budget", "#E5A98F", "The Vacation Bible School budget: the actual cost of craft supplies is entered and the actual total updates beside the estimate" ]
+  [ "signup", "Spots that fill themselves", "Every spot shows who’s in and how many are still needed.", "tour-signup", "The Vacation Bible School sign-up sheet: Ana Torres takes a check-in helper spot on Tuesday, December 29, and its spots left go from 3 to 2" ],
+  [ "tasks", "Tasks with a name on them", "Tasks have an owner and a due date. Nobody wonders whose job it was.", "tour-tasks", "Vacation Bible School tasks: an unassigned task gets someone on it, then another is checked off and moves to Done" ],
+  [ "schedule", "A schedule everyone has", "The week’s plan by day, with times and rooms.", "tour-schedule", "The Vacation Bible School schedule by day, where a snack break at 10:15 AM in Fellowship Hall slots into Monday in time order" ],
+  [ "budget", "A budget you can actually see", "Estimates and actual spending, side by side.", "tour-budget", "The Vacation Bible School budget: the actual cost of craft supplies is entered and the actual total updates beside the estimate" ]
 ] %>
 <section class="lp-band lp-tour" aria-labelledby="tour-title" data-controller="tour-rail">
   <div class="lp-section">
@@ -22,8 +21,8 @@
         <% end %>
       </nav>
       <div class="lp-tour-screens">
-        <% tools.each do |key, title, line, image, tone, alt| %>
-          <figure class="lp-tour-screen" data-tour-rail-target="screen" data-screen="<%= key %>" data-tone="<%= tone %>">
+        <% tools.each do |key, title, line, image, alt| %>
+          <figure class="lp-tour-screen" data-tour-rail-target="screen" data-screen="<%= key %>">
             <figcaption><h3><%= title %></h3><p><%= line %></p></figcaption>
             <%= render "landing/scene", name: image, width: 1100, height: 560, class: "lp-scene lp-float", alt: alt %>
           </figure>
