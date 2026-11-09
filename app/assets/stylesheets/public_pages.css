@@ -195,6 +195,7 @@
   .lp-planner .lp-scene { width: 100%; }
   .lp-why { grid-template-columns: 1fr; min-height: 0; }
   .lp-why img { order: -1; aspect-ratio: 3 / 2; height: auto; }
+  .lp-why-text { padding: 56px 24px; }
 }
 
 @media (max-width: 760px) {
@@ -206,6 +207,8 @@
   .lp-hero-copy p { font-size: 16px; }
   .lp-actions .btn { flex: 1 1 100%; min-height: 48px; font-size: 15px; }
   .lp-hero-scene { margin-top: 32px; }
+  /* The plates' 16px corners are baked in at 1100px wide, so at phone width they are about 6px. */
+  .lp-float img { border-radius: 6px; }
   .lp-section { padding: 80px 16px 0; }
   .lp-band { margin-top: 80px; padding: 72px 0; }
   .lp-bento { grid-template-columns: 1fr; }
