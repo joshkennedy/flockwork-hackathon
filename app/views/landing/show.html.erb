@@ -17,6 +17,7 @@
       <%= link_to "Plan Your First Project", sign_up_path, class: "btn btn-primary" %>
       <%= link_to "See the Demo", new_demo_session_path, class: "btn btn-secondary" %>
     </div>
+    <p class="lp-reassure">Free during beta. No card.</p>
   </div>
   <%= render "landing/scene", name: "hero", width: 1110, height: 640, class: "lp-hero-scene lp-float", loading: "eager", fetchpriority: "high",
         alt: "Daniel’s Home lists Grace Fellowship’s active projects: a meal train, Vacation Bible School, a church workday and a women’s retreat. On her phone, Ruth signs up to bring dinner for the meal train, and its row on Home goes from 15 to 14 dinners still needing someone" %>
@@ -53,21 +54,6 @@
 
 <%= render "landing/why" %>
 
-<section class="lp-section lp-faq" aria-labelledby="faq-title">
-  <div class="lp-intro">
-    <h2 id="faq-title">Questions, answered.</h2>
-    <p>The short version of what churches ask before their first project.</p>
-  </div>
-  <div class="lp-faq-list">
-    <% faqs.each do |question, answer| %>
-      <div class="lp-faq-item"><h3><%= question %></h3><p><%= answer %></p></div>
-    <% end %>
-  </div>
-</section>
+<%= render "landing/faq", faqs: faqs %>
 
-<section class="lp-close" aria-labelledby="close-title">
-  <h2 id="close-title">Say yes to the next one.</h2>
-  <p>Start with one project. Invite the people who make it happen.</p>
-  <%= link_to "Plan Your First Project", sign_up_path, class: "btn btn-primary" %>
-  <p class="lp-returning">Already part of a church here? <%= link_to "Sign in", new_sign_in_request_path, class: "link font-medium" %></p>
-</section>
+<%= render "landing/close" %>

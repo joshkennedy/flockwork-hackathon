@@ -1,0 +1,23 @@
+<% marketing_head(@page, type: "ContactPage") %>
+
+<section class="lp-page-hero" aria-labelledby="contact-title">
+  <div>
+    <h1 id="contact-title">Get in touch.</h1>
+    <p>Write to <%= mail_to "hello@getflockwork.com", "hello@getflockwork.com", class: "link" %>. A person at Outpost Labs LLC will read it.</p>
+  </div>
+</section>
+
+<section class="lp-section lp-contact" aria-labelledby="write-title">
+  <h2 id="write-title">What to write about.</h2>
+  <div class="lp-contact-list">
+    <div><h3>Questions</h3><p>Ask how Flockwork fits the projects your church plans.</p></div>
+    <div><h3>Church data requests</h3><p>Ask for a copy, correction or deletion of your church’s workspace information.</p></div>
+    <div><h3>Security reports</h3><p>Tell us what you found and how we can reproduce it.</p></div>
+  </div>
+</section>
+
+<figure class="lp-photo">
+  <%= image_tag "marketing/photos/#{@page.photo}.webp", width: 1152, height: 768, loading: "lazy", alt: "Volunteers setting tables and chairs in a church fellowship hall" %>
+</figure>
+
+<%= render "landing/close", title: "Plan the next project together." %>

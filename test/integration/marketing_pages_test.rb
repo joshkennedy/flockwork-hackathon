@@ -66,4 +66,24 @@ class MarketingPagesTest < ActionDispatch::IntegrationTest
     get new_sign_in_request_path
     assert_select "meta[name=robots][content=noindex]"
   end
+
+  test "pricing says free during beta and offers nothing it can't back" do
+    get pricing_path
+    assert_select "h1", "Free during beta."
+    assert_select ".marketing a.btn-primary", count: 1
+    assert_select ".lp-faq-item h3", count: 5
+    offer = JSON.parse(css_select("script[type='application/ld+json']").first.text)["@graph"].find { |node| node["@type"] == "SoftwareApplication" }["offers"]
+    assert_equal "0", offer["price"]
+    assert_not_includes response.body, "aggregateRating"
+    get root_path
+    assert_select ".lp-hero .lp-reassure", "Free during beta. No card."
+  end
+
+  test "about and contact name the company and the address" do
+    get about_path
+    assert_includes response.body, "Outpost Labs LLC"
+    get contact_path
+    assert_select "a[href=?]", "mailto:hello@getflockwork.com"
+    assert_select "form", count: 0
+  end
 end

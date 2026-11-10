@@ -1,0 +1,39 @@
+<% faqs = [
+  [ "Is Flockwork really free?", "Yes. Flockwork is free during beta, with every current project planning tool included and no card required." ],
+  [ "What happens after the beta?", "Pricing will come later. Churches will get an email before anything is charged, and nobody will be billed automatically." ],
+  [ "Is there a limit on people or projects?", "Flockwork does not promise a specific people or project limit during beta. Write to us if your church expects an unusually large workspace." ],
+  [ "Who owns our church’s data?", "Your church controls its workspace and the information its people add. Contact us if you need a copy of that information." ],
+  [ "Can we leave?", "Yes. Write to hello@getflockwork.com and we will delete your workspace. A delete control in the app is on the way." ]
+] %>
+<% marketing_head(@page, type: "SoftwareApplication", faqs: faqs, node: { applicationCategory: "BusinessApplication", operatingSystem: "Web", offers: { "@type": "Offer", price: "0", priceCurrency: "USD" } }) %>
+
+<section class="lp-page-hero" aria-labelledby="pricing-title">
+  <div>
+    <h1 id="pricing-title">Free during beta.</h1>
+    <p>Plan the work in one place, so your church spends less time chasing details and more time serving people.</p>
+  </div>
+</section>
+
+<section class="lp-section lp-plan-section" aria-labelledby="plan-title">
+  <div class="lp-plan">
+    <div>
+      <p class="lp-plan-name">Flockwork beta</p>
+      <h2 id="plan-title">Everything included.</h2>
+      <p>Every current tool. No card required.</p>
+    </div>
+    <ul>
+      <li>Sign-up sheets and tasks</li>
+      <li>Schedules and budgets</li>
+      <li>People, messages, files and lists</li>
+      <li>The guided Planner</li>
+    </ul>
+  </div>
+  <p class="lp-pricing-note">Pricing comes later. Churches will get an email before anything is charged, and nobody is billed automatically.</p>
+</section>
+
+<figure class="lp-photo">
+  <%= image_tag "marketing/photos/#{@page.photo}.webp", width: 1152, height: 768, loading: "lazy", alt: "Three church leaders planning together around a laptop, notebooks and coffee" %>
+</figure>
+
+<%= render "landing/faq", faqs: faqs, title: "Pricing questions." %>
+<%= render "landing/close", title: "Start while it’s free." %>

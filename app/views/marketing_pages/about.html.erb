@@ -1,0 +1,23 @@
+<% marketing_head(@page, type: "AboutPage") %>
+
+<section class="lp-page-hero" aria-labelledby="about-title">
+  <div>
+    <h1 id="about-title">Why Flockwork exists.</h1>
+    <p>Churches do practical work for one another every week. Flockwork exists to make that work easier to organize and simpler to share.</p>
+  </div>
+</section>
+
+<section class="lp-section lp-about" aria-labelledby="body-title">
+  <div class="lp-about-copy">
+    <h2 id="body-title">Every part doing its work.</h2>
+    <p>Ephesians 4 describes a church as a body: joined and held together, every part doing its work, building itself up in love. A meal train is that. So is a workday, a retreat, or the Tuesday someone drives dinner across town.</p>
+    <p>That work often stalls in the logistics. A spreadsheet goes missing. A text thread loses a name. One person keeps every detail in their head. Flockwork keeps the project together, so leaders can organize it sooner and more people can take part.</p>
+    <p>Flockwork is made by Outpost Labs LLC in Tennessee. It was built during the AI for Church hackathon window.</p>
+  </div>
+</section>
+
+<figure class="lp-photo">
+  <%= image_tag "marketing/photos/#{@page.photo}.webp", width: 1152, height: 768, loading: "lazy", alt: "A neighbor delivering a bag of food to new parents at their front door" %>
+</figure>
+
+<%= render "landing/close" %>

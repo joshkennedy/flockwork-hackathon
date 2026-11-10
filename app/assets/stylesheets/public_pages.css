@@ -84,8 +84,36 @@
 .lp-hero h1 { font-size: clamp(44px, 6.6vw, 84px); line-height: 1.02; }
 .lp-hero-copy p { max-width: 34em; margin: 24px auto 32px; font-size: 19px; line-height: 1.6; color: var(--color-ink-2); }
 .lp-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; }
+.lp-hero-copy .lp-reassure { margin: 14px auto 0; font-size: 14px; line-height: 1.5; color: var(--color-ink-2); }
 .lp-hero-scene { display: block; max-width: 1200px; margin: 56px auto 0; }
 .lp-hero-scene img { display: block; width: 100%; height: auto; }
+
+/* Interior page opening: one direct statement on the shared measure, with no stacked kicker or button pair. */
+.lp-page-hero { display: flex; align-items: center; min-height: calc(100svh - 104px); padding: 96px 24px 104px; background: var(--color-frame); }
+.lp-page-hero > div { width: 100%; max-width: var(--lp-max); margin: 0 auto; }
+.lp-page-hero h1 { max-width: 11em; font-size: clamp(44px, 6.6vw, 84px); line-height: 1.02; }
+.lp-page-hero p { max-width: 38em; margin-top: 24px; font-size: 19px; line-height: 1.6; color: var(--color-ink-2); }
+.lp-page-hero .link { color: var(--color-ink); }
+
+/* Pricing stays one plan, not a tier comparison. Roles align on two deliberate columns. */
+.lp-plan-section { padding-top: 112px; }
+.lp-plan { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, .7fr); gap: 72px; align-items: end; padding: 48px; background: var(--color-panel); border-radius: 16px; box-shadow: inset 0 1px color-mix(in srgb, var(--color-panel) 70%, white); }
+.lp-plan-name { margin-bottom: 12px; font-size: 15px; font-weight: 600; color: var(--color-ink-2); }
+.lp-plan h2, .lp-about h2, .lp-contact h2 { font-size: clamp(32px, 4vw, 48px); line-height: 1.1; }
+.lp-plan > div > p:last-child { margin-top: 12px; font-size: 18px; color: var(--color-ink-2); }
+.lp-plan ul { display: grid; gap: 12px; margin: 0; padding-left: 1.1em; font-size: 17px; line-height: 1.5; }
+.lp-pricing-note { max-width: 46em; margin-top: 32px; font-size: 17px; line-height: 1.65; color: var(--color-ink-2); }
+
+/* One human photograph carries service into each interior page. */
+.lp-photo { max-width: var(--lp-max); margin: 120px auto 0; padding: 0; }
+.lp-photo img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 16px; }
+
+.lp-about-copy { max-width: 720px; }
+.lp-about-copy p { margin-top: 20px; font-size: 18px; line-height: 1.7; color: var(--color-ink-2); }
+.lp-about-copy h2 + p { margin-top: 28px; }
+.lp-contact-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 48px; margin-top: 48px; }
+.lp-contact-list > div { padding-top: 4px; }
+.lp-contact-list p { margin-top: 8px; font-size: 16px; line-height: 1.6; color: var(--color-ink-2); }
 
 /* Photo strip: five of the things the subline just named, on the page measure, scrolling sideways on phones. */
 .lp-photos { margin-top: 96px; padding: 0 24px; }
@@ -232,6 +260,8 @@
   .public-header { flex-wrap: wrap; padding: 24px 16px; }
   .public-header nav { gap: 18px; font-size: 13px; }
   .lp-hero { padding: 40px 16px 0; }
+  .lp-page-hero { min-height: calc(100svh - 128px); padding: 64px 16px 72px; }
+  .lp-page-hero p { font-size: 17px; }
   .lp-hero .header-wash { height: calc(100% - 100px); border-radius: 0 0 24px 24px; }
   .lp-hero-copy p { font-size: 16px; }
   .lp-actions .btn { flex: 1 1 100%; min-height: 48px; font-size: 15px; }
@@ -245,6 +275,11 @@
   /* The plates' 16px corners are baked in at 1100px wide, so at phone width they are about 6px. */
   .lp-float img { border-radius: 6px; }
   .lp-section { padding: 80px 16px 0; }
+  .lp-plan-section { padding-top: 72px; }
+  .lp-plan { grid-template-columns: 1fr; gap: 40px; padding: 32px 24px; border-radius: 12px; }
+  .lp-photo { margin-top: 80px; padding: 0 16px; }
+  .lp-photo img { border-radius: 10px; }
+  .lp-contact-list { grid-template-columns: 1fr; gap: 28px; margin-top: 32px; }
   .lp-band { margin-top: 80px; padding: 72px 0; }
   .lp-bento { grid-template-columns: 1fr; }
   .lp-card-tall { grid-row: auto; }
