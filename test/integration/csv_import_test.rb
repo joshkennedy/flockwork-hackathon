@@ -29,6 +29,17 @@ class CsvImportTest < ActionDispatch::IntegrationTest
     assert_equal "555-2002", people(:leader).phone
   end
 
+  test "re-import preserves an existing phone when the CSV omits or blanks it" do
+    sign_in_as_admin
+    person = organizations(:st_example).people.create!(name: "Phone Person", email: "phone-person@st-example.test", phone: "555-4004")
+
+    upload_csv_bytes "name,email\nNo Phone Column,#{person.email}\n"
+    assert_equal "555-4004", person.reload.phone
+
+    upload_csv_bytes "name,email,phone\nBlank Phone,#{person.email},\n"
+    assert_equal "555-4004", person.reload.phone
+  end
+
   test "rejected rows show line numbers and reasons" do
     sign_in_as_admin
 

@@ -77,7 +77,8 @@ class CsvImport
       skills = row.headers.include?("skills") ? { skills: Skills.normalize(row["skills"]) } : {}
 
       if person
-        person.assign_attributes(name:, phone:, **skills)
+        person.assign_attributes(name:, **skills)
+        person.phone = phone if phone
         return [ :updated ] if person.save
 
         [ :rejected, person.errors.full_messages.to_sentence ]
