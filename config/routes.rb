@@ -2,8 +2,9 @@ Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
 
   root "landing#show"
-  get "terms", to: "legal_pages#terms", as: :terms
-  get "privacy", to: "legal_pages#privacy", as: :privacy
+  MarketingPage::ALL.reject(&:home?).each do |page|
+    get page.path, to: "marketing_pages#show", defaults: { slug: page.slug }, as: page.route_name
+  end
   get "sitemap.xml", to: "landing#sitemap", format: false, defaults: { format: :xml }
   get "llms.txt", to: "landing#llms", format: false
   get "sign_up", to: "organizations#new", as: :sign_up
