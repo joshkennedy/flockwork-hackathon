@@ -90,7 +90,7 @@ class ProjectsController < ApplicationController
 
   def update
     if @project.update(project_params)
-      redirect_to @project
+      redirect_to @project, notice: "Saved #{@project.name}."
     else
       render :edit, status: :unprocessable_content
     end

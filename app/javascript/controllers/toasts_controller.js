@@ -3,12 +3,10 @@ import { mountToaster, toast } from "ding"
 
 export default class extends Controller {
   connect() {
-    this.position = matchMedia("(max-width: 639px)")
     this.mount()
     this.consume = () => this.consumeEntries()
     document.addEventListener("turbo:render", this.consume)
     document.addEventListener("turbo:frame-render", this.consume)
-    this.position.addEventListener("change", this.syncConfiguration)
     this.themeObserver = new MutationObserver(this.syncConfiguration)
     this.themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: [ "data-dark" ] })
     this.consumeEntries()
@@ -17,7 +15,6 @@ export default class extends Controller {
   disconnect() {
     document.removeEventListener("turbo:render", this.consume)
     document.removeEventListener("turbo:frame-render", this.consume)
-    this.position?.removeEventListener("change", this.syncConfiguration)
     this.themeObserver?.disconnect()
     this.unmount?.()
     this.unmount = null
@@ -55,7 +52,7 @@ export default class extends Controller {
 
   get configuration() {
     return {
-      position: this.position.matches ? "top-center" : "top-right",
+      position: "top-center",
       theme: document.documentElement.hasAttribute("data-dark") ? "dark" : "light"
     }
   }
