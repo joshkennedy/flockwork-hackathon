@@ -28,6 +28,9 @@ production:
   demo_organization_reset:
     class: DemoResetJob
     schedule: at 3am every day
+  offsite_backup:
+    class: OffsiteBackupJob
+    schedule: at 4am every day
 
 development:
   demo_organization_reset:
