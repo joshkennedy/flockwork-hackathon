@@ -1,0 +1,13 @@
+<% title = local_assigns.fetch(:title, "Questions, answered.") %>
+<% id = local_assigns.fetch(:id, "faq-title") %>
+<section class="lp-section lp-faq" aria-labelledby="<%= id %>">
+  <div class="lp-intro">
+    <h2 id="<%= id %>"><%= title %></h2>
+    <p>The short version of what churches ask before their first project.</p>
+  </div>
+  <div class="lp-faq-list">
+    <% faqs.each do |question, answer| %>
+      <div class="lp-faq-item"><h3><%= question %></h3><p><%= answer %></p></div>
+    <% end %>
+  </div>
+</section>

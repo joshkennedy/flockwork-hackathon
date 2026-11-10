@@ -1,0 +1,27 @@
+<% scene = {
+  width: 640,
+  height: 280,
+  alt: "Maria Lopez serves on four active projects with no check-in logged. A check-in is logged, and the card reads Checked in today by Daniel Okafor"
+} %>
+<% rows = [
+  [ "Who may need a check-in?", "Oversight starts with people whose serving load has reached the church’s limit and who have not had a recent check-in." ],
+  [ "Can leaders see who has not been invited?", "Yes. A separate list names people who have never been invited to a project, without mixing them into the check-in list." ],
+  [ "What does involvement show?", "Plain yearly counts show projects joined, tasks completed and sign-up slots claimed. Leaders can also see who is away before asking." ]
+] %>
+<% faqs = [
+  [ "What is serving load?", "Serving load is the number of active projects where a person serves as a leader or volunteer." ],
+  [ "What does overextended mean?", "A person is overextended when their serving load reaches the church’s chosen limit, which is three by default." ],
+  [ "Does Oversight score people?", "No. It uses plain counts for active projects, completed tasks and claimed sign-up slots." ],
+  [ "Can a leader record a check-in?", "Yes. A leader can log a check-in date and add a note for a person who may need one." ]
+] %>
+
+<%= render "marketing_pages/feature",
+      page: @page,
+      h1: "Share the work with care.",
+      answer: "Flockwork shows who is serving, who is away, who has not been invited, and whose serving load has reached the church’s limit. The view uses plain counts, not scores. Leaders spend less time piecing together patterns and can care for people before asking them to carry more.",
+      scene: scene,
+      rows_title: "Notice the people behind the plan.",
+      rows: rows,
+      photo_alt: "Men from a church talking together outdoors during a retreat",
+      faqs: faqs,
+      related: %w[people tasks planner] %>

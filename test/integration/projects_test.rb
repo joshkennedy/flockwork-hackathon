@@ -47,6 +47,7 @@ class ProjectsTest < ActionDispatch::IntegrationTest
     }
 
     assert_redirected_to project_path(project)
+    assert_equal "Saved Neighborhood Supper.", flash[:notice]
     follow_redirect!
     assert_select "h1", "Neighborhood Supper"
     assert_select "p", "Welcome our neighbors with dinner."

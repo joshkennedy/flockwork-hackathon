@@ -2,22 +2,36 @@ require "test_helper"
 require "yaml"
 
 class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
+  PROJECT_NAMES = [
+    "Church Workday",
+    "Community Food Pantry Serve Day",
+    "Christmas Outreach #{Date.current.year - 1}",
+    "Kids' Night",
+    "Meal Train for the Alvarez Family",
+    "Meal Train for the Hernandez Family",
+    "Men's Retreat",
+    "Men's Retreat #{Date.current.year - 1}",
+    "Spring Church Workday",
+    "Summer Kids' Night",
+    "Vacation Bible School #{Date.current.year - 1}",
+    "Vacation Bible School #{Date.current.year}",
+    "Women's Fall Retreat"
+  ].freeze
+
   test "seed builds the literal Grace Fellowship demo story" do
     travel_to Time.zone.local(2026, 10, 30, 12) do
       organization = DemoOrganization.seed!
 
       assert_equal 60, organization.people.count
       assert_equal 3, organization.overextended_limit
-      assert_equal [
-        "Church Workday",
-        "Meal Train for the Alvarez Family",
-        "Vacation Bible School 2025",
-        "Vacation Bible School 2026",
-        "Women's Fall Retreat"
-      ], organization.projects.order(:name).pluck(:name)
+      assert_equal PROJECT_NAMES.sort, organization.projects.order(:name).pluck(:name)
+      assert_equal 7, organization.projects.active.count
+      assert_equal 6, organization.projects.where.not(done_at: nil).count
+      assert organization.projects.all? { |project| project.banner.attached? }
+      assert organization.projects.all? { |project| project.banner.blob.metadata["organization_id"].to_s == organization.id.to_s }
       assert_equal Project::TOOLS.sort, organization.projects.flat_map(&:enabled_tools).uniq.sort
-      assert_equal [ "Maria Lopez", "Grace Kim" ], Oversight.overextended(organization).map(&:name)
-      assert_equal 12, Oversight.never_asked(organization).count
+      assert_equal [ "Maria Lopez", "Sam Chen", "Grace Kim" ], Oversight.overextended(organization).map(&:name)
+      assert_equal 11, Oversight.never_asked(organization).count
 
       ruth = organization.people.find_by!(name: "Ruth Bennett")
       assert_equal 14, Oversight.involvement(ruth).find { |entry| entry[:year] == 2026 }[:slots]
@@ -77,7 +91,7 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
 
     replacement = Organization.find_by!(slug: DemoOrganization::SLUG)
     assert_equal 60, replacement.people.count
-    assert_equal 5, replacement.projects.count
+    assert_equal 13, replacement.projects.count
     assert_equal other_counts, [ other_organization.reload.people.count, other_organization.projects.count ]
     assert_not Session.where(id: old_session_ids).exists?
     assert_not ActionText::RichText.where(id: old_rich_text_ids).exists?
@@ -114,21 +128,20 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
         "Nina Bailey",
         "Pamela Underwood",
         "Peter Sanchez",
-        "Rachel Hernandez",
         "Victor Ramirez"
       ], Oversight.never_asked(organization).pluck(:name)
 
       retreat = organization.projects.find_by!(name: "Women's Fall Retreat")
       assert_equal 3, retreat.memberships.count
-      assert_empty retreat.enabled_tools
-      assert_equal 0, retreat.tasks.count
-      assert_equal 0, retreat.schedule_items.count
-      assert_equal 0, retreat.slots.count
-      assert_equal 0, retreat.budget_lines.count
+      assert_equal %w[budget list messages schedule signup_sheet tasks], retreat.enabled_tools.sort
+      assert_operator retreat.tasks.count, :>=, 3
+      assert_operator retreat.schedule_items.count, :>=, 3
+      assert_operator retreat.slots.count, :>=, 3
+      assert_operator retreat.budget_lines.count, :>=, 3
       assert_equal 0, retreat.recipients.count
-      assert_equal 0, retreat.messages.count
+      assert_operator retreat.messages.count, :>=, 2
       assert_equal 0, retreat.doc_items.count
-      assert_equal 0, retreat.lists.count
+      assert_equal [ "Packing list" ], retreat.lists.pluck(:name)
 
       meal_train = organization.projects.find_by!(name: "Meal Train for the Alvarez Family")
       assert_equal 29, meal_train.slots.count
@@ -159,7 +172,7 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
       assert vbs.tasks.done.exists?
 
       sam = organization.people.find_by!(name: "Sam Chen")
-      assert_equal [ "Church Workday", "Vacation Bible School 2026" ], sam.projects.active.order(:name).pluck(:name)
+      assert_operator sam.projects.active.count, :>, organization.overextended_limit
       assert vbs.tasks.where(assignee: sam).exists?
       assert SlotClaim.joins(:slot).where(person: sam, slots: { project_id: vbs.id }).exists?
 
@@ -169,7 +182,7 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
       assert_equal %w[docs signup_sheet tasks], workday.enabled_tools.sort
       assert_equal 4, workday.tasks.open.where(assignee_id: nil).count
       assert_equal 7, workday.memberships.count
-      assert_equal [ "Building map", "Workday safety notes" ], workday.doc_items.order(:title).pluck(:title)
+      assert_equal [ "Building map", "Volunteer handbook", "Workday safety notes" ], workday.doc_items.order(:title).pluck(:title)
       assert_equal "https://example.com/grace-fellowship/workday-map", workday.doc_items.find_by!(title: "Building map").url
 
       [ retreat, vbs ].each do |project|
@@ -178,6 +191,70 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
         assert project.invitations.declined.exists?
       end
     end
+  end
+
+  test "every Tool has realistic content in at least two Projects" do
+    organization = DemoOrganization.seed!
+    populated = {
+      "tasks" => ->(project) { project.tasks.exists? },
+      "schedule" => ->(project) { project.schedule_items.exists? },
+      "signup_sheet" => ->(project) { project.slots.exists? && SlotClaim.joins(:slot).where(slots: { project_id: project.id }).exists? },
+      "budget" => ->(project) { project.budget_lines.exists? },
+      "recipients" => ->(project) { project.recipients.exists? && project.recipients.joins(:notes).exists? },
+      "messages" => ->(project) { project.messages.roots.exists? && project.messages.where.not(parent_id: nil).exists? },
+      "docs" => ->(project) { project.doc_items.exists? },
+      "list" => ->(project) { project.lists.joins(:rows).exists? }
+    }
+
+    Project::TOOLS.each do |tool|
+      projects = organization.projects.select { |project| project.enabled_tools.include?(tool) && populated.fetch(tool).call(project) }
+      assert_operator projects.count, :>=, 2, "expected #{tool} content in at least two Projects"
+    end
+
+    assert_operator Message.joins(project: :organization).joins(:comments).where(projects: { organization_id: organization.id }).count, :>=, 2
+    assert_operator Mention.joins(:person).where(people: { organization_id: organization.id }).count, :>=, 2
+    assert_operator organization.people.joins(:check_ins).distinct.count, :>=, 6
+    assert_operator organization.people.joins(:unavailabilities).distinct.count, :>=, 3
+    DemoOrganization::ROLE_EMAILS.each_value do |email|
+      assert_operator organization.people.find_by!(email:).notifications.unread.count, :>=, 2
+    end
+  end
+
+  test "seed enqueues no mail SMS banner or LLM work and makes no provider calls" do
+    jobs = [ ActionMailer::MailDeliveryJob, SmsNotificationJob, ProjectBannerFocusJob, ProjectBannerVariantsJob ]
+
+    original_vision = ProjectBannerVision.method(:call)
+    original_sendly = Messaging::Sendly.method(:new)
+    ProjectBannerVision.define_singleton_method(:call) { |*| raise "seed called ProjectBannerVision" }
+    Messaging::Sendly.define_singleton_method(:new) { |*| raise "seed initialized Sendly" }
+
+    assert_no_enqueued_jobs only: jobs do
+      DemoOrganization.seed!
+    end
+  ensure
+    ProjectBannerVision.define_singleton_method(:call, original_vision) if original_vision
+    Messaging::Sendly.define_singleton_method(:new, original_sendly) if original_sendly
+  end
+
+  test "two resets keep Project Person attachment and blob counts stable" do
+    first = DemoOrganization.reset!
+    first_counts = [
+      first.projects.count,
+      first.people.count,
+      ActiveStorage::Attachment.count,
+      ActiveStorage::Blob.count
+    ]
+
+    second = nil
+    assert_no_enqueued_jobs(only: [ ActionMailer::MailDeliveryJob, SmsNotificationJob ]) { second = DemoOrganization.reset! }
+    assert_equal first_counts, [
+      second.projects.count,
+      second.people.count,
+      ActiveStorage::Attachment.count,
+      ActiveStorage::Blob.count
+    ]
+    variant_blob_ids = ActiveStorage::VariantRecord.joins(:image_attachment).select("active_storage_attachments.blob_id")
+    assert_not ActiveStorage::Blob.where.missing(:attachments).where.not(id: variant_blob_ids).exists?
   end
 
   test "seeded role buttons sign in as the fixed demo People" do
@@ -215,7 +292,7 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "the reset job restores the demo and is scheduled nightly" do
+  test "the reset job restores the demo and is scheduled hourly" do
     organization = DemoOrganization.seed!
     organization.projects.find_by!(name: "Church Workday").destroy!
     organization.people.create!(name: "Temporary Judge", email: "judge@grace.example")
@@ -224,14 +301,14 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
 
     replacement = Organization.find_by!(slug: DemoOrganization::SLUG)
     assert_equal 60, replacement.people.count
-    assert_equal 5, replacement.projects.count
+    assert_equal 13, replacement.projects.count
     assert_not replacement.people.exists?(name: "Temporary Judge")
 
     recurring = YAML.load_file(Rails.root.join("config/recurring.yml"))
     [ "production", "development" ].each do |environment|
       reset_schedule = recurring.dig(environment, "demo_organization_reset")
       assert_equal "DemoResetJob", reset_schedule.fetch("class")
-      assert_equal "at 3am every day", reset_schedule.fetch("schedule")
+      assert_equal "every hour", reset_schedule.fetch("schedule")
     end
   end
 end

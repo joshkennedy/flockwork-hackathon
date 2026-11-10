@@ -69,6 +69,12 @@ Rails.application.configure do
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
 
+  # Keys for encrypted columns (Organization's Planning Center credentials) come from the
+  # environment because there is no production master key. Changing them orphans encrypted rows.
+  config.active_record.encryption.primary_key = ENV["ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY"]
+  config.active_record.encryption.deterministic_key = ENV["ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY"]
+  config.active_record.encryption.key_derivation_salt = ENV["ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT"]
+
   # Only use :id for inspections in production.
   config.active_record.attributes_for_inspect = [ :id ]
 

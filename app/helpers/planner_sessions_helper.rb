@@ -1,5 +1,8 @@
 module PlannerSessionsHelper
   PLANNER_TOOL_ICONS = {
+    "planner" => :projects,
+    "people" => :people,
+    "oversight" => :oversight,
     "tasks" => :tasks,
     "schedule" => :schedule,
     "signup_sheet" => :schedule,
@@ -10,6 +13,9 @@ module PlannerSessionsHelper
   }.freeze
 
   PLANNER_TOOL_COLORS = {
+    "planner" => "text-tool-docs",
+    "people" => "text-tool-list",
+    "oversight" => "text-tool-messages",
     "tasks" => "text-tool-tasks",
     "schedule" => "text-tool-schedule",
     "signup_sheet" => "text-tool-signup",

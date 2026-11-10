@@ -1,0 +1,27 @@
+<% scene = {
+  width: 920,
+  height: 520,
+  alt: "The Vacation Bible School budget: the actual cost of craft supplies is entered and the actual total updates beside the estimate"
+} %>
+<% rows = [
+  [ "What belongs in the budget?", "Bookings cover things the project reserves. Purchases cover things it buys. Both stay beside the project they support." ],
+  [ "Do we need an estimate first?", "No. A budget line may begin without an estimate. Add estimated or actual costs when the church knows them." ],
+  [ "What totals can leaders see?", "Flockwork shows estimated and actual totals for bookings, purchases and the whole project, while each line keeps its own status." ]
+] %>
+<% faqs = [
+  [ "What is the difference between a booking and a purchase?", "A booking is something the project reserves, such as a venue. A purchase is something the project buys, such as supplies." ],
+  [ "Can a budget line have no estimate?", "Yes. You can add the line first and enter an estimate or actual cost later." ],
+  [ "Does Flockwork show estimated and actual totals?", "Yes. The budget shows both totals for bookings, purchases and the whole project." ],
+  [ "Can a budget line have a responsible person?", "Yes. A booking or purchase can keep a responsible person with its costs and status." ]
+] %>
+
+<%= render "marketing_pages/feature",
+      page: @page,
+      h1: "A budget beside the work.",
+      answer: "Flockwork keeps project bookings and purchases with their estimated and actual costs, even when an estimate is not known yet. Leaders can see the totals without maintaining a separate sheet, make clearer decisions, and keep resources pointed toward the people their church serves.",
+      scene: scene,
+      rows_title: "See estimates and actual costs together.",
+      rows: rows,
+      photo_alt: "Three volunteers filling foil pans together in a church kitchen",
+      faqs: faqs,
+      related: %w[planner tasks schedule] %>

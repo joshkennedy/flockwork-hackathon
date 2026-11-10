@@ -9,8 +9,28 @@
 
 ## Pages
 
-- [Home](<%= root_url %>): what Flockwork is and who it is for
+### Product
+
+<% MarketingPage.in_section(:product).each do |page| %>
+- [<%= page.label %>](<%= marketing_url(page) %>): <%= page.summary %>
+<% end %>
 - [Plan your first project](<%= sign_up_url %>): create a church and start a project
 - [See the demo](<%= new_demo_session_url %>): a sample church with projects and people
-- [Terms](<%= terms_url %>): using the workspace and reviewing AI suggestions
-- [Privacy policy](<%= privacy_url %>): stored information, AI services and audio
+
+### Features
+
+<% MarketingPage.in_section(:feature).each do |page| %>
+- [<%= page.label %>](<%= marketing_url(page) %>): <%= page.summary %>
+<% end %>
+
+### Company
+
+<% MarketingPage.in_section(:company).each do |page| %>
+- [<%= page.label %>](<%= marketing_url(page) %>): <%= page.summary %>
+<% end %>
+
+### Legal
+
+<% MarketingPage.in_section(:legal).each do |page| %>
+- [<%= page.label %>](<%= marketing_url(page) %>): <%= page.summary %>
+<% end %>

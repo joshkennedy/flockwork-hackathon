@@ -1,0 +1,55 @@
+<% marketing_head(@page) %>
+<% feature_copy = {
+  "sign-ups" => "Share one link and show volunteers the roles and dates that still need someone.",
+  "tasks" => "Keep open work, owners, due dates and completed tasks with the project.",
+  "schedule" => "Put dates, times, locations and the run of the day in one shared view.",
+  "budget" => "Track bookings and purchases with estimated and actual costs side by side.",
+  "planner" => "Turn one sentence and a few answers into suggestions a person reviews.",
+  "people" => "Bring in the church directory, then search by name and filter by status or skill.",
+  "oversight" => "See serving load, time away and who may need a check-in."
+} %>
+<% feature_icons = {
+  "sign-ups" => [ :schedule, "text-tool-signup" ],
+  "tasks" => [ :tasks, "text-tool-tasks" ],
+  "schedule" => [ :schedule, "text-tool-schedule" ],
+  "budget" => [ :budget, "text-tool-budget" ],
+  "planner" => [ :projects, "text-tool-docs" ],
+  "people" => [ :people, "text-tool-list" ],
+  "oversight" => [ :oversight, "text-tool-messages" ]
+} %>
+
+<section class="lp-page-hero" aria-labelledby="features-title">
+  <div>
+    <h1 id="features-title">Everything a church project needs.</h1>
+    <p>Keep the plan, the people and the work together, so fewer details need chasing and more people can serve.</p>
+  </div>
+</section>
+
+<section class="lp-section lp-feature-index" aria-label="Flockwork features">
+  <% MarketingPage.in_section(:feature).each do |page| %>
+    <% slug = page.slug.delete_prefix("features/") %>
+    <% glyph, color = feature_icons.fetch(slug) %>
+    <article class="lp-feature-link">
+      <h2><%= icon(glyph, size: 22, class: color) %><%= page.label %>.</h2>
+      <p><%= feature_copy.fetch(slug) %></p>
+      <%= link_to "See #{page.label}", page.path %>
+    </article>
+  <% end %>
+</section>
+
+<figure class="lp-photo">
+  <%= image_tag "marketing/photos/#{@page.photo}.webp", width: 1152, height: 768, loading: "lazy", alt: "Volunteers stocking shelves together at a community food pantry" %>
+</figure>
+
+<section class="lp-band lp-every-project" aria-labelledby="every-project-title">
+  <div class="lp-section">
+    <h2 id="every-project-title">Also in every project.</h2>
+    <div class="lp-every-project-list">
+      <div><h3>Messages</h3><p>Keep project conversations and replies beside the work they concern.</p></div>
+      <div><h3>Docs &amp; Files</h3><p>Add documents, uploaded files and useful links to the project.</p></div>
+      <div><h3>List</h3><p>Build a list with the columns and rows this project needs.</p></div>
+    </div>
+  </div>
+</section>
+
+<%= render "landing/close", title: "Put the whole project in one place." %>

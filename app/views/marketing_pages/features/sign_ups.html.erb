@@ -1,0 +1,28 @@
+<% scene = {
+  width: 920,
+  height: 520,
+  alt: "The Vacation Bible School sign-up sheet: Ana Torres takes a check-in helper spot on Tuesday, December 29, and its spots left go from 3 to 2"
+} %>
+<% rows = [
+  [ "How do leaders share it?", "Send the project’s public link in a text or bulletin. The same page shows the project details and the places that still need someone." ],
+  [ "How do people choose a spot?", "Open the link on a phone, find a role and date that works, then sign in with the email address your church has on file to take it." ],
+  [ "What can leaders see?", "Each slot keeps its date, time, capacity and current claims together, so open places are clear without matching replies by hand." ]
+] %>
+<% faqs = [
+  [ "How do volunteers sign up?", "Share the project’s public link. Volunteers open it on any phone, and see the open spots. People in your church’s directory sign in with their email to take one." ],
+  [ "What does each open spot show?", "The public page shows the date, time, role and number of spots left for each opening." ],
+  [ "Do volunteers need to sign in?", "Yes. The public page asks a volunteer to sign in before taking a spot." ],
+  [ "What else can the public project page show?", "When the project has them, the same page can show its schedule and open tasks alongside the sign-up sheet." ]
+] %>
+
+<%= render "marketing_pages/feature",
+      page: @page,
+      close_title: "Fill the next open spot.",
+      h1: "Sign-up sheets volunteers can use.",
+      answer: "Flockwork gives a church one sign-up link to share in a text or bulletin. Volunteers open it on any phone, see which roles and dates still need someone, then sign in with the email their church has on file to take a spot. Leaders spend less time matching replies, and more people can serve.",
+      scene: scene,
+      rows_title: "From open spot to someone serving.",
+      rows: rows,
+      photo_alt: "A person on a couch using a phone to answer a request to help",
+      faqs: faqs,
+      related: %w[tasks schedule people] %>

@@ -1,0 +1,27 @@
+<% scene = {
+  width: 640,
+  height: 280,
+  alt: "The People directory switching from Everyone to Not yet asked, which lists the people no one has invited yet"
+} %>
+<% rows = [
+  [ "How do people get into Flockwork?", "Leaders can connect Planning Center, import a CSV or add a person directly. The directory stays inside the church workspace." ],
+  [ "How can leaders find someone?", "Search by name, filter the directory by serving status, or choose a skill such as cooking, driving or setup and teardown." ],
+  [ "What does each person’s row show?", "The directory shows whether someone is serving now, has not been asked yet, is away or cannot sign in, with links to their details." ]
+] %>
+<% faqs = [
+  [ "Can we import people from Planning Center?", "Yes. Church admins can connect Planning Center and sync people into the directory." ],
+  [ "Can we import a spreadsheet?", "Yes. Flockwork accepts a CSV import for bringing people into the church directory." ],
+  [ "Can leaders search by skill?", "Yes. Leaders can filter the directory by skills people have listed, such as cooking, driving or childcare." ],
+  [ "Can we find people no one has asked yet?", "Yes. The directory has a Not yet asked filter for people who have never been invited to a project." ]
+] %>
+
+<%= render "marketing_pages/feature",
+      page: @page,
+      h1: "Know who can help.",
+      answer: "Flockwork brings a church’s people into one directory from Planning Center, a CSV or direct entry. Leaders can search by name, filter by skill, and see who is serving or has not been asked yet. Finding the right help takes less time, so invitations can reach more people.",
+      scene: scene,
+      rows_title: "Bring the directory into the work.",
+      rows: rows,
+      photo_alt: "Women from a church gathered together during a retreat",
+      faqs: faqs,
+      related: %w[oversight tasks sign-ups] %>

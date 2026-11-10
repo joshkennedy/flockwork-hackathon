@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc><%= root_url %></loc></url>
-  <url><loc><%= sign_up_url %></loc></url>
-  <url><loc><%= terms_url %></loc></url>
-  <url><loc><%= privacy_url %></loc></url>
+  <% MarketingPage::ALL.each do |page| %>
+    <url><loc><%= marketing_url(page) %></loc></url>
+  <% end %>
 </urlset>

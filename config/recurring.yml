@@ -27,12 +27,13 @@ production:
     schedule: at 2am every day
   demo_organization_reset:
     class: DemoResetJob
-    schedule: at 3am every day
+    schedule: every hour
   offsite_backup:
     class: OffsiteBackupJob
-    schedule: at 4am every day
+    # Off the hour, so it never runs while the hourly demo reset is replacing files.
+    schedule: "30 4 * * *"
 
 development:
   demo_organization_reset:
     class: DemoResetJob
-    schedule: at 3am every day
+    schedule: every hour

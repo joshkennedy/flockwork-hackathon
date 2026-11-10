@@ -1,0 +1,29 @@
+<header class="public-header<%= " public-header-marketing" if marketing_page? %>"<% if marketing_page? %> data-controller="public-header" data-action="scroll@window->public-header#update"<% end %>>
+  <div class="public-header-inner">
+    <%= render "layouts/wordmark", path: root_path %>
+    <nav aria-label="Main navigation">
+      <% if marketing_page? %>
+        <% MarketingPage::ALL.select(&:nav).each do |page| %>
+          <%= link_to page.label, page.path, class: ("public-features-trigger" if page.slug == "features"), aria: { current: ("page" if current_page?(page.path)) } %>
+          <% if page.slug == "features" %>
+            <div class="public-features-panel" role="group" aria-label="Explore features">
+              <% MarketingPage.in_section(:feature).each do |feature| %>
+                <% tool = feature.slug.delete_prefix("features/").sub("sign-ups", "signup_sheet") %>
+                <%= link_to feature.path, aria: { current: ("page" if current_page?(feature.path)) } do %>
+                  <%= planner_tool_icon(tool, size: 20) %>
+                  <span><strong><%= feature.label %></strong><span><%= feature.summary %></span></span>
+                <% end %>
+              <% end %>
+              <%= link_to "All features", features_path, class: "public-features-all" %>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+      <%= link_to "Demo", new_demo_session_path %>
+      <%= link_to "Sign in", new_sign_in_request_path %>
+      <% if marketing_page? %>
+        <%= link_to "Plan Your First Project", sign_up_path, class: "btn btn-secondary btn-sm" %>
+      <% end %>
+    </nav>
+  </div>
+</header>
