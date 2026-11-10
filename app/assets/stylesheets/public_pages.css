@@ -115,6 +115,25 @@
 .lp-contact-list > div { padding-top: 4px; }
 .lp-contact-list p { margin-top: 8px; font-size: 16px; line-height: 1.6; color: var(--color-ink-2); }
 
+/* Feature pages keep the question, product proof and service outcome in one straight reading order. */
+.lp-crumbs { display: flex; align-items: center; gap: 10px; max-width: var(--lp-max); margin: 0 auto; padding: 28px 24px; font-size: 14px; color: var(--color-ink-2); }
+.lp-crumbs a { color: var(--color-ink); }
+.lp-feature-hero { min-height: min(680px, calc(100svh - 160px)); }
+.lp-feature-hero h1 { display: flex; align-items: baseline; gap: 16px; }
+.lp-feature-hero h1 svg { flex: none; transform: translateY(-3px); }
+.lp-feature-scene-band { margin-top: 0; padding: 96px 0 32px; background: var(--color-frame); }
+.lp-feature-scene { margin: 0; }
+.lp-feature-scene-media { overflow: hidden; border-radius: 12px 12px 0 0; }
+.lp-feature-scene-media img { display: block; width: 100%; height: auto; mask-image: linear-gradient(#000 72%, transparent); }
+.lp-feature-rows > h2, .lp-related h2 { max-width: 720px; font-size: clamp(32px, 4vw, 48px); line-height: 1.1; }
+.lp-rows { margin-top: 56px; }
+.lp-row { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 56px; padding: 28px 0; }
+.lp-row h3 { font-size: 18px; }
+.lp-row p { max-width: 42em; font-size: 17px; line-height: 1.65; color: var(--color-ink-2); }
+.lp-related-links { display: flex; flex-wrap: wrap; gap: 12px 28px; margin-top: 32px; }
+.lp-related-links a { font-size: 17px; font-weight: 600; color: var(--color-ink); }
+.lp-related-links a:hover { color: var(--color-ink-2); }
+
 /* Photo strip: five of the things the subline just named, on the page measure, scrolling sideways on phones. */
 .lp-photos { margin-top: 96px; padding: 0 24px; }
 .lp-photos-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; max-width: var(--lp-max); margin: 0 auto; }
@@ -262,6 +281,17 @@
   .lp-hero { padding: 40px 16px 0; }
   .lp-page-hero { min-height: calc(100svh - 128px); padding: 64px 16px 72px; }
   .lp-page-hero p { font-size: 17px; }
+  .lp-crumbs { padding: 20px 16px; }
+  .lp-feature-hero { min-height: calc(100svh - 188px); }
+  .lp-feature-hero h1 { gap: 12px; }
+  .lp-feature-hero h1 svg { width: 22px; height: 22px; }
+  .lp-feature-scene-band { padding: 56px 0 12px; overflow: hidden; }
+  .lp-feature-scene { overflow: hidden; }
+  /* Crop into the working rows instead of shrinking the 920px recording until its labels cannot be read. */
+  .lp-feature-scene-media { width: calc(100% + 16px); border-radius: 8px 0 0; }
+  .lp-feature-scene-media img { width: 160%; max-width: none; margin-left: -29%; }
+  .lp-rows { margin-top: 36px; }
+  .lp-row { grid-template-columns: 1fr; gap: 8px; padding: 24px 0; }
   .lp-hero .header-wash { height: calc(100% - 100px); border-radius: 0 0 24px 24px; }
   .lp-hero-copy p { font-size: 16px; }
   .lp-actions .btn { flex: 1 1 100%; min-height: 48px; font-size: 15px; }

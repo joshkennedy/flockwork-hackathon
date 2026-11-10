@@ -1,0 +1,53 @@
+<% marketing_head(page, faqs: faqs, breadcrumbs: [ MarketingPage.find("features"), page ]) %>
+<% related_pages = related.filter_map { |slug| MarketingPage.find("features/#{slug}") } %>
+<% tool = page.slug.delete_prefix("features/").sub("sign-ups", "signup_sheet") %>
+
+<nav class="lp-crumbs" aria-label="Breadcrumb">
+  <%= link_to "Features", features_path %>
+  <span aria-hidden="true">›</span>
+  <span><%= page.label %></span>
+</nav>
+
+<section class="lp-page-hero lp-feature-hero" aria-labelledby="feature-title">
+  <div>
+    <h1 id="feature-title"><%= planner_tool_icon(tool, size: 28) %><%= h1 %></h1>
+    <p class="lp-answer"><%= answer %></p>
+  </div>
+</section>
+
+<section class="lp-band lp-feature-scene-band" aria-label="<%= page.label %> in Flockwork">
+  <div class="lp-section">
+    <figure class="lp-feature-scene">
+      <%= render "landing/scene", name: page.scene, width: scene.fetch(:width), height: scene.fetch(:height), class: "lp-scene lp-feature-scene-media", alt: scene.fetch(:alt) %>
+    </figure>
+  </div>
+</section>
+
+<section class="lp-section lp-feature-rows" aria-labelledby="feature-rows-title">
+  <h2 id="feature-rows-title"><%= rows_title %></h2>
+  <div class="lp-rows">
+    <% rows.each do |heading, body| %>
+      <article class="lp-row">
+        <h3><%= heading %></h3>
+        <p><%= body %></p>
+      </article>
+    <% end %>
+  </div>
+</section>
+
+<figure class="lp-photo">
+  <%= image_tag "marketing/photos/#{page.photo}.webp", width: 1152, height: 768, loading: "lazy", alt: photo_alt %>
+</figure>
+
+<%= render "landing/faq", faqs: faqs, title: "Sign-up questions.", id: "feature-faq-title" %>
+
+<section class="lp-section lp-related" aria-labelledby="related-title">
+  <h2 id="related-title">Keep planning in one place.</h2>
+  <div class="lp-related-links">
+    <% related_pages.each do |related_page| %>
+      <%= link_to related_page.label, related_page.path %>
+    <% end %>
+  </div>
+</section>
+
+<%= render "landing/close", title: "Fill the next open spot." %>

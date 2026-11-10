@@ -86,4 +86,18 @@ class MarketingPagesTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", "mailto:hello@getflockwork.com"
     assert_select "form", count: 0
   end
+
+  test "a feature page answers its question first and links onward" do
+    get features_sign_ups_path
+    assert_select "nav.lp-crumbs a[href=?]", features_path
+    words = css_select("p.lp-answer").first.text.split.size
+    assert words.between?(40, 60), "answer is #{words} words"
+    assert_includes css_select("p.lp-answer").first.text, "Flockwork"
+    assert_select ".lp-row", count: 3
+    assert_select "figure.lp-photo img[alt]"
+    assert_select ".lp-related a", minimum: 2
+    assert_select ".marketing a.btn-primary", count: 1
+    types = JSON.parse(css_select("script[type='application/ld+json']").first.text)["@graph"].map { |node| node["@type"] }
+    assert_equal %w[Organization WebSite WebPage BreadcrumbList FAQPage], types
+  end
 end
