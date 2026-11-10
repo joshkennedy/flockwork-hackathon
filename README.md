@@ -41,6 +41,31 @@ Tests stub the provider with `Planner::Providers::Fake` and assert no Person nam
 - **ruby_llm** 2.1.1 for the Planner ([config/initializers/ruby_llm.rb](config/initializers/ruby_llm.rb))
 - **Fonts:** Mattone (display/wordmark, SIL OFL—[app/assets/fonts/Mattone-OFL.txt](app/assets/fonts/Mattone-OFL.txt)) and Mona Sans (UI), loaded via [app/assets/stylesheets/fonts.css](app/assets/stylesheets/fonts.css)
 
+## Backups
+
+Production runs an off-site backup at 4am daily. PostgreSQL custom-format dumps go to `db/` in the backup bucket. Active Storage files remain on the local Disk service and are copied to `storage/<key>` in the backup bucket. Database dumps older than 14 days are pruned, while the seven newest are always kept.
+
+Set `BACKUP_BUCKET_NAME`, `BACKUP_BUCKET_ENDPOINT`, `BACKUP_BUCKET_REGION`, `BACKUP_BUCKET_ACCESS_KEY_ID`, and `BACKUP_BUCKET_SECRET_ACCESS_KEY`. Without all five, the backup is a no-op.
+
+Restore a database dump with:
+
+```bash
+pg_restore --clean --if-exists --no-owner -d <url> <file>
+```
+
+Restore each `storage/<key>` object beneath the Disk root using Active Storage's two-level directory layout:
+
+```bash
+export AWS_ACCESS_KEY_ID="$BACKUP_BUCKET_ACCESS_KEY_ID"
+export AWS_SECRET_ACCESS_KEY="$BACKUP_BUCKET_SECRET_ACCESS_KEY"
+export AWS_DEFAULT_REGION="$BACKUP_BUCKET_REGION"
+key=<key>
+mkdir -p "/rails/storage/${key:0:2}/${key:2:2}"
+aws --endpoint-url "$BACKUP_BUCKET_ENDPOINT" s3 cp "s3://$BACKUP_BUCKET_NAME/storage/$key" "/rails/storage/${key:0:2}/${key:2:2}/$key"
+```
+
+Disk stores each key at `<root>/<first two key characters>/<next two key characters>/<key>`.
+
 ## Local setup
 
 **Prerequisites**
