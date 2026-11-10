@@ -1,26 +1,43 @@
 <footer class="lp-footer">
-  <div class="lp-footer-cols">
+  <div class="lp-footer-cols<%= " lp-footer-cols-home" if @page&.home? %>">
     <div>
       <span class="lp-footer-mark" role="img" aria-label="Flockwork"><%= render "landing/mark" %></span>
       <p class="lp-footer-tag">Project planning for your church. Everything between the idea and the day.</p>
     </div>
     <nav aria-labelledby="footer-product">
       <h2 id="footer-product">Product</h2>
+      <%= link_to MarketingPage.find("features").label, MarketingPage.find("features").path %>
+      <% MarketingPage.in_section(:feature).each do |page| %>
+        <%= link_to page.label, page.path %>
+      <% end %>
+      <%= link_to MarketingPage.find("pricing").label, MarketingPage.find("pricing").path %>
       <%= link_to "Demo", new_demo_session_path %>
       <%= link_to "Sign up", sign_up_path %>
       <%= link_to "Sign in", new_sign_in_request_path %>
-      <%= link_to "Terms", terms_path %>
-      <%= link_to "Privacy policy", privacy_path %>
     </nav>
-    <nav aria-labelledby="footer-page">
-      <h2 id="footer-page"><%= controller_name == "landing" ? "On this page" : "Explore Flockwork" %></h2>
-      <%= link_to "Between the idea and the day", "#{root_path}#between-title" %>
-      <%= link_to "Start with one sentence", "#{root_path}#planner-title" %>
-      <%= link_to "One project holds it all", "#{root_path}#tour-title" %>
-      <%= link_to "Built up in love", "#{root_path}#why-title" %>
-      <%= link_to "Questions, answered", "#{root_path}#faq-title" %>
+    <nav aria-labelledby="footer-company">
+      <h2 id="footer-company">Company</h2>
+      <% MarketingPage.in_section(:company).each do |page| %>
+        <%= link_to page.label, page.path %>
+      <% end %>
     </nav>
+    <nav aria-labelledby="footer-legal">
+      <h2 id="footer-legal">Legal</h2>
+      <% MarketingPage.in_section(:legal).each do |page| %>
+        <%= link_to page.label, page.path %>
+      <% end %>
+    </nav>
+    <% if @page&.home? %>
+      <nav aria-labelledby="footer-page">
+        <h2 id="footer-page">On this page</h2>
+        <%= link_to "Between the idea and the day", "#{root_path}#between-title" %>
+        <%= link_to "Start with one sentence", "#{root_path}#planner-title" %>
+        <%= link_to "One project holds it all", "#{root_path}#tour-title" %>
+        <%= link_to "Built up in love", "#{root_path}#why-title" %>
+        <%= link_to "Questions, answered", "#{root_path}#faq-title" %>
+      </nav>
+    <% end %>
   </div>
-  <p class="lp-footer-legal">© <%= Date.current.year %> Flockwork</p>
+  <p class="lp-footer-legal">© <%= Date.current.year %> Outpost Labs LLC</p>
   <p class="lp-footer-word" aria-hidden="true">Flockwork</p>
 </footer>

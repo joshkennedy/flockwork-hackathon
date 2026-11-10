@@ -44,4 +44,26 @@ class MarketingPagesTest < ActionDispatch::IntegrationTest
     get terms_path(utm_source: "x")
     assert_select "link[rel=canonical][href=?]", terms_url
   end
+
+  test "robots, sitemap and llms.txt are built from the registry" do
+    get "/robots.txt"
+    assert_equal "text/plain", response.media_type
+    assert_includes response.body, "Sitemap: #{sitemap_url}"
+    get "/sitemap.xml"
+    MarketingPage::ALL.each { |page| assert_includes response.body, "<loc>http://www.example.com#{page.path}</loc>" }
+    assert_not_includes response.body, sign_up_url
+    get "/llms.txt"
+    MarketingPage::ALL.reject(&:home?).each { |page| assert_includes response.body, "http://www.example.com#{page.path}" }
+  end
+
+  test "every marketing page shares the header and footer, and app pages are noindex" do
+    get terms_path
+    [ features_path, pricing_path, new_demo_session_path, new_sign_in_request_path ].each { |path| assert_select ".public-header nav a[href=?]", path }
+    assert_select ".public-header details", count: 0
+    assert_select ".public-header a.btn-secondary[href=?]", sign_up_path, text: "Plan Your First Project"
+    assert_select ".lp-footer-legal", text: /Outpost Labs LLC/
+    assert_select "meta[name=robots]", count: 0
+    get new_sign_in_request_path
+    assert_select "meta[name=robots][content=noindex]"
+  end
 end

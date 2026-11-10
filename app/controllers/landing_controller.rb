@@ -12,4 +12,8 @@ class LandingController < ApplicationController
   def llms
     render formats: :text, content_type: "text/plain"
   end
+
+  def robots
+    render formats: :text, content_type: "text/plain"
+  end
 end

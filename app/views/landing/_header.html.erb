@@ -1,0 +1,15 @@
+<header class="public-header">
+  <%= render "layouts/wordmark", path: root_path %>
+  <nav aria-label="Main navigation">
+    <% if marketing_page? %>
+      <% MarketingPage::ALL.select(&:nav).each do |page| %>
+        <%= link_to page.label, page.path %>
+      <% end %>
+    <% end %>
+    <%= link_to "Demo", new_demo_session_path %>
+    <%= link_to "Sign in", new_sign_in_request_path %>
+    <% if marketing_page? %>
+      <%= link_to "Plan Your First Project", sign_up_path, class: "btn btn-secondary btn-sm" %>
+    <% end %>
+  </nav>
+</header>

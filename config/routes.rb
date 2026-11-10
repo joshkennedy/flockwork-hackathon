@@ -5,7 +5,8 @@ Rails.application.routes.draw do
   MarketingPage::ALL.reject(&:home?).each do |page|
     get page.path, to: "marketing_pages#show", defaults: { slug: page.slug }, as: page.route_name
   end
-  get "sitemap.xml", to: "landing#sitemap", format: false, defaults: { format: :xml }
+  get "robots.txt", to: "landing#robots", format: false
+  get "sitemap.xml", to: "landing#sitemap", format: false, defaults: { format: :xml }, as: :sitemap
   get "llms.txt", to: "landing#llms", format: false
   get "sign_up", to: "organizations#new", as: :sign_up
 
