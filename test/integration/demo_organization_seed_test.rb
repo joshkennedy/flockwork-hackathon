@@ -245,7 +245,8 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
       ActiveStorage::Blob.count
     ]
 
-    second = DemoOrganization.reset!
+    second = nil
+    assert_no_enqueued_jobs(only: [ ActionMailer::MailDeliveryJob, SmsNotificationJob ]) { second = DemoOrganization.reset! }
     assert_equal first_counts, [
       second.projects.count,
       second.people.count,

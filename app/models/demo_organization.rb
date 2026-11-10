@@ -138,8 +138,11 @@ class DemoOrganization
         if organization
           raise ActiveRecord::RecordNotFound unless organization.demo?
 
-          organization.invitations.destroy_all
-          organization.destroy!
+          # Tearing down the old demo must not notify the people being deleted.
+          Notifier.without_delivery do
+            organization.invitations.destroy_all
+            organization.destroy!
+          end
         end
       end
       seed!
