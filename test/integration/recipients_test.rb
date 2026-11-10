@@ -132,4 +132,13 @@ class RecipientsTest < ActionDispatch::IntegrationTest
     assert_response :not_found
     assert Recipient.exists?(recipient.id)
   end
+
+  test "a non-member cannot see or manage Recipients" do
+    sign_in_as_leader
+    post project_recipients_path(@project), params: { person_id: people(:recipient).id }
+
+    sign_in_as(:other_volunteer)
+    get project_path(@project)
+    assert_response :not_found
+  end
 end

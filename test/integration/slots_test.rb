@@ -297,6 +297,19 @@ class SlotsTest < ActionDispatch::IntegrationTest
     assert_not slot.slot_claims.exists?(person: member)
   end
 
+  test "a non-member gets 404 when claiming a Slot" do
+    project = projects(:community_meal)
+    slot = project.slots.create!(date: "2027-02-15", label: "Bring drinks", capacity: 2)
+    non_member = organizations(:st_example).people.create!(name: "Nina Nonmember", email: "nina@st-example.test")
+    sign_in_as(non_member)
+
+    assert_no_difference "SlotClaim.count" do
+      post project_slot_claim_path(project, slot)
+    end
+
+    assert_response :not_found
+  end
+
   test "a Person from another Organization cannot read or change a Slot or its claims" do
     project = projects(:community_meal)
     slot = project.slots.create!(date: "2027-02-15", label: "Bring drinks", capacity: 2)
