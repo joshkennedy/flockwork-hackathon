@@ -102,12 +102,34 @@ class RecipientsTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "a non-member cannot see or manage Recipients" do
+  test "a Leader cannot add a Recipient from another Organization" do
+    sign_in_as_leader
+
+    assert_no_difference "Recipient.count" do
+      post project_recipients_path(@project), params: { person_id: people(:outsider).id }
+    end
+
+    assert_response :not_found
+  end
+
+  test "a Person from another Organization cannot read or change Recipients" do
     sign_in_as_leader
     post project_recipients_path(@project), params: { person_id: people(:recipient).id }
+    recipient = @project.recipients.find_by!(person: people(:recipient))
 
-    sign_in_as(:other_volunteer)
-    get project_path(@project)
+    sign_in_as_outsider
+    get new_project_recipient_path(@project)
     assert_response :not_found
+
+    assert_no_difference "Recipient.count" do
+      post project_recipients_path(@project), params: { person_id: people(:outsider).id }
+    end
+    assert_response :not_found
+
+    assert_no_difference "Recipient.count" do
+      delete project_recipient_path(@project, recipient)
+    end
+    assert_response :not_found
+    assert Recipient.exists?(recipient.id)
   end
 end
