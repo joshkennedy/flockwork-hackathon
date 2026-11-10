@@ -100,15 +100,24 @@ class ScheduleItemsTest < ActionDispatch::IntegrationTest
 
     assert_response :not_found
 
-    post project_schedule_items_path(project), params: {
-      schedule_item: { date: "2027-02-12", title: "Sneak In" }
-    }
+    assert_no_difference "ScheduleItem.count" do
+      post project_schedule_items_path(project), params: {
+        schedule_item: { date: "2027-02-12", title: "Sneak In" }
+      }
+    end
 
     assert_response :not_found
 
     get edit_project_schedule_item_path(project, item)
 
     assert_response :not_found
+
+    patch project_schedule_item_path(project, item), params: {
+      schedule_item: { date: "2027-02-13", title: "Changed" }
+    }
+
+    assert_response :not_found
+    assert_equal [ Date.new(2027, 2, 12), "Opening Session" ], item.reload.attributes.values_at("date", "title")
   end
 
   test "a Leader can manage Schedule items when the Schedule Tool is disabled" do

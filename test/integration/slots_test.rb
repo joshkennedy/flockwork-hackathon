@@ -203,6 +203,26 @@ class SlotsTest < ActionDispatch::IntegrationTest
     assert_equal session.date, slot.date
   end
 
+  test "a Leader cannot link a Slot to another Project's Schedule item" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    other_item = projects(:building_cleanup).schedule_items.create!(date: "2027-03-20", title: "Cleanup briefing")
+
+    assert_no_difference "Slot.count" do
+      post project_slots_path(project), params: {
+        slot: {
+          date: "2027-02-15",
+          label: "Foreign session",
+          capacity: 1,
+          schedule_item_id: other_item.id
+        }
+      }
+    end
+
+    assert_response :unprocessable_content
+    assert_select "li", "Schedule item must belong to the same Project"
+  end
+
   test "Schedule and Sign-up rows show their linked session role" do
     sign_in_as_leader
     project = projects(:community_meal)
@@ -282,6 +302,28 @@ class SlotsTest < ActionDispatch::IntegrationTest
     slot = project.slots.create!(date: "2027-02-15", label: "Bring drinks", capacity: 2)
     non_member = organizations(:st_example).people.create!(name: "Nina Nonmember", email: "nina@st-example.test")
     sign_in_as(non_member)
+
+    assert_no_difference "SlotClaim.count" do
+      post project_slot_claim_path(project, slot)
+    end
+
+    assert_response :not_found
+  end
+
+  test "a Person from another Organization cannot read or change a Slot or its claims" do
+    project = projects(:community_meal)
+    slot = project.slots.create!(date: "2027-02-15", label: "Bring drinks", capacity: 2)
+    sign_in_as_outsider
+
+    get edit_project_slot_path(project, slot)
+    assert_response :not_found
+
+    patch project_slot_path(project, slot), params: {
+      slot: { date: "2027-02-16", label: "Changed", capacity: 1 }
+    }
+    assert_response :not_found
+    assert_equal [ Date.new(2027, 2, 15), "Bring drinks", 2 ],
+      slot.reload.attributes.values_at("date", "label", "capacity")
 
     assert_no_difference "SlotClaim.count" do
       post project_slot_claim_path(project, slot)

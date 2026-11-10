@@ -147,6 +147,24 @@ class BudgetLinesTest < ActionDispatch::IntegrationTest
     assert_match "$19.99", response.body
   end
 
+  test "a Leader cannot assign a budget line to someone outside the Team" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+
+    assert_no_difference "BudgetLine.count" do
+      post project_budget_lines_path(project), params: {
+        budget_line: {
+          kind: "purchase",
+          description: "Restricted responsibility",
+          responsible_person_id: people(:outsider).id
+        }
+      }
+    end
+
+    assert_response :unprocessable_content
+    assert_select "li", "Responsible person must be on the Team"
+  end
+
   test "a non-member gets 404 on budget routes" do
     sign_in_as_outsider
     project = projects(:community_meal)
@@ -160,9 +178,11 @@ class BudgetLinesTest < ActionDispatch::IntegrationTest
 
     assert_response :not_found
 
-    post project_budget_lines_path(project), params: {
-      budget_line: { kind: "booking", description: "Sneak in", estimated: "1.00" }
-    }
+    assert_no_difference "BudgetLine.count" do
+      post project_budget_lines_path(project), params: {
+        budget_line: { kind: "booking", description: "Sneak in", estimated: "1.00" }
+      }
+    end
 
     assert_response :not_found
 
@@ -173,5 +193,12 @@ class BudgetLinesTest < ActionDispatch::IntegrationTest
     get edit_project_budget_line_status_path(project, line)
 
     assert_response :not_found
+
+    patch project_budget_line_path(project, line), params: {
+      budget_line: { kind: "booking", description: "Changed", estimated: "1.00" }
+    }
+
+    assert_response :not_found
+    assert_equal "Venue rental", line.reload.description
   end
 end
