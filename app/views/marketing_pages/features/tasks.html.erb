@@ -1,0 +1,27 @@
+<% scene = {
+  width: 920,
+  height: 520,
+  alt: "Vacation Bible School tasks: an unassigned task gets someone on it, then another is checked off and moves to Done"
+} %>
+<% rows = [
+  [ "What does each task keep together?", "A task has a title, details, an optional due date and one person responsible for it. Open work and completed work stay visible in the same project." ],
+  [ "Can someone take an open task?", "When a task has no owner, a person with access can claim it. Leaders can also assign, edit, reopen or remove tasks as the plan changes." ],
+  [ "How does the team know what is finished?", "Marking a task done moves it into the Done list with the person who completed it. The next open task stays easy to find." ]
+] %>
+<% faqs = [
+  [ "What can a task include?", "A task can include a title, details, an owner and an optional due date." ],
+  [ "Can a volunteer claim an unassigned task?", "Yes. When their access allows it, a volunteer can choose I’ll Do It on an open task." ],
+  [ "Can completed tasks be reopened?", "Yes. A completed task can be reopened when more work is needed." ],
+  [ "Can people discuss a task?", "Yes. Each task has its own comment thread inside the project." ]
+] %>
+
+<%= render "marketing_pages/feature",
+      page: @page,
+      h1: "Tasks with clear owners.",
+      answer: "Flockwork keeps each church project’s tasks, owners and due dates together. People can claim open work, leaders can see what still has no one on it, and finished tasks move into Done. Less work disappears between conversations, so more people can help with confidence.",
+      scene: scene,
+      rows_title: "Know what is open and who has it.",
+      rows: rows,
+      photo_alt: "Volunteers on ladders painting a mural together on a brick building",
+      faqs: faqs,
+      related: %w[schedule planner people] %>

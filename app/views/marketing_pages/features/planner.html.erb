@@ -1,0 +1,27 @@
+<% scene = {
+  width: 1100,
+  height: 560,
+  alt: "The Planner turns a Vacation Bible School description and three answers into a preview of sign-up slots, tasks, a schedule and a budget for review"
+} %>
+<% rows = [
+  [ "What does the Planner start with?", "Give it one sentence about the project. It asks a few focused questions based on the project details you provide." ],
+  [ "What can it suggest?", "The preview can take shape across sign-up slots, tasks, schedule items, budget lines, lists and skills the project may need." ],
+  [ "Who decides what gets added?", "A person reviews the suggestions, can edit or remove them, and chooses when to add the plan to the project." ]
+] %>
+<% faqs = [
+  [ "Can Flockwork plan from one sentence?", "Yes. One sentence starts the Planner, which asks a few focused questions before building suggestions." ],
+  [ "Does the Planner see our people directory?", "No. It plans from the project details and answers you provide, not the people directory." ],
+  [ "Are suggestions added automatically?", "No. A person reviews the suggestions and chooses when to add them to the project." ],
+  [ "Can we change the suggested plan?", "Yes. Suggestions can be reviewed, edited or removed before they become part of the project." ]
+] %>
+
+<%= render "marketing_pages/feature",
+      page: @page,
+      h1: "Plan a project from one sentence.",
+      answer: "Flockwork’s Planner starts with one sentence about a church project, asks a few focused questions, and builds suggestions for sign-ups, tasks, schedules and budgets. A person reviews every suggestion before adding it. Planning moves faster while the church keeps the judgment that serving people requires.",
+      scene: scene,
+      rows_title: "A faster first draft, with people in charge.",
+      rows: rows,
+      photo_alt: "Volunteers and children gathered outside during a church Vacation Bible School",
+      faqs: faqs,
+      related: %w[tasks schedule budget] %>

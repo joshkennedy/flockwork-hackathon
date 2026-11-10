@@ -1,0 +1,27 @@
+<% scene = {
+  width: 920,
+  height: 520,
+  alt: "The Vacation Bible School schedule by day, where a snack break at 10:15 AM in Fellowship Hall slots into Monday in time order"
+} %>
+<% rows = [
+  [ "How is the day arranged?", "Schedule items group under their date and appear in time order. Each item can show a start time, end time and location." ],
+  [ "Can one item include places to serve?", "A schedule item can show its related roles, how many places are filled and whether another person can claim one." ],
+  [ "Can someone add it to a calendar?", "Each schedule item offers an Add to Calendar action, so the details can travel with the person serving." ]
+] %>
+<% faqs = [
+  [ "What does a schedule item show?", "It can show the date, start and end times, location and any roles attached to that part of the project." ],
+  [ "Are schedule items grouped by day?", "Yes. Flockwork groups the project schedule by date and orders each day by time." ],
+  [ "Can people claim roles from the schedule?", "When an item has roles and access allows it, people can see the filled count and claim an open place." ],
+  [ "Can I add an item to my calendar?", "Yes. Every schedule item has an Add to Calendar action." ]
+] %>
+
+<%= render "marketing_pages/feature",
+      page: @page,
+      h1: "A schedule the whole project shares.",
+      answer: "Flockwork puts a church project’s dates, times and locations into one schedule, grouped by day and ordered by time. Leaders can see the full run without rebuilding it in messages, while volunteers can find where they need to be and what happens next.",
+      scene: scene,
+      rows_title: "Build the run of the day once.",
+      rows: rows,
+      photo_alt: "Children and volunteers making colorful crafts together at church tables",
+      faqs: faqs,
+      related: %w[tasks sign-ups planner] %>

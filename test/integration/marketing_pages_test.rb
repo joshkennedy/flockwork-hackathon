@@ -87,17 +87,33 @@ class MarketingPagesTest < ActionDispatch::IntegrationTest
     assert_select "form", count: 0
   end
 
-  test "a feature page answers its question first and links onward" do
-    get features_sign_ups_path
-    assert_select "nav.lp-crumbs a[href=?]", features_path
-    words = css_select("p.lp-answer").first.text.split.size
-    assert words.between?(40, 60), "answer is #{words} words"
-    assert_includes css_select("p.lp-answer").first.text, "Flockwork"
-    assert_select ".lp-row", count: 3
-    assert_select "figure.lp-photo img[alt]"
-    assert_select ".lp-related a", minimum: 2
-    assert_select ".marketing a.btn-primary", count: 1
-    types = JSON.parse(css_select("script[type='application/ld+json']").first.text)["@graph"].map { |node| node["@type"] }
-    assert_equal %w[Organization WebSite WebPage BreadcrumbList FAQPage], types
+  test "every feature page answers its question first and links onward" do
+    MarketingPage.in_section(:feature).each do |page|
+      get page.path
+      assert_select "nav.lp-crumbs a[href=?]", features_path
+      answer = css_select("p.lp-answer").first.text
+      words = answer.split.size
+      assert words.between?(40, 60), "#{page.slug} answer is #{words} words"
+      assert_includes answer, "Flockwork"
+      assert_select ".lp-row", count: 3
+      assert_select "figure.lp-photo img[alt]"
+      assert_select ".lp-related a", minimum: 2
+      assert_select ".marketing a.btn-primary", count: 1
+      types = JSON.parse(css_select("script[type='application/ld+json']").first.text)["@graph"].map { |node| node["@type"] }
+      assert_equal %w[Organization WebSite WebPage BreadcrumbList FAQPage], types
+    end
+  end
+
+  test "the features index lists all seven and names the other tools" do
+    get features_path
+    MarketingPage.in_section(:feature).each { |page| assert_select ".marketing a[href=?]", page.path, text: /#{page.label}/ }
+    assert_select "h2", "Also in every project."
+    [ "Messages", "Docs & Files", "List" ].each { |tool| assert_select ".marketing", text: /#{tool}/ }
+  end
+
+  test "every registry page now renders and no two feature pages share an answer" do
+    assert_equal MarketingPage::ALL.size, RENDERED.call.size
+    answers = MarketingPage.in_section(:feature).map { |page| get(page.path); css_select("p.lp-answer").first.text }
+    assert_equal answers.size, answers.uniq.size
   end
 end

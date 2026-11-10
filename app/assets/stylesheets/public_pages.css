@@ -134,6 +134,19 @@
 .lp-related-links a { font-size: 17px; font-weight: 600; color: var(--color-ink); }
 .lp-related-links a:hover { color: var(--color-ink-2); }
 
+/* Features index: bare tool marks and shared baselines, not a grid of generic cards. */
+.lp-feature-index { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 64px; }
+.lp-feature-link { display: grid; grid-template-rows: auto 1fr auto; min-width: 0; padding: 32px 0; border-top: 1px solid var(--color-border); }
+.lp-feature-link h2 { display: flex; align-items: baseline; gap: 12px; font-size: clamp(26px, 3vw, 36px); line-height: 1.15; }
+.lp-feature-link h2 svg { flex: none; transform: translateY(-2px); }
+.lp-feature-link p { max-width: 34em; margin-top: 12px; font-size: 16px; line-height: 1.6; color: var(--color-ink-2); }
+.lp-feature-link a { width: fit-content; margin-top: 24px; font-size: 15px; font-weight: 600; color: var(--color-ink); }
+.lp-feature-link a:hover { color: var(--color-ink-2); }
+.lp-every-project { background: var(--color-panel); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); }
+.lp-every-project h2 { max-width: 720px; font-size: clamp(32px, 4vw, 48px); line-height: 1.1; }
+.lp-every-project-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 48px; margin-top: 48px; }
+.lp-every-project-list p { margin-top: 8px; font-size: 16px; line-height: 1.6; color: var(--color-ink-2); }
+
 /* Photo strip: five of the things the subline just named, on the page measure, scrolling sideways on phones. */
 .lp-photos { margin-top: 96px; padding: 0 24px; }
 .lp-photos-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; max-width: var(--lp-max); margin: 0 auto; }
@@ -292,6 +305,9 @@
   .lp-feature-scene-media img { width: 160%; max-width: none; margin-left: -29%; }
   .lp-rows { margin-top: 36px; }
   .lp-row { grid-template-columns: 1fr; gap: 8px; padding: 24px 0; }
+  .lp-feature-index { grid-template-columns: 1fr; }
+  .lp-feature-link { padding: 28px 0; }
+  .lp-every-project-list { grid-template-columns: 1fr; gap: 28px; margin-top: 36px; }
   .lp-hero .header-wash { height: calc(100% - 100px); border-radius: 0 0 24px 24px; }
   .lp-hero-copy p { font-size: 16px; }
   .lp-actions .btn { flex: 1 1 100%; min-height: 48px; font-size: 15px; }
