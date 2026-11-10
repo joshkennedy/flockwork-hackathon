@@ -39,6 +39,23 @@ class OffsiteBackupTest < ActiveSupport::TestCase
     assert_empty client.api_requests.select { |request| request.fetch(:operation_name) == :put_object }
   end
 
+  # The other tests stub pg_dump; this one runs it against the test database so the connection mapping is exercised.
+  test "dumps the real database with pg_dump and uploads a custom-format archive" do
+    uploads = {}
+    client = Aws::S3::Client.new(stub_responses: true)
+    client.stub_responses(:put_object, ->(context) {
+      uploads[context.params[:key]] = context.params[:body].read(5)
+      {}
+    })
+    env = OffsiteBackup::ENV_KEYS.index_with { "fake" }
+
+    OffsiteBackup.new(env:, client_builder: ->(**) { client }, logger: Logger.new(IO::NULL)).call
+
+    key, magic = uploads.find { |name, _| name.start_with?("db/") }
+    assert_match %r{\Adb/.+\.dump\z}, key
+    assert_equal "PGDMP", magic
+  end
+
   test "uploads the database and only disk blobs missing from the bucket" do
     existing_blob = create_blob("already-backed-up.txt", "already there")
     new_blob = create_blob("new.txt", "stream this file")
