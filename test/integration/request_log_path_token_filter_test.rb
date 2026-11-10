@@ -1,6 +1,29 @@
 require "test_helper"
 
 class RequestLogPathTokenFilterTest < ActionDispatch::IntegrationTest
+  test "request logs filter free text and phone numbers" do
+    sign_in_as_leader
+    body = "Private message body 8472"
+    phone = "+12025558472"
+    io = StringIO.new
+    original_logger = Rails.logger
+    original_controller_logger = ActionController::Base.logger
+    logger = ActiveSupport::Logger.new(io)
+    Rails.logger = logger
+    ActionController::Base.logger = logger
+
+    post project_messages_path(projects(:community_meal)), params: { message: { body: } }
+    patch profile_path, params: { person: { phone: } }
+
+    log = io.string
+    refute_includes log, body
+    refute_includes log, phone
+    assert_operator log.scan("[FILTERED]").size, :>=, 2
+  ensure
+    Rails.logger = original_logger
+    ActionController::Base.logger = original_controller_logger
+  end
+
   test "Started request logs omit raw sign-in and invitation path tokens" do
     sign_in_token = people(:leader).generate_token_for(:sign_in)
 

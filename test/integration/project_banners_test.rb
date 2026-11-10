@@ -1,6 +1,29 @@
 require "test_helper"
+require_relative "../support/method_stubs"
 
 class ProjectBannersTest < ActionDispatch::IntegrationTest
+  include MethodStubs
+
+  test "banner uploads are bounded per person and paid focus jobs stop at the cap" do
+    DemoOrganization.seed!
+    post demo_session_path(role: "admin")
+    project = organizations(:grace_fellowship).projects.find_by!(name: "Church Workday")
+    store = ActiveSupport::Cache::MemoryStore.new
+    increment = ->(*args, **kwargs) { store.increment(*args, **kwargs) }
+
+    stub_method(ProjectBannersController.cache_store, :increment, increment) do
+      assert_enqueued_jobs 10, only: ProjectBannerFocusJob do
+        11.times do
+          patch project_banner_path(project), params: { project: { banner: fixture_file_upload("banner_wide.jpg", "image/jpeg") } }
+        end
+      end
+    end
+
+    assert_response :see_other
+    assert_redirected_to project_path(project)
+    assert_equal "Too many banner uploads. Try again in an hour.", flash[:alert]
+  end
+
   test "a leader uploads a banner that starts centered and queues a focus suggestion" do
     sign_in_as_leader
     project = projects(:community_meal)
