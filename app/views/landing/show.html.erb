@@ -5,25 +5,7 @@
   [ "What does the Planner do?", "Tell it what you’re organizing in one sentence. It asks a few focused questions and suggests sign-ups, tasks, a schedule and a budget that you keep or drop. It plans from the project details and never sees your people directory." ],
   [ "Can I try it before setting up my church?", "Yes. The demo opens Flockwork with a sample church already full of projects and people, so you can click around before you add your own." ]
 ] %>
-<% description = "Project planning for your church. Meal trains, VBS, workdays, retreats: Flockwork makes them easier to plan and simpler to fill, so you can say yes to more of them." %>
-<% content_for :title, "Flockwork · Project planning for your church" %>
-<% content_for :head do %>
-  <meta name="description" content="<%= description %>">
-  <link rel="canonical" href="<%= root_url %>">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Flockwork">
-  <meta property="og:title" content="Project planning for your church">
-  <meta property="og:description" content="<%= description %>">
-  <meta property="og:url" content="<%= root_url %>">
-  <meta property="og:image" content="<%= image_url("marketing/hero-still.webp") %>">
-  <meta name="twitter:card" content="summary_large_image">
-  <%= tag.script({ "@context": "https://schema.org", "@graph": [
-        { "@type": "Organization", "@id": "#{root_url}#org", name: "Flockwork", url: root_url, logo: "#{root_url}icon.png" },
-        { "@type": "WebSite", name: "Flockwork", url: root_url, publisher: { "@id": "#{root_url}#org" } },
-        { "@type": "SoftwareApplication", name: "Flockwork", applicationCategory: "BusinessApplication", operatingSystem: "Web", url: root_url, description: description, publisher: { "@id": "#{root_url}#org" } },
-        { "@type": "FAQPage", mainEntity: faqs.map { |q, a| { "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } } } }
-      ] }.to_json.html_safe, type: "application/ld+json", nonce: content_security_policy_nonce) %>
-<% end %>
+<% marketing_head(@page, type: "SoftwareApplication", faqs: faqs, node: { applicationCategory: "BusinessApplication", operatingSystem: "Web" }) %>
 <section class="lp-hero" aria-labelledby="landing-title">
   <div class="header-wash" aria-hidden="true" data-controller="wash">
     <svg><filter id="wash-grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .08 0 0 0 0 .08 0 0 0 0 .07 0 0 0 .1 0"/></filter><rect width="100%" height="100%" filter="url(#wash-grain)"/></svg>

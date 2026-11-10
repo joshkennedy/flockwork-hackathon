@@ -288,13 +288,14 @@ The landing page and every public page built from it (feature, use-case and pric
 - **Layout:** pair words and scene in rows (words left at 260px, scene right). No sticky rails or columns that only look full while scrolling.
 - **Icons:** use the app's own tool icons in their tool colors, inline before the name as the app draws a tool heading. No icon tiles.
 - **Dark mode:** every section has a dark treatment. The hero field becomes ink with a low amber glow; the ink band becomes the one light panel.
-- **SEO and AEO:** each page sets a title under 60 characters, a meta description, a canonical link, Open Graph and Twitter tags, one h1 and ordered h2/h3, and alt text that describes what each scene shows. A JSON-LD `@graph` carries Organization, WebSite and the page's type (SoftwareApplication, Article or HowTo). A page that answers questions shows them as a visible FAQ and generates its FAQPage JSON-LD from the same array. Add each new page to `sitemap.xml` and the Pages list in `llms.txt`.
+- **SEO and AEO:** each page gets its title, meta description, canonical link, Open Graph and Twitter tags from `marketing_head`, with one h1, ordered h2/h3, and alt text that describes what each scene shows. A JSON-LD `@graph` carries Organization, WebSite and the page's type (SoftwareApplication, WebPage, AboutPage, ContactPage, Article or HowTo) and a BreadcrumbList on pages below the top level. A page that answers questions shows them as a visible FAQ and generates its FAQPage JSON-LD from the same array. Add each new page to `sitemap.xml` and the Pages list in `llms.txt`.
 - **Copy:** plain category words over slogans, and no claim the product can't back today.
 
 ## Decisions Log
 
 | Date | Decision | Rationale |
 |------|----------|-----------|
+| 2026-11-09 | Marketing head tags and JSON-LD come from `marketing_head`, including expanded page types and breadcrumbs below the top level | One helper keeps visible page metadata, social tags and answer-engine structure consistent across every public page |
 | 2026-11-09 | Toasts sit top center on every screen size | Josh asked for centered toasts instead of top right |
 | 2026-11-09 | Toasts use Ding | Josh asked for every toast, error message and upload status to use Ding |
 | 2026-11-09 | Voice orb in the Planner is amplitude-driven and loops | Josh asked for a pulsing, vibrant, lifelike voice module on the build-as-you-go Planner |

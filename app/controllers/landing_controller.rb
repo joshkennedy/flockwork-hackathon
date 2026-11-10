@@ -2,6 +2,7 @@ class LandingController < ApplicationController
   allow_unauthenticated_access
 
   def show
+    @page = MarketingPage.find("")
     redirect_to home_path if authenticated?
   end
 
