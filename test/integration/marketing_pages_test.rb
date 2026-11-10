@@ -1,6 +1,45 @@
 require "test_helper"
 
 class MarketingPagesTest < ActionDispatch::IntegrationTest
+  test "public navigation marks the current page and exposes every feature" do
+    [ features_path, pricing_path ].each do |path|
+      get path
+      assert_select ".public-header nav > a[aria-current=page][href=?]", path, count: 1
+      assert_select ".public-header nav > a", minimum: 4
+      MarketingPage.in_section(:feature).each do |page|
+        assert_select ".public-features-panel a[href=?]", page.path, text: /#{Regexp.escape(page.label)}/
+      end
+      assert_select ".public-features-panel a[href=?]", features_path, text: "All features"
+    end
+    get features_planner_path
+    assert_select ".public-features-panel a[aria-current=page][href=?]", features_planner_path
+    assert_select ".public-header nav > a[aria-current=page]", count: 0
+    get new_sign_in_request_path
+    assert_select ".public-header[data-controller=public-header]", count: 0
+    assert_select ".public-features-panel", count: 0
+  end
+
+  test "home links to every feature from its marketing content" do
+    get root_path
+    MarketingPage.in_section(:feature).each do |page|
+      assert_select ".marketing a[href=?]", page.path, text: "More about #{page.label.downcase}"
+    end
+  end
+
+  test "feature questions and closing titles fit the feature" do
+    MarketingPage.in_section(:feature).each do |page|
+      get page.path
+      assert_select ".lp-faq h2", "Questions, answered."
+      assert_not_includes response.body, "Sign-up questions."
+      if page.slug == "features/sign-ups"
+        assert_select ".lp-close h2", "Fill the next open spot."
+      else
+        assert_not_includes response.body, "Fill the next open spot."
+        assert_select ".lp-close h2", "Say yes to the next one."
+      end
+    end
+  end
+
   RENDERED = -> { MarketingPage::ALL.select { |page| page.home? || Rails.root.join("app/views/marketing_pages/#{page.template}.html.erb").exist? } }
 
   test "registry routes reach the marketing controller" do

@@ -279,6 +279,8 @@ Badges 4px, buttons and inputs 6px, nav items 8px, tiles 10px, panels and popove
 The landing page and every public page built from it (feature, use-case and pricing pages) follow these rules. They are what moved the landing page in the 2026-11-09 council run.
 
 - **One measure:** content sits on `--lp-max` (1168px) with 24px gutters (16px on phones). The header, every section, photo rows and the footer share one left edge. Only the in-between intro and the close are centered.
+- **Public header:** marketing pages use a sticky header, transparent over the hero at the top and page-colored with backdrop blur and a hairline below after 8px of scrolling. Without JavaScript it keeps the readable blurred surface. Auth pages keep the plain header. Current links use `aria-current="page"` and heavier ink. At 720px and up, Features opens a two-column panel on hover or keyboard focus, with registry summaries and bare tool icons, followed by All features. Features itself remains a link. Phones show the four plain links on a second row with 44px tap targets.
+- **Interior hero:** features, pricing, about and contact share a quieter version of the home color field, with fine texture behind left-aligned copy. The field runs under the header and fades into the page; dark mode uses ink with low amber light. Desktop heroes start at 540px (600px with feature breadcrumbs), leaving the following section visible at 1280×800. These are minimum heights, so longer copy can grow without clipping.
 - **Type:** Mattone for the h1 and h2 only (h1 `clamp(44px, 6.6vw, 84px)`, h2 28 to 48px), sentence case, ending in a period. Body copy 17 to 19px at 1.6. h3 17 to 20px, 600.
 - **Labels:** buttons are Title Case; links are sentence case and never repeat a button's words in another case (the nav says "Demo", the button says "See the Demo"). One name per destination across nav, body and footer. Footer anchors use the section headings they point to.
 - **Actions:** one ink primary per view. The nav CTA stays an outlined secondary. Every page ends on the close (plate, one primary) and the footer.
@@ -295,6 +297,8 @@ The landing page and every public page built from it (feature, use-case and pric
 
 | Date | Decision | Rationale |
 |------|----------|-----------|
+| 2026-11-09 | Sticky public header, transparent at the top and blurred after scroll, with a desktop Features panel and visible phone links | Josh asked for a snazzier header once the marketing pages existed |
+| 2026-11-09 | Shorter interior hero fields share the home plate language, with breadcrumbs inside the feature hero and ink/amber dark mode | Josh asked for a snazzier header once the marketing pages existed |
 | 2026-11-09 | Marketing head tags and JSON-LD come from `marketing_head`, including expanded page types and breadcrumbs below the top level | One helper keeps visible page metadata, social tags and answer-engine structure consistent across every public page |
 | 2026-11-09 | Toasts sit top center on every screen size | Josh asked for centered toasts instead of top right |
 | 2026-11-09 | Toasts use Ding | Josh asked for every toast, error message and upload status to use Ding |

@@ -14,7 +14,12 @@
     <div class="lp-tour-screens">
       <% tools.each do |key, title, line, image, alt| %>
         <figure class="lp-tour-screen" data-screen="<%= key %>">
-          <figcaption><h3><%= planner_tool_icon(key == "signup" ? "signup_sheet" : key) %><%= title %></h3><p><%= line %></p></figcaption>
+          <figcaption>
+            <h3><%= planner_tool_icon(key == "signup" ? "signup_sheet" : key) %><%= title %></h3>
+            <p><%= line %></p>
+            <% page = MarketingPage.find("features/#{key == "signup" ? "sign-ups" : key}") %>
+            <%= link_to "More about #{page.label.downcase}", page.path, class: "lp-feature-more" %>
+          </figcaption>
           <%= render "landing/scene", name: image, width: 920, height: 520, class: "lp-scene lp-tour-scene", alt: alt %>
         </figure>
       <% end %>

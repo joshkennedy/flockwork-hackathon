@@ -42,11 +42,11 @@
       <%= render "landing/scene", name: "card-signup", width: 456, height: 720, class: "lp-scene", alt: "The public sign-up page for the Alvarez family meal train on a phone, where someone picks a dinner that had one spot left" %>
     </article>
     <article class="lp-card">
-      <div class="lp-card-copy"><h3>Know your people</h3><p>See who’s serving, who’s away and who hasn’t been asked yet. Bring them in from Planning Center or a CSV.</p></div>
+      <div class="lp-card-copy"><h3>Know your people</h3><p>See who’s serving, who’s away and who hasn’t been asked yet. Bring them in from Planning Center or a CSV.</p><%= link_to "More about people", features_people_path, class: "lp-feature-more" %></div>
       <%= render "landing/scene", name: "card-people", width: 640, height: 280, class: "lp-scene", alt: "The People directory switching from Everyone to Not yet asked, which lists the people no one has invited yet" %>
     </article>
     <article class="lp-card">
-      <div class="lp-card-copy"><h3>Notice who’s carrying too much</h3><p>See who’s on too many projects before they burn out. Plain counts, never scores, and a check-in is one tap.</p></div>
+      <div class="lp-card-copy"><h3>Notice who’s carrying too much</h3><p>See who’s on too many projects before they burn out. Plain counts, never scores, and a check-in is one tap.</p><%= link_to "More about oversight", features_oversight_path, class: "lp-feature-more" %></div>
       <%= render "landing/scene", name: "card-oversight", width: 640, height: 280, class: "lp-scene", alt: "Maria Lopez serves on four active projects with no check-in logged. A check-in is logged, and the card reads Checked in today by Daniel Okafor" %>
     </article>
   </div>
