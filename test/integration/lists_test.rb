@@ -152,6 +152,22 @@ class ListsTest < ActionDispatch::IntegrationTest
     assert_equal people(:volunteer).id, list.rows.last.cells.fetch(column.id.to_s)
   end
 
+  test "a Person cell rejects a Person from another Organization" do
+    sign_in_as_volunteer
+    project = projects(:community_meal)
+    list = lists(:room_assignments)
+    column = list_columns(:guest)
+
+    assert_no_difference "ListRow.count" do
+      post project_list_list_rows_path(project, list), params: {
+        list_row: { cells: { column.id.to_s => people(:outsider).id.to_s } }
+      }
+    end
+
+    assert_response :unprocessable_content
+    assert_select "li", "Guest must be a Team member of this Project"
+  end
+
   test "a column type changes only when its cells are empty" do
     sign_in_as_leader
     project = projects(:community_meal)
@@ -260,5 +276,39 @@ class ListsTest < ActionDispatch::IntegrationTest
 
     delete project_list_list_row_path(project, list, row)
     assert_response :not_found
+  end
+
+  test "a Person from another Organization cannot read or change Lists, columns, or rows" do
+    project = projects(:community_meal)
+    list = lists(:room_assignments)
+    column = list_columns(:room)
+    row = list.rows.create!(cells: { column.id.to_s => "Cedar" })
+    sign_in_as_outsider
+
+    get new_project_list_path(project)
+    assert_response :not_found
+
+    assert_no_difference "List.count" do
+      post project_lists_path(project), params: { list: { name: "Foreign List" } }
+    end
+    assert_response :not_found
+
+    get edit_project_list_list_column_path(project, list, column)
+    assert_response :not_found
+
+    patch project_list_list_column_path(project, list, column), params: {
+      list_column: { name: "Changed", column_type: "text" }
+    }
+    assert_response :not_found
+    assert_equal "Room", column.reload.name
+
+    get edit_project_list_list_row_path(project, list, row)
+    assert_response :not_found
+
+    patch project_list_list_row_path(project, list, row), params: {
+      list_row: { cells: { column.id.to_s => "Changed" } }
+    }
+    assert_response :not_found
+    assert_equal "Cedar", row.reload.cells.fetch(column.id.to_s)
   end
 end

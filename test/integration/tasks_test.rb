@@ -174,6 +174,26 @@ class TasksTest < ActionDispatch::IntegrationTest
     assert_nil task.reload.assignee
   end
 
+  test "a Person from another Organization cannot read or change a Task" do
+    project = projects(:community_meal)
+    task = project.tasks.create!(title: "Refill water pitchers")
+    sign_in_as_outsider
+
+    get edit_project_task_path(project, task)
+    assert_response :not_found
+
+    patch project_task_path(project, task), params: {
+      task: { title: "Changed", assignee_id: people(:outsider).id }
+    }
+    assert_response :not_found
+    assert_equal [ "Refill water pitchers", nil ], task.reload.attributes.values_at("title", "assignee_id")
+
+    assert_no_difference "Task.count" do
+      delete project_task_path(project, task)
+    end
+    assert_response :not_found
+  end
+
   test "Home lists visible open Tasks in due-date order with undated Tasks last" do
     volunteer = sign_in_as_volunteer
     meal = projects(:community_meal)

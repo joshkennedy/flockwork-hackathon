@@ -1,6 +1,8 @@
 class ProjectBannersController < ApplicationController
   before_action :set_project
   before_action :authorize_banner
+  rate_limit to: 10, within: 1.hour, by: -> { Current.person.id }, name: "banner_upload",
+    only: :update, if: :banner_upload?, with: :banner_upload_rate_limited
 
   def update
     upload = params.dig(:project, :banner)
@@ -21,6 +23,14 @@ class ProjectBannersController < ApplicationController
   end
 
   private
+    def banner_upload?
+      params.dig(:project, :banner).present?
+    end
+
+    def banner_upload_rate_limited
+      redirect_to @project, alert: "Too many banner uploads. Try again in an hour.", status: :see_other
+    end
+
     def set_project
       @project = Policy.visible_projects(Current.person).find(params[:project_id])
     end
