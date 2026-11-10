@@ -1,4 +1,4 @@
-# The public demo Organization. Seeding is idempotent, so the same code can run on every boot and from a nightly reset.
+# The public demo Organization. Seeding is idempotent, so the same code can run on every boot and from the hourly reset.
 class DemoOrganization
   SLUG = "grace-fellowship".freeze
 
@@ -111,7 +111,7 @@ class DemoOrganization
             record.demo = true
             record.overextended_limit = 3
           end
-          # A real church may own this slug; never adopt it, or the nightly reset would destroy it.
+          # A real church may own this slug; never adopt it, or the hourly reset would destroy it.
           next organization if !organization.demo? || organization.projects.exists?
 
           organization.update!(name: "Grace Fellowship", demo: true, overextended_limit: 3)

@@ -291,7 +291,7 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "the reset job restores the demo and is scheduled nightly" do
+  test "the reset job restores the demo and is scheduled hourly" do
     organization = DemoOrganization.seed!
     organization.projects.find_by!(name: "Church Workday").destroy!
     organization.people.create!(name: "Temporary Judge", email: "judge@grace.example")
@@ -307,7 +307,7 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
     [ "production", "development" ].each do |environment|
       reset_schedule = recurring.dig(environment, "demo_organization_reset")
       assert_equal "DemoResetJob", reset_schedule.fetch("class")
-      assert_equal "at 3am every day", reset_schedule.fetch("schedule")
+      assert_equal "every hour", reset_schedule.fetch("schedule")
     end
   end
 end

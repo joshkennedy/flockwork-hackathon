@@ -27,9 +27,9 @@ production:
     schedule: at 2am every day
   demo_organization_reset:
     class: DemoResetJob
-    schedule: at 3am every day
+    schedule: every hour
 
 development:
   demo_organization_reset:
     class: DemoResetJob
-    schedule: at 3am every day
+    schedule: every hour
