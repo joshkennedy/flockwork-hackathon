@@ -8,6 +8,7 @@ class CsvImport
 
   MAX_BYTES = 1.megabyte
   MAX_ROWS = 5_000
+  TOO_LARGE_MESSAGE = "That CSV is too large. Keep it under 1 MB and 5,000 rows, or split it into smaller files."
 
   def initialize(organization, file_content)
     @organization = organization
@@ -22,7 +23,7 @@ class CsvImport
   rescue MalformedFile
     Result.new(0, 0, [], "That file isn't a CSV with a name column.")
   rescue TooLarge
-    Result.new(0, 0, [], "That CSV is too large.")
+    Result.new(0, 0, [], TOO_LARGE_MESSAGE)
   end
 
   private

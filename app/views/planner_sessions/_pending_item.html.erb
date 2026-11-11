@@ -70,7 +70,8 @@
             params: { item: { id: item.fetch("id"), decision: "remove" }, expected_revision: planner_session.generation_revision }, class: "btn btn-danger" %>
         <% else %>
           <%= button_to "Use New Suggestion", pending_item_project_planner_session_path(project, planner_session), method: :patch,
-            params: { item: { id: item.fetch("id"), decision: "resolve", resolution: "use_suggestion" }, expected_revision: planner_session.generation_revision }, class: "btn btn-text" %>
+            params: { item: { id: item.fetch("id"), decision: "resolve", resolution: "use_suggestion" }, expected_revision: planner_session.generation_revision }, class: "btn btn-text",
+            form: { data: { turbo_confirm: "Replace your edit with the new Suggestion?" } } %>
         <% end %>
       </div>
     </div>

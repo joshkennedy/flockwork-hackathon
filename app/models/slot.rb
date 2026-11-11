@@ -34,7 +34,7 @@ class Slot < ApplicationRecord
       lock!
 
       if slot_claims.count >= capacity
-        errors.add(:base, "This slot is full.")
+        errors.add(:base, "This Slot is full. Pick another one.")
       else
         claim = slot_claims.create(person:)
       end

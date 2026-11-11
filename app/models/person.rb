@@ -2,6 +2,7 @@ class Person < ApplicationRecord
   include RefreshesStaffingSuggestions
   belongs_to :organization
 
+  EMAIL_TAKEN = "is already used by someone else in this church"
   NOTIFICATION_CHANNELS = {
     "in_app" => :in_app_preferences,
     "email" => :email_preferences,
@@ -72,7 +73,7 @@ class Person < ApplicationRecord
 
   validates :name, presence: true
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_nil: true
-  validates :email, uniqueness: { scope: :organization_id }, allow_nil: true
+  validates :email, uniqueness: { scope: :organization_id, message: EMAIL_TAKEN }, allow_nil: true
   # The first Admin of a new Organization must be able to sign in, so they need an email then.
   validates :email, presence: true, on: :organization_creation
   validates :pending_email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_nil: true
@@ -128,7 +129,7 @@ class Person < ApplicationRecord
     def pending_email_not_taken
       return unless pending_email && organization.people.where.not(id:).exists?(email: pending_email)
 
-      errors.add(:email, "has already been taken")
+      errors.add(:email, EMAIL_TAKEN)
     end
 
     def sms_requires_international_phone
@@ -142,6 +143,6 @@ class Person < ApplicationRecord
       return if admin?
       return if organization.people.where(admin: true).where.not(id:).exists?
 
-      errors.add(:admin, "cannot be removed from the last Admin in the Organization")
+      errors.add(:admin, "can’t be removed until another person is an Admin")
     end
 end

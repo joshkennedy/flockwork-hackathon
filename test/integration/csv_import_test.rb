@@ -94,7 +94,7 @@ class CsvImportTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_entity
-    assert_select "[data-toast-entry][data-toast-kind=alert]", text: "That CSV is too large."
+    assert_select "[data-toast-entry][data-toast-kind=alert]", text: CsvImport::TOO_LARGE_MESSAGE
     assert_not organization.people.exists?(email: "too-big@st-example.test")
   end
 
@@ -108,7 +108,7 @@ class CsvImportTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_entity
-    assert_select "[data-toast-entry][data-toast-kind=alert]", text: "That CSV is too large."
+    assert_select "[data-toast-entry][data-toast-kind=alert]", text: CsvImport::TOO_LARGE_MESSAGE
     assert_not organization.people.exists?(email: "p1@st-example.test")
   end
 

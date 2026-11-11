@@ -48,7 +48,7 @@ class TasksController < ApplicationController
     if updated == 1
       redirect_to @project
     else
-      redirect_to @project, alert: "That Task is already assigned."
+      redirect_to @project, alert: "That Task is already taken."
     end
   end
 

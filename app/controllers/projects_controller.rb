@@ -135,7 +135,7 @@ class ProjectsController < ApplicationController
     raise ActiveRecord::RecordNotFound unless @project.memberships.leader.exists?(person: new_owner)
 
     @project.update!(owner: new_owner)
-    redirect_to @project
+    redirect_to @project, notice: "#{new_owner.name} now owns #{@project.name}."
   end
 
   def destroy
