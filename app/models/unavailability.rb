@@ -15,7 +15,7 @@ class Unavailability < ApplicationRecord
 
   # What Leaders and Admins see: dates only, never the note.
   def away_label(today = Date.current)
-    covers?(today) ? "Away until #{ends_on.strftime("%b %-d")}" : "Unavailable #{range_label}"
+    covers?(today) ? "Away until #{ends_on.strftime("%b %-d")}" : "Away #{range_label}"
   end
 
   def covers?(date)
@@ -43,6 +43,6 @@ class Unavailability < ApplicationRecord
     def person_belongs_to_organization
       return if person&.organization_id == organization_id
 
-      errors.add(:person, "must belong to the same Organization")
+      errors.add(:person, "must belong to the same church")
     end
 end

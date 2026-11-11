@@ -18,7 +18,7 @@ class ProjectDigestMailerTest < ActionMailer::TestCase
     assert_includes email.text_part.body.to_s, "/projects/#{project.id}"
     assert_includes email.text_part.body.to_s, "/digest_preferences"
     assert_includes email.html_part.body.to_s, "/digest_preferences"
-    assert_includes email.html_part.body.to_s, "Manage weekly emails"
+    assert_includes email.html_part.body.to_s, "Manage weekly updates"
   end
 
   test "volunteers and Leaders who opted out receive no digest" do

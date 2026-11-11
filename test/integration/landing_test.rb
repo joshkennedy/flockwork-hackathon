@@ -6,9 +6,9 @@ class LandingTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "title", "Flockwork · Project planning for your church"
     assert_select "h1", "Project planning for your church."
-    assert_select ".lp-hero a.btn-primary[href=?]", sign_up_path, text: "Plan Your First Project"
-    assert_select ".lp-hero a.btn-secondary[href=?]", new_demo_session_path, text: "See the Demo"
-    assert_select ".lp-hero", text: /say yes to more of them/
+    assert_select ".lp-hero a.btn-primary[href=?]", new_demo_session_path, text: "See the Demo"
+    assert_select ".lp-hero a.btn-secondary[href=?]", sign_up_path, text: "Plan Your First Project"
+    assert_select ".lp-hero", text: /One place to plan them, one link to fill them/
     assert_select ".lp-hero", text: /Free to start/, count: 0
     assert_select "form", count: 0
   end
@@ -66,12 +66,14 @@ class LandingTest < ActionDispatch::IntegrationTest
     get root_path
     assert_select ".lp-between h2", "Everything between the idea and the day."
     assert_select ".lp-between .lp-track-end", count: 2
-    assert_select ".lp-between .lp-track-end", text: /Planning Center, Breeze, or whatever you use/
+    assert_select ".lp-between .lp-track-start .lp-track-chips span", count: 3
+    assert_select ".lp-between .lp-track-chips span", text: "Planning Center"
     assert_select ".lp-between .lp-track-step", count: 4
     assert_select ".lp-between .lp-track-step", text: "Send one link"
     assert_select ".lp-between .lp-track-card h3", "The planning"
     assert_select ".lp-between .lp-intro p", "Planning Center knows who’s in your church. It’ll check them in when they arrive. The weeks of planning in between have been running on email, a spreadsheet and a group text. That’s the part Flockwork takes."
-    assert_select ".lp-between .lp-track-card p", /Who’s bringing what\..*What it’s costing\./
+    assert_select ".lp-between .lp-track-list li", count: 4
+    assert_select ".lp-between .lp-track-list li", text: "Who’s bringing what"
     assert_select ".lp-between", text: /nobody types a roster twice/
   end
 
@@ -91,7 +93,7 @@ class LandingTest < ActionDispatch::IntegrationTest
 
   test "landing shows all four project tools without a click" do
     get root_path
-    assert_select ".lp-tour h2", "One project holds the whole thing."
+    assert_select ".lp-tour h2", "Here’s what’s inside a project."
     assert_select ".lp-tour .lp-tour-screen figcaption h3", count: 4
     assert_select ".lp-tour .lp-tour-screen", count: 4
     assert_select ".lp-tour .lp-tour-screen[hidden]", count: 0
@@ -104,7 +106,7 @@ class LandingTest < ActionDispatch::IntegrationTest
 
   test "landing introduces the planner as the way in" do
     get root_path
-    assert_select ".lp-planner h2", "Start with one sentence."
+    assert_select ".lp-planner h2", "Tell the Planner what you’re planning."
     assert_select ".lp-planner p", text: /never sees your people directory/
     assert_select ".lp-planner img[src*=?]", "marketing/tour-planner"
   end
@@ -113,16 +115,17 @@ class LandingTest < ActionDispatch::IntegrationTest
     get root_path
     assert_select ".lp-bento h3", "One link, from any phone"
     assert_select ".lp-bento h3", "Notice who’s carrying too much"
-    assert_select ".lp-why h2", "Built up in love."
+    assert_select ".lp-why h2", "Tell me if this sounds familiar."
     assert_select ".lp-why", text: /Ephesians 4:15–16/
-    assert_select ".lp-why", text: /says yes more often/
-    assert_select ".lp-close h2", "Say yes to the next one."
+    assert_select ".lp-why a[href=?]", "mailto:hello@getflockwork.com"
+    assert_select ".lp-look a.btn-primary[href=?]", new_demo_session_path, text: "See the Demo"
+    assert_select ".lp-close h2", "Start with one project."
     assert_select ".lp-close a.btn-primary[href=?]", sign_up_path, text: "Plan Your First Project"
   end
 
   test "landing tells the story in the spec's order" do
     get root_path
     ids = css_select("section[aria-labelledby]").map { |section| section["aria-labelledby"] }
-    assert_equal %w[landing-title photos-title between-title planner-title tour-title people-title why-title faq-title close-title], ids
+    assert_equal %w[landing-title photos-title why-title between-title planner-title tour-title people-title look-title faq-title close-title], ids
   end
 end

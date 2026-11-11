@@ -67,7 +67,7 @@
                 <% end %>
               </div>
               <% open_slots = slots.reject(&:full?) %>
-              <%= link_to(open_slots.any? ? "View Open Spots" : "View Project", project_path(project), class: "btn btn-secondary max-sm:w-full") %>
+              <%= link_to(open_slots.any? ? "View Open Spots" : "View Project", project_path(project), class: "btn btn-secondary max-sm:w-full", aria: { label: "#{open_slots.any? ? "View Open Spots" : "View Project"} for #{project.name}" }) %>
             </li>
           <% end %>
         </ul>

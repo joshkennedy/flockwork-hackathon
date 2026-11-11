@@ -30,7 +30,7 @@ module GetInvolvedHelper
 
   def unassigned_task_label(project)
     count = project.tasks.open.where(assignee_id: nil).count
-    count == 1 ? "1 unassigned Task" : "#{count} unassigned Tasks"
+    pluralize(count, "unassigned Task")
   end
 
   # Plain counts only (DESIGN.md): "3 of 8 spots filled · next open Sat, Nov 8".
@@ -40,6 +40,6 @@ module GetInvolvedHelper
     total = pluralize(slots.sum(&:capacity), SlotsHelper.count_noun(slots))
     filled = "#{slots.sum(&:claims_count)} of #{total} filled"
     next_open = slots.reject(&:full?).first
-    next_open ? "#{filled} · next open #{next_open.date.strftime("%a, %b %-d")}" : "#{filled} · all covered"
+    next_open ? "#{filled} · next open #{next_open.date.strftime("%a, %b %-d")}" : "#{filled} · all filled"
   end
 end

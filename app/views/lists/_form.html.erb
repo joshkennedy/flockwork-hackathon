@@ -1,7 +1,7 @@
 <%= form_with model: [ project, list ], class: "space-y-7" do |form| %>
   <% if list.errors.any? %>
     <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
-      <p class="font-semibold">Please fix the following:</p>
+      <p class="font-semibold">Fix these to continue:</p>
       <ul class="mt-2 list-disc space-y-1 pl-5 text-meta">
         <% list.errors.full_messages.each do |message| %>
           <li><%= message %></li>
@@ -15,5 +15,5 @@
     <%= form.text_field :name, required: true, autofocus: true, class: "mt-2 block w-full field" %>
   </div>
 
-  <%= form.submit "Create List", class: "btn btn-primary" %>
+  <%= form.submit "Add List", class: "btn btn-primary" %>
 <% end %>

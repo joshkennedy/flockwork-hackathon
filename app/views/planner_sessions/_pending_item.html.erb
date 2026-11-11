@@ -18,7 +18,7 @@
     </div>
     <% unless planner_session.generation_busy? %>
       <details class="actions-menu planner-pending-actions absolute right-0">
-        <summary class="btn btn-icon" aria-label="Item actions"><%= icon(:more) %></summary>
+        <summary class="btn btn-icon" aria-label="Actions for <%= planner_pending_summary(item) %>"><%= icon(:more) %></summary>
         <div class="actions-menu-panel popover-in">
           <button type="button" data-action="comment-thread#toggle" data-comment-thread-target="trigger" aria-expanded="false" aria-controls="pending-editor-<%= item.fetch("id") %>">Edit</button>
           <%= button_to "Remove", pending_item_project_planner_session_path(project, planner_session), method: :patch,
@@ -57,13 +57,13 @@
             <div>
               <dt class="font-semibold text-ink"><%= field.humanize %></dt>
               <dd class="text-ink-2">Your edit: <%= planner_conflict_value(values["edited"]) %></dd>
-              <dd class="text-ink-2">New suggestion: <%= planner_conflict_value(values["suggested"]) %></dd>
+              <dd class="text-ink-2">New Suggestion: <%= planner_conflict_value(values["suggested"]) %></dd>
             </div>
           <% end %>
         </dl>
       <% end %>
       <div class="mt-3 flex flex-wrap gap-3">
-        <%= button_to "Keep My Edit", pending_item_project_planner_session_path(project, planner_session), method: :patch,
+        <%= button_to "Keep Your Edit", pending_item_project_planner_session_path(project, planner_session), method: :patch,
           params: { item: { id: item.fetch("id"), decision: "resolve", resolution: "keep_edit" }, expected_revision: planner_session.generation_revision }, class: "btn btn-secondary" %>
         <% if conflict["type"] == "removed_by_revision" %>
           <%= button_to "Remove", pending_item_project_planner_session_path(project, planner_session), method: :patch,

@@ -131,7 +131,7 @@ class TasksTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_content
-    assert_match "Assignee must be a Team member", response.body
+    assert_match "The person assigned must be a Team member", response.body
   end
 
   test "an Admin manages Tasks without joining the Team" do

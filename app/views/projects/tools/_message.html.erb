@@ -4,12 +4,12 @@
     <p class="shrink-0 text-meta text-ink-2"><%= time_ago_in_words(message.created_at) %> ago</p>
     <% if Policy.can?(Current.person, :edit_message, message) || Policy.can?(Current.person, :delete_message, message) %>
       <div class="ml-auto shrink-0">
-        <%= actions_menu("Message Actions") do %>
+        <%= actions_menu("Actions for this message") do %>
           <% if Policy.can?(Current.person, :edit_message, message) %>
             <%= link_to "Edit", edit_project_message_path(project, message) %>
           <% end %>
           <% if Policy.can?(Current.person, :delete_message, message) %>
-            <%= button_to "Delete", project_message_path(project, message), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: message.parent_id ? "Delete this reply?" : "Delete this Message and its replies?" } } %>
+            <%= button_to "Delete", project_message_path(project, message), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: message.parent_id ? "Delete this reply?" : "Delete this message and its replies?" } } %>
           <% end %>
         <% end %>
       </div>
@@ -20,7 +20,7 @@
 
   <% if message.parent_id.nil? && (follow = message.follows.find_by(person: Current.person)) %>
     <div class="mt-3 flex items-center justify-between gap-3 text-meta text-ink-2">
-      <span>Following This Thread</span>
+      <span>Following this thread</span>
       <%= button_to "Unfollow",
             project_follow_path(project, follow),
             method: :delete,

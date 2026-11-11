@@ -11,7 +11,7 @@ class ProjectRecurrencesController < ApplicationController
     @recurrence.creator = Current.person
 
     if @recurrence.save
-      redirect_to @project, notice: "Project repetition was updated."
+      redirect_to @project, notice: "Repeat settings saved."
     else
       render :edit, status: :unprocessable_entity
     end

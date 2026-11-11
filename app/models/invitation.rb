@@ -49,7 +49,7 @@ class Invitation < ApplicationRecord
     def people_and_project_belong_to_organization
       return if [ project, person, inviter ].all? { |record| record&.organization_id == organization_id }
 
-      errors.add(:base, "Project, invitee, and inviter must belong to the Organization")
+      errors.add(:base, "Project, invitee, and inviter must belong to the same church")
     end
 
     def person_can_be_invited

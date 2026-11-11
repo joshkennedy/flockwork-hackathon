@@ -17,7 +17,7 @@
         <span class="text-ink"><%= slot.label %></span><% if slot.starts_at_time.present? %> · <%= slot.starts_at_time.strftime("%-l:%M %p") %><% end %>
       </p>
       <% if slot.schedule_item %>
-        <p class="signup-session text-meta text-ink-2">Session: <%= slot.schedule_item.title %></p>
+        <p class="signup-session text-meta text-ink-2">Schedule item: <%= slot.schedule_item.title %></p>
       <% end %>
       <% if own_claim %>
         <p class="flex items-center gap-1.5 text-meta text-ink"><%= icon(:check, class: "text-sunlit") %><%= dinner ? "You’re bringing dinner" : "You’re signed up" %></p>
@@ -52,7 +52,7 @@
         <% if manage %>
           <%= link_to "Edit Slot", edit_project_slot_path(project, slot), data: { action: "slideout#open", slideout_title_param: "Edit Slot" } %>
           <hr>
-          <%= button_to "Delete Slot", project_slot_path(project, slot), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: slot.slot_claims.any? ? "Delete this Slot? #{pluralize(slot.slot_claims.size, "person")} signed up will lose their spot." : "Delete this Slot?" } } %>
+          <%= button_to "Delete Slot", project_slot_path(project, slot), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: slot.slot_claims.any? ? "Delete this Slot? #{pluralize(slot.slot_claims.size, "person")} signed up will lose their spot. Its comments are deleted too." : "Delete this Slot? Its comments are deleted too." } } %>
         <% end %>
       <% end %>
     <% end %>

@@ -14,7 +14,7 @@ class CheckInTest < ActiveSupport::TestCase
     assert_not future.valid?
     assert_includes future.errors[:on], "cannot be in the future"
     assert_not other.valid?
-    assert_includes other.errors[:person], "must belong to the same Organization"
+    assert_includes other.errors[:person], "must belong to the same church"
   end
 
   test "the latest check-in is the one with the latest date, and the later record wins a tie" do

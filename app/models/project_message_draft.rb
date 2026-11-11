@@ -44,7 +44,7 @@ class ProjectMessageDraft
     end
     allowed_numbers = facts.except("request").to_json.scan(/\d+/).map(&:to_i)
     unless "#{title} #{body}".scan(/\d+/).all? { |number| allowed_numbers.include?(number.to_i) }
-      raise Unavailable, "The draft included numbers we could not verify. Try again or write a message in the Project."
+      raise Unavailable, "The draft included numbers that could not be verified. Try again or write a message in the Project."
     end
     Draft.new(title: title.gsub("{{project}}", @project.name), body: body.gsub("{{project}}", @project.name))
   rescue Unavailable
@@ -60,9 +60,9 @@ class ProjectMessageDraft
     def call(facts)
       provider = ENV.fetch("MESSAGE_DRAFT_LLM_PROVIDER", "openrouter")
       key = PROVIDER_KEYS[provider]
-      raise Unavailable, "Drafting is not configured. You can write a message in the Project." unless key && ENV[key].present?
+      raise Unavailable, "Drafting is unavailable right now. You can write a message in the Project." unless key && ENV[key].present?
       budget = Float(ENV.fetch("MESSAGE_DRAFT_LLM_BUDGET_SECONDS", "20"))
-      raise Unavailable, "Drafting is not configured. You can write a message in the Project." unless budget.positive? && budget.finite?
+      raise Unavailable, "Drafting is unavailable right now. You can write a message in the Project." unless budget.positive? && budget.finite?
 
       Timeout.timeout(budget) do
         reply = RubyLLM.context { |config| config.request_timeout = budget }
@@ -70,7 +70,7 @@ class ProjectMessageDraft
           .with_instructions(INSTRUCTIONS)
           .with_max_output_tokens(2_000)
           .ask(JSON.generate(facts))
-        JSON.parse(reply.content.to_s[/\{.*\}/m] || raise(Unavailable, "The draft could not be read. Please try again."))
+        JSON.parse(reply.content.to_s[/\{.*\}/m] || raise(Unavailable, "The draft could not be read. Try again."))
       end
     end
   end

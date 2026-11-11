@@ -30,12 +30,12 @@
                     <% if Policy.can?(Current.person, :manage_schedule, project) %>
                       <%= link_to "Edit Item", edit_project_schedule_item_path(project, item) %>
                       <hr>
-                      <%= button_to "Delete Item", project_schedule_item_path(project, item), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete “#{item.title}”?" } } %>
+                      <%= button_to "Delete Item", project_schedule_item_path(project, item), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete “#{item.title}”? Its comments are deleted too, and linked Slots stay without a Schedule item." } } %>
                     <% end %>
                   <% end %>
                 </div>
                 <% if item.slots.any? %>
-                  <ul class="mt-3 space-y-1" aria-label="Roles for <%= item.title %>">
+                  <ul class="mt-3 space-y-1" aria-label="Slots for <%= item.title %>">
                     <% item.slots.chronological.each do |slot| %>
                       <li class="flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-control bg-ghost-fill px-3">
                         <span class="schedule-role-label font-medium"><%= slot.label %></span>

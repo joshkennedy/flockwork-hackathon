@@ -27,7 +27,7 @@ class CheckIn < ApplicationRecord
     end
 
     def people_belong_to_organization
-      errors.add(:person, "must belong to the same Organization") unless person&.organization_id == organization_id
-      errors.add(:checked_in_by, "must belong to the same Organization") unless checked_in_by.nil? || checked_in_by.organization_id == organization_id
+      errors.add(:person, "must belong to the same church") unless person&.organization_id == organization_id
+      errors.add(:checked_in_by, "must belong to the same church") unless checked_in_by.nil? || checked_in_by.organization_id == organization_id
     end
 end

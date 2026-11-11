@@ -1,5 +1,5 @@
-<% content_for :title, "Draft a Message" %>
-<h1>Draft a Message</h1>
+<% content_for :title, "Draft a message" %>
+<h1>Draft a message</h1>
 <p class="mt-2 text-meta text-ink-2">Review and edit the draft. Nothing is posted until you choose Post Message.</p>
 <% if @error %><span hidden data-toast-entry data-toast-kind="alert"><%= @error %></span><% end %>
 <% unless @message.body.present? %>
@@ -11,7 +11,7 @@
 <% end %>
 <% if @message.body.present? %>
 <div class="mt-6">
-  <%= render "messages/plain_form", project: @project, message: @message, label: "Review your Message", submit_label: "Post Message", class_name: "message-composer" %>
+  <%= render "messages/plain_form", project: @project, message: @message, label: "Review your message", submit_label: "Post Message", class_name: "message-composer" %>
 </div>
 <% end %>
 <p class="mt-4"><%= link_to "Back to Messages", project_path(@project, anchor: "tab-messages"), class: "link" %></p>

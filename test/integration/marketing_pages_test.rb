@@ -35,7 +35,7 @@ class MarketingPagesTest < ActionDispatch::IntegrationTest
         assert_select ".lp-close h2", "Fill the next open spot."
       else
         assert_not_includes response.body, "Fill the next open spot."
-        assert_select ".lp-close h2", "Say yes to the next one."
+        assert_select ".lp-close h2", "Start with one project."
       end
     end
   end
@@ -109,7 +109,8 @@ class MarketingPagesTest < ActionDispatch::IntegrationTest
   test "pricing says free during beta and offers nothing it can't back" do
     get pricing_path
     assert_select "h1", "Free during beta."
-    assert_select ".marketing a.btn-primary", count: 1
+    assert_select ".lp-plan a.btn-primary[href=?]", sign_up_path, text: "Plan Your First Project"
+    assert_select ".marketing a.btn-primary", count: 2
     assert_select ".lp-faq-item h3", count: 5
     offer = JSON.parse(css_select("script[type='application/ld+json']").first.text)["@graph"].find { |node| node["@type"] == "SoftwareApplication" }["offers"]
     assert_equal "0", offer["price"]

@@ -66,7 +66,7 @@ class ProjectBannersTest < ActionDispatch::IntegrationTest
     patch project_banner_path(project), params: { project: { banner: fixture_file_upload("sample_upload.txt", "image/jpeg") } }
 
     assert_redirected_to project_path(project)
-    assert_match "must be a JPEG, PNG, WebP, or HEIC image", flash[:alert]
+    assert_match "must be a JPEG, PNG, WebP or HEIC image", flash[:alert]
     assert_not project.reload.banner.attached?
   end
 
@@ -152,7 +152,7 @@ class ProjectBannersTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to project_path(project)
-    assert_match "must be a JPEG, PNG, WebP, or HEIC image", flash[:alert]
+    assert_match "must be a JPEG, PNG, WebP or HEIC image", flash[:alert]
     assert_not project.reload.banner.attached?
   ensure
     file&.close!

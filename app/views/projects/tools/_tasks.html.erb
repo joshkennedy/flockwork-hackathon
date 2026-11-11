@@ -46,11 +46,11 @@
                       <%= link_to "Edit Task", edit_project_task_path(project, task) %>
                     <% end %>
                     <% if can_unclaim %>
-                      <%= button_to "Unclaim", unclaim_project_task_path(project, task) %>
+                      <%= button_to "Release", unclaim_project_task_path(project, task) %>
                     <% end %>
                     <% if can_manage %>
                       <hr>
-                      <%= button_to "Delete Task", project_task_path(project, task), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete “#{task.title}”?" } } %>
+                      <%= button_to "Delete Task", project_task_path(project, task), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete “#{task.title}”? Its comments are deleted too." } } %>
                     <% end %>
                   <% end %>
                 <% end %>
@@ -94,7 +94,7 @@
                   <%= actions_menu("Actions for #{task.title}") do %>
                     <%= link_to "Edit Task", edit_project_task_path(project, task) %>
                     <hr>
-                    <%= button_to "Delete Task", project_task_path(project, task), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete “#{task.title}”?" } } %>
+                    <%= button_to "Delete Task", project_task_path(project, task), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete “#{task.title}”? Its comments are deleted too." } } %>
                   <% end %>
                 </div>
               <% end %>

@@ -18,7 +18,7 @@ class HomeTest < ActionDispatch::IntegrationTest
     assert_select "[data-home-section='coming-up']", text: /Bring salad/
     assert_select "[data-home-section='open-needs']", text: /Community Meal/
     # Bring salad has 1 open spot, Bring dessert 3; Full bread and Far off add none.
-    assert_select "[data-home-section='open-needs'] .badge-need", text: "4 spots open"
+    assert_select "[data-home-section='open-needs'] .badge-need", text: "4 spots left"
     assert_select "[data-home-section='open-needs']", text: /Next: Bring salad/
     assert_select "[data-home-section='get-involved']", text: /#{projects(:building_cleanup).name}/
     assert_select "a.btn-primary", count: 0
@@ -58,9 +58,9 @@ class HomeTest < ActionDispatch::IntegrationTest
 
     get home_path
 
-    assert_select "[data-home-section='your-tasks']", text: /Nothing on your plate/
+    assert_select "[data-home-section='your-tasks']", text: /No Tasks assigned to you/
     assert_select "[data-home-section='your-projects'] a", text: /#{projects(:community_meal).name}/
-    assert_select "[data-home-section='open-needs'] .badge-need", text: "2 spots open"
+    assert_select "[data-home-section='open-needs'] .badge-need", text: "2 spots left"
   end
 
   test "the old My Tasks page redirects to Home" do

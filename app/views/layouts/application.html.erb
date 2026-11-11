@@ -24,7 +24,7 @@
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-panel focus:p-3">Skip to content</a>
     <% if authenticated? && !marketing_page? %>
       <div class="min-h-screen p-2 pb-[calc(64px+env(safe-area-inset-bottom))] md:grid md:grid-cols-[232px_minmax(0,1fr)] md:pb-2">
-        <aside class="sticky top-2 hidden h-[calc(100dvh-16px)] min-w-0 flex-col px-4 pb-3 pt-3.5 md:flex" aria-label="Organization">
+        <aside class="sticky top-2 hidden h-[calc(100dvh-16px)] min-w-0 flex-col px-4 pb-3 pt-3.5 md:flex" aria-label="Church">
           <%= render "layouts/wordmark", path: home_path, class: "mb-6 px-2" %>
           <%= render "layouts/navigation" %>
           <%= render "layouts/account_menu" %>

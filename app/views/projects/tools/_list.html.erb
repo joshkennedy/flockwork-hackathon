@@ -4,7 +4,7 @@
   <div class="flex flex-wrap items-start justify-between gap-4">
     <h2 id="tool-list" class="text-ink"><%= icon(:list, class: "text-tool-list") %> <%= Project::TOOL_LABELS.fetch("list") %></h2>
     <% if Policy.can?(Current.person, :manage_lists, project) %>
-      <%= link_to "Create List", new_project_list_path(project), class: "inline-flex min-h-6 items-center text-meta font-semibold text-ink-2 hover:text-ink" %>
+      <%= link_to "Add List", new_project_list_path(project), class: "inline-flex min-h-6 items-center text-meta font-semibold text-ink-2 hover:text-ink" %>
     <% end %>
   </div>
 
@@ -44,7 +44,7 @@
                               <%= button_to "Move Down", move_down_project_list_list_column_path(project, list, column), method: :patch %>
                             <% end %>
                             <hr>
-                            <%= button_to "Remove Column", project_list_list_column_path(project, list, column), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Remove the #{column.name} column? Its values in every row go with it." } } %>
+                            <%= button_to "Delete Column", project_list_list_column_path(project, list, column), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete the #{column.name} column? Its values in every row go with it." } } %>
                           <% end %>
                         </div>
                       <% end %>
@@ -68,10 +68,10 @@
                     <td class="whitespace-nowrap border-b border-hairline px-3 py-3">
                       <% if Policy.can?(Current.person, :manage_list_rows, project) %>
                         <div class="list-row-actions flex items-center justify-end gap-1">
-                          <%= actions_menu("Row actions") do %>
+                          <%= actions_menu("Actions for this row") do %>
                             <%= link_to "Edit Row", edit_project_list_list_row_path(project, list, row) %>
                             <hr>
-                            <%= button_to "Delete Row", project_list_list_row_path(project, list, row), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete this row?" } } %>
+                            <%= button_to "Delete Row", project_list_list_row_path(project, list, row), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete this row? Its comments are deleted too." } } %>
                           <% end %>
                         </div>
                       <% end %>

@@ -1,3 +1,5 @@
+<p>Hi <%= @person.name %>,</p>
+<p>You get this because you lead <%= @project.name %>.</p>
 <h1><%= @project.name %></h1>
 <p><%= pluralize(@risk.open_spots, "open spot") %> in the next 7 days.</p>
 <p><%= pluralize(@risk.overdue_tasks, "overdue task") %>.</p>
@@ -5,5 +7,5 @@
 <% if @project.starts_on %>
   <p>Project starts <%= @project.starts_on.strftime("%B %-d, %Y") %>.</p>
 <% end %>
-<p><%= link_to "View the Project", @url %></p>
-<p><%= link_to "Manage weekly emails", digest_preferences_url %></p>
+<p><%= link_to "Open #{@project.name}", @url %></p>
+<p><%= link_to "Manage weekly updates", digest_preferences_url %></p>

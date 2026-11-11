@@ -180,7 +180,7 @@ class ListsTest < ActionDispatch::IntegrationTest
     }
 
     assert_response :unprocessable_content
-    assert_select "li", "Clear this column before changing its type"
+    assert_select "li", "Delete the values in this column first, then change its type."
     assert_predicate column.reload, :text?
 
     row.update!(cells: {})
