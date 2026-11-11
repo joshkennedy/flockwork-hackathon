@@ -43,7 +43,7 @@ Tests stub the provider with `Planner::Providers::Fake` and assert no Person nam
 
 ## Backups
 
-Production runs an off-site backup at 4am daily. PostgreSQL custom-format dumps go to `db/` in the backup bucket. Active Storage files remain on the local Disk service and are copied to `storage/<key>` in the backup bucket. Database dumps older than 14 days are pruned, while the seven newest are always kept.
+Production runs an off-site backup at 4:30am daily. PostgreSQL custom-format dumps go to `db/` in the backup bucket. Active Storage files remain on the local Disk service and are copied to `storage/<key>` in the backup bucket. Database dumps older than 14 days are pruned, while the seven newest are always kept.
 
 Set `BACKUP_BUCKET_NAME`, `BACKUP_BUCKET_ENDPOINT`, `BACKUP_BUCKET_REGION`, `BACKUP_BUCKET_ACCESS_KEY_ID`, and `BACKUP_BUCKET_SECRET_ACCESS_KEY`. Without all five, the backup is a no-op.
 

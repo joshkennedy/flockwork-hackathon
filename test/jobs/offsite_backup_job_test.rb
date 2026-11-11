@@ -2,12 +2,12 @@ require "test_helper"
 require "yaml"
 
 class OffsiteBackupJobTest < ActiveJob::TestCase
-  test "runs every day at 4am in production" do
+  test "runs every day at 4:30am in production" do
     recurring = YAML.load_file(Rails.root.join("config/recurring.yml"))
     schedule = recurring.dig("production", "offsite_backup")
 
     assert_equal "OffsiteBackupJob", schedule.fetch("class")
-    assert_equal "at 4am every day", schedule.fetch("schedule")
+    assert_equal "30 4 * * *", schedule.fetch("schedule")
   end
 
   test "reports failures and re-raises them" do
