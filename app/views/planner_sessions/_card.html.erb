@@ -36,6 +36,7 @@
           <%= icon(:mic) %>
           <span>Talk It Through</span>
         </button>
+        <p class="mt-2 text-meta text-ink-2">Your voice goes to xAI. Leave out names and private care details.</p>
       </div>
     <% elsif planner_session.reviewing? %>
       <h1 id="planner-question" class="text-ink">Your plan is ready to review</h1>
@@ -52,7 +53,8 @@
     <% if planner_session.asking? %>
       <div class="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 text-meta font-semibold">
         <%= link_to "Skip to Review", skip_to_review_project_planner_session_path(project, planner_session), data: { turbo_method: :post, turbo_frame: "_top" }, class: "btn btn-secondary" %>
-        <%= link_to "Leave Planner", abandon_project_planner_session_path(project, planner_session), data: { turbo_method: :post, turbo_frame: "_top" }, class: "text-ink-2 hover:text-ink" %>
+        <%= button_to "Leave Planner", abandon_project_planner_session_path(project, planner_session), class: "btn btn-text",
+          form: { data: { turbo_frame: "_top", turbo_confirm: "Leave the Planner? This plan closes, and nothing more is added to the Project." } } %>
       </div>
     <% end %>
   </section>

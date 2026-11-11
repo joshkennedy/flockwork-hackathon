@@ -51,7 +51,7 @@ class PersonTest < ActiveSupport::TestCase
     admin = people(:admin)
 
     assert_not admin.update(admin: false)
-    assert_includes admin.errors[:admin], "cannot be removed from the last Admin in the Organization"
+    assert_includes admin.errors[:admin], "can’t be removed until another person is an Admin"
   end
 
   test "matching finds names containing every typed word in any order" do

@@ -15,4 +15,13 @@ class BudgetLineTest < ActiveSupport::TestCase
     assert_predicate unknown, :valid?
     assert_equal 2_500, BudgetLine.estimated_total_cents([ unknown, known ])
   end
+
+  test "a cost that is not a dollar amount is rejected with a fix" do
+    line = projects(:community_meal).budget_lines.build(kind: :booking, description: "Bus", estimated: "abc", actual: "$1,200")
+
+    assert_not line.valid?
+    assert_includes line.errors.full_messages, "Estimated cost must be a dollar amount, like 120 or 45.50."
+    assert_equal "abc", line.estimated
+    assert_equal 120_000, line.actual_cents
+  end
 end

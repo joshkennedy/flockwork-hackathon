@@ -199,18 +199,18 @@ module Planner
       when "list"
         return [ "At least one valid column is required" ] unless FieldValidation.valid_columns?(fields["columns"])
         build_record(project, item)
-      when "enable_tool" then return Project::TOOLS.include?(fields["tool"]) ? [] : [ "Tool is invalid" ]
+      when "enable_tool" then return Project::TOOLS.include?(fields["tool"]) ? [] : [ "Tool must be one from the list" ]
       when "shift_project_dates"
         ProjectDateShift.days(fields["days"])
         return []
-      when "skill" then return Skills.normalize(fields["name"]).one? ? [] : [ "Skill is invalid" ]
+      when "skill" then return Skills.normalize(fields["name"]).one? ? [] : [ "Skill must be one skill name" ]
       else
         build_record(project, item) || (return [ "Unknown item type" ])
       end
       record.valid?
       record.errors.full_messages
     rescue ArgumentError, TypeError
-      [ "Item fields are invalid" ]
+      [ "Some fields on this item are missing or the wrong kind" ]
     end
 
     def create!(project, item, schedule_item: nil)

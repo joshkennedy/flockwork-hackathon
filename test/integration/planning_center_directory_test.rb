@@ -248,8 +248,8 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
     end
 
     follow_redirect!
-    assert_select "p[role=alert]", text: "Validation failed: Email has already been taken"
-    assert_equal "Validation failed: Email has already been taken", organization.reload.pco_last_sync_error
+    assert_select "p[role=alert]", text: "Validation failed: Email is already used by someone else in this church"
+    assert_equal "Validation failed: Email is already used by someone else in this church", organization.reload.pco_last_sync_error
     assert_nil organization.pco_last_synced_at
   end
 

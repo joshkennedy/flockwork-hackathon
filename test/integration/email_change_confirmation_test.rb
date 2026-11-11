@@ -140,7 +140,7 @@ class EmailChangeConfirmationTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :unprocessable_entity
-    assert_select "[role=alert]", /Email has already been taken/
+    assert_select "[role=alert]", /Email is already used by someone else in this church/
     assert_nil people(:volunteer).reload.pending_email
   end
 

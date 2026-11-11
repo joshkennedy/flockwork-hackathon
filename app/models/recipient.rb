@@ -13,6 +13,6 @@ class Recipient < ApplicationRecord
 
       return unless project.memberships.exists?(person_id: person_id)
 
-      errors.add(:person, "is already on the Team")
+      errors.add(:person, "is already on the Team, so they can’t also be a Recipient")
     end
 end

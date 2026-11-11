@@ -108,7 +108,7 @@ class SlotsTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to project_path(project)
-    assert_equal "This slot is full.", flash[:alert]
+    assert_equal "This Slot is full. Pick another one.", flash[:alert]
     assert_not slot.slot_claims.exists?(person: member)
     follow_redirect!
     assert_select "section[aria-labelledby='tool-signup-sheet']", text: /Leo Leader/

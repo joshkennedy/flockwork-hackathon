@@ -13,23 +13,23 @@ module Planner
       when "list", "skill" then [ "name" ]
       else []
       end
-      required_text.each { |name| errors << "#{name.humanize} is invalid" unless fields[name].is_a?(String) && fields[name].present? }
+      required_text.each { |name| errors << "#{name.humanize} can’t be blank" unless fields[name].is_a?(String) && fields[name].present? }
       %w[date due_on].each do |name|
         next unless fields[name].present?
         Date.iso8601(fields[name]) if fields[name].is_a?(String)
-        errors << "#{name.humanize} is invalid" unless fields[name].is_a?(String)
+        errors << "#{name.humanize} needs a real calendar date" unless fields[name].is_a?(String)
       rescue Date::Error
-        errors << "#{name.humanize} is invalid"
+        errors << "#{name.humanize} needs a real calendar date"
       end
       %w[time starts_at ends_at].each do |name|
-        errors << "#{name.humanize} is invalid" if fields[name].present? && (!fields[name].is_a?(String) || !fields[name].match?(TIME))
+        errors << "#{name.humanize} needs a time of day" if fields[name].present? && (!fields[name].is_a?(String) || !fields[name].match?(TIME))
       end
       if %w[booking purchase].include?(kind) && fields["estimated_dollars"].present?
         value = BigDecimal(fields["estimated_dollars"].to_s, exception: false)
-        errors << "Estimated cost is invalid" unless value&.finite? && value >= 0
+        errors << "Estimated cost must be 0 or more" unless value&.finite? && value >= 0
       end
       if kind == "enable_tool"
-        errors << "Tool is invalid" unless fields["tool"].is_a?(String) && Project::TOOLS.include?(fields["tool"])
+        errors << "Tool must be one from the list" unless fields["tool"].is_a?(String) && Project::TOOLS.include?(fields["tool"])
       end
       errors
     end

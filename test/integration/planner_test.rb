@@ -277,7 +277,7 @@ class PlannerTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_select "[role='alert']", text: PlannerSession::ERROR_MESSAGE
     assert_select "a", text: "Skip to Review"
-    assert_select "a", text: "Leave Planner"
+    assert_select "button", text: "Leave Planner"
     assert_equal [
       {
         "question" => "What should volunteers prepare?",
@@ -507,14 +507,14 @@ class PlannerTest < ActionDispatch::IntegrationTest
   end
 
   test "accept rejects a multi-skill name" do
-    assert_ask_accept_rejected(suggestion("skill", "name" => "Cooking, Driving, Welding"), /Skill is invalid/) do |project|
+    assert_ask_accept_rejected(suggestion("skill", "name" => "Cooking, Driving, Welding"), /Skill must be one skill name/) do |project|
       -> { project.skills_needed.size }
     end
   end
 
   test "accept rejects an unknown list column type" do
     list = suggestion("list", "name" => "Stations", "columns" => [ { "name" => "Station", "type" => "bogus" } ])
-    assert_ask_accept_rejected(list, /Columns are invalid/) { |project| -> { project.lists.count } }
+    assert_ask_accept_rejected(list, /Columns must each have a name and a type/) { |project| -> { project.lists.count } }
   end
 
   test "an enable_tool Suggestion with an unknown tool is dropped and review still renders" do

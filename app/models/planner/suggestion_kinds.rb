@@ -293,8 +293,8 @@ module Planner
 
     def invalid_field_messages(kind, fields)
       messages = FieldValidation.errors(kind, fields)
-      messages << "Skill is invalid" if kind == "skill" && !Skills.normalize(fields["name"]).one?
-      messages << "Columns are invalid" if kind == "list" && !FieldValidation.valid_columns?(fields["columns"])
+      messages << "Skill must be one skill name" if kind == "skill" && !Skills.normalize(fields["name"]).one?
+      messages << "Columns must each have a name and a type" if kind == "list" && !FieldValidation.valid_columns?(fields["columns"])
       messages
     end
 

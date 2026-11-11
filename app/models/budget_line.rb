@@ -12,6 +12,7 @@ class BudgetLine < ApplicationRecord
   validates :estimated_cents, numericality: { only_integer: true, greater_than_or_equal_to: 0 }, allow_nil: true
   validates :actual_cents, numericality: { only_integer: true, greater_than_or_equal_to: 0 }, allow_nil: true
   validate :responsible_person_is_team_member
+  validate :dollar_inputs_are_amounts
 
   def estimated=(dollar_string)
     @estimated_input = dollar_string
@@ -41,7 +42,9 @@ class BudgetLine < ApplicationRecord
   def self.cents_from_dollars(dollar_string)
     return nil if dollar_string.blank?
 
-    (BigDecimal(dollar_string.to_s.delete(",")) * 100).round(0).to_i
+    (BigDecimal(dollar_string.to_s.delete("$,").strip) * 100).round(0).to_i
+  rescue ArgumentError
+    nil
   end
 
   def self.format_cents(cents)
@@ -62,6 +65,11 @@ class BudgetLine < ApplicationRecord
   end
 
   private
+    def dollar_inputs_are_amounts
+      errors.add(:base, "Estimated cost must be a dollar amount, like 120 or 45.50.") if @estimated_input.present? && estimated_cents.nil?
+      errors.add(:base, "Actual cost must be a dollar amount, like 120 or 45.50.") if @actual_input.present? && actual_cents.nil?
+    end
+
     def responsible_person_is_team_member
       return if responsible_person_id.blank?
 

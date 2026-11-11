@@ -39,7 +39,7 @@
             <p class="font-semibold text-ink">Away <%= away.range_label %></p>
             <% if away.note.present? %><p class="mt-1 text-meta text-ink-2"><%= away.note %></p><% end %>
           </div>
-          <%= button_to "Remove", profile_unavailability_path(away), method: :delete, class: "btn btn-text shrink-0" %>
+          <%= button_to "Remove Dates", profile_unavailability_path(away), method: :delete, class: "btn btn-text shrink-0", form: { data: { turbo_confirm: "Remove these away dates?" } } %>
         </li>
       <% end %>
     </ul>

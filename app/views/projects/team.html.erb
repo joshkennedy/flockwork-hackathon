@@ -52,6 +52,7 @@
                     </div>
                     <% if person.email.blank? %>
                       <button type="button" disabled class="btn btn-secondary btn-sm justify-self-start">Invite</button>
+                      <p class="text-meta text-ink-2"><%= person.name %> needs an email address before you can invite them.</p>
                     <% else %>
                       <%= render "projects/invite_form", project: @project, person: %>
                     <% end %>

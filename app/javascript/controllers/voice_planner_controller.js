@@ -645,6 +645,7 @@ export default class extends Controller {
 
   messageFor(error) {
     if (error?.name === "NotAllowedError") return "Microphone access was denied. You can keep typing."
+    if (error instanceof TypeError) return "Voice planning lost its connection. You can keep typing."
     return error?.message || "Voice planning is unavailable. You can keep typing."
   }
 }

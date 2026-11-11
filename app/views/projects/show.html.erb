@@ -167,10 +167,10 @@
               </h2>
               <%= render "public_link", project: @project, offered_above: public_link_in_strip if can_share %>
               <% if can_transfer %>
-                <%= form_with url: transfer_ownership_project_path(@project), method: :patch, class: "mt-5 flex flex-wrap items-end gap-3" do |form| %>
+                <%= form_with url: transfer_ownership_project_path(@project), method: :patch, class: "mt-5 flex flex-wrap items-end gap-3", data: { turbo_confirm: "Transfer ownership of #{@project.name}? You won’t be its owner anymore." } do |form| %>
                   <%= form.label :new_owner_id, "Transfer ownership to", class: "block text-label font-medium text-ink" %>
                   <%= form.collection_select :new_owner_id, @ownership_transfer_leaders, :person_id, ->(membership) { membership.person.name }, { prompt: "Choose a Leader" }, class: "field" %>
-                  <%= form.submit "Transfer", class: "btn btn-secondary" %>
+                  <%= form.button "Transfer Ownership", class: "btn btn-secondary" %>
                 <% end %>
               <% end %>
             </section>

@@ -87,7 +87,7 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     }
 
     assert_response :unprocessable_entity
-    assert_select "[role=alert]", /Admin cannot be removed from the last Admin in the Organization/
+    assert_select "[role=alert]", /Admin can’t be removed until another person is an Admin/
     assert people(:admin).reload.admin?
   end
 
@@ -141,7 +141,7 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     }
 
     assert_response :unprocessable_entity
-    assert_select "[role=alert]", /Email has already been taken/
+    assert_select "[role=alert]", /Email is already used by someone else in this church/
   end
 
   test "the same email in another Organization is allowed" do

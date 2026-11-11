@@ -226,7 +226,7 @@ class PlannerSession < ApplicationRecord
       card = index < steps.length ? steps.fetch(index) : current_card&.stringify_keys
       raise ArgumentError, "There is no current Planner card" unless card
 
-      raise ArgumentError, "Answer can't be blank" if text.blank?
+      raise ArgumentError, "Enter an answer." if text.blank?
 
       redacted_text = Planner::NameRedactor.new(Current.organization).call(text)
       revised_steps = steps.take(index) + [
@@ -253,7 +253,7 @@ class PlannerSession < ApplicationRecord
     with_lock do
       ensure_mutable_build_as_you_go!
       raise Planner::StaleRevision unless generation_revision == expected_revision
-      raise ArgumentError, "The preview is not ready" unless ready_to_continue?
+      raise ArgumentError, "The preview isn’t ready yet. Wait a moment and try again." unless ready_to_continue?
       self.generation_revision += 1
 
       if prepared_card.present? && steps.length < MAX_GENERATED_QUESTIONS
@@ -277,7 +277,7 @@ class PlannerSession < ApplicationRecord
       ensure_mutable_build_as_you_go!
       ensure_not_busy!
       raise Planner::StaleRevision unless generation_revision == expected_revision
-      raise ArgumentError, "There is no useful preview" if visible_pending_items.empty?
+      raise ArgumentError, "There’s nothing to review yet. Answer a question first." if visible_pending_items.empty?
 
       update!(
         generation_revision: generation_revision + 1,
@@ -342,11 +342,11 @@ class PlannerSession < ApplicationRecord
       return acceptance_receipt if accepted?
       raise Planner::StaleRevision if expected_revision && generation_revision != expected_revision
       ensure_not_busy!
-      raise ArgumentError, "Finish reviewing before adding pending work" unless reviewing?
+      raise ArgumentError, "Review the Suggestions before adding them." unless reviewing?
 
       items = visible_pending_items
-      raise ArgumentError, "There is no pending work to add" if items.empty?
-      raise ArgumentError, "Resolve pending conflicts before adding" if items.any? { |item| item["conflict"].present? }
+      raise ArgumentError, "There’s nothing to add yet. Keep at least one Suggestion." if items.empty?
+      raise ArgumentError, "Choose which version to keep on each flagged item, then add." if items.any? { |item| item["conflict"].present? }
 
       errors = pending_item_errors
       if errors.any?
@@ -442,7 +442,7 @@ class PlannerSession < ApplicationRecord
       when "edit"
         edited_fields = fields || { "title" => title, "details" => details }.compact
         edited_fields = Planner::SuggestionKinds.sanitize_fields(suggestion.fetch("kind"), edited_fields)
-        raise ArgumentError, "Tool is invalid" if edited_fields.key?("tool") && Project::TOOLS.exclude?(edited_fields["tool"])
+        raise ArgumentError, "Choose a Tool from the list." if edited_fields.key?("tool") && Project::TOOLS.exclude?(edited_fields["tool"])
         suggestion.merge(
           "fields" => suggestion.fetch("fields").merge(edited_fields),
           "status" => "edited"
@@ -459,7 +459,7 @@ class PlannerSession < ApplicationRecord
   def accept!(include_proposed:)
     with_lock do
       return if accepted?
-      raise ArgumentError, "Finish reviewing before accepting work" unless reviewing?
+      raise ArgumentError, "Review the Suggestions before adding them." unless reviewing?
 
       suggestions.filter do |suggestion|
         %w[kept edited].include?(suggestion.fetch("status")) ||
@@ -572,11 +572,11 @@ class PlannerSession < ApplicationRecord
 
     def ensure_mutable_build_as_you_go!
       ensure_build_as_you_go!
-      raise ArgumentError, "Accepted Planner sessions are immutable" if accepted?
+      raise ArgumentError, "This plan is already added to the Project. Start a new plan to change it." if accepted?
     end
 
     def ensure_not_busy!
-      raise ArgumentError, "Generation is still in progress" if generation_busy?
+      raise ArgumentError, "The Planner is still working. Wait a moment and try again." if generation_busy?
     end
 
     def apply_response!(response)
