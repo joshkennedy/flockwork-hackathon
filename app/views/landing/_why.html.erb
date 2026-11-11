@@ -1,10 +1,14 @@
+<%# The founder's letter, in the place a "why" section would go. %>
 <section class="lp-why" aria-labelledby="why-title">
-  <div class="lp-why-text">
-    <h2 id="why-title">Built up in love.</h2>
-    <p class="lp-why-ref">Ephesians 4:15–16</p>
-    <p>Ephesians 4 describes a church as a body: joined and held together, every part doing its work, building itself up in love. A meal train is that. So is a workday, a retreat, the Tuesday someone drives a casserole across town.</p>
-    <p>Most of that work doesn’t fail for lack of love. It stalls in the logistics: the spreadsheet nobody can find, the text thread that lost a name, the one person holding every detail in their head.</p>
-    <p>Flockwork takes the logistics so the body can do its work. When the planning takes an evening instead of a month, a church says yes more often.</p>
+  <div class="lp-letter">
+    <figure class="lp-letter-photo"><%= image_tag "marketing/photos/meal-train-door.webp", width: 1600, height: 1067, loading: "lazy", alt: "A neighbor handing a paper bag of food to new parents holding their newborn at their front door" %></figure>
+    <h2 id="why-title">Tell me if this sounds familiar.</h2>
+    <p>Someone has a baby, or a surgery, or a hard month, and your church wants to help. So a group text starts. Then a spreadsheet. Then a second group text, because half the people weren’t on the first one. Three families bring lasagna on Tuesday and nobody comes Thursday.</p>
+    <p>Nobody ran short on love. The logistics just got away from everyone.</p>
+    <%# Josh: these two sentences are yours to rewrite. %>
+    <p>I feel this in my own church, planning events and trying to keep everyone on the same page. And I want to see the church do what Ephesians 4:15–16 describes: every part doing its work, the whole body building itself up in love.</p>
+    <p>So I built Flockwork. One project holds the sign-up sheet, the tasks, the schedule and the budget. You send one link, and people pick a spot from their phone.</p>
+    <p>It’s free while it’s in beta. Look around the demo first if you like, no email needed. Then tell me what you think.</p>
+    <p class="lp-why-sign">Josh Kennedy, <%= mail_to "hello@getflockwork.com", class: "link" %><br>Maker of Flockwork</p>
   </div>
-  <%= image_tag "marketing/photos/meal-train-door.webp", width: 1600, height: 1067, loading: "lazy", alt: "A neighbor handing a paper bag of food to new parents holding their newborn at their front door" %>
 </section>
