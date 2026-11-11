@@ -6,7 +6,7 @@
       <p class="mt-1 text-meta text-ink-2"><%= visible_items.any? ? "Suggestions · not added yet · #{pluralize(visible_items.size, "item")}" : "Your Project will take shape here" %></p>
     </div>
     <% if visible_items.any? %>
-      <a href="#meal-preview-list" class="meal-preview-view-all text-meta font-semibold text-ink-2">View all</a>
+      <a href="#meal-preview-list" class="meal-preview-view-all text-meta font-semibold text-ink-2" aria-label="View all items">View all</a>
     <% end %>
   </div>
 

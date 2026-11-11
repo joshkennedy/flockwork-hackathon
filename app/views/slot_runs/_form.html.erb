@@ -1,7 +1,7 @@
 <%= form_with model: slot_run, url: project_slot_run_path(project), class: local_assigns.fetch(:class_name, "mt-7 space-y-7") do |form| %>
   <% if slot_run.errors.any? %>
     <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
-      <p class="font-semibold">Please fix the following:</p>
+      <p class="font-semibold">Fix these to continue:</p>
       <ul class="mt-2 list-disc space-y-1 pl-5 text-meta">
         <% slot_run.errors.full_messages.each do |message| %>
           <li><%= message %></li>
@@ -38,6 +38,6 @@
   </div>
 
   <div class="flex justify-end">
-    <%= form.submit "Create Slots", class: "btn btn-primary" %>
+    <%= form.submit "Add Slots", class: "btn btn-primary" %>
   </div>
 <% end %>

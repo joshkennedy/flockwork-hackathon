@@ -6,7 +6,7 @@ class UnavailabilitiesController < ApplicationController
 
     if drafts.map(&:valid?).all?
       Unavailability.transaction { drafts.each(&:save!) }
-      redirect_to edit_profile_path, notice: "Saved #{drafts.size == 1 ? "your away dates" : "#{drafts.size} away ranges"}."
+      redirect_to edit_profile_path, notice: "Saved your away dates."
     else
       redirect_to edit_profile_path, alert: drafts.flat_map { |draft| draft.errors.full_messages }.uniq.to_sentence
     end

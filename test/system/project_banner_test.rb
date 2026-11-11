@@ -29,7 +29,7 @@ class ProjectBannerSystemTest < ApplicationSystemTestCase
     layer.send_keys(:right, :right, :right)
     assert_equal "0.560", find("[data-banner-focus-target=x]", visible: :all).value
 
-    click_on "Save"
+    click_on "Save Banner"
 
     assert_text "Banner System Project"
     @project.reload

@@ -1,7 +1,7 @@
-<% content_for :title, "Add recipient · #{@project.name}" %>
+<% content_for :title, "Add Recipient · #{@project.name}" %>
 
 <div class="w-full max-w-2xl">
-  <%= page_header "Add recipient", subtitle: "Choose someone from the directory or add a new Person without an email." %>
+  <%= page_header "Add Recipient", subtitle: "Choose someone from the directory or add a new Person without an email." %>
 
   <section class="mt-7" aria-labelledby="directory-heading">
     <h2 id="directory-heading" class="text-ink">Search the directory</h2>
@@ -16,7 +16,7 @@
         <% @directory_people.each do |person| %>
           <li class="flex items-center justify-between gap-4 py-4">
             <span class="font-semibold text-ink"><%= person.name %></span>
-            <%= button_to "Add", project_recipients_path(@project), params: { person_id: person.id }, class: "btn btn-secondary" %>
+            <%= button_to "Add", project_recipients_path(@project), params: { person_id: person.id }, class: "btn btn-secondary", aria: { label: "Add #{person.name} as Recipient" } %>
           </li>
         <% end %>
       </ul>

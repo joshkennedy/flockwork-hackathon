@@ -1,5 +1,5 @@
 class PlannerSession < ApplicationRecord
-  ERROR_MESSAGE = "The planner is taking a break — you can keep going by hand."
+  ERROR_MESSAGE = "The Planner is paused. You can keep going by hand."
   MAX_GENERATED_QUESTIONS = 3
   GENERATION_STATES = %w[idle queued running ready failed].freeze
 

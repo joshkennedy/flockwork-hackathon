@@ -85,7 +85,7 @@ export default class extends Controller {
       if (error.name === "AbortError" || version !== this.version) return
       this.resultsTarget.replaceChildren()
       toast.error("Search couldn’t load. Press Enter to try again.")
-      this.statusTarget.textContent = "Search unavailable"
+      this.statusTarget.textContent = "Search couldn’t load."
     } finally {
       if (version === this.version) {
         this.containerTarget.removeAttribute("aria-busy")

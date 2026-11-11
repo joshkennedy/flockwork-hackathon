@@ -11,6 +11,7 @@ class ProjectDigestMailer < ApplicationMailer
     return unless self.class.eligible?(project, person)
 
     @project = project
+    @person = person
     @risk = ProjectRisk.new(project)
     @url = project_url(project)
     mail to: person.email, subject: "Weekly update for #{project.name}"

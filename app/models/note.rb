@@ -35,12 +35,12 @@ class Note < ApplicationRecord
       notable_organization_id = project&.organization_id || (notable.organization_id if notable.is_a?(Person))
       return if notable_organization_id == organization_id
 
-      errors.add(:notable, "must belong to the same Organization")
+      errors.add(:notable, "must belong to the same church")
     end
 
     def author_belongs_to_organization
       return if author&.organization_id == organization_id
 
-      errors.add(:author, "must belong to the same Organization")
+      errors.add(:author, "must belong to the same church")
     end
 end

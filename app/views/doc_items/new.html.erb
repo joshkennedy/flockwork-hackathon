@@ -1,7 +1,7 @@
-<% content_for :title, "New #{@doc_item.kind.humanize}" %>
+<% content_for :title, "Add #{@doc_item.kind.humanize.downcase}" %>
 
 <div class="w-full max-w-2xl">
-  <%= page_header "New #{@doc_item.kind.humanize.downcase}" %>
+  <%= page_header "Add #{@doc_item.kind.humanize.downcase}" %>
 
   <div class="mt-7">
     <%= render "form", project: @project, doc_item: @doc_item %>

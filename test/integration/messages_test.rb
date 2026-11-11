@@ -82,7 +82,7 @@ class MessagesTest < ActionDispatch::IntegrationTest
     assert_match "Late reply", response.body
 
     assert_select "section[aria-labelledby='tool-messages']" do
-      assert_select ".message-composer textarea[name='message[body]'][placeholder='Write a Message']"
+      assert_select ".message-composer textarea[name='message[body]'][placeholder='Write a message']"
       assert_select "trix-editor", count: 0
       assert_select ".message-thread"
       bodies = css_select("[data-message-body]").map { |node| node.text.squish }

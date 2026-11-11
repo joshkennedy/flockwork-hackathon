@@ -10,7 +10,7 @@
   when "slot"
     date = fields["date"].present? ? planner_date(fields["date"]) : "Date to choose"
     session = planner_schedule_item_label(planner_session, fields["schedule_item_source_key"])
-    [ date, (planner_time(fields["time"]) if fields["time"].present?), pluralize(fields.fetch("capacity", 1), "spot"), ("Session: #{session}" if session) ]
+    [ date, (planner_time(fields["time"]) if fields["time"].present?), pluralize(fields.fetch("capacity", 1), "spot"), ("Schedule item: #{session}" if session) ]
   when "booking", "purchase"
     estimate = fields["estimated_dollars"]
     [ estimate.present? ? number_to_currency(estimate) : "Estimate unknown" ]

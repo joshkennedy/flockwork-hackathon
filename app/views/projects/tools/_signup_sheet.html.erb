@@ -11,9 +11,9 @@
         <div class="split-button">
           <%= link_to new_project_slot_path(project), class: "btn btn-secondary btn-sm split-button-main", data: { action: "slideout#open", slideout_title_param: "Add Slot" } do %><%= icon(:plus) %>Add Slot<% end %>
           <details class="actions-menu relative">
-            <summary class="btn btn-secondary btn-sm split-button-menu" aria-label="More Slot options" title="More Slot options"><%= icon(:more) %></summary>
+            <summary class="btn btn-secondary btn-sm split-button-menu" aria-label="Actions for Sign-up sheet" title="Actions for Sign-up sheet"><%= icon(:more) %></summary>
             <div class="actions-menu-panel popover-in">
-              <%= link_to "Generate Multiple Slots", new_project_slot_run_path(project), data: { action: "dialog#open" } %>
+              <%= link_to "Add Multiple Slots", new_project_slot_run_path(project), data: { action: "dialog#open" } %>
             </div>
           </details>
         </div>
@@ -22,8 +22,8 @@
           <div class="modal-panel">
             <div class="flex items-start justify-between gap-5">
               <div>
-                <h2>Generate Multiple Slots</h2>
-                <p class="mt-2 text-meta text-ink-2">Create one Slot for every day in a date range. Each Slot will use the same time, label, and capacity.</p>
+                <h2>Add multiple Slots</h2>
+                <p class="mt-2 text-meta text-ink-2">Add one Slot for every day in a date range. Each Slot will use the same time, label, and capacity.</p>
               </div>
               <button type="button" class="btn btn-icon shrink-0" aria-label="Close" data-action="dialog#close"><%= icon(:close) %></button>
             </div>
@@ -38,7 +38,7 @@
     <div class="mt-5 space-y-6">
       <% if past.any? %>
         <details data-signup-past>
-          <%= disclosure_summary "Past Slots", meta: "#{pluralize(past.size, "slot")}#{", all filled" if past.all?(&:full?)}", class: "disclosure-bar" %>
+          <%= disclosure_summary "Past Slots", meta: "#{pluralize(past.size, "Slot")}#{", all filled" if past.all?(&:full?)}", class: "disclosure-bar" %>
           <ul class="mt-2"><%= render partial: "projects/tools/signup_slot", collection: past, as: :slot, locals: { project: } %></ul>
         </details>
       <% end %>
@@ -54,7 +54,7 @@
       <% if later.any? %>
         <%# Kept open when nothing nearer exists, so a far-off sheet is never hidden behind a click. %>
         <details data-signup-later <%= "open" if this_week.empty? && next_week.empty? %>>
-          <%= disclosure_summary "Later Slots", meta: "#{pluralize(later.size, "slot")}, #{pluralize(later.sum { |slot| [ slot.capacity - slot.claims_count, 0 ].max }, "spot")} open", class: "disclosure-bar" %>
+          <%= disclosure_summary "Later Slots", meta: "#{pluralize(later.size, "Slot")}, #{pluralize(later.sum { |slot| [ slot.capacity - slot.claims_count, 0 ].max }, "spot")} left", class: "disclosure-bar" %>
           <ul class="mt-2"><%= render partial: "projects/tools/signup_slot", collection: later, as: :slot, locals: { project: } %></ul>
         </details>
       <% end %>

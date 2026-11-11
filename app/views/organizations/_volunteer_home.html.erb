@@ -23,7 +23,7 @@
     <% if @open_slots_by_project.any? %>
       <%= render "shared/open_needs", open_slots_by_project: @open_slots_by_project %>
     <% else %>
-      <p class="mt-2 text-meta text-ink-2">Every spot this week is covered.</p>
+      <p class="mt-2 text-meta text-ink-2">Every spot this week is filled.</p>
     <% end %>
   </section>
 
@@ -43,7 +43,7 @@
                 <p class="mt-0.5 text-meta text-ink-2"><%= project.description %></p>
               <% end %>
             </div>
-            <%= link_to "See What’s Needed", project_path(project), class: "btn btn-secondary self-start max-sm:w-full" %>
+            <%= link_to "See What’s Needed", project_path(project), class: "btn btn-secondary self-start max-sm:w-full", aria: { label: "See What’s Needed for #{project.name}" } %>
           </li>
         <% end %>
       </ul>

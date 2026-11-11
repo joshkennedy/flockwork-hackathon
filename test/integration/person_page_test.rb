@@ -83,7 +83,7 @@ class PersonPageTest < ActionDispatch::IntegrationTest
     assert_select "span.status-chip", text: "Leader"
 
     get person_path(people(:other_volunteer))
-    assert_select "span.status-chip-need", text: "Never asked"
+    assert_select "span.status-chip-need", text: "Not yet asked"
   end
 
   test "the notes form posts to the person page and forces Admins visibility" do

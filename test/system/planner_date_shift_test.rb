@@ -20,7 +20,7 @@ class PlannerDateShiftSystemTest < ApplicationSystemTestCase
     assert_equal original_date, project.reload.starts_on
     click_button "Keep"
     assert_text "Currently kept"
-    click_button "Accept All Kept and Edited"
+    click_button "Add Kept and Edited to Project"
     assert_current_path project_path(project)
     assert_equal original_date + 7, project.reload.starts_on
   ensure

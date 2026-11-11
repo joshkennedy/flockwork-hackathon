@@ -2,7 +2,7 @@
 
 <div class="w-full max-w-4xl">
   <%= page_header @doc_item.title do %>
-    <%= link_to "Back", project_path(@project), class: "btn btn-secondary" %>
+    <%= link_to "Back to Project", project_path(@project), class: "btn btn-secondary" %>
     <%= link_to "Download", download_project_doc_item_path(@project, @doc_item), class: "btn btn-primary" %>
   <% end %>
 

@@ -34,7 +34,19 @@ en:
         start_on: "Start date"
   activerecord:
     attributes:
+      budget_line:
+        actual_cents: "Actual cost"
+        estimated_cents: "Estimated cost"
+      doc_item:
+        url: "URL"
       project:
         enabled_tools: "Tools"
         ends_on: "End date"
         starts_on: "Start date"
+      schedule_item:
+        ends_at_time: "End time"
+        starts_at_time: "Start time"
+      slot:
+        schedule_item: "Schedule item"
+      task:
+        assignee: "The person assigned"

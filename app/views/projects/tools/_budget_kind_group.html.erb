@@ -2,8 +2,8 @@
   <div class="flex flex-wrap items-baseline justify-between gap-2">
     <h3 class="text-ink-2"><%= kind_label %></h3>
     <p class="text-meta text-ink-2">
-      Est. <%= BudgetLine.format_cents(totals[:estimated_cents]) %>
-      · Act. <%= BudgetLine.format_cents(totals[:actual_cents]) %>
+      Estimated <%= BudgetLine.format_cents(totals[:estimated_cents]) %>
+      · Actual <%= BudgetLine.format_cents(totals[:actual_cents]) %>
     </p>
   </div>
 
@@ -15,8 +15,8 @@
             <div>
               <span class="block font-semibold"><%= line.description %></span>
               <span class="mt-1 block text-meta text-ink-2">
-                Est. <%= line.estimated_cents.nil? ? "Estimate unknown" : BudgetLine.format_cents(line.estimated_cents) %>
-                · Act. <%= line.actual_cents.nil? ? "" : BudgetLine.format_cents(line.actual_cents) %>
+                <%= line.estimated_cents.nil? ? "Estimate unknown" : "Estimated #{BudgetLine.format_cents(line.estimated_cents)}" %>
+                · <%= line.actual_cents.nil? ? "Actual not recorded" : "Actual #{BudgetLine.format_cents(line.actual_cents)}" %>
                 · <%= line.status.humanize %>
                 <% if line.responsible_person.present? %>
                   · <%= person_pill(line.responsible_person) %>
@@ -28,7 +28,7 @@
                 <%= actions_menu("Actions for #{line.description}") do %>
                   <%= link_to "Edit", edit_project_budget_line_path(project, line) %>
                   <hr>
-                  <%= button_to "Delete", project_budget_line_path(project, line), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete “#{line.description}”?" } } %>
+                  <%= button_to "Delete", project_budget_line_path(project, line), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete “#{line.description}”? Its comments are deleted too." } } %>
                 <% end %>
               <% end %>
               <% if Policy.can?(Current.person, :update_budget_line_status, line) %>
@@ -41,6 +41,6 @@
       <% end %>
     </ul>
   <% else %>
-    <p class="mt-3 text-meta text-ink-2">No <%= kind_label.downcase %> yet</p>
+    <p class="mt-3 text-meta text-ink-2">No <%= kind_label %> yet</p>
   <% end %>
 </div>

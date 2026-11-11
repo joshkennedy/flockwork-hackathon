@@ -41,9 +41,9 @@ module ProjectsHelper
     items << [ "When", project_date_range(project.starts_on, project.ends_on) ] if project.starts_on || project.ends_on
 
     if project.enabled_tools.include?("signup_sheet") && (slots = project.slots.to_a).any?
-      items << [ "Covered", "#{slots.sum(&:claims_count)} of #{pluralize(slots.sum(&:capacity), SlotsHelper.count_noun(slots))}" ]
+      items << [ "Filled", "#{slots.sum(&:claims_count)} of #{pluralize(slots.sum(&:capacity), SlotsHelper.count_noun(slots))}" ]
       next_open = upcoming_open_slots(slots).first
-      items << [ "Next open", next_open ? next_open.date.strftime("%a, %b %-d") : "All covered" ]
+      items << [ "Next open", next_open ? next_open.date.strftime("%a, %b %-d") : "All filled" ]
     elsif project.enabled_tools.include?("tasks") && (open_tasks = project.tasks.open.to_a).any?
       items << [ "Assigned", "#{open_tasks.count(&:assignee_id)} of #{pluralize(open_tasks.size, "open task")}" ]
       next_due = open_tasks.select(&:due_on).min_by(&:due_on)
@@ -80,7 +80,7 @@ module ProjectsHelper
         return {
           kind: :spots,
           title: noun == "spot" ? "#{pluralize(spots, "spot")} still open" : "#{pluralize(spots, noun)} still #{spots == 1 ? "needs" : "need"} someone",
-          detail: next_slot && "#{next_slot.date.strftime("%A, %B %-d")} is the next open spot.",
+          detail: next_slot && "#{next_slot.date.strftime("%A, %B %-d")} is the next open Slot.",
           slot: next_slot
         }
       end

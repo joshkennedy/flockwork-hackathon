@@ -2,7 +2,7 @@
 
 <%= mail_heading "Sign in to Flockwork" %>
 <%= mail_paragraph "Hi #{@person.name}, here's the link you asked for. There's no password to remember." %>
-<%= mail_button "Sign in", @url %>
+<%= mail_button "Sign In", @url %>
 <%= mail_muted "The link works once and expires in 15 minutes. If you didn't ask for it, you can ignore this email; nobody can sign in without the link." %>
 <%= mail_muted do %>
   Button not working? Paste this into your browser:<br>

@@ -235,7 +235,7 @@ class Project < ApplicationRecord
       change = attachment_changes["banner"]
       return unless change.is_a?(ActiveStorage::Attached::Changes::CreateOne)
 
-      errors.add(:banner, "must be a JPEG, PNG, WebP, or HEIC image") unless banner_bytes_type(change.attachable).in?(BANNER_TYPES)
+      errors.add(:banner, "must be a JPEG, PNG, WebP or HEIC image") unless banner_bytes_type(change.attachable).in?(BANNER_TYPES)
       errors.add(:banner, "must be 10 MB or smaller") if change.blob.byte_size > BANNER_MAX_BYTES
     end
 

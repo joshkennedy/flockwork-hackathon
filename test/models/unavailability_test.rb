@@ -17,7 +17,7 @@ class UnavailabilityTest < ActiveSupport::TestCase
     other = Unavailability.new(organization: organizations(:grace_fellowship), person: @person, starts_on: Date.current, ends_on: Date.current)
 
     assert_not other.valid?
-    assert_includes other.errors[:person], "must belong to the same Organization"
+    assert_includes other.errors[:person], "must belong to the same church"
   end
 
   test "a note is capped" do
@@ -50,6 +50,6 @@ class UnavailabilityTest < ActiveSupport::TestCase
     away = Unavailability.new(starts_on: Date.new(2026, 11, 1), ends_on: Date.new(2026, 11, 9))
 
     assert_equal "Away until Nov 9", away.away_label(Date.new(2026, 11, 2))
-    assert_equal "Unavailable Nov 1 to 9", away.away_label(Date.new(2026, 10, 1))
+    assert_equal "Away Nov 1 to 9", away.away_label(Date.new(2026, 10, 1))
   end
 end

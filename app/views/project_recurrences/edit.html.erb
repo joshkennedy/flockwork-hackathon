@@ -10,7 +10,14 @@
     <p class="mt-4 text-meta text-ink-2">Dates repeat from <%= (@recurrence.anchor_on || @project.starts_on).strftime("%B %-d, %Y") %>. Copies are created only while this Project is active and the person who saved this rule can still lead it.</p>
     <%= form_with model: @recurrence, url: project_recurrence_path(@project), method: :patch, class: "mt-6 space-y-5" do |form| %>
       <% if @recurrence.errors.any? %>
-        <p role="alert" class="text-meta text-danger"><%= @recurrence.errors.full_messages.to_sentence %></p>
+        <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
+          <p class="font-semibold">Fix these to continue:</p>
+          <ul class="mt-2 list-disc space-y-1 pl-5 text-meta">
+            <% @recurrence.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
       <% end %>
       <div>
         <%= form.label :frequency, "Repeat", class: "block text-label font-medium text-ink-2" %>
@@ -21,7 +28,7 @@
         <%= form.label :enabled, "Create upcoming copies automatically", class: "text-body text-ink" %>
       </div>
       <p class="text-meta text-ink-2">Turning this off keeps copies already created. Monthly copies keep the original day when possible.</p>
-      <%= form.submit "Save Repetition", class: "btn btn-primary" %>
+      <%= form.submit "Save Repeat Settings", class: "btn btn-primary" %>
     <% end %>
   <% end %>
 </div>

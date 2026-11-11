@@ -83,7 +83,7 @@ class ListColumn < ApplicationRecord
       return unless will_save_change_to_column_type?
       return unless list.rows.pluck(:cells).any? { |cells| cells[id.to_s].present? }
 
-      errors.add(:base, "Clear this column before changing its type")
+      errors.add(:base, "Delete the values in this column first, then change its type.")
     end
 
     def swap_position_with!(neighbor)

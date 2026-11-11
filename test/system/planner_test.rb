@@ -124,7 +124,7 @@ class PlannerSystemTest < ApplicationSystemTestCase
     click_on "Review Suggestions"
     assert_selector "h1", text: "Review Suggestions"
     assert_text "Currently dropped"
-    click_button "Accept All", exact: true
+    click_button "Add All to Project", exact: true
 
     assert_current_path project_path(project)
     assert_text "Meal delivery team", count: 2

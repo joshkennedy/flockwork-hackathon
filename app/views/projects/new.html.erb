@@ -3,7 +3,7 @@
   <% content_for :breadcrumbs do %>
     <%= link_to "Start a Project", new_project_path, class: "shrink-0 whitespace-nowrap hover:text-ink" %>
     <span aria-hidden="true" class="shrink-0 text-ink-3">/</span>
-    <span class="truncate text-ink" aria-current="page">Build It Myself</span>
+    <span class="truncate text-ink" aria-current="page">Build it yourself</span>
   <% end %>
 <% end %>
 
@@ -51,7 +51,7 @@
             <% end %>
           </details>
         </div>
-        <%= link_to "Skip the Planner and build it yourself", new_project_path(manual: true), class: "mt-5 inline-flex min-h-11 items-center link text-meta text-ink-2" %>
+        <%= link_to "Build it yourself", new_project_path(manual: true), class: "mt-5 inline-flex min-h-11 items-center link text-meta text-ink-2" %>
       <% end %>
     </div>
   <% end %>

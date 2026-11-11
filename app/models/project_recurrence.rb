@@ -46,6 +46,6 @@ class ProjectRecurrence < ApplicationRecord
     def creator_can_duplicate
       return if project && creator && Policy.can?(creator, :duplicate, project)
 
-      errors.add(:creator, "must be a current Leader or Admin for this Project")
+      errors.add(:creator, "The person who set this up is no longer a Leader or Admin. Ask a Leader to save it again.")
     end
 end

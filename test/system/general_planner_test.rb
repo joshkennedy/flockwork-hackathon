@@ -63,7 +63,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
       assert_text "Supply checklist"
     end
 
-    click_button "Finish with This"
+    click_button "Finish and Review"
     assert_no_text "Here’s what will be added"
     assert_selector "li[aria-current='step']", text: "Review and add"
     assert_selector "li[data-step-state='done']", text: "1 answer"
@@ -90,7 +90,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     section_top = page.evaluate_script("document.querySelector('[aria-labelledby=tool-tasks]').getBoundingClientRect().top")
     assert_operator section_top, :>=, 0
     assert_operator section_top, :<, page.evaluate_script("window.innerHeight")
-    find("summary[aria-label='More project actions']").click
+    find("summary[aria-label='Actions for #{planner_session.project.reload.name}']").click
     assert_link "Rename", href: edit_project_path(planner_session.project)
   end
 
@@ -105,7 +105,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     click_button "Preparation"
     assert_text "Preview updated. Continue when ready."
     assert_no_text "Choose a Project start date or a due date"
-    click_button "Finish with This"
+    click_button "Finish and Review"
     fill_in "Workday date", with: "2027-04-10"
     assert_text "Due April 9, 2027"
     click_button "Add to Project"
@@ -135,7 +135,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
 
     click_button "Preparation"
     assert_text "Preview updated. Continue when ready."
-    click_button "Finish with This"
+    click_button "Finish and Review"
     assert_selector "li[aria-current='step']", text: "Review and add"
     assert_no_text "Here’s what will be added"
     fill_in "Project name", with: "Saturday workday"
@@ -156,7 +156,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     click_button "Class"
     click_button "Prepare the first lesson"
     assert_text "Preview updated. Continue when ready."
-    click_button "Finish with This"
+    click_button "Finish and Review"
 
     assert_field "First class date"
     assert_button "Add to Project", disabled: true
@@ -186,7 +186,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     click_button "Class"
     click_button "Set the schedule"
     assert_text "Preview updated. Continue when ready."
-    click_button "Finish with This"
+    click_button "Finish and Review"
 
     assert_no_field "First class date"
     assert_text "Fix the highlighted item to add"

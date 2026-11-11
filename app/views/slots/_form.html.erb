@@ -3,7 +3,7 @@
       data: { controller: "slot-session", turbo_frame: ("_top" unless request.headers["Turbo-Frame"] == "slot-form") } do |form| %>
   <% if slot.errors.any? %>
     <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
-      <p class="font-semibold">Please fix the following:</p>
+      <p class="font-semibold">Fix these to continue:</p>
       <ul class="mt-2 list-disc space-y-1 pl-5 text-meta">
         <% slot.errors.full_messages.each do |message| %>
           <li><%= message %></li>
@@ -19,13 +19,13 @@
 
   <% if project.enabled_tools.include?("schedule") && project.schedule_items.exists? %>
     <div>
-      <%= form.label :schedule_item_id, "Session", class: "block text-label font-medium text-ink" %>
+      <%= form.label :schedule_item_id, "Schedule item", class: "block text-label font-medium text-ink" %>
       <% session_options = project.schedule_items.chronological.map do |item|
            [ "#{item.title} · #{item.date.strftime('%b %-d, %Y')}", item.id, { data: { date: item.date.iso8601 } } ]
          end %>
-      <%= form.select :schedule_item_id, options_for_select([[ "No session", "" ]] + session_options, slot.schedule_item_id), {},
+      <%= form.select :schedule_item_id, options_for_select([[ "No Schedule item", "" ]] + session_options, slot.schedule_item_id), {},
             class: "mt-2 block w-full field", data: { slot_session_target: "session", action: "slot-session#sync" } %>
-      <p class="mt-2 text-meta text-ink-2">Linked roles follow the session date.</p>
+      <p class="mt-2 text-meta text-ink-2">Linked Slots follow the Schedule item’s date.</p>
     </div>
   <% end %>
 
@@ -44,5 +44,5 @@
     <%= form.number_field :capacity, min: 1, required: true, class: "mt-2 block w-full field" %>
   </div>
 
-  <%= form.submit slot.persisted? ? "Update Slot" : "Create Slot", class: "btn btn-primary" %>
+  <%= form.submit slot.persisted? ? "Save Slot" : "Add Slot", class: "btn btn-primary" %>
 <% end %>

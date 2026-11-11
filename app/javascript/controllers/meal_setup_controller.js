@@ -127,7 +127,7 @@ export default class extends Controller {
         this.addable = result.addable
         this.addTarget.disabled = !result.addable || !!editing
         this.showEditingHint(editing)
-        this.statusTarget.textContent = "Details saved"
+        this.statusTarget.textContent = "Changes saved"
       }
       return true
     } catch (error) {
@@ -184,7 +184,7 @@ export default class extends Controller {
 
   showEditingHint(editor) {
     this.editingHintTarget.hidden = !editor
-    this.editingHintTarget.textContent = editor ? "Save or cancel the meal you’re editing before adding the sheet." : ""
+    this.editingHintTarget.textContent = editor ? "Save or cancel the meal you’re editing before adding Meal Slots." : ""
     if (!editor && this.focusAfterEdit) {
       document.getElementById(this.focusAfterEdit)?.querySelector("summary")?.focus()
       this.focusAfterEdit = null

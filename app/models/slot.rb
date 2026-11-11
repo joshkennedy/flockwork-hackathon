@@ -64,6 +64,6 @@ class Slot < ApplicationRecord
       current_claims = slot_claims.count
       return if capacity >= current_claims
 
-      errors.add(:capacity, "cannot be less than the current #{current_claims} claims")
+      errors.add(:capacity, "can't go below #{current_claims} #{"person".pluralize(current_claims)} already signed up")
     end
 end

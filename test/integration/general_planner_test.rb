@@ -194,7 +194,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     perform_enqueued_jobs(only: PlannerStepJob)
     get project_planner_session_path(project, planner_session)
     assert_select "button.btn-primary:not([disabled])", text: "Continue"
-    assert_select "button", text: "Finish with This"
+    assert_select "button", text: "Finish and Review"
   end
 
   test "a full snapshot previews and atomically accepts every provider item kind with explicit dates" do
@@ -460,7 +460,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_no_difference -> { project.tasks.count } do
       post accept_project_planner_session_path(project, planner_session), params: { expected_revision: stale_revision }
     end
-    assert_match(/changed in another request/, flash[:alert])
+    assert_match(/changed in another tab/, flash[:alert])
 
     before_count = project.tasks.count
     post accept_project_planner_session_path(project, planner_session), params: {

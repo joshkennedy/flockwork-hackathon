@@ -64,7 +64,7 @@
                   <button type="button" class="btn btn-secondary btn-sm" data-action="banner-focus#cancel">Cancel</button>
                   <%= form.hidden_field :banner_focus_x, data: { banner_focus_target: "x" } %>
                   <%= form.hidden_field :banner_focus_y, data: { banner_focus_target: "y" } %>
-                  <%= form.submit "Save", class: "btn btn-primary min-h-control-h w-auto" %>
+                  <%= form.submit "Save Banner", class: "btn btn-primary min-h-control-h w-auto" %>
                 </div>
               <% end %>
             </div>
@@ -80,7 +80,7 @@
                 <% end %>
                 <p class="text-meta text-ink-2">Read aloud by screen readers. Describe the photo in a few words, or clear it to use the project name.</p>
                 <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
-                  <button type="button" class="btn btn-text" data-action="banner-focus#clearAlt">Clear</button>
+                  <button type="button" class="btn btn-text" data-action="banner-focus#clearAlt">Clear Alt Text</button>
                   <%= form.submit "Save Alt Text", class: "btn btn-secondary" %>
                 </div>
               <% end %>

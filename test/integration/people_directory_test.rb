@@ -76,10 +76,10 @@ class PeopleDirectoryTest < ActionDispatch::IntegrationTest
       assert_select "span.status-chip-need", count: 0
     end
     assert_select "li", text: /Vera Volunteer/ do
-      assert_select "span.status-chip-need", text: "Never asked"
+      assert_select "span.status-chip-need", text: "Not yet asked"
     end
     assert_select "li", text: /Rowan Recipient/ do
-      assert_select "span.status-chip-need", text: "Never asked"
+      assert_select "span.status-chip-need", text: "Not yet asked"
       assert_select "span.status-chip", text: "Can't sign in"
     end
     assert_select "li", text: /Vic Volunteer/ do

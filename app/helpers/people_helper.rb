@@ -9,7 +9,7 @@ module PeopleHelper
     chips << tag.span("Leader", class: "status-chip") if leader
     chips << tag.span("Admin", class: "status-chip") if person.admin?
     chips << tag.span("Away until #{short_date(away_until)}", class: "status-chip") if away_until
-    chips << tag.span("Never asked", class: "status-chip status-chip-need") if never_asked
+    chips << tag.span("Not yet asked", class: "status-chip status-chip-need") if never_asked
     chips << tag.span("Can't sign in", class: "status-chip") unless person.can_sign_in?
     tag.span(safe_join(chips), class: "inline-flex min-w-0 flex-wrap items-center gap-1.5")
   end

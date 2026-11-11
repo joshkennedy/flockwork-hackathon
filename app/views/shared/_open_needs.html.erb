@@ -7,7 +7,7 @@
           <span class="block font-semibold text-ink"><%= project.name %></span>
           <span class="block text-meta text-ink-2">Next: <%= next_slot.label %> · <%= next_slot.date.strftime("%A, %B %-d") %></span>
         </span>
-        <span class="badge-need shrink-0"><%= pluralize(slots.sum { |slot| slot.capacity - slot.claims_count }, "spot") %> open</span>
+        <span class="badge-need shrink-0"><%= pluralize(slots.sum { |slot| slot.capacity - slot.claims_count }, "spot") %> left</span>
       <% end %>
     </li>
   <% end %>
