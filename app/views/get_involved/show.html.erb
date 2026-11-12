@@ -3,7 +3,7 @@
 <% joined, open = @projects.partition { |project| @joined_ids.include?(project.id) } %>
 
 <div class="w-full max-w-4xl">
-  <%= page_header "Get involved", subtitle: "Teams at #{Current.organization.name} that welcome anyone." %>
+  <%= page_header "Get involved" %>
 
   <% if @projects.any? %>
     <%# Discovery first: the few Projects short on people soonest, each a click through to sign up there. %>
@@ -11,7 +11,6 @@
     <section class="mt-7" aria-labelledby="needs-heading">
       <h2 id="needs-heading" class="text-ink">Open Sign-up spots</h2>
       <% if open_needs.any? %>
-        <p class="mt-1 text-meta text-ink-2">Upcoming Sign-up spots that still need someone.</p>
         <ul class="mt-3 grid gap-2">
           <% open_needs.each do |project, slots| %>
             <% open_spots = slots.sum { |slot| slot.capacity - slot.claims_count } %>
@@ -34,7 +33,7 @@
           <% end %>
         </ul>
       <% else %>
-        <p class="mt-2 text-ink-2">No open Sign-up spots right now. Projects with unassigned Tasks are listed below.</p>
+        <p class="mt-2 text-ink-2">No open Sign-up spots right now.</p>
       <% end %>
     </section>
 
@@ -73,7 +72,7 @@
         </ul>
       </section>
     <% else %>
-      <p class="mt-7 text-ink-2">You’re on every open Team. Thank you for serving.</p>
+      <p class="mt-7 text-ink-2">You’re on every open Team.</p>
     <% end %>
 
     <% if joined.any? %>
@@ -102,7 +101,7 @@
   <% else %>
     <div class="panel mt-7 p-6">
       <p class="text-ink">No open Teams right now.</p>
-      <p class="mt-1 text-meta text-ink-2">When a Team opens its doors to new helpers, you’ll find it here. Until then, ask a Leader where help is needed.</p>
+      <p class="mt-1 text-meta text-ink-2">Ask a Leader where help is needed.</p>
     </div>
   <% end %>
 </div>

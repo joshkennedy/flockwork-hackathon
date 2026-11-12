@@ -7,7 +7,6 @@
         <span><span class="block font-medium"><%= label %></span><span class="block text-meta text-ink-2">Page</span></span>
       <% end %>
     <% end %>
-    <p class="search-caption">Search projects, people, tasks, slots, schedule and docs by name or title.</p>
   <% elsif pages.empty? && results.values.all?(&:empty?) %>
     <div class="search-empty"><p class="font-medium">No results for “<%= query %>”</p><p class="mt-1 text-meta text-ink-2">Try a shorter name or a different word. Only work you can access is searched.</p></div>
   <% else %>

@@ -15,7 +15,7 @@
       <div id="meal-preview-list" class="planner-tool-groups">
         <% visible_items.group_by { |item| planner_pending_tool(item) }.each do |tool, items| %>
           <section class="planner-tool-group" aria-labelledby="pending-tool-<%= tool %>">
-            <h3 id="pending-tool-<%= tool %>" class="planner-tool-heading"><%= planner_tool_icon(tool) %><%= planner_tool_label(tool) %></h3>
+            <h3 id="pending-tool-<%= tool %>" class="planner-tool-heading"><%= planner_tool_label(tool) %></h3>
             <div class="meal-preview-list">
               <% items.each do |item| %>
                 <%= render "planner_sessions/pending_item", project:, planner_session:, item:, pending_errors: %>

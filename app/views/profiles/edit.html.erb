@@ -12,7 +12,7 @@
     <nav class="flex gap-1 overflow-x-auto md:flex-col md:gap-0.5" aria-label="Profile sections">
       <% sections.each_with_index do |(name, label, symbol), index| %>
         <%= link_to "#profile-#{name}", class: "nav-item shrink-0", aria: { current: index.zero? }, data: { tabs_target: "tab", tabs_name: name, action: "tabs#select" } do %>
-          <%= icon(symbol) %><span><%= label %></span>
+          <span><%= label %></span>
         <% end %>
       <% end %>
     </nav>
@@ -42,16 +42,15 @@
           </div>
 
           <%= render "shared/skills_field", form:, attribute: :skills, legend: "Your skills",
-            hint: "Leaders may suggest you for Projects that need these. They see only the skills that match." %>
+            hint: "Leaders see only the skills that match their Project." %>
 
           <%= form.submit "Save Changes", class: "btn btn-primary" %>
         </section>
 
         <section id="profile-notifications" class="space-y-4" data-tabs-target="panel" data-tabs-name="notifications" aria-label="Notifications" hidden>
           <fieldset>
-            <legend class="text-body-phone sm:text-body font-semibold text-ink">Notification delivery</legend>
-            <p id="notification-channels-hint" class="mt-1 text-meta text-ink-2">Choose any combination for each type. Leave a row unchecked to turn it off. Changes apply to new notifications.</p>
-            <table class="mt-5 w-full table-fixed text-meta" aria-describedby="notification-channels-hint">
+            <legend class="sr-only">Notification delivery</legend>
+            <table class="mt-5 w-full table-fixed text-meta">
               <caption class="sr-only">Delivery channels for each notification type</caption>
               <colgroup><col class="w-[46%]"><col><col><col></colgroup>
               <thead>
@@ -99,7 +98,6 @@
       <div id="profile-appearance" data-tabs-target="panel" data-tabs-name="appearance" hidden>
         <fieldset class="space-y-3" data-controller="appearance" data-action="change->appearance#pick">
           <legend class="text-body-phone font-semibold text-ink sm:text-body">Appearance on this device</legend>
-          <p class="text-meta text-ink-2">Only this browser changes. Your church's theme color stays the same.</p>
           <div class="grid grid-cols-3 gap-2 sm:max-w-md">
             <% [["Light", "light"], ["Dark", "dark"], ["Match device", "system"]].each do |label, value| %>
               <label class="tile-raised flex cursor-pointer items-center justify-center px-3 py-2.5 text-button has-[:checked]:border-ink has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ink">

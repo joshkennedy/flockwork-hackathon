@@ -2,7 +2,7 @@
 
 <div class="w-full max-w-xl">
   <%= page_header "Weekly emails" %>
-  <p class="mt-4 text-body text-ink-2">Receive one weekly update for each active Project you lead, with open spots, overdue tasks, and unanswered invitations.</p>
+  <p class="mt-4 text-body text-ink-2">One email for each active Project you lead: open spots, overdue tasks and unanswered invitations.</p>
 
   <%= form_with scope: :digest, url: digest_preferences_path, method: :patch, class: "mt-6 space-y-5" do |form| %>
     <% if @person.errors.any? %>

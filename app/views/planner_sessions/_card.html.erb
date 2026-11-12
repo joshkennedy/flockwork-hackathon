@@ -40,14 +40,12 @@
       </div>
     <% elsif planner_session.reviewing? %>
       <h1 id="planner-question" class="text-ink">Your plan is ready to review</h1>
-      <p class="mt-4 text-ink-2">Check every Suggestion before anything is added to the Project.</p>
       <%= link_to "Review Suggestions", review_project_planner_session_path(project, planner_session), data: { turbo_frame: "_top" }, class: "mt-7 btn btn-primary" %>
     <% elsif planner_session.last_error.present? %>
       <h1 id="planner-question" class="text-ink">The Planner is paused</h1>
       <p class="mt-4 text-ink-2">Review the Suggestions already created, or return to the Project and keep building by hand.</p>
     <% else %>
       <h1 id="planner-question" class="text-ink">Thinking…</h1>
-      <p class="mt-4 text-ink-2">The Planner is shaping the next question and updating your Suggestions.</p>
     <% end %>
 
     <% if planner_session.asking? %>

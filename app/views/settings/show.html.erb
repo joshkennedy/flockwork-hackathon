@@ -17,7 +17,7 @@
         data: { controller: "theme-picker", action: "change->theme-picker#pick", theme_picker_default_value: Organization::DEFAULT_MARK_COLOR } do |form| %>
     <fieldset class="space-y-4">
       <legend class="text-heading font-semibold text-ink">Theme</legend>
-      <p class="text-meta text-ink-2">Colors the lead bird in the Flockwork mark, in the sidebar and the browser tab. Changes save as you pick.</p>
+      <p class="text-meta text-ink-2">Colors the lead bird in the Flockwork mark. Saves as you pick.</p>
 
       <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <% Organization::MARK_PRESETS.each do |name, color| %>

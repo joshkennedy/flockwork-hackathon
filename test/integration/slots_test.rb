@@ -144,7 +144,7 @@ class SlotsTest < ActionDispatch::IntegrationTest
     assert_select ".split-button summary[aria-label='Actions for Sign-up sheet']"
     assert_select ".actions-menu-panel a[data-action='dialog#open']", text: "Add Multiple Slots"
     assert_select "dialog.modal h2", text: "Add multiple Slots"
-    assert_select "dialog.modal", text: /one Slot for every day in a date range/
+    assert_select "dialog.modal", text: /One Slot for every day in the range/
     assert_select "dialog.modal form[action=?]", project_slot_run_path(project)
     assert_select "dialog.slideout turbo-frame#slot-form[data-slideout-target='frame']"
     assert_select "dialog.slideout turbo-frame#slot-form[data-action='turbo:submit-end->slideout#submitted']"

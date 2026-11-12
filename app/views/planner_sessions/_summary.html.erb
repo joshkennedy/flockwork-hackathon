@@ -14,7 +14,7 @@
         <% visible_suggestions.group_by { |suggestion| suggestion.fetch("kind") }.each do |kind, suggestions| %>
           <section aria-label="<%= Planner::SuggestionKinds.label(kind) %>">
             <% symbol, color = { "task" => [ :tasks, "text-tool-tasks" ], "schedule_item" => [ :schedule, "text-tool-schedule" ], "slot_run" => [ :people, "text-tool-signup" ], "booking" => [ :budget, "text-tool-budget" ], "purchase" => [ :budget, "text-tool-budget" ], "list" => [ :list, "text-tool-list" ] }.fetch(kind, [ :projects, "text-tool-docs" ]) %>
-            <h3 class="flex items-center gap-2 text-label font-medium text-ink"><%= icon(symbol, class: color) %> <span><%= Planner::SuggestionKinds.label(kind) %> <span class="text-ink-2"><%= suggestions.length %></span></span></h3>
+            <h3 class="flex items-center gap-2 text-label font-medium text-ink"><span><%= Planner::SuggestionKinds.label(kind) %> <span class="text-ink-2"><%= suggestions.length %></span></span></h3>
             <ul class="mt-2 space-y-2">
               <% suggestions.each do |suggestion| %>
                 <li class="suggestion tile-ghost p-3 <%="kept" if %w[kept edited].include?(suggestion.fetch("status")) %>">

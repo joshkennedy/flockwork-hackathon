@@ -4,8 +4,9 @@
 <% others = selected - Skills.suggested_keys %>
 <fieldset>
   <legend class="text-body-phone sm:text-body font-semibold text-ink"><%= legend %></legend>
-  <% hint_id = form.field_id(attribute, :hint) %>
-  <p id="<%= hint_id %>" class="mt-1 text-meta text-ink-2"><%= hint %></p>
+  <% hint = local_assigns[:hint] %>
+  <% hint_id = form.field_id(attribute, :hint) if hint %>
+  <% if hint %><p id="<%= hint_id %>" class="mt-1 text-meta text-ink-2"><%= hint %></p><% end %>
   <%= hidden_field_tag name, "", id: nil %>
   <div class="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-2">
     <% Skills::SUGGESTED.each do |skill| %>

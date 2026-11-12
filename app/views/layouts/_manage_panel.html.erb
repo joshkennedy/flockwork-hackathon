@@ -1,7 +1,7 @@
 <div class="popover-in account-sheet <%= local_assigns[:class] %>">
   <% manage.each do |label, path, symbol| %>
     <%= link_to path, class: "account-item", aria: { current: ("page" if navigation_current?(path)) } do %>
-      <%= icon(symbol) %><span><%= label %></span>
+      <span><%= label %></span>
     <% end %>
   <% end %>
 </div>

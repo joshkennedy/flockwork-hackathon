@@ -6,7 +6,7 @@
   <div class="mt-7 grid gap-7 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
     <section aria-labelledby="overextended-heading">
       <h2 id="overextended-heading">May need a check-in</h2>
-      <p class="mt-2 text-meta text-ink-2">Start with these people. They’re serving on <%= Current.organization.overextended_limit %> or more Active Projects and haven’t checked in recently.</p>
+      <p class="mt-2 text-meta text-ink-2">Serving on <%= Current.organization.overextended_limit %> or more Active Projects with no recent check-in.</p>
       <% if @overextended_people.any? %>
         <ul class="mt-3 grid gap-2">
           <% @overextended_people.each do |person| %>
@@ -33,7 +33,6 @@
 
     <section aria-labelledby="never-asked-heading">
       <h2 id="never-asked-heading">Not yet asked</h2>
-      <p class="mt-2 text-meta text-ink-2">These people have never been invited to a Project.</p>
       <% if @never_asked_people.any? %>
         <ul class="mt-2 divide-y divide-hairline">
           <%= render partial: "not_invited", collection: @never_asked_people.first(3), as: :person %>
@@ -96,7 +95,6 @@
   <% if @involvement %>
   <section class="mt-7" aria-labelledby="involvement-heading">
     <h2 id="involvement-heading" class="text-ink">Involvement in <%= @involvement_year %></h2>
-    <p class="mt-2 max-w-2xl leading-normal text-ink-2">Projects joined, Tasks completed, and Slots claimed this year.</p>
 
     <div class="mt-6 overflow-x-auto">
       <table class="w-full text-meta border-collapse text-left">

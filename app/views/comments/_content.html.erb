@@ -13,19 +13,15 @@
     </ol>
   <% end %>
 
-  <div class="flex min-h-8 items-center justify-between gap-3 text-meta text-ink-2">
-    <% if follow %>
+  <% if follow %>
+    <div class="flex min-h-8 items-center justify-between gap-3 text-meta text-ink-2">
       <span>Following this thread</span>
       <%= button_to "Unfollow",
             project_follow_path(project, follow),
             method: :delete,
             class: "btn btn-text" %>
-    <% elsif can_comment %>
-      <span>Comment or get mentioned to follow</span>
-    <% else %>
-      <span>Get mentioned to follow</span>
-    <% end %>
-  </div>
+    </div>
+  <% end %>
 
   <% if can_comment %>
     <%= form_with model: [ project, Comment.new ], id: "comment_form_#{commentable.model_name.singular}_#{commentable.id}", class: "min-w-0 space-y-3", data: { turbo_permanent: true, controller: "comment-form", action: "turbo:submit-end->comment-form#submitted" } do |form| %>

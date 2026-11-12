@@ -72,7 +72,7 @@ class GetInvolvedTest < ActionDispatch::IntegrationTest
     get get_involved_path
 
     assert_select "p", text: "No open Teams right now."
-    assert_select "p", text: /When a Team opens its doors/
+    assert_select "p", text: "Ask a Leader where help is needed."
   end
 
   test "Get involved names open Sign-up spots separately from unassigned Tasks" do
@@ -85,7 +85,7 @@ class GetInvolvedTest < ActionDispatch::IntegrationTest
 
     get get_involved_path
 
-    assert_select "section[aria-labelledby='needs-heading'] p", text: "No open Sign-up spots right now. Projects with unassigned Tasks are listed below."
+    assert_select "section[aria-labelledby='needs-heading'] p", text: "No open Sign-up spots right now."
     assert_select "section[aria-labelledby='open-teams-heading'] .badge-need", text: "1 unassigned Task"
     assert_select "section[aria-labelledby='joined-teams-heading'] li", text: /1 of 1 dinner filled · all filled/
   end

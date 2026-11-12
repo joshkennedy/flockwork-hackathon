@@ -5,11 +5,11 @@
 <section class="tool-section" aria-labelledby="tool-signup-sheet" data-controller="slideout">
   <%= render "projects/tools/planner_arrival", tool: "signup_sheet" %>
   <div class="flex flex-wrap items-center justify-between gap-4">
-    <h2 id="tool-signup-sheet"><%= icon(:schedule, class: "text-tool-signup") %> <%= Project::TOOL_LABELS.fetch("signup_sheet") %></h2>
+    <h2 id="tool-signup-sheet"><%= Project::TOOL_LABELS.fetch("signup_sheet") %></h2>
     <% if Policy.can?(Current.person, :manage_slots, project) %>
       <div data-controller="dialog">
         <div class="split-button">
-          <%= link_to new_project_slot_path(project), class: "btn btn-secondary btn-sm split-button-main", data: { action: "slideout#open", slideout_title_param: "Add Slot" } do %><%= icon(:plus) %>Add Slot<% end %>
+          <%= link_to new_project_slot_path(project), class: "btn btn-secondary btn-sm split-button-main", data: { action: "slideout#open", slideout_title_param: "Add Slot" } do %>Add Slot<% end %>
           <details class="actions-menu relative">
             <summary class="btn btn-secondary btn-sm split-button-menu" aria-label="Actions for Sign-up sheet" title="Actions for Sign-up sheet"><%= icon(:more) %></summary>
             <div class="actions-menu-panel popover-in">
@@ -23,7 +23,7 @@
             <div class="flex items-start justify-between gap-5">
               <div>
                 <h2>Add multiple Slots</h2>
-                <p class="mt-2 text-meta text-ink-2">Add one Slot for every day in a date range. Each Slot will use the same time, label, and capacity.</p>
+                <p class="mt-2 text-meta text-ink-2">One Slot for every day in the range.</p>
               </div>
               <button type="button" class="btn btn-icon shrink-0" aria-label="Close" data-action="dialog#close"><%= icon(:close) %></button>
             </div>

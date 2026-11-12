@@ -6,7 +6,7 @@
 <% end %>
 
 <div class="w-full max-w-2xl">
-  <%= page_header "Import CSV", subtitle: "Upload a CSV with name, email, and phone columns. An optional skills column accepts comma-separated skills. Existing People are matched by email." %>
+  <%= page_header "Import CSV", subtitle: "Columns: name, email, phone, and optional skills separated by commas. Existing People are matched by email." %>
 
   <% alert = flash[:alert] %>
   <% flash.delete(:alert) %>

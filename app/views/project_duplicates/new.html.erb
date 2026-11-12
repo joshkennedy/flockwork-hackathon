@@ -8,7 +8,7 @@
 <% end %>
 
 <div class="w-full max-w-2xl">
-  <%= page_header "Duplicate #{@source.name}", subtitle: "Choose when the new Project starts. Every dated item will move by the same amount." %>
+  <%= page_header "Duplicate #{@source.name}", subtitle: "Every dated item moves by the same amount." %>
 
   <%= form_with model: @project_duplicate, url: project_duplicate_path(@source), class: "mt-7 space-y-6" do |form| %>
     <% if @project_duplicate.errors.any? %>

@@ -48,6 +48,7 @@
   --radius-tile: 16px;
   --radius-panel: 20px;
   --radius-device: 28px;
+  --radius-sheet: 28px;
   --spacing-1: 4px;
   --spacing-2: 8px;
   --spacing-3: 12px;
@@ -111,6 +112,8 @@
   --duration-keep: 180ms;
 }
 
+/* Signed-in pages on wider screens: the gap between major blocks, and the sheet gutter, open up to 40px. */
+@media (width >= 768px) { .app-shell { --spacing-7: 40px; } }
 /* Dark appearance: set per device (cookie or OS setting) as data-dark on <html>. Warm near-blacks, not inverted grays. */
 :root[data-dark] {
   color-scheme: dark;
@@ -306,7 +309,7 @@
     /* Floats in the content column, the wordmark lined up with the content's left edge. */
     .app-bar { @apply mx-auto grid max-w-page-w grid-cols-[1fr_auto_1fr] rounded-full bg-panel pl-7 pr-2 shadow-float; }
     /* Covers the gap above the pill once scrolled, fading out just below it (app_bar_controller). */
-    .app-bar-shell::before { content: ""; position: absolute; inset: 0 0 -20px; z-index: -1; background: linear-gradient(var(--color-panel) 60%, transparent); opacity: 0; pointer-events: none; transition: opacity var(--duration-hover); }
+    .app-bar-shell::before { content: ""; position: absolute; inset: 0 0 -20px; z-index: -1; background: linear-gradient(var(--color-frame) 60%, transparent); opacity: 0; pointer-events: none; transition: opacity var(--duration-hover); }
     .app-bar-shell[data-scrolled]::before { opacity: 1; }
     /* Dark panel and pill share a fill, so the pill takes a hairline edge to read as raised. */
     :root[data-dark] .app-bar { box-shadow: var(--shadow-float), 0 0 0 1px var(--color-border); }
@@ -336,7 +339,7 @@
   .comment-toggle { list-style: none; }
   .comment-toggle::-webkit-details-marker { display: none; }
   .guidance-strip { @apply flex flex-col gap-3 rounded-tile bg-sunlit-soft px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between; }
-  .status-strip { @apply grid grid-cols-2 rounded-tile border border-border bg-panel/75 sm:grid-cols-4; }
+  .status-strip { @apply grid grid-cols-2 rounded-tile border border-border bg-page sm:grid-cols-4; }
   .status-strip > div { @apply border-hairline px-4 py-3 max-sm:odd:border-r sm:not-last:border-r; }
   /* A linked cell is wholly clickable (the label's link stretches over it); a chevron, not an underline, says it goes somewhere. */
   .status-strip-linked { @apply relative first:rounded-l-tile last:rounded-r-tile; transition: background var(--duration-hover); }
@@ -351,8 +354,9 @@
   /* wash_controller gives each page its own blob layout and drifts there from the previous page's. */
   /* Phones: the page sits in an inset card on the frame. Wider: no card, so the wash anchors to the page top behind the bar. */
   .page-surface { @apply relative mx-2 mb-2 min-h-[calc(100dvh-72px-64px-env(safe-area-inset-bottom))] min-w-0 rounded-panel border border-border bg-panel; }
-  @media (width >= 768px) { .page-surface { @apply static m-0 min-h-0 rounded-none border-0 bg-transparent; } }
-  .header-wash { @apply pointer-events-none absolute inset-x-0 top-0 h-[300px] overflow-hidden rounded-t-panel md:rounded-none; mask-image: linear-gradient(#000 35%, transparent); --wash-a: rgb(245 176 0 / .2); --wash-b: rgb(232 89 12 / .09); }
+  /* Wider screens: the same sheet on the frame, as wide as the bar above it. */
+  @media (width >= 768px) { .page-surface { @apply mx-auto mb-6 mt-5 rounded-sheet; width: min(100% - 32px, var(--container-page-w)); min-height: calc(100dvh - 116px); } }
+  .header-wash { @apply pointer-events-none absolute inset-x-0 top-0 h-[300px] overflow-hidden rounded-t-panel md:rounded-t-sheet; mask-image: linear-gradient(#000 35%, transparent); --wash-a: rgb(245 176 0 / .2); --wash-b: rgb(232 89 12 / .09); }
   /* DESIGN.md: the wash never sits behind the Planner. */
   .header-wash.wash-none { opacity: 0; }
   .header-wash.wash-admin { --wash-a: rgb(14 165 164 / .16); --wash-b: rgb(245 176 0 / .14); }
@@ -420,12 +424,14 @@
   .tab-link { @apply inline-flex min-h-10 shrink-0 items-center border-b-2 border-transparent font-medium text-ink-2 no-underline; }
   .tab-link:is([aria-current="page"], [aria-current="true"]) { @apply border-ink text-ink; }
   .tab-panel > .tool-section { @apply border-t-0 pt-0; }
+  /* The selected tab already names the panel, so its heading stays for screen readers only. */
+  .tab-panel > .tool-section h2:is([id^="tool-"], #project-notes-heading) { @apply sr-only; }
   .signup-row { @apply border-b border-hairline py-3; }
   .comment-panel { @apply mt-3 rounded-tile bg-ghost-fill px-4 py-3; }
   .message-composer textarea { @apply min-h-24 resize-y; }
   .message-thread > li { @apply py-5; }
   .message-thread > li + li { @apply mt-2; }
-  .project-aside .tool-section { @apply rounded-panel border border-border p-4; }
+  .project-aside .tool-section { @apply rounded-panel border border-border bg-page p-4; }
   .popover-in { transform-origin: top right; }
   details[open] > .popover-in { animation: popover-in var(--duration-hover) var(--ease-enter); }
   details[open] > :not(summary, .popover-in) { animation: disclose var(--duration-hover) var(--ease-enter); }

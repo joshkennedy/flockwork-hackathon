@@ -1,13 +1,8 @@
 <%= turbo_stream_from Current.organization, :dashboard %>
 <% content_for :title, @organization.name %>
 
-<% subtitle = case @home_role
-     when :admin then "Here’s how #{@organization.name} looks this week."
-     when :leader then "You lead #{pluralize(@projects.size, "active Project")}."
-     else "Thanks for serving at #{@organization.name}."
-     end %>
 <div class="w-full <%= @any_projects && @home_role != :volunteer ? "" : "max-w-2xl" %>">
-  <%= page_header "Hi #{@person.name.split.first}", subtitle: do %>
+  <%= page_header "Hi #{@person.name.split.first}" do %>
     <%= link_to "Start a Project", new_project_path, class: "btn btn-primary" if @any_projects && @home_role != :volunteer && Policy.can?(@person, :create, Project) %>
   <% end %>
 
@@ -34,11 +29,9 @@
     <section class="mt-7 border-t border-hairline pt-7">
       <% if Policy.can?(@person, :create, Project) %>
         <h2>No Projects yet</h2>
-        <p class="mt-3 max-w-lg leading-normal text-ink-2">A Project gives a Team one place for the dates, sign-ups, and details their work needs.</p>
         <%= link_to "Start a Project", new_project_path, class: "mt-5 btn btn-primary" %>
       <% else %>
         <h2>You’re not on a Team yet</h2>
-        <p class="mt-3 max-w-lg leading-normal text-ink-2">Open Projects welcome anyone who wants to help.</p>
         <%= link_to "Get Involved", get_involved_path, class: "mt-5 btn btn-primary" %>
       <% end %>
     </section>

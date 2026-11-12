@@ -17,17 +17,17 @@
     <%# The church name lives here; switching is offered only to someone in several churches. %>
     <% if other_churches? %>
       <%= link_to new_organization_choice_path, class: "account-item" do %>
-        <%= icon(:updown) %><span>Switch Church</span>
+        <span>Switch Church</span>
       <% end %>
     <% end %>
     <%= link_to edit_profile_path, class: "account-item" do %>
-      <%= icon(:user) %><span>Profile</span>
+      <span>Profile</span>
     <% end %>
     <%= link_to "Terms", terms_path, class: "account-item" %>
     <%= link_to "Privacy policy", privacy_path, class: "account-item" %>
     <hr class="my-1 border-hairline">
     <%= button_to session_path, method: :delete, class: "account-item" do %>
-      <%= icon(:sign_out) %><span>Sign Out</span>
+      <span>Sign Out</span>
     <% end %>
   </div>
 </details>

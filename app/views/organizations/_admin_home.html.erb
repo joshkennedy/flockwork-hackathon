@@ -12,7 +12,6 @@
 
 <section class="mt-7" aria-labelledby="needs-attention-heading" data-home-section="needs-attention">
   <h2 id="needs-attention-heading">Needs attention</h2>
-  <p class="text-meta text-ink-2">Every active Project, the ones short on people first.</p>
   <% rows = @projects.map { |project| [ project, project_guidance(project, @person) ] }.each_with_index.sort_by { |(_, guidance), index| [ guidance ? 0 : 1, index ] }.map(&:first) %>
   <ul class="mt-3 border-t border-border">
     <% rows.each do |project, guidance| %>

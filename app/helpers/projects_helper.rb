@@ -80,7 +80,6 @@ module ProjectsHelper
         return {
           kind: :spots,
           title: noun == "spot" ? "#{pluralize(spots, "spot")} still open" : "#{pluralize(spots, noun)} still #{spots == 1 ? "needs" : "need"} someone",
-          detail: next_slot && "#{next_slot.date.strftime("%A, %B %-d")} is the next open Slot.",
           slot: next_slot
         }
       end

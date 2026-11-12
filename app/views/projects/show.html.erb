@@ -101,8 +101,9 @@
     <div class="guidance-strip mt-3" data-project-guidance>
       <div>
         <p class="font-semibold"><%= guidance[:title] %></p>
-        <% if guidance[:detail] %>
-          <p class="text-meta text-ink-2"><%= guidance[:detail] %><%= " A public link shows open spots to anyone you send it to." if public_link_in_strip %></p>
+        <% if guidance_action && guidance[:kind] == :spots && !can_share && claim_slot %>
+          <%# Says which Slot the one-tap button claims. %>
+          <p class="text-meta text-ink-2"><%= claim_slot.label %> · <%= claim_slot.date.strftime("%a, %b %-d") %></p>
         <% end %>
         <%= render "projects/risk", project: @project, inline: true if can_plan %>
       </div>

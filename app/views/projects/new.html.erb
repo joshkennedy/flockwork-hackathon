@@ -11,7 +11,6 @@
   <%= page_header "Start a Project" %>
 
   <% if @manual_project %>
-    <p class="mt-2 max-w-2xl text-ink-2">Set up the Project yourself. You can add or change its Tools later.</p>
     <div class="mt-7 max-w-2xl"><%= render "form", project: @project %></div>
   <% else %>
     <% steps = [
@@ -30,12 +29,11 @@
             [ "Class", :docs, "text-tool-docs", start_planner_projects_path, { planning_kind: "class" } ]
           ].each do |title, glyph, color, path, parameters| %>
             <%= button_to path, method: :post, params: parameters, class: "project-kind-row", data: { turbo_submits_with: "Creating Project…" } do %>
-              <%= icon(glyph, size: 20, class: color) %>
               <span><%= title %></span>
             <% end %>
           <% end %>
           <details class="project-kind-other" <%= "open" if @custom_planning || @description_error %>>
-            <summary class="project-kind-row"><%= icon(:plus, size: 20, class: "text-ink-2") %><span>Something Else</span></summary>
+            <summary class="project-kind-row"><span>Something Else</span></summary>
             <%= form_with url: start_planner_projects_path, method: :post, class: "project-kind-other-form" do |form| %>
               <%= form.hidden_field :planning_kind, value: "other" %>
               <% description_error_id = form.field_id(:description, :error) if @description_error %>

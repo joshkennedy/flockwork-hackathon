@@ -2,7 +2,7 @@
 <section class="tool-section" aria-labelledby="tool-list">
   <%= render "projects/tools/planner_arrival", tool: "list" %>
   <div class="flex flex-wrap items-start justify-between gap-4">
-    <h2 id="tool-list" class="text-ink"><%= icon(:list, class: "text-tool-list") %> <%= Project::TOOL_LABELS.fetch("list") %></h2>
+    <h2 id="tool-list" class="text-ink"><%= Project::TOOL_LABELS.fetch("list") %></h2>
     <% if Policy.can?(Current.person, :manage_lists, project) %>
       <%= link_to "Add List", new_project_list_path(project), class: "inline-flex min-h-6 items-center text-meta font-semibold text-ink-2 hover:text-ink" %>
     <% end %>
@@ -16,10 +16,10 @@
             <h3 id="list-<%= list.id %>" class="text-body-phone sm:text-body font-semibold text-ink"><%= list.name %></h3>
             <div class="flex flex-wrap justify-end gap-2">
               <% if Policy.can?(Current.person, :manage_list_rows, project) %>
-                <%= link_to new_project_list_list_row_path(project, list), class: "btn btn-secondary btn-sm" do %><%= icon(:plus) %>Add Row<% end %>
+                <%= link_to new_project_list_list_row_path(project, list), class: "btn btn-secondary btn-sm" do %>Add Row<% end %>
               <% end %>
               <% if Policy.can?(Current.person, :manage_lists, project) %>
-                <%= link_to new_project_list_list_column_path(project, list), class: "btn btn-secondary btn-sm" do %><%= icon(:plus) %>Add Column<% end %>
+                <%= link_to new_project_list_list_column_path(project, list), class: "btn btn-secondary btn-sm" do %>Add Column<% end %>
               <% end %>
             </div>
           </div>

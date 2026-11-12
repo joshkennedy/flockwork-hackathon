@@ -13,7 +13,7 @@
   <div>
     <%= form.label :email, class: "block text-label font-medium text-ink-2" %>
     <%= form.email_field :email, class: "mt-2 block w-full field" %>
-    <p class="mt-1 text-label text-ink-2">Optional. Leave blank if this person should not sign in. A new address gets a confirmation email and takes effect once it is confirmed.</p>
+    <p class="mt-1 text-label text-ink-2">Optional. A new address takes effect once it is confirmed by email.</p>
   </div>
 
   <div>
@@ -21,8 +21,7 @@
     <%= form.telephone_field :phone, class: "mt-2 block w-full field" %>
   </div>
 
-  <%= render "shared/skills_field", form:, attribute: :skills, legend: "Skills",
-    hint: "Leaders may suggest this Person for Projects that need these." %>
+  <%= render "shared/skills_field", form:, attribute: :skills, legend: "Skills" %>
 
   <% if person.persisted? %>
     <div>

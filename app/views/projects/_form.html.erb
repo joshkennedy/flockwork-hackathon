@@ -21,12 +21,10 @@
   </div>
 
   <div>
-    <% description_hint_id = form.field_id(:description, :hint) %>
     <% description_error_id = form.field_id(:description, :error) if project.errors.include?(:description) %>
     <%= form.label :description, class: "block text-label font-medium text-ink" %>
-    <p id="<%= description_hint_id %>" class="mt-1 text-meta text-ink-2">One sentence about the work this Team is planning.</p>
     <%= form.text_area :description, rows: 3, class: "mt-2 block w-full field",
-      aria: { invalid: description_error_id.present?, describedby: [ description_hint_id, description_error_id ].compact.join(" ") } %>
+      aria: { invalid: description_error_id.present?, describedby: description_error_id } %>
     <% if description_error_id %>
       <p id="<%= description_error_id %>" class="mt-1 text-meta text-danger"><%= project.errors.full_messages_for(:description).to_sentence %></p>
     <% end %>
@@ -65,14 +63,12 @@
 
   <fieldset>
     <legend class="text-body-phone sm:text-body font-semibold text-ink">Tools</legend>
-    <% tools_hint_id = form.field_id(:enabled_tools, :hint) %>
     <% tools_error_id = form.field_id(:enabled_tools, :error) if project.errors.include?(:enabled_tools) %>
-    <p id="<%= tools_hint_id %>" class="mt-1 text-meta text-ink-2">Choose what this Project needs.</p>
     <div class="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-2">
       <%= form.collection_check_boxes :enabled_tools, Project::TOOLS, :to_s, ->(tool) { Project::TOOL_LABELS.fetch(tool) } do |checkbox| %>
         <%= checkbox.label(class: "flex cursor-pointer items-center gap-3 py-1 text-label font-medium text-ink") do %>
           <%= checkbox.check_box(class: "size-4 accent-ink", aria: {
-            invalid: tools_error_id.present?, describedby: [ tools_hint_id, tools_error_id ].compact.join(" ")
+            invalid: tools_error_id.present?, describedby: tools_error_id
           }) %>
           <%= checkbox.text %>
         <% end %>
@@ -83,8 +79,7 @@
     <% end %>
   </fieldset>
 
-  <%= render "shared/skills_field", form:, attribute: :skills_needed, legend: "Skills needed",
-    hint: "The Team page suggests People who list these skills." %>
+  <%= render "shared/skills_field", form:, attribute: :skills_needed, legend: "Skills needed" %>
 
   <%= form.submit project.persisted? ? "Save Project" : "Start Project", class: "btn btn-primary" %>
 <% end %>

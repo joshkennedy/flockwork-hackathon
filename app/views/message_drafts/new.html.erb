@@ -1,6 +1,6 @@
 <% content_for :title, "Draft a message" %>
 <h1>Draft a message</h1>
-<p class="mt-2 text-meta text-ink-2">Review and edit the draft. Nothing is posted until you choose Post Message.</p>
+<p class="mt-2 text-meta text-ink-2">Nothing is posted until you choose Post Message.</p>
 <% if @error %><span hidden data-toast-entry data-toast-kind="alert"><%= @error %></span><% end %>
 <% unless @message.body.present? %>
 <%= form_with url: project_message_draft_path(@project), class: "mt-5 space-y-3", data: { turbo: false } do |form| %>

@@ -22,7 +22,7 @@ class SignInRequestsController < ApplicationController
 
     redirect_to check_email_path, status: :see_other
   rescue ActiveJob::EnqueueError
-    flash.now[:alert] = "We couldn't request your sign-in email. Please try again."
+    flash.now[:alert] = "Unable to send your sign-in email. Try again."
     render :new, status: :service_unavailable
   end
 end

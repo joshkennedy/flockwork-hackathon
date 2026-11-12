@@ -6,11 +6,11 @@
 <section class="tool-section" aria-labelledby="tool-budget">
   <%= render "projects/tools/planner_arrival", tool: "budget" %>
   <div class="flex flex-wrap items-start justify-between gap-4">
-    <h2 id="tool-budget" class="text-ink"><%= icon(:budget, class: "text-tool-budget") %> <%= Project::TOOL_LABELS.fetch("budget") %></h2>
+    <h2 id="tool-budget" class="text-ink"><%= Project::TOOL_LABELS.fetch("budget") %></h2>
     <% if Policy.can?(Current.person, :manage_budget, project) %>
       <div class="flex flex-wrap gap-2">
-        <%= link_to new_project_budget_line_path(project, kind: "booking"), class: "btn btn-secondary btn-sm" do %><%= icon(:plus) %>Add Booking<% end %>
-        <%= link_to new_project_budget_line_path(project, kind: "purchase"), class: "btn btn-secondary btn-sm" do %><%= icon(:plus) %>Add Purchase<% end %>
+        <%= link_to new_project_budget_line_path(project, kind: "booking"), class: "btn btn-secondary btn-sm" do %>Add Booking<% end %>
+        <%= link_to new_project_budget_line_path(project, kind: "purchase"), class: "btn btn-secondary btn-sm" do %>Add Purchase<% end %>
       </div>
     <% end %>
   </div>

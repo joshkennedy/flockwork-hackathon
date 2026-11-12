@@ -106,7 +106,6 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_select "form[action='#{start_planner_projects_path}']" do
       assert_select "input[name='planning_kind'][value='class']"
       assert_select "button", text: /Class/
-      assert_select "svg"
     end
 
     class_kind = Planner::ProjectKinds::CHOICES.fetch("class")
