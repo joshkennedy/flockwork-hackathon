@@ -62,7 +62,7 @@
   --spacing-input-h-phone: 44px;
   --spacing-answer-h: 48px;
   --spacing-phone-action-h: 48px;
-  --spacing-sidebar-w: 232px;
+  --container-page-w: 1360px;
   --spacing-topbar-h: 48px;
   --text-wordmark: 18px;
   --text-wordmark--line-height: 24px;
@@ -283,12 +283,33 @@
     dialog.modal[open] .modal-panel { animation: popover-in 180ms var(--ease-enter); }
   }
   .person-pill { @apply inline-flex h-6 max-w-full min-w-0 items-center gap-1.5 rounded-nav pl-0.5 pr-2.5 align-middle text-meta text-ink; --pill-fill: color-mix(in oklab, var(--color-hairline) 55%, var(--color-panel)); background-color: var(--pill-fill); --avatar-ring: var(--pill-fill); }
-  .account-menu > summary { list-style: none; }
-  .account-menu > summary::-webkit-details-marker { display: none; }
-  .account-menu[open] > summary { background-color: var(--color-nav-active); }
-  .account-menu-panel, .account-sheet { @apply z-30 flex flex-col rounded-panel border border-border bg-panel p-1.5 shadow-float; }
-  .account-menu-panel { @apply absolute bottom-full left-0 right-0 mb-2; }
-  .account-sheet { position: fixed; left: 8px; right: 8px; bottom: max(8px, env(safe-area-inset-bottom)); z-index: 40; }
+  :is(.account-menu, .manage-menu, .notifications-menu) > summary { list-style: none; }
+  :is(.account-menu, .manage-menu, .notifications-menu) > summary::-webkit-details-marker { display: none; }
+  :is(.account-menu, .notifications-menu)[open] > summary { background-color: var(--color-nav-active); }
+  /* A sheet on phones, a dropdown under its trigger from md up. */
+  .account-sheet { @apply flex flex-col rounded-panel border border-border bg-panel p-1.5 shadow-float; position: fixed; left: 8px; right: 8px; bottom: max(8px, env(safe-area-inset-bottom)); z-index: 40; }
+  @media (width >= 768px) { .account-sheet { position: absolute; left: auto; right: 0; bottom: auto; top: calc(100% + 8px); width: 224px; } }
+  .notifications-menu > .account-sheet { @apply p-2; max-height: min(70dvh, 520px); overflow-y: auto; }
+  @media (width >= 768px) { .notifications-menu > .account-sheet { width: 380px; } }
+  .notification-row { @apply flex items-start gap-3 rounded-nav px-2 py-2.5 no-underline; transition: background-color var(--duration-hover); }
+  .account-item[aria-current="page"] { @apply bg-hairline font-semibold; }
+  /* The bar is the top of the panel. No z-index on phones: the account sheet inside must stack above the tab bar. */
+  .app-bar { @apply relative flex min-h-14 items-center justify-between px-2; }
+  @media (width >= 768px) {
+    /* A floating pill inset 12px inside the panel; it stays put as the page scrolls. */
+    .app-bar-shell { @apply sticky top-0 z-30 px-4 pt-4; }
+    /* Floats in the content column, the wordmark lined up with the content's left edge. */
+    .app-bar { @apply mx-auto grid max-w-page-w grid-cols-[1fr_auto_1fr] rounded-full bg-panel pl-7 pr-2 shadow-float; }
+    /* Covers the gap above the pill once scrolled, fading out just below it (app_bar_controller). */
+    .app-bar-shell::before { content: ""; position: absolute; inset: 0 0 -20px; z-index: -1; background: linear-gradient(var(--color-panel) 60%, transparent); opacity: 0; pointer-events: none; transition: opacity var(--duration-hover); }
+    .app-bar-shell[data-scrolled]::before { opacity: 1; }
+    /* Dark panel and pill share a fill, so the pill takes a hairline edge to read as raised. */
+    :root[data-dark] .app-bar { box-shadow: var(--shadow-float), 0 0 0 1px var(--color-border); }
+  }
+  .app-bar-button { @apply grid size-11 cursor-pointer place-items-center rounded-full text-ink; transition: background-color var(--duration-hover); }
+  .app-bar-button[aria-current="page"] { @apply bg-nav-active; }
+  .nav-pill { @apply inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-full px-4 text-[14px] font-semibold leading-5 text-ink-2 no-underline; transition: background-color var(--duration-hover), color var(--duration-hover); }
+  .nav-pill[aria-current], details[open] > .nav-pill { @apply bg-nav-active text-ink; }
   .account-item { @apply flex min-h-control-h w-full items-center gap-3 rounded-badge px-2.5 text-left text-button text-ink no-underline; transition: background-color var(--duration-hover); }
   .account-item:hover { @apply bg-hairline; }
   .account-item svg { @apply text-ink-2; }
@@ -323,7 +344,10 @@
   /* The one decorative surface: blurred tool-color blobs plus grain, faded out
      before content starts. Tint carries meaning (see DESIGN.md, Header wash). */
   /* wash_controller gives each page its own blob layout and drifts there from the previous page's. */
-  .header-wash { @apply pointer-events-none absolute inset-x-0 top-0 h-[300px] overflow-hidden rounded-t-panel; mask-image: linear-gradient(#000 35%, transparent); --wash-a: rgb(245 176 0 / .2); --wash-b: rgb(232 89 12 / .09); }
+  /* Phones: the page sits in an inset card on the frame. Wider: no card, so the wash anchors to the page top behind the bar. */
+  .page-surface { @apply relative mx-2 mb-2 min-h-[calc(100dvh-72px-64px-env(safe-area-inset-bottom))] min-w-0 rounded-panel border border-border bg-panel; }
+  @media (width >= 768px) { .page-surface { @apply static m-0 min-h-0 rounded-none border-0 bg-transparent; } }
+  .header-wash { @apply pointer-events-none absolute inset-x-0 top-0 h-[300px] overflow-hidden rounded-t-panel md:rounded-none; mask-image: linear-gradient(#000 35%, transparent); --wash-a: rgb(245 176 0 / .2); --wash-b: rgb(232 89 12 / .09); }
   /* DESIGN.md: the wash never sits behind the Planner. */
   .header-wash.wash-none { opacity: 0; }
   .header-wash.wash-admin { --wash-a: rgb(14 165 164 / .16); --wash-b: rgb(245 176 0 / .14); }
@@ -343,7 +367,8 @@
     .actions-menu-panel :is(a, button):hover { @apply bg-hairline; }
     .actions-menu-panel .menu-danger:hover { @apply bg-danger-soft; }
     .disclosure-summary:hover { @apply bg-hairline text-ink; }
-    .nav-item:hover { @apply bg-nav-active text-ink; }
+    .nav-item:hover, .nav-pill:hover, .app-bar-button:hover { @apply bg-nav-active text-ink; }
+    .notification-row:hover { @apply bg-hairline; }
     .tab-link:hover { @apply text-ink; }
     .answer-tile:hover { @apply border-border-strong; }
     /* Only a linked pill gets hover, and avatars lift only inside links and buttons; static avatars never move. */
@@ -498,7 +523,7 @@
   @media (width < 768px) {
     [data-voice-active="true"] :is(.meal-builder-header .meal-setup-name, .meal-builder-exits) { display: none; }
     [data-voice-active="true"] .voice-planner-panel { display: flex; flex-direction: column; align-items: center; gap: 8px; height: max(580px, calc(100dvh - 177px - max(4px, env(safe-area-inset-bottom)))); padding-bottom: 0; }
-    body:has([data-voice-active="true"] .meal-builder) nav[aria-label="Breadcrumbs"] { display: none !important; }
+    body:has([data-voice-active="true"] .meal-builder) :is(nav[aria-label="Breadcrumbs"], .search-trigger) { display: none !important; }
     [data-voice-active="true"] .meal-builder-header { padding-bottom: 8px; }
     [data-voice-active="true"] #meal-project-heading { @apply not-sr-only; font-family: var(--font-sans); font-size: 15px; line-height: 20px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     [data-voice-active="true"] .meal-builder-organization { margin-top: 12px; }

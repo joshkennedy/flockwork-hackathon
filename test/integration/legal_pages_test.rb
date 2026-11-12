@@ -25,7 +25,7 @@ class LegalPagesTest < ActionDispatch::IntegrationTest
     [ terms_url, privacy_url ].each { |url| assert_includes response.body, url }
     sign_in_as_leader
     get home_path
-    [ terms_path, privacy_path ].each { |path| assert_select ".account-menu a[href=?]", path, count: 2 }
+    [ terms_path, privacy_path ].each { |path| assert_select ".account-menu a[href=?]", path, count: 1 }
     get privacy_path
     assert_response :success
     assert_select ".legal-page"

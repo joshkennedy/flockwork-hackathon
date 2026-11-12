@@ -1,7 +1,7 @@
 <%= turbo_stream_from Current.organization, :dashboard %>
 <% content_for :title, "Projects" %>
 
-<div class="w-full max-w-5xl">
+<div class="w-full">
   <%= page_header "Projects" do %>
     <%= link_to "Start a Project", new_project_path, class: "btn btn-primary" %>
   <% end %>

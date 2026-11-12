@@ -6,7 +6,7 @@
      when :leader then "You lead #{pluralize(@projects.size, "active Project")}."
      else "Thanks for serving at #{@organization.name}."
      end %>
-<div class="w-full <%= @any_projects && @home_role != :volunteer ? "max-w-6xl" : "max-w-2xl" %>">
+<div class="w-full <%= @any_projects && @home_role != :volunteer ? "" : "max-w-2xl" %>">
   <%= page_header "Hi #{@person.name.split.first}", subtitle: do %>
     <%= link_to "Start a Project", new_project_path, class: "btn btn-primary" if @any_projects && @home_role != :volunteer && Policy.can?(@person, :create, Project) %>
   <% end %>

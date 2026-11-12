@@ -20,39 +20,36 @@
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
-  <body data-controller="global-search" data-action="keydown@window->global-search#shortcut turbo:before-morph-element->global-search#keepOpen" style="<%= mark_color_style %>" class="min-h-screen <%="bg-frame" if authenticated? && !marketing_page? %>">
+  <body data-controller="global-search" data-action="keydown@window->global-search#shortcut turbo:before-morph-element->global-search#keepOpen" style="<%= mark_color_style %>" class="min-h-screen <%="bg-frame md:bg-panel" if authenticated? && !marketing_page? %>">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-panel focus:p-3">Skip to content</a>
     <% if authenticated? && !marketing_page? %>
-      <div class="min-h-screen p-2 pb-[calc(64px+env(safe-area-inset-bottom))] md:grid md:grid-cols-[232px_minmax(0,1fr)] md:pb-2">
-        <aside class="sticky top-2 hidden h-[calc(100dvh-16px)] min-w-0 flex-col px-4 pb-3 pt-3.5 md:flex" aria-label="Church">
-          <%= render "layouts/wordmark", path: home_path, class: "mb-6 px-2" %>
-          <%= render "layouts/navigation" %>
-          <%= render "layouts/account_menu" %>
-        </aside>
-        <header class="relative flex min-h-14 items-center justify-between px-2 md:hidden">
-          <%= render "layouts/wordmark", path: home_path %>
-          <div class="flex items-center">
-            <%= link_to notifications_path, class: "relative grid size-11 place-items-center rounded-nav text-ink", aria: { label: (unread_notification_count.positive? ? "Notifications, #{unread_notification_count} unread" : "Notifications") } do %>
-              <%= icon(:notifications, class: "size-5") %>
-              <% if unread_notification_count.positive? %>
-                <span class="absolute right-0 top-1 min-w-4 rounded-badge bg-ink px-1 text-center text-[10px] font-semibold leading-4 text-panel tabular-nums" aria-hidden="true"><%= unread_notification_count %></span>
+      <div class="relative min-h-screen pb-[calc(64px+env(safe-area-inset-bottom))] md:pb-0">
+        <div class="app-bar-shell" data-controller="app-bar">
+          <header class="app-bar">
+            <%= render "layouts/wordmark", path: home_path %>
+            <%= render "layouts/navigation" %>
+            <div class="flex items-center md:gap-1 md:justify-self-end">
+              <%= link_to search_path, class: "search-trigger rounded-full md:h-9 md:px-3.5 max-md:size-11 max-md:justify-center max-md:border-0 max-md:bg-transparent max-md:p-0 max-md:text-ink", data: { action: "global-search#open" }, aria: { label: "Search Flockwork", keyshortcuts: "Meta+k Control+k" } do %>
+                <%= icon(:search, class: "max-md:size-5") %>
+                <span class="max-md:hidden">Search</span><kbd data-global-search-target="shortcut">⌘ K</kbd>
               <% end %>
-            <% end %>
-            <%= render "layouts/account_menu", sidebar: false %>
-          </div>
-        </header>
-        <div class="panel relative min-h-[calc(100dvh-72px)] min-w-0 md:min-h-0">
+              <%= render "layouts/notifications_menu" %>
+              <%= render "layouts/account_menu" %>
+            </div>
+          </header>
+        </div>
+        <%# Phones keep the page in an inset card on the frame; wider screens drop the card and the wash spans the page top. %>
+        <div class="page-surface">
           <div class="header-wash <%= content_for(:wash) %>" aria-hidden="true" data-controller="wash">
             <svg><filter id="wash-grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .08 0 0 0 0 .08 0 0 0 0 .07 0 0 0 .1 0"/></filter><rect width="100%" height="100%" filter="url(#wash-grain)"/></svg>
           </div>
-          <nav aria-label="Breadcrumbs" class="relative flex h-topbar-h min-w-0 items-center gap-2 border-b border-ink/6 px-4 text-label text-ink-2 md:px-7">
-            <%= render "layouts/breadcrumbs" %>
-            <%= link_to search_path, class: "search-trigger ml-auto", data: { action: "global-search#open" }, aria: { label: "Search Flockwork", keyshortcuts: "Meta+k Control+k" } do %>
-              <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
-              <span>Search</span><kbd data-global-search-target="shortcut">⌘ K</kbd>
+          <main id="main-content" class="relative mx-auto min-w-0 max-w-page-w p-4 pb-10 md:px-7 md:pb-12 md:pt-12">
+            <%# Top-level pages name themselves in their heading; only pages inside a Project show where they sit. %>
+            <% if content_for?(:breadcrumbs) || @project&.persisted? %>
+              <nav aria-label="Breadcrumbs" class="mb-4 flex min-w-0 items-center gap-2 text-label text-ink-2">
+                <%= render "layouts/breadcrumbs" %>
+              </nav>
             <% end %>
-          </nav>
-          <main id="main-content" class="relative min-w-0 p-4 pb-10 md:p-7 md:pb-10">
             <%= yield %>
           </main>
         </div>

@@ -1,11 +1,13 @@
-<nav aria-label="Main navigation" class="grid gap-0.5">
-  <% organization_navigation.each do |label, path, symbol| %>
-    <%= link_to path, class: "nav-item", aria: { current: ("page" if navigation_current?(path)), label: ("Notifications, #{unread_notification_count} unread" if symbol == :notifications) } do %>
-      <%= icon(symbol) %>
-      <span><%= label %></span>
-      <% if symbol == :notifications && unread_notification_count.positive? %>
-        <span class="ml-auto font-semibold"><%= unread_notification_count %></span>
-      <% end %>
-    <% end %>
+<%# Desktop destinations. People, Oversight and Settings fold into Manage; someone allowed only one of them gets it as a plain pill. %>
+<% manage = manage_navigation %>
+<nav aria-label="Main navigation" class="hidden items-center gap-1 md:flex">
+  <% (manage.one? ? primary_navigation + manage : primary_navigation).each do |label, path, _symbol| %>
+    <%= link_to label, path, class: "nav-pill", aria: { current: ("page" if navigation_current?(path)) } %>
+  <% end %>
+  <% if manage.many? %>
+    <details class="manage-menu relative" name="app-bar">
+      <summary class="nav-pill" <%= "aria-current=true" if manage.any? { |_label, path, _symbol| navigation_current?(path) } %>>Manage <%= icon(:chevron, size: 14) %></summary>
+      <%= render "layouts/manage_panel", manage: manage, class: "md:left-0 md:right-auto" %>
+    </details>
   <% end %>
 </nav>

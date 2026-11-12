@@ -1,6 +1,6 @@
 <% content_for :title, "People · #{Current.organization.name}" %>
 
-<div class="w-full max-w-5xl">
+<div class="w-full">
   <%= page_header "People", subtitle: pluralize(@people_count, "person", plural: "people") do %>
     <%= link_to "Planning Center", planning_center_directory_path, class: "btn btn-secondary" %>
     <%= link_to "Import CSV", new_people_csv_import_path, class: "btn btn-secondary" %>

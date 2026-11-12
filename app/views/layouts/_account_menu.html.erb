@@ -1,30 +1,20 @@
-<%# One account menu, two placements: the sidebar row (opens upward) and the phone avatar (opens as a sheet). %>
-<% sidebar = local_assigns.fetch(:sidebar, true) %>
+<%# The avatar opens the account menu: a dropdown on desktop, a sheet on phones. %>
 <% name = Current.person.name %>
-<details class="account-menu <%= "relative mt-auto" if sidebar %>">
-  <% if sidebar %>
-    <summary class="flex min-h-11 w-full cursor-pointer items-center gap-2.5 rounded-tile px-2 py-1.5 text-left text-ink hover:bg-nav-active">
-      <%= avatar(Current.person) %>
-      <span class="min-w-0 flex-1">
-        <span class="block truncate text-meta font-semibold" data-signed-in-as><%= name %></span>
-        <span class="block truncate text-label text-ink-2" data-organization-name><%= Current.organization.name %></span>
-      </span>
-      <%= icon(:updown, class: "text-ink-2") %>
-    </summary>
-  <% else %>
-    <summary class="grid size-11 cursor-pointer place-items-center rounded-nav" aria-label="Account, <%= name %>" title="Account">
-      <%= avatar(Current.person) %>
-    </summary>
-  <% end %>
-  <div class="popover-in <%= sidebar ? "account-menu-panel" : "account-sheet" %>">
+<details class="account-menu relative" name="app-bar">
+  <summary class="app-bar-button" title="Account">
+    <%= avatar(Current.person) %>
+    <%# Who is signed in, and to which church, readable without opening the menu. %>
+    <span class="sr-only">Account, <span data-signed-in-as><%= name %></span>, <span data-organization-name><%= Current.organization.name %></span></span>
+  </summary>
+  <div class="popover-in account-sheet">
     <div class="flex items-center gap-2.5 px-2 pb-2.5 pt-2">
       <%= avatar(Current.person) %>
       <span class="min-w-0">
         <span class="block truncate text-meta font-semibold"><%= name %></span>
-        <span class="block truncate text-label text-ink-2" data-organization-name><%= Current.organization.name %></span>
+        <span class="block truncate text-label text-ink-2"><%= Current.organization.name %></span>
       </span>
     </div>
-    <%# The church name lives here and in the sidebar row; switching is offered only to someone in several churches. %>
+    <%# The church name lives here; switching is offered only to someone in several churches. %>
     <% if other_churches? %>
       <%= link_to new_organization_choice_path, class: "account-item" do %>
         <%= icon(:updown) %><span>Switch Church</span>
@@ -32,11 +22,6 @@
     <% end %>
     <%= link_to edit_profile_path, class: "account-item" do %>
       <%= icon(:user) %><span>Profile</span>
-    <% end %>
-    <% if Policy.can?(Current.person, :manage_settings, Current.organization) %>
-      <%= link_to settings_path, class: "account-item" do %>
-        <%= icon(:settings) %><span>Settings</span>
-      <% end %>
     <% end %>
     <%= link_to "Terms", terms_path, class: "account-item" %>
     <%= link_to "Privacy policy", privacy_path, class: "account-item" %>

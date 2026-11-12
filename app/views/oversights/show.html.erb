@@ -1,6 +1,6 @@
 <% content_for :title, "Oversight" %>
 
-<div class="w-full max-w-5xl">
+<div class="w-full">
   <%= page_header "#{pluralize(@overextended_people.length, "Person", plural: "People")} may need a check-in", subtitle: "#{pluralize(@never_asked_people.length, "Person", plural: "People")} #{@never_asked_people.length == 1 ? "hasn’t" : "haven’t"} been asked yet." %>
 
   <div class="mt-7 grid gap-7 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
