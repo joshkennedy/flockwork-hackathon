@@ -30,6 +30,8 @@ module ApplicationHelper
     sign_out: "M9 3H3v18h6 M9 12h12 m-5-5 5 5-5 5",
     settings: "M4 6h16 M4 12h16 M4 18h16 M15 4v4 M9 10v4 M17 16v4",
     user: "M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1",
+    chevron: "m6 9 6 6 6-6",
+    search: "M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z M16 16l5 5",
     updown: "m7.5 9.5 4.5-4.5 4.5 4.5 M7.5 14.5l4.5 4.5 4.5-4.5"
   }.freeze
 
@@ -48,19 +50,29 @@ module ApplicationHelper
     end
   end
 
-  def organization_navigation
-    items = [
+  def primary_navigation
+    [
       [ "Home", home_path, :home ],
       [ "Projects", projects_path, :projects ],
       [ "Get involved", get_involved_path, :heart ]
     ]
-    items << [ "People", people_path, :people ] if Policy.can?(Current.person, :manage_people, Current.organization)
-    items << [ "Oversight", oversight_path, :oversight ] if Policy.can?(Current.person, :view_oversight, Current.organization)
-    items << [ "Notifications", notifications_path, :notifications ]
-    items
   end
 
-  # Settings and Profile live in the account menu, not the nav.
+  # People, Oversight and Settings are three separate permissions; the nav groups whichever this Person has under Manage.
+  def manage_navigation
+    [
+      [ "People", people_path, :people, :manage_people ],
+      [ "Oversight", oversight_path, :oversight, :view_oversight ],
+      [ "Settings", settings_path, :settings, :manage_settings ]
+    ].select { |*, permission| Policy.can?(Current.person, permission, Current.organization) }
+  end
+
+  # Every destination, for search. The nav itself draws primary_navigation and manage_navigation; the bell carries Notifications.
+  def organization_navigation
+    primary_navigation + manage_navigation + [ [ "Notifications", notifications_path, :notifications ] ]
+  end
+
+  # Profile lives in the account menu, not the nav.
   # Only a Person whose email belongs to several Organizations gets the church switcher.
   def other_churches?
     Current.session.organization_choice_eligible? && Person.where(email: Current.session.verified_email).many?

@@ -1,8 +1,12 @@
 class NotificationsController < ApplicationController
   before_action :authorize_notifications
 
+  FLYOUT_LIMIT = 8
+
   def index
     visible = Policy.visible_notifications(Current.person)
+    return render_flyout(visible) if turbo_frame_request_id == "notifications"
+
     @needs_you = visible.needs_you.includes(:actor, :notifiable).order(created_at: :desc, id: :desc)
     @for_information = visible.where.not(id: visible.needs_you.select(:id))
       .includes(:actor, :notifiable)
@@ -25,6 +29,15 @@ class NotificationsController < ApplicationController
   end
 
   private
+    # The bell's flyout: what still needs the reader first, then the newest of the rest.
+    def render_flyout(visible)
+      newest = ->(scope) { scope.includes(:actor, :notifiable).order(created_at: :desc, id: :desc) }
+      @notifications = newest.(visible.needs_you).limit(FLYOUT_LIMIT).to_a
+      @notifications += newest.(visible.where.not(id: visible.needs_you.select(:id))).limit(FLYOUT_LIMIT - @notifications.size)
+      @any_unread = visible.unread.exists?
+      render :flyout, layout: false
+    end
+
     def authorize_notifications
       action = action_name == "mark_all_read" ? :mark_all_read : :index
       raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, action, Notification)

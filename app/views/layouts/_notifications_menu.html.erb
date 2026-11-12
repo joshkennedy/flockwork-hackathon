@@ -1,0 +1,20 @@
+<%# The bell opens Notifications as a flyout (a sheet on phones), fetched when first opened. On the Notifications page itself it is a plain link. %>
+<% label = unread_notification_count.positive? ? "Notifications, #{unread_notification_count} unread" : "Notifications" %>
+<% bell = capture do %>
+  <%= icon(:notifications, class: "size-5") %>
+  <% if unread_notification_count.positive? %>
+    <span class="absolute right-0 top-1 min-w-4 rounded-full bg-ink px-1 text-center text-[10px] font-semibold leading-4 text-panel tabular-nums" aria-hidden="true"><%= unread_notification_count %></span>
+  <% end %>
+<% end %>
+<% if current_page?(notifications_path) %>
+  <%= link_to bell, notifications_path, class: "app-bar-button relative", aria: { current: "page", label: label } %>
+<% else %>
+  <details class="notifications-menu relative" name="app-bar">
+    <summary class="app-bar-button relative" aria-label="<%= label %>" title="Notifications"><%= bell %></summary>
+    <div class="popover-in account-sheet">
+      <%= turbo_frame_tag "notifications", src: notifications_path, loading: :lazy, target: "_top" do %>
+        <p class="p-2 text-meta text-ink-2">Loading…</p>
+      <% end %>
+    </div>
+  </details>
+<% end %>

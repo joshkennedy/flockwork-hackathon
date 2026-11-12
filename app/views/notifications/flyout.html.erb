@@ -1,0 +1,35 @@
+<%= turbo_frame_tag "notifications", target: "_top" do %>
+  <div class="flex min-h-control-h items-center justify-between gap-3 px-2">
+    <h2 class="text-heading text-ink">Notifications</h2>
+    <% if @any_unread %>
+      <%# shortcut: the bell's count stays stale until the next page load; add a Turbo Stream for it if that grates. %>
+      <%= button_to "Mark All Read", mark_all_read_notifications_path, method: :patch, class: "btn btn-text", form: { data: { turbo_frame: "notifications" } } %>
+    <% end %>
+  </div>
+  <% if @notifications.any? %>
+    <ol class="mt-1 grid gap-0.5">
+      <% @notifications.each do |notification| %>
+        <% path = notification.invitation? ? invitation_path(notification.notifiable.generate_token_for(:access)) : project_path(notification.project) %>
+        <li data-notification-id="<%= notification.id %>">
+          <%= link_to path, class: "notification-row" do %>
+            <% if notification.actor %>
+              <%= avatar(notification.actor) %>
+            <% else %>
+              <span class="avatar text-ink-2" aria-hidden="true"><%= icon(:notifications, size: 14) %></span>
+            <% end %>
+            <span class="min-w-0 flex-1">
+              <span class="block text-meta text-ink <%= "font-semibold" if notification.unread? %>"><%= notification.actor&.name %> <%= notification.message_after_actor %></span>
+              <span class="mt-0.5 block truncate text-label text-ink-2"><%= notification.project.name %> · <%= time_ago_in_words(notification.created_at) %> ago</span>
+            </span>
+            <% if notification.unread? %>
+              <span class="mt-1.5 size-2 shrink-0 rounded-full bg-ink" role="img" aria-label="Unread"></span>
+            <% end %>
+          <% end %>
+        </li>
+      <% end %>
+    </ol>
+  <% else %>
+    <p class="px-2 pb-2 pt-1 text-meta text-ink-2">You’re all caught up.</p>
+  <% end %>
+  <%= link_to "View all notifications", notifications_path, class: "account-item mt-1 justify-center text-ink-2" %>
+<% end %>

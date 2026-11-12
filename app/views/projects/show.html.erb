@@ -25,7 +25,7 @@
 <% default_tab = @selected_tab || (tabs & [ @completed_planner_session&.acceptance_tool ]).first || tabs.first %>
 <% show_recipients = @project.enabled_tools.include?("recipients") && Policy.can?(Current.person, :view_recipients, @project) %>
 
-<div class="w-full max-w-6xl" data-controller="tabs<%= ' project-arrival' if @completed_planner_session %>"<%= " data-tabs-explicit-value" if @selected_tab %> data-action="turbo:load@document->project-arrival#scheduleArrival" data-project-arrival-target-id-value="tool-<%= (@completed_planner_session&.acceptance_tool || 'signup_sheet').tr('_', '-') %>">
+<div class="w-full" data-controller="tabs<%= ' project-arrival' if @completed_planner_session %>"<%= " data-tabs-explicit-value" if @selected_tab %> data-action="turbo:load@document->project-arrival#scheduleArrival" data-project-arrival-target-id-value="tool-<%= (@completed_planner_session&.acceptance_tool || 'signup_sheet').tr('_', '-') %>">
   <%= render "projects/banner", project: @project, editable: can_update %>
 
   <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
