@@ -32,14 +32,14 @@
     <%= form_with url: project_recipients_path(@project), class: "mt-5 max-w-xl space-y-4" do |form| %>
       <div>
         <%= form.label :name, "Name", class: "block text-label font-medium text-ink" %>
-        <%= form.text_field "person[name]", value: @person&.name, required: true, class: "mt-1 w-full field" %>
+        <%= form.text_field "person[name]", value: @person&.name, required: true, class: "mt-2 w-full field" %>
         <% if @person&.errors&.include?(:name) %>
           <p role="alert" class="mt-1 text-meta text-danger"><%= @person.errors.full_messages_for(:name).to_sentence %></p>
         <% end %>
       </div>
       <div>
         <%= form.label :phone, "Phone (optional)", class: "block text-label font-medium text-ink" %>
-        <%= form.telephone_field "person[phone]", value: @person&.phone, class: "mt-1 w-full field" %>
+        <%= form.telephone_field "person[phone]", value: @person&.phone, class: "mt-2 w-full field" %>
       </div>
       <% if @person&.errors&.any? && !@person.errors.include?(:name) %>
         <p role="alert" class="text-meta text-danger"><%= @person.errors.full_messages.to_sentence %></p>

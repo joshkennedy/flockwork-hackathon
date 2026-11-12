@@ -12,11 +12,11 @@
           <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_12rem]">
             <div>
               <%= label_tag "#{field_id}_#{index}_name", "Column #{index + 1} name", class: "block text-label font-medium text-ink-2" %>
-              <%= text_field_tag "suggestion[fields][columns][#{index}][name]", column.fetch("name"), id: "#{field_id}_#{index}_name", required: true, class: "mt-1 block w-full field" %>
+              <%= text_field_tag "suggestion[fields][columns][#{index}][name]", column.fetch("name"), id: "#{field_id}_#{index}_name", required: true, class: "mt-2 block w-full field" %>
             </div>
             <div>
               <%= label_tag "#{field_id}_#{index}_type", "Column #{index + 1} type", class: "block text-label font-medium text-ink-2" %>
-              <%= select_tag "suggestion[fields][columns][#{index}][type]", options_for_select(ListColumn.column_types.keys.map { |type| [ type.humanize, type ] }, column.fetch("type")), id: "#{field_id}_#{index}_type", class: "mt-1 block w-full field" %>
+              <%= select_tag "suggestion[fields][columns][#{index}][type]", options_for_select(ListColumn.column_types.keys.map { |type| [ type.humanize, type ] }, column.fetch("type")), id: "#{field_id}_#{index}_type", class: "mt-2 block w-full field" %>
             </div>
           </div>
         <% end %>

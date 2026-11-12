@@ -18,11 +18,11 @@
     <% end %>
     <div>
       <%= form.label :what_worked, "What worked?", class: "block text-label font-medium text-ink-2" %>
-      <%= form.text_area :what_worked, rows: 4, maxlength: 2000, class: "field mt-1 block w-full" %>
+      <%= form.text_area :what_worked, rows: 4, maxlength: 2000, class: "field mt-2 block w-full" %>
     </div>
     <div>
       <%= form.label :change_next_time, "What would you change next time?", class: "block text-label font-medium text-ink-2" %>
-      <%= form.text_area :change_next_time, rows: 4, maxlength: 2000, class: "field mt-1 block w-full" %>
+      <%= form.text_area :change_next_time, rows: 4, maxlength: 2000, class: "field mt-2 block w-full" %>
     </div>
     <%= form.submit "Save Debrief", class: "btn btn-primary" %>
   <% end %>

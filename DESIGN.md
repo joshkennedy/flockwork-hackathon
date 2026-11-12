@@ -85,11 +85,11 @@ typography:
     fontSize: 13px
     lineHeight: 16px
 rounded:
-  badge: 4px
-  control: 6px
-  nav: 8px
-  tile: 10px
-  panel: 12px
+  badge: 6px
+  control: 12px
+  nav: 12px
+  tile: 16px
+  panel: 20px
   device: 28px
   pill: 9999px
 spacing:
@@ -101,19 +101,18 @@ spacing:
   6: 24px
   7: 28px
   10: 40px
-  control-h: 32px
-  control-h-sm: 28px
+  control-h: 36px
+  control-h-sm: 32px
   input-h: 36px
   input-h-phone: 44px
   answer-h: 48px
   phone-action-h: 48px
   page-w: 1360px
-  topbar-h: 48px
 components:
   button-primary:
     backgroundColor: "{colors.ink}"
     textColor: "{colors.on-ink}"
-    rounded: "{rounded.control}"
+    rounded: "{rounded.pill}"
     height: "{spacing.control-h}"
     shadow: "inset 0 1px 0 rgba(255,255,255,.14), 0 1px 1px rgba(20,20,19,.12), 0 2px 6px rgba(20,20,19,.12)"
   button-primary-hover:
@@ -124,7 +123,7 @@ components:
   button-secondary:
     backgroundColor: "{colors.panel}"
     borderColor: "{colors.border}"
-    rounded: "{rounded.control}"
+    rounded: "{rounded.pill}"
     shadow: "0 1px 2px rgba(20,20,19,.06), inset 0 -1px 0 rgba(20,20,19,.04)"
   button-text-danger:
     textColor: "{colors.danger}"
@@ -159,7 +158,7 @@ components:
   nav-item-active:
     backgroundColor: "{colors.nav-active}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.nav}"
+    rounded: "{rounded.pill}"
   person-pill:
     backgroundColor: "{colors.hairline}"
     textColor: "{colors.ink}"
@@ -197,7 +196,7 @@ Contrast (measured in the preview): `ink-2` on `panel` 6.49:1, `ink-2` on `frame
 ## Typography
 
 **Mattone** (Collletttivo, designed by Nunzio Mazzaferro, SIL OFL 1.1, self-hosted from `github.com/collletttivo/mattone` woff2, Regular/Bold/Black) is the signature: the "Flockwork" wordmark (Bold 18px) and page-level headlines (Regular 30/36 desktop, 24/30 phone): Project names on their page and the Oversight headline. The Planner question is not a page headline: it uses the ordinary heading scale in Mona Sans. It is wide and heavy, so it never sets body, buttons, labels, numbers, or anything below page level.
-**Mona Sans** (GitHub, Google Fonts, variable weight and width) sets all UI and body at normal width: headings 600 15/20, body 450 14/21 (16/24 on phones), meta 13/18 in `ink-2`, labels 500 12/16, buttons 500 13/16 (phone primary 600 15).
+**Mona Sans** (GitHub, Google Fonts, variable weight and width) sets all UI and body at normal width: headings 600 15/20, body 450 14/21 (16/24 on phones), meta 13/18 in `ink-2`, labels 500 12/16, primary and secondary buttons 600 14/16 (small 13/16, phone primary 600 15), text buttons 500 13/16.
 Numbers: Mona Sans's tabular figures carry a dotted zero, so use `tabular-nums` only in aligned numeric columns (Budget totals, tables). Times, dates and counts in running text use default proportional figures with a plain zero.
 Sentence case for headings, navigation, labels, tabs, links, status chips and running copy. Every visible button label uses Title Case, including primary, secondary, text, destructive, form-submit and menu-action buttons. Icon-only buttons keep an accessible sentence-case `aria-label`. No tracked all-caps, no monospace decoration, no italic display.
 
@@ -215,36 +214,38 @@ Three levels only. Flat: panels, lists, team notes (border or tint, no shadow). 
 
 ## Shapes
 
-Badges 4px, buttons and inputs 6px, nav items 8px, tiles 10px, panels and popovers 12px, phone device frame 28px. Person avatars are 32% rounded squares (a squircle whose ring follows the shape). Only status dots and the Person pill are fully round. No other pills.
+The floating top bar sets the shape language, and each kind of thing keeps one shape so it can be told apart at a glance. Things you press are fully round: buttons, icon buttons, nav pills, the Search trigger and the Person pill. Things you type in are 12px: inputs, selects and textareas. Things you read are softer boxes: badges and status chips 6px, rows inside menus and search 12px to 16px, tiles 16px, panels, popovers and dialogs 20px, phone device frame 28px. Person avatars are 32% rounded squares (a squircle whose ring follows the shape). Tabs and quick filters stay underlined text, never pills, so a filter is never mistaken for a destination or an action. Status chips and badges never become pills.
 
 ## Components
 
-- **Primary button:** ink fill, white 13/500 label, 32px tall (28px small, 48px full-width on phones), inner top highlight plus two soft shadows. Hover lightens to `ink-hover`; active presses 1px with an inset shadow; focus-visible is a 2px ink outline offset 3px with a panel-colored gap; disabled is `frame` fill with `ink-2` text and no shadow. One per view.
-- **Secondary button:** white with border and a hairline bottom inset; same press behavior.
+- **Primary button:** ink fill, fully round, white 14/600 label with 16px side padding, 36px tall (32px small with a 13px label, 48px full-width on phones), inner top highlight plus two soft shadows. Hover lightens to `ink-hover`; active presses 1px with an inset shadow; focus-visible is a 2px ink outline offset 3px with a panel-colored gap; disabled is `frame` fill with `ink-2` text and no shadow. One per view.
+- **Secondary button:** fully round, white with border and a hairline bottom inset; same press behavior.
 - **Text link:** a link inside running text is `.link`: `ink` text (usually `font-medium`) with a 1px underline in `border-strong`, offset 0.25em so it clears descenders, that turns `ink` on hover. Never the browser's default underline, which is thick in Mona Sans and chops around descenders, and never color alone.
-- **Text button:** no chrome, `ink-2`, hover tints with `hairline`; danger variant in `danger` with `danger-soft` hover.
+- **Text button:** no chrome, 13/500 `ink-2`, a fully round hover tint, hover tints with `hairline`; danger variant in `danger` with `danger-soft` hover.
 - **Planner answer tile:** raised tile 48px tall, 14px padding, radio on the left, keyboard number 1–4 in `ink-3` on the right; hover darkens the border to `border-strong`; selected shows an ink border and filled radio; pressed sinks 1px.
 - **Pending Planner work:** generated work stays on the `ghost-fill` surface with a dashed `ghost-border` and one "Suggestions · not added yet" state label for the whole preview. Tool contents use compact rows rather than a card per item. Edit opens fields in place; Remove lives inside that edit area, and Undo appears after removal. There is no Keep/Edit/Drop queue. One final Add to Project action accepts every visible, non-removed item.
 - **Meal setup:** one All Details form with a single large editable Project-name field, then Meal and Schedule groups. The name field replaces the displayed title and duplicate name input; it shares the approved Mattone display field with the Planner page. The Planner title saves on change, blur or Enter; an empty name restores the previous name. Omit the subtitle and repeated meal label. Use the existing `page` tone behind the Sign-up sheet; date, meal and row action share fixed columns. Ellipses open floating edit popovers with Remove at the leading edge and Cancel/primary Save at the trailing edge. Popovers stay within the viewport and preserve row heights. Structured values produce dated slots without AI. Fields save automatically, with save status at the top right opposite a visible Back to Project button. Clearing the name saves a quiet draft and keeps the meal preview visible; a name is required before Add. Keep Add below the form, sticky during long-sheet review, with explicit editing-state feedback. Back to Project and other navigation flush pending saves. Failed saves keep typed input visible and offer Retry Saving. Retain removal/Undo, conflict resolution and atomic acceptance. Do not show question cards, Continue, Finish with This, Save and Leave or the Planner privacy paragraph.
 - **General Planner choices:** answer tiles retain their raised treatment and show an unmistakable selected radio and ink border. A typed answer is the selected answer too: it shows as "Your answer" above the choices, and Continue advances after the same preparation. Selecting an answer prepares the visible preview; Continue only advances after that preparation completes. While the Planner works, the preview shows dashed skeleton rows with the text "Building the Sign-up sheet…", and each complete item appears as its own row as it is generated (rows appear in order and never repeat). The skeleton stays until the step finishes, and Continue is enabled only after the final result replaces the streamed rows. Back, Finish with This, and Save and Leave are quiet actions. The final primary changes to Add to Project in the same organization.
 - **Slot (phone):** claimed Slots are flat rows (date 14/600, "✓ Ruth Bennett" in `ink-2`); open Slots are raised tiles with date, a `badge-need` ("1 spot left") and a full-width primary "I Can Bring Dinner"; after claiming the tile flattens and shows "You're bringing dinner" with the sunlit check.
-- **Inputs:** 36px tall (44px phone), 6px radius, `control-border`, placeholder in `ink-2`; the dictation mic is an icon button inside the field.
+- **Inputs:** 36px tall, the same as a button so a field and a button share a row (44px phone), 12px radius, 14px side padding, `control-border`, placeholder in `ink-2`; the dictation mic is an icon button inside the field. Labels sit 8px above their field.
+- **Selects:** an input with the bar's chevron 12px from the right edge in place of the browser arrow.
+- **File pickers and checkboxes:** the browser's file button wears the small secondary button; checkboxes and radios are 16px in `ink`.
+- **Rich text toolbar:** grouped 36 by 32px icon buttons (40px phone) in a 12px bordered group; the active tool takes `nav-active`.
 - **Button grammar:** every visible button label uses Title Case. Four kinds of action, one look each. The view's next step: ink primary, one per view, in the header or guidance strip. Add to a section: small secondary with a plus, right of the section heading, always "Add …". Do the thing (Volunteer-facing): small secondary worded as the person would say it ("I Can Bring Dinner"). Manage it: a ⋯ icon button opening a menu (Edit, Duplicate, Archive, then Delete last in `danger`). No inline Edit/Delete on rows, no bare-text section actions. List columns follow the same rule: one ⋯ menu per column header.
 - **Disclosure grammar:** native disclosure triangles are hidden. A text disclosure uses a plain-language label plus the house plus mark, which turns into a close mark while open, with a quiet tonal hover. A folded group of rows uses the full-width tonal disclosure bar with its count or status on a second line. Attached action menus use an ellipsis. Actions such as comments use a compact text button with a purpose-built icon and an action label ("Add Comment"), never an unstyled noun. Sections needed to understand the current screen, including Sharing and ownership, stay open rather than becoming disclosures.
-- **Sidebar:** the wordmark, then nav items in this order: Home, Projects, Get involved, People and Oversight (Admin only), then Notifications with its unread count in `ink`. Settings is not in the nav. The current page is `nav-active` with `aria-current="page"`. The church name lives only in the account row at the bottom; someone in several Organizations gets "Switch Church" in the account menu.
 - **Avatar:** a person's initials (first letter of the first and last name, one letter for a one-word name, "?" for no letters) on a 32% rounded square: 20px `sm` in meta lines, pills and stacks, 28px by default in lists, 56px `lg` on Profile and the person page. The fill is a 135-degree wash from one of ten hues in the header wash family (`avatar-hue-0` to `9`, tokens `avatar-0` to `9`) into the next hue around the wheel, using B's light and dark palettes. The hue is chosen by `Zlib.crc32` of the person's email, or of their name when there is no email, so a person keeps one color everywhere and across restarts. Ink initials clear 10.4:1 on the light wash, and `#F2F1ED` clears 7.6:1 on the dark wash, on every hue. A faint top highlight (`--shadow-avatar`) gives depth without a border. Static avatars never move; one inside a link or button lifts 1px on hover. Beside a visible name the avatar is `aria-hidden`; a bare avatar (the phone top bar) names itself with `role="img"`. Several people show as an overlapping stack of up to three plus a "+N" tile, and each avatar's ring follows the same shape in the surface behind it (2px, 1.5px in 20px stacks).
-- **Person pill:** a name in running text (task and comment authors, meta lines, Slot claimers, notifications, Invitations, Home leaders). A `hairline` pill, 24px tall, with the 20px avatar flush at its left end (a 2px inset) and the name in 13/18 `ink`. No border, so it reads as a label rather than a button. Several people share one pill: the overlapping stack, then their names. A pill that links to the person gets a gentle `nav-active` hover; a static pill never changes on hover. Where the row is already the container (Team members, People, Oversight, Invitations and Recipients lists, the sidebar account row) the avatar sits alone beside the name instead.
-- **Status chip:** a 4px badge (`status-chip`) with `hairline` fill, 12/16 `ink` label, naming a fact about a Person: Leader, Admin, "Away until Dec 1", "Can't sign in". "Never asked" is an open need, so it takes the `sunlit-soft` fill (`status-chip-need`). Chips never become pills and never carry a color for status; they sit beside the name, wrapping only on the person page.
+- **Person pill:** a name in running text (task and comment authors, meta lines, Slot claimers, notifications, Invitations, Home leaders). A `hairline` pill, 24px tall, with the 20px avatar flush at its left end (a 2px inset) and the name in 13/18 `ink`. No border, so it reads as a label rather than a button. Several people share one pill: the overlapping stack, then their names. A pill that links to the person gets a gentle `nav-active` hover; a static pill never changes on hover. Where the row is already the container (Team members, People, Oversight, Invitations and Recipients lists, the account menu head) the avatar sits alone beside the name instead.
+- **Status chip:** a 6px badge (`status-chip`) with `hairline` fill, 12/16 `ink` label, naming a fact about a Person: Leader, Admin, "Away until Dec 1", "Can't sign in". "Never asked" is an open need, so it takes the `sunlit-soft` fill (`status-chip-need`). Chips never become pills and never carry a color for status; they sit beside the name, wrapping only on the person page.
 - **Directory row:** the avatar, then the name as the row's link (the whole row is clickable), its status chips, and one meta line naming the Active Projects they serve on ("Serving on Kids Ministry and Greeters, and 1 more", or "Not serving on an Active Project right now"), truncated to one line. Contact details and historical activity stay on the Person page and never appear in the directory.
 - **Quick filters:** the `tab-bar` of links across the top of a list, each with its count in plain `ink-2` (no badges). The current filter is `aria-current="page"`. Filters are query parameters, so they can be shared and combine with search; a live search form keeps the filter in a hidden field.
-- **Account menu:** one popover, used in two places. The sidebar row pins to the bottom (an avatar, name at 13/600, church at 12/16 `ink-2`, updown chevron) and its panel opens upward: identity head, Profile, Settings (only where the Person may manage Settings), a hairline, then Sign Out. On phone the avatar in the top bar opens the same items as a sheet above the tab bar. It is a `details` disclosure, so Enter or Space opens it and Tab moves through the items; Escape or an outside click closes it and Escape returns focus to the trigger.
+- **Account menu:** one popover, opened by the avatar in the top bar. From 768px it drops under the avatar; on phones the same items open as a sheet above the tab bar. Identity head (avatar, name at 13/600, church at 12/16 `ink-2`), Switch Church for someone in several Organizations, Profile, Terms, Privacy policy, a hairline, then Sign Out. Its rows are 16px rounded so they sit concentric inside the 20px panel. It is a `details` disclosure, so Enter or Space opens it and Tab moves through the items; Escape or an outside click closes it and Escape returns focus to the trigger.
 - **Phone tab bar:** fixed to the bottom on `frame` with a hairline top border. It has one column per destination the Person can open (Volunteers see three). Each tab is at least 44px tall, with a 20px icon and an 11px label; the current tab is `ink` and 600. Notifications is not a tab. It is the bell in the top bar, and its count is an `ink` badge. Bottom padding follows `env(safe-area-inset-bottom)`, which needs `viewport-fit=cover` in the app's viewport meta.
 - **Tool rows:** the Tasks list is the model. A task is completed by a 20px ring at the left with a 44px hit area; hovering previews the check, and a completed task becomes a sunlit disc with the check, so no "Done" button appears. The title is `heading`, with one meta line of assignee and due date. Due dates read relatively near today ("Due in 3 days", "Overdue by 2 days", "Due Apr 9" beyond eight weeks), with the exact date in the `<time>` title. Task comments use a compact icon-and-label disclosure. Slot comments live inside the row's ⋯ menu so they do not interrupt the schedule; choosing Add Comment or View Comments opens one tonal panel directly below that Slot. Claim stays a small secondary button; Unclaim, Edit and Delete live in the row's ⋯ menu. Schedule items follow the same title-then-meta order.
 - **Messages:** one plain-text composer sits above a flat chronological thread. Author, time and the ⋯ menu share one header row; replies indent without a decorative rail. Message bodies preserve newlines but have no rich-text toolbar or mention picker. Reply opens a small plain-text composer beneath its conversation. This is discussion, not chat, so messages never become bubbles or cards.
 - **Header wash:** the decorative surface for pages. The avatar wash is the only other gradient. Two or three blurred radial blobs (closest-side radial gradients, 24px blur) at 9–22% alpha in tool or accent colors, plus SVG `feTurbulence` grain at 10% alpha multiplied on top, masked to fade out by 300px from the top of the panel. The tint carries meaning: `sunlit` for sign-up work and Leader views, `tool-schedule` teal for the Admin overview, `tool-messages` orange for Volunteers. Header content sits above it; anything that sits on it (the status strip) gets a 75% white fill. Never behind rows, forms, the Planner, or text that needs 4.5:1.
 - **Project banner:** an optional photo above the Project header, in a `rounded-panel` frame with a `border`. It crops to 3:1 on desktop and 2:1 on phones, around a focal point that defaults to center (an AI suggestion can move it, an editor can set it). A photo too small for the crop sits whole on a blurred copy of itself and is never upscaled. With no photo, editors see one dashed ghost tile to add one; the public page shows only the photo. With a photo, editors get no controls below it. Replace, Reposition, Alt text and Remove sit on the banner as a row of translucent `panel` chips with backdrop blur, shown on hover or focus (a single small edit button shows them on touch), and dropping an image on the banner replaces it with a dashed `ink` highlight. Reposition works on the real banner: the full photo fills the frame, drags with the pointer or arrow keys, and shows the Desktop 3:1 or Phone 2:1 crop it will save, with Save and Cancel (Escape) on the photo. Alt text is optional: a popover on the banner edits or clears it, and the AI still fills it in.
 - **Privacy disclosures:** public Terms and Privacy pages explain storage, Planner context, xAI voice audio and browser dictation. Link them from the landing footer and account menu, never inside the Planner flow.
-- **Notification list:** two regions on one page. "Needs you" is the top section, newest first, with at most one small secondary action per row: Respond (an Invitation), Mark Done (a Task), or Open. "For your information" groups the rest under their Project name (12/16 label in `ink-2`), with plain rows and Mark Read. The bell and its sidebar count show unread "Needs you" items only. Both sections use plain rules, never AI copy.
+- **Notification list:** two regions on one page. "Needs you" is the top section, newest first, with at most one small secondary action per row: Respond (an Invitation), Mark Done (a Task), or Open. "For your information" groups the rest under their Project name (12/16 label in `ink-2`), with plain rows and Mark Read. The bell and its count show unread "Needs you" items only. Both sections use plain rules, never AI copy.
 - **Notification preferences (Profile):** the Notifications tab shows a plain comparison table, one row per notification type and independent In-app, Email, and SMS checkboxes. Each checkbox has a 44px click target and a label naming both the event and channel. Any combination is allowed, including none. Existing email choices remain, in-app starts on, and SMS starts off. The SMS number and Change Phone link sit below the table with the opt-in explanation. Enabling SMS requires a phone number with its country code; errors stay beside the form. These settings apply to new notifications.
 - **Away dates (Profile):** a "When you're away" section under the profile form. A single text box takes the person's own words and "Suggest Dates" proposes ranges as a ghost tile labelled "Suggested · not saved yet", with editable From, Until and Note fields and "Save These Dates". Nothing is stored until that press. With no AI, or when it cannot read the words, the same fields appear with "Add Dates" and an alert in `danger-soft`. Upcoming ranges list as "Away Mar 1 to 14" with a text Remove. The note appears only to the person who wrote it.
 - **Away line (Oversight):** a plain list under the two urgent columns, each row a name with its avatar and "Away until Nov 9" (while the range is on) or "Unavailable Mar 1 to 14" in `ink-2`. It shows dates only, never the note, and a person in this list is never counted as overextended.
@@ -262,7 +263,7 @@ Badges 4px, buttons and inputs 6px, nav items 8px, tiles 10px, panels and popove
 - Do show people by name with plain counts ("4 active Projects", "14 meals this year"); never bars, percentages, red flags or scores.
 - Do reserve Mattone for the wordmark and page-level headlines, and depth for things you can click.
 - Do keep exactly one primary (ink) button per view.
-- Don't use gradients (except the header wash and the avatar wash), purple or indigo, glows, emoji, icon tiles above headings, kicker labels, pills other than the Person pill, avatar walls (more than the three-avatar stack), chat bubbles for the Planner, or cards inside cards.
+- Don't use gradients (except the header wash and the avatar wash), purple or indigo, glows, emoji, icon tiles above headings, kicker labels, pill-shaped tabs, filters, chips or badges (round is for things you press and the Person pill), avatar walls (more than the three-avatar stack), chat bubbles for the Planner, or cards inside cards.
 - Don't set Mattone below 24px or on anything interactive except the approved editable Project-name field in meal setup and the Planner.
 
 ## Motion
@@ -356,3 +357,4 @@ The landing page and every public page built from it (feature, use-case and pric
 | 2026-11-09 | Landing council run (5 rounds, Opus, GPT Sol, Grok): colored plates only on the hero, the Planner callout, the close and auth; tour scenes cropped to the project without sidebar or title and set as paired rows instead of the sticky rail; the tour tint removed; the Planner scene tells three questions; one left edge on `--lp-max`; a visible FAQ with FAQPage JSON-LD, canonical and social tags, `sitemap.xml` and `llms.txt`; the Marketing pages rules above | Josh: plates "just for the hero or special callouts" and paired rows; every reviewer docked the empty rail column and the repeated full windows |
 | 2026-11-11 | Landing tour scenes become raised windows on a white band with stacked icons; the demo invitation is the home callout plate; the footer drops "On this page" for three link groups | Josh found the flat scenes and inline icons "blah", wanted the demo ask more emphatic, and the footer better organized |
 | 2026-11-11 | Landing letter becomes a tilted sheet of paper with a clipped photo print; the example photos become an overlapping album of prints that straighten on hover, with plural captions; the timeline's start names its sources as chips; the tall card's phone is drawn larger with its bottom 15% under the card edge | Josh asked for Basecamp's angled letter, a more creative photo treatment, and a fix for content overflowing the phone bezel |
+| 2026-11-12 | The top bar's shape carries into the app: buttons are fully round and 36px tall, inputs 12px and 36px, tiles 16px, panels 20px. Tabs, quick filters, status chips and badges keep their own shapes | Josh asked for the new nav's look across the app. Round now means "press me"; filters and facts stay distinct so they are not mistaken for actions. Replaces "No other pills" |

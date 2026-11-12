@@ -28,7 +28,7 @@
         <section id="profile-details" class="space-y-4" data-tabs-target="panel" data-tabs-name="details" aria-label="Details">
           <div>
             <%= form.label :name, class: "block text-label font-medium text-ink-2" %>
-            <%= form.text_field :name, required: true, class: "mt-1 block w-full field" %>
+            <%= form.text_field :name, required: true, class: "mt-2 block w-full field" %>
           </div>
 
           <div>
@@ -38,7 +38,7 @@
 
           <div>
             <%= form.label :phone, class: "block text-label font-medium text-ink-2" %>
-            <%= form.telephone_field :phone, class: "mt-1 block w-full field" %>
+            <%= form.telephone_field :phone, class: "mt-2 block w-full field" %>
           </div>
 
           <%= render "shared/skills_field", form:, attribute: :skills, legend: "Your skills",

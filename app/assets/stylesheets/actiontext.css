@@ -10,6 +10,9 @@ trix-editor {
   min-height: 5em;
   outline: none; }
 
+trix-toolbar {
+  margin-top: 8px; }
+
 trix-toolbar * {
   box-sizing: border-box; }
 
@@ -31,7 +34,8 @@ trix-toolbar .trix-button-group {
   border: 1px solid var(--color-border);
   border-top-color: var(--color-border);
   border-bottom-color: var(--color-border);
-  border-radius: var(--radius-control); }
+  border-radius: var(--radius-control);
+  overflow: hidden; }
   trix-toolbar .trix-button-group:not(:first-child) {
     margin-left: 1.5vw; }
     @media (max-width: 768px) {
@@ -55,13 +59,12 @@ trix-toolbar .trix-button {
   margin: 0;
   outline: none;
   border: none;
-  border-bottom: 1px solid var(--color-border);
   border-radius: 0;
   background: transparent; }
   trix-toolbar .trix-button:not(:first-child) {
     border-left: 1px solid var(--color-border); }
   trix-toolbar .trix-button.trix-active {
-    background: #cbeefa;
+    background: var(--color-nav-active);
     color: black; }
   trix-toolbar .trix-button:not(:disabled) {
     cursor: pointer; }
@@ -74,21 +77,19 @@ trix-toolbar .trix-button {
 
 trix-toolbar .trix-button--icon {
   font-size: inherit;
-  width: 2.6em;
-  height: 1.6em;
-  max-width: calc(0.8em + 4vw);
+  width: 36px;
+  height: 32px;
   text-indent: -9999px; }
   @media (max-width: 768px) {
     trix-toolbar .trix-button--icon {
-      height: 2em;
-      max-width: calc(0.8em + 3.5vw); } }
+      width: 40px;
+      height: 40px; }
+    trix-toolbar .trix-button--icon::before {
+      inset: 10px 11px; } }
   trix-toolbar .trix-button--icon::before {
     display: inline-block;
     position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
+    inset: 7px 9px;
     opacity: 0.6;
     content: "";
     background-position: center;
@@ -284,7 +285,7 @@ trix-editor .trix-button {
   trix-editor .trix-button:not(:first-child) {
     border-left: 1px solid #ccc; }
   trix-editor .trix-button.trix-active {
-    background: #cbeefa; }
+    background: var(--color-nav-active); }
   trix-editor .trix-button:not(:disabled) {
     cursor: pointer; }
 

@@ -42,11 +42,11 @@
   --color-avatar-7: #B3C7F1;
   --color-avatar-8: #DDC6A6;
   --color-avatar-9: #C7CDD5;
-  --radius-badge: 4px;
-  --radius-control: 6px;
-  --radius-nav: 8px;
-  --radius-tile: 10px;
-  --radius-panel: 12px;
+  --radius-badge: 6px;
+  --radius-control: 12px;
+  --radius-nav: 12px;
+  --radius-tile: 16px;
+  --radius-panel: 20px;
   --radius-device: 28px;
   --spacing-1: 4px;
   --spacing-2: 8px;
@@ -56,14 +56,13 @@
   --spacing-6: 24px;
   --spacing-7: 28px;
   --spacing-10: 40px;
-  --spacing-control-h: 32px;
-  --spacing-control-h-sm: 28px;
+  --spacing-control-h: 36px;
+  --spacing-control-h-sm: 32px;
   --spacing-input-h: 36px;
   --spacing-input-h-phone: 44px;
   --spacing-answer-h: 48px;
   --spacing-phone-action-h: 48px;
   --container-page-w: 1360px;
-  --spacing-topbar-h: 48px;
   --text-wordmark: 18px;
   --text-wordmark--line-height: 24px;
   --text-wordmark--font-weight: 700;
@@ -177,6 +176,9 @@
   }
   [hidden] { display: none !important; }
   input[type="checkbox"], input[type="radio"] { accent-color: var(--color-ink); }
+  input:is([type="checkbox"], [type="radio"]):not(.switch) { width: 16px; height: 16px; flex-shrink: 0; }
+  /* The file picker's own button wears the small secondary button. */
+  input[type="file"]::file-selector-button { min-height: var(--spacing-control-h-sm); margin-right: 12px; padding: 0 12px; border: 1px solid var(--color-border); border-radius: 999px; background: var(--color-panel); color: var(--color-ink); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
   ::placeholder { color: var(--color-ink-2); opacity: 1; }
   :where(main, section, article, aside, form, fieldset, turbo-frame) { min-width: 0; }
   :where(p, li, dd, td, th, a) { overflow-wrap: anywhere; }
@@ -186,7 +188,9 @@
 }
 
 @layer components {
-  .btn { @apply inline-flex min-h-control-h items-center justify-center gap-2 rounded-control px-3 py-0 text-button no-underline; border: 1px solid transparent; transition: background var(--duration-hover), color var(--duration-hover), border-color var(--duration-hover), box-shadow var(--duration-press), transform var(--duration-press); }
+  .btn { @apply inline-flex min-h-control-h items-center justify-center gap-2 rounded-full px-3 py-0 text-button no-underline; border: 1px solid transparent; transition: background var(--duration-hover), color var(--duration-hover), border-color var(--duration-hover), box-shadow var(--duration-press), transform var(--duration-press); }
+  /* Filled and bordered buttons carry the bar's 14px semibold; text buttons stay quiet. */
+  .btn-primary, .btn-secondary { padding-inline: 16px; font-size: 14px; font-weight: 600; }
   .btn-primary { @apply bg-ink text-on-ink shadow-button; }
   .btn-secondary { @apply border-border bg-panel text-ink shadow-secondary; }
   .btn:active { transform: translateY(1px); box-shadow: var(--shadow-secondary-active); }
@@ -194,17 +198,18 @@
   .btn-text { @apply text-ink-2; }
   .btn-danger { @apply text-danger; }
   .btn-sm { @apply min-h-control-h-sm px-2.5; }
-  .btn-icon { @apply min-h-control-h-sm w-7 px-0 text-ink-2; }
+  .btn-sm:is(.btn-primary, .btn-secondary) { padding-inline: 12px; font-size: 13px; }
+  .btn.btn-icon { @apply min-h-control-h-sm w-8 px-0 text-ink-2; }
   .actions-menu > summary { list-style: none; }
   .actions-menu > summary::-webkit-details-marker { display: none; }
   .actions-menu-panel { @apply absolute right-0 top-full z-30 mt-1 flex w-56 flex-col rounded-panel border border-border bg-panel p-1 shadow-float; }
   .actions-menu-panel-start { @apply left-0 right-auto; }
-  .actions-menu-panel :is(a, button) { @apply flex min-h-control-h w-full items-center rounded-badge px-3 text-left text-button text-ink no-underline; transition: background-color var(--duration-hover); }
+  .actions-menu-panel :is(a, button) { @apply flex min-h-control-h w-full items-center rounded-tile px-3 text-left text-button text-ink no-underline; transition: background-color var(--duration-hover); }
   .actions-menu-panel .menu-danger { @apply text-danger; }
   .actions-menu-panel form { @apply w-full; }
   .split-button { @apply inline-flex items-stretch; }
   .split-button-main { border-top-right-radius: 0; border-bottom-right-radius: 0; }
-  .split-button-menu { @apply w-8 px-0; margin-left: -1px; border-top-left-radius: 0; border-bottom-left-radius: 0; }
+  .btn.split-button-menu { @apply w-9 px-0; margin-left: -1px; border-top-left-radius: 0; border-bottom-left-radius: 0; }
   .disclosure-summary { @apply inline-flex min-h-control-h items-center gap-2 rounded-control px-2 text-left; list-style: none; }
   .disclosure-summary::-webkit-details-marker { display: none; }
   .disclosure-icon { transition: transform var(--duration-hover); }
@@ -255,7 +260,7 @@
   .search-input-row input:focus-visible { outline: none; }
   .search-input-row input::-webkit-search-cancel-button { appearance: none; }
   .search-input-row input::placeholder { @apply text-ink-2; }
-  .search-dismiss { @apply grid size-11 shrink-0 place-items-center rounded-control text-ink-2; }
+  .search-dismiss { @apply grid size-11 shrink-0 place-items-center rounded-full text-ink-2; }
   .search-results { @apply min-h-32 overflow-y-auto p-2; overscroll-behavior: contain; }
   .search-results turbo-frame { @apply block; }
   .search-caption { @apply px-3 pb-2 pt-3 text-label text-ink-2; }
@@ -310,7 +315,7 @@
   .app-bar-button[aria-current="page"] { @apply bg-nav-active; }
   .nav-pill { @apply inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-full px-4 text-[14px] font-semibold leading-5 text-ink-2 no-underline; transition: background-color var(--duration-hover), color var(--duration-hover); }
   .nav-pill[aria-current], details[open] > .nav-pill { @apply bg-nav-active text-ink; }
-  .account-item { @apply flex min-h-control-h w-full items-center gap-3 rounded-badge px-2.5 text-left text-button text-ink no-underline; transition: background-color var(--duration-hover); }
+  .account-item { @apply flex min-h-control-h w-full items-center gap-3 rounded-tile px-2.5 text-left text-button text-ink no-underline; transition: background-color var(--duration-hover); }
   .account-item:hover { @apply bg-hairline; }
   .account-item svg { @apply text-ink-2; }
   .account-menu form { @apply w-full; }
@@ -399,10 +404,13 @@
   .switch:checked { background: var(--color-ink); box-shadow: none; }
   .switch:checked::before { background: var(--color-panel); transform: translateX(20px); }
   .switch:focus-visible { outline: 2px solid var(--color-ink); outline-offset: 3px; }
-  .field { @apply min-h-input-h-phone min-w-0 rounded-control border border-control-border bg-panel px-3 py-2 text-body-phone text-ink sm:min-h-input-h sm:py-1.5 sm:text-body; }
+  .field { @apply min-h-input-h-phone min-w-0 rounded-control border border-control-border bg-panel px-3.5 py-2 text-body-phone text-ink sm:min-h-input-h sm:py-1.5 sm:text-body; }
+  /* Selects drop the browser's arrow for the bar's chevron, inset like a button's padding. */
+  select.field { appearance: none; padding-right: 38px; cursor: pointer; text-overflow: ellipsis; background-image: var(--select-chevron); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235F5E5A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); }
+  :root[data-dark] select.field { --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23AAA8A2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); }
   .field-error, .field[aria-invalid="true"] { border-color: var(--color-danger); }
   :is(textarea, trix-editor).field { min-height: 112px; }
-  .nav-item { @apply flex min-h-control-h items-center gap-3 rounded-nav px-3 py-1.5 text-meta text-ink-2; transition: background-color var(--duration-hover), color var(--duration-hover); }
+  .nav-item { @apply flex min-h-control-h items-center gap-3 rounded-full px-4 py-1.5 text-meta text-ink-2; transition: background-color var(--duration-hover), color var(--duration-hover); }
   .nav-item:is([aria-current="page"], [aria-current="true"]) { @apply bg-nav-active font-semibold text-ink; }
   /* Inset shadow, not border-b: a -mb-px tab inside overflow-x-auto makes the bar scroll vertically. */
   .tab-bar { @apply flex gap-6 overflow-x-auto overflow-y-hidden shadow-[inset_0_-1px_0_var(--color-border)]; }
@@ -425,7 +433,7 @@
   .tool-section h2 { @apply flex items-center gap-2; }
   .dictation-field { position: relative; }
   .dictation-field:has(button:not([hidden])) :is(input, textarea) { padding-right: 44px; }
-  .dictation-field > button { position: absolute; right: 4px; top: 4px; }
+  .dictation-field > button { position: absolute; right: 2px; top: 2px; }
   .dictation-field:has([aria-pressed="true"]) :is(input, textarea) { padding-right: 124px; }
   .answer-tile { @apply flex min-h-answer-h w-full items-center gap-3 rounded-tile border border-border bg-panel px-3.5 py-3 text-body font-medium text-left shadow-raised; transition: border-color var(--duration-hover), transform var(--duration-press); }
   .answer-tile:active { transform: translateY(1px); }
@@ -623,8 +631,9 @@
     .wordmark { min-height: 44px; }
     nav[aria-label="Breadcrumbs"] a { @apply inline-flex min-h-11 items-center; }
     .btn { min-height: 44px; }
-    .btn-icon { width: 44px; }
-    .split-button-menu { width: 44px; }
+    .btn.btn-icon { width: 44px; min-height: 44px; }
+    .dictation-field > button { right: 0; top: 0; }
+    .btn.split-button-menu { width: 44px; }
     .actions-menu-panel :is(a, button), .account-item { min-height: 44px; }
     .touch-target { @apply inline-flex min-h-11 min-w-11 items-center justify-center; }
     button.task-check { @apply size-11 border-0 bg-transparent; }

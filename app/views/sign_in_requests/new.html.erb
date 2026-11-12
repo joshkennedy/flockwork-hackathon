@@ -7,7 +7,7 @@
   <%= form_with url: sign_in_requests_path, class: "mt-6 space-y-4" do |f| %>
     <div>
       <%= f.label :email, "Email", class: "block text-label font-medium text-ink-2" %>
-      <%= f.email_field :email, required: true, autofocus: true, autocomplete: "email", class: "mt-1 block w-full field" %>
+      <%= f.email_field :email, required: true, autofocus: true, autocomplete: "email", class: "mt-2 block w-full field" %>
     </div>
 
     <%= f.submit "Email Me a Sign-In Link", class: "w-full btn btn-primary" %>

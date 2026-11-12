@@ -18,6 +18,6 @@
   <div class="mt-4">
     <%= label_tag "#{form.object_name}_#{attribute}_other", "Other skills", class: "block text-label font-medium text-ink-2" %>
     <%= text_field_tag name, others.map { |skill| Skills.label(skill) }.join(", "), id: "#{form.object_name}_#{attribute}_other",
-      placeholder: "Separate with commas", autocomplete: "off", class: "mt-1 block w-full field", aria: { describedby: hint_id } %>
+      placeholder: "Separate with commas", autocomplete: "off", class: "mt-2 block w-full field", aria: { describedby: hint_id } %>
   </div>
 </fieldset>
