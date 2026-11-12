@@ -45,7 +45,7 @@
     <div>
       <%= form.label :pco_skills_field_id, "Skills custom field ID (optional)", class: "block text-label font-medium text-ink" %>
       <%= form.text_field :pco_skills_field_id, inputmode: "numeric", class: "mt-1 block w-full field", aria: { describedby: "pco-skills-help" } %>
-      <p id="pco-skills-help" class="mt-2 text-meta text-ink-2">Enter the API FieldDefinition ID of a plain text field containing comma-separated skill labels. Leave blank to keep local Skills unchanged. A missing value preserves Skills; an explicitly empty value clears them. Selection and checkbox fields are not supported.</p>
+      <p id="pco-skills-help" class="mt-2 text-meta text-ink-2">Enter the ID of the Planning Center text field that lists skills, separated by commas. Leave blank to keep local Skills unchanged. A missing value preserves Skills; an explicitly empty value clears them. Selection and checkbox fields are not supported.</p>
     </div>
     <%= form.submit "Save Skills Mapping", class: "btn btn-secondary" %>
   <% end %>
@@ -59,6 +59,6 @@
       <%= form.label :pco_secret, "Secret", class: "block text-label font-medium text-ink" %>
       <%= form.password_field :pco_secret, value: nil, required: true, autocomplete: "off", class: "mt-1 block w-full field" %>
     </div>
-    <%= form.submit Current.organization.planning_center_connected? ? "Replace Connection" : "Connect", class: Current.organization.planning_center_connected? ? "btn btn-secondary" : "btn btn-primary" %>
+    <%= form.submit Current.organization.planning_center_connected? ? "Replace Connection" : "Connect Planning Center", class: Current.organization.planning_center_connected? ? "btn btn-secondary" : "btn btn-primary" %>
   <% end %>
 </div>

@@ -15,14 +15,14 @@ class NotificationPreferencesTest < ApplicationSystemTestCase
     assert_no_selector "#person_sms_preferences_invitation:checked"
     page.save_screenshot(Rails.root.join("tmp/notification-preferences-desktop.png"))
 
-    click_on "Change Phone"
+    click_on "Change phone"
     fill_in "Phone", with: "+1 (500) 555-0000"
     find("a[data-tabs-name=notifications]").click
     uncheck "Invitations via in-app"
     uncheck "Invitations via EMAIL"
     check "Invitations via SMS"
     click_button "Save Changes"
-    assert_text "Your profile was updated."
+    assert_text "Profile saved."
     assert person.reload.notification_for?("sms", "invitation")
     assert_not person.notification_for?("email", "invitation")
     assert_not person.notification_for?("in_app", "invitation")
@@ -40,7 +40,7 @@ class NotificationPreferencesTest < ApplicationSystemTestCase
       all("input[type=checkbox]").each(&:uncheck)
       click_button "Save Changes"
     end
-    assert_text "Your profile was updated."
+    assert_text "Profile saved."
 
     person.reload
     Notification::KINDS.each_key do |kind|
@@ -58,11 +58,11 @@ class NotificationPreferencesTest < ApplicationSystemTestCase
     click_button "Save Changes"
 
     assert_selector "[role=alert]", text: "country code"
-    click_on "Change Phone"
+    click_on "Change phone"
     fill_in "Phone", with: "+15005550000"
     find("a[data-tabs-name=notifications]").click
     click_button "Save Changes"
-    assert_text "Your profile was updated."
+    assert_text "Profile saved."
     assert people(:grace_volunteer).reload.notification_for?("sms", "invitation")
   end
 end

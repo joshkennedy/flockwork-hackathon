@@ -350,7 +350,7 @@ export default class extends Controller {
     try {
       answer = JSON.parse(event.arguments).answer
     } catch (_error) {
-      this.fail("Grok returned an invalid answer. You can keep typing.")
+      this.fail("The Planner couldn’t use that answer. You can keep typing.")
       return
     }
     if (!answer) return
@@ -644,7 +644,7 @@ export default class extends Controller {
   }
 
   messageFor(error) {
-    if (error?.name === "NotAllowedError") return "Microphone access was denied. You can keep typing."
+    if (error?.name === "NotAllowedError") return "Microphone access is blocked. Allow it in your browser’s site settings, or keep typing."
     if (error instanceof TypeError) return "Voice planning lost its connection. You can keep typing."
     return error?.message || "Voice planning is unavailable. You can keep typing."
   }

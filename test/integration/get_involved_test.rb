@@ -87,6 +87,6 @@ class GetInvolvedTest < ActionDispatch::IntegrationTest
 
     assert_select "section[aria-labelledby='needs-heading'] p", text: "No open Sign-up spots right now. Projects with unassigned Tasks are listed below."
     assert_select "section[aria-labelledby='open-teams-heading'] .badge-need", text: "1 unassigned Task"
-    assert_select "section[aria-labelledby='joined-teams-heading'] li", text: /1 of 1 dinner filled · all covered/
+    assert_select "section[aria-labelledby='joined-teams-heading'] li", text: /1 of 1 dinner filled · all filled/
   end
 end

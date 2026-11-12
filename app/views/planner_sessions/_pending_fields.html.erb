@@ -16,7 +16,7 @@
     <div>
       <%= label_tag field_id, definition.fetch(:label), class: "block text-label font-medium text-ink" %>
       <% if field_name == "schedule_item_source_key" %>
-        <%= select_tag input_name, options_for_select([[ "No session", "" ]] + planner_schedule_item_options(planner_session, value), value), id: field_id, class: field_class, aria: accessibility %>
+        <%= select_tag input_name, options_for_select([[ "No Schedule item", "" ]] + planner_schedule_item_options(planner_session, value), value), id: field_id, class: field_class, aria: accessibility %>
       <% else %>
       <% case definition.fetch(:input) %>
       <% when :textarea %>

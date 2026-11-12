@@ -7,7 +7,7 @@
 ] %>
 <% marketing_head(@page, type: "SoftwareApplication", faqs: faqs, node: { applicationCategory: "BusinessApplication", operatingSystem: "Web", offers: { "@type": "Offer", price: "0", priceCurrency: "USD" } }) %>
 
-<section class="lp-page-hero" aria-labelledby="pricing-title">
+<section class="lp-page-hero lp-pricing-hero" aria-labelledby="pricing-title">
   <div>
     <h1 id="pricing-title">Free during beta.</h1>
     <p>Plan the work in one place, so your church spends less time chasing details and more time serving people.</p>
@@ -17,16 +17,21 @@
 <section class="lp-section lp-plan-section" aria-labelledby="plan-title">
   <div class="lp-plan">
     <div>
-      <p class="lp-plan-name">Flockwork beta</p>
-      <h2 id="plan-title">Everything included.</h2>
-      <p>Every current tool. No card required.</p>
+      <p class="lp-plan-price">$0</p>
+      <p class="lp-plan-terms">For your whole church, while Flockwork is in beta. No card.</p>
+      <div class="lp-plan-actions">
+        <%= link_to "Plan Your First Project", sign_up_path, class: "btn btn-primary" %>
+        <%= link_to "Or look around the demo", new_demo_session_path, class: "link" %>
+      </div>
     </div>
-    <ul>
-      <li>Sign-up sheets and tasks</li>
-      <li>Schedules and budgets</li>
-      <li>People, messages, files and lists</li>
-      <li>The guided Planner</li>
-    </ul>
+    <div class="lp-plan-inside">
+      <h2 id="plan-title">Everything’s included.</h2>
+      <ul>
+        <% [ [ "signup_sheet", "Sign-up sheets" ], [ "tasks", "Tasks" ], [ "schedule", "Schedule" ], [ "budget", "Budget" ], [ "messages", "Messages" ], [ "docs", "Docs & files" ], [ "list", "Lists" ], [ "people", "People" ], [ "planner", "The Planner" ], [ "oversight", "Oversight" ] ].each do |tool, label| %>
+          <li><%= planner_tool_icon(tool, size: 20) %><%= label %></li>
+        <% end %>
+      </ul>
+    </div>
   </div>
   <p class="lp-pricing-note">Pricing comes later. Churches will get an email before anything is charged, and nobody is billed automatically.</p>
 </section>

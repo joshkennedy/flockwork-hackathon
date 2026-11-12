@@ -8,7 +8,7 @@ module Planner
         tool: nil,
         summary: ->(fields) { "Move all saved Project, Task, Schedule, Slot and List dates #{fields.fetch('days')} days. Keep existing claims and assignments." },
         fields: {
-          "days" => { label: "Shift days (negative moves earlier)", input: :number, min: -365, max: 365,
+          "days" => { label: "Days to move (negative moves earlier)", input: :number, min: -365, max: 365,
             schema: { type: "integer", minimum: -365, maximum: 365 } }
         },
         create: ->(project, fields) { ProjectDateShift.new(project, days: fields.fetch("days")).call }
@@ -66,7 +66,7 @@ module Planner
         summary: ->(fields) { fields.fetch("title") },
         fields: {
           "title" => { label: "Title", input: :text, schema: { type: "string" } },
-          "day_offset" => { label: "Day offset", input: :number, schema: { type: "integer" } },
+          "day_offset" => { label: "Day", input: :number, schema: { type: "integer" } },
           "starts_at" => {
             label: "Starts at",
             input: :time,
@@ -96,12 +96,12 @@ module Planner
         fields: {
           "label" => { label: "Label", input: :text, schema: { type: "string" } },
           "start_day_offset" => {
-            label: "Start day offset",
+            label: "Start day",
             input: :number,
             schema: { type: "integer" }
           },
           "end_day_offset" => {
-            label: "End day offset",
+            label: "End day",
             input: :number,
             schema: { type: "integer" }
           },
@@ -117,7 +117,7 @@ module Planner
             schema: { type: "integer", minimum: 1 }
           },
           "schedule_item_source_key" => {
-            label: "Session",
+            label: "Schedule item",
             input: :text,
             schema: { type: [ "string", "null" ] }
           }

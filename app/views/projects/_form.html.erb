@@ -86,5 +86,5 @@
   <%= render "shared/skills_field", form:, attribute: :skills_needed, legend: "Skills needed",
     hint: "The Team page suggests People who list these skills." %>
 
-  <%= form.submit project.persisted? ? "Update Project" : "Create Project", class: "btn btn-primary" %>
+  <%= form.submit project.persisted? ? "Save Project" : "Start Project", class: "btn btn-primary" %>
 <% end %>

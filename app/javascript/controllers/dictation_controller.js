@@ -82,10 +82,10 @@ export default class extends Controller {
   }
 
   errorMessage(error) {
-    if (error === "not-allowed" || error === "service-not-allowed") return "Microphone access was denied. You can keep typing."
+    if (error === "not-allowed" || error === "service-not-allowed") return "Microphone access is blocked. Allow it in your browser’s site settings, or keep typing."
     if (error === "no-speech") return "No speech was heard. Try dictating again."
     if (error === "network") return "Dictation lost its connection. Try again."
-    return "Dictation stopped. You can keep typing."
+    return "Dictation stopped unexpectedly. You can keep typing."
   }
 
 }

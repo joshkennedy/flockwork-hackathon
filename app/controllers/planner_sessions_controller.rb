@@ -267,9 +267,9 @@ class PlannerSessionsController < ApplicationController
 
     def stale_planning_action
       if request.format.json?
-        return render json: { error: "This setup changed in another tab. Reload the saved setup before editing." }, status: :conflict
+        return render json: { error: "This plan changed in another tab. Reload to see the latest, then try again." }, status: :conflict
       end
-      planning_error(ArgumentError.new("This plan changed in another request. Your latest plan is shown; please try that change again."))
+      planning_error(ArgumentError.new("This plan changed in another tab. Your latest plan is shown. Try that change again."))
     end
 
     def set_project

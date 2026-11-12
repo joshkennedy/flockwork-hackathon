@@ -9,7 +9,7 @@
       <% if Policy.can?(Current.person, :accept, @invitation) %>
         <%= button_to "Accept", accept_invitation_path(params[:token]), method: :patch, class: "btn btn-primary" %>
       <% else %>
-        <p class="text-meta text-ink-2">This Project is archived, so it can’t take new Team members.</p>
+        <p class="text-meta text-ink-2">This Project is archived, so it can’t take new Team members. Ask a Leader on this Project about it.</p>
       <% end %>
       <%= button_to "Decline", decline_invitation_path(params[:token]), method: :patch, class: "btn btn-text" %>
     </div>

@@ -1,9 +1,9 @@
-<% content_for :title, "My profile" %>
+<% content_for :title, "Profile" %>
 
 <div class="w-full max-w-4xl">
   <div class="flex items-center gap-4">
     <%= avatar(@person, size: :lg) %>
-    <div class="min-w-0 flex-1"><%= page_header "My profile" %></div>
+    <div class="min-w-0 flex-1"><%= page_header "Profile" %></div>
   </div>
 
   <%# Vertical tabs, one section in view at a time. Details and Notifications share one form, so either Save keeps both. %>
@@ -83,7 +83,7 @@
 
           <div class="space-y-2 text-meta text-ink-2">
             <p>SMS number: <span class="font-medium text-ink"><%= @person.phone.presence || "Not set" %></span>.
-              <%= link_to "Change Phone", "#profile-details", class: "link", data: { action: "tabs#select", tabs_name: "details" } %>
+              <%= link_to "Change phone", "#profile-details", class: "link", data: { action: "tabs#select", tabs_name: "details" } %>
             </p>
             <p>Use a number with its country code, such as +12025550100. Enabling SMS opts you in to these Flockwork texts. Message and data rates may apply. Reply STOP to opt out.</p>
           </div>

@@ -125,7 +125,7 @@ class SlotsTest < ActionDispatch::IntegrationTest
 
     get project_path(project)
 
-    assert_select "details[data-signup-past] summary.disclosure-bar", text: /Past Slots.*1 slot/
+    assert_select "details[data-signup-past] summary.disclosure-bar", text: /Past Slots.*1 Slot/
     assert_select "details[data-signup-past] summary.disclosure-bar svg.disclosure-icon"
     assert_select "details[data-signup-past]", text: /Yesterday dinner/
     assert_select "details[data-signup-past]", text: /Tonight dinner/, count: 0
@@ -141,9 +141,9 @@ class SlotsTest < ActionDispatch::IntegrationTest
     get project_path(project)
 
     assert_select ".split-button a[data-action='slideout#open'][data-slideout-title-param='Add Slot']", text: /Add Slot/
-    assert_select ".split-button summary[aria-label='More Slot options']"
-    assert_select ".actions-menu-panel a[data-action='dialog#open']", text: "Generate Multiple Slots"
-    assert_select "dialog.modal h2", text: "Generate Multiple Slots"
+    assert_select ".split-button summary[aria-label='Actions for Sign-up sheet']"
+    assert_select ".actions-menu-panel a[data-action='dialog#open']", text: "Add Multiple Slots"
+    assert_select "dialog.modal h2", text: "Add multiple Slots"
     assert_select "dialog.modal", text: /one Slot for every day in a date range/
     assert_select "dialog.modal form[action=?]", project_slot_run_path(project)
     assert_select "dialog.slideout turbo-frame#slot-form[data-slideout-target='frame']"
@@ -173,7 +173,7 @@ class SlotsTest < ActionDispatch::IntegrationTest
     assert_select "form[data-controller~='slot-session']"
     assert_select "input[name='slot[date]'][data-slot-session-target='date']"
     assert_select "select[name='slot[schedule_item_id]'][data-slot-session-target='session'][data-action='slot-session#sync']" do
-      assert_select "option[value='']", text: "No session"
+      assert_select "option[value='']", text: "No Schedule item"
       assert_select "option[value='#{session.id}'][data-date='2027-02-12']", text: /Opening Session/
     end
 
@@ -239,7 +239,7 @@ class SlotsTest < ActionDispatch::IntegrationTest
       assert_select "a[href='##{dom_id(slot)}']", text: "Claim"
     end
     assert_select "li##{dom_id(slot)}" do
-      assert_select ".signup-session", text: /Session: Opening Session/
+      assert_select ".signup-session", text: /Schedule item: Opening Session/
     end
   end
 
@@ -278,7 +278,7 @@ class SlotsTest < ActionDispatch::IntegrationTest
     }
 
     assert_response :unprocessable_content
-    assert_select "li", "Capacity cannot be less than the current 2 claims"
+    assert_select "li", "Capacity can't go below 2 people already signed up"
     assert_equal 2, slot.reload.capacity
   end
 

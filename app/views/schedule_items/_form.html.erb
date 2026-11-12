@@ -1,7 +1,7 @@
 <%= form_with model: [ project, schedule_item ], class: "space-y-7" do |form| %>
   <% if schedule_item.errors.any? %>
     <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
-      <p class="font-semibold">Please fix the following:</p>
+      <p class="font-semibold">Fix these to continue:</p>
       <ul class="mt-2 list-disc space-y-1 pl-5 text-meta">
         <% schedule_item.errors.full_messages.each do |message| %>
           <li><%= message %></li>
@@ -36,5 +36,5 @@
     <%= form.text_field :location, class: "mt-2 block w-full field" %>
   </div>
 
-  <%= form.submit schedule_item.persisted? ? "Update Schedule Item" : "Create Schedule Item", class: "btn btn-primary" %>
+  <%= form.submit schedule_item.persisted? ? "Save Schedule Item" : "Add Schedule Item", class: "btn btn-primary" %>
 <% end %>

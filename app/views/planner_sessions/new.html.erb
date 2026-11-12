@@ -10,7 +10,7 @@
   <%= form_with model: [ @project, @planner_session ], class: "mt-7 space-y-6" do |form| %>
     <% if @planner_session.errors.any? %>
       <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
-        <p class="font-semibold">Please add a description.</p>
+        <p class="font-semibold">Add a description.</p>
       </div>
     <% end %>
 

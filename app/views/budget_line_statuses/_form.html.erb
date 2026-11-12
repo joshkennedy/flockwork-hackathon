@@ -1,7 +1,7 @@
 <%= form_with url: project_budget_line_status_path(project, budget_line), method: :patch, scope: :budget_line, class: "space-y-7" do |form| %>
   <% if budget_line.errors.any? %>
     <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
-      <p class="font-semibold">Please fix the following:</p>
+      <p class="font-semibold">Fix these to continue:</p>
       <ul class="mt-2 list-disc space-y-1 pl-5 text-meta">
         <% budget_line.errors.full_messages.each do |message| %>
           <li><%= message %></li>
@@ -22,5 +22,5 @@
     <%= form.text_field :actual, placeholder: "0.00", class: "mt-2 block w-full field" %>
   </div>
 
-  <%= form.submit "Save", class: "btn btn-primary" %>
+  <%= form.submit "Save Status", class: "btn btn-primary" %>
 <% end %>

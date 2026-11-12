@@ -5,19 +5,19 @@
   <div class="flex items-center justify-between gap-4">
     <h2 id="tool-messages" class="text-ink"><%= icon(:messages, class: "text-tool-messages") %> <%= Project::TOOL_LABELS.fetch("messages") %></h2>
     <% if roots.any? %>
-      <span class="text-meta text-ink-2"><%= pluralize(roots.size, "Conversation") %></span>
+      <span class="text-meta text-ink-2"><%= pluralize(roots.size, "thread") %></span>
     <% end %>
   </div>
 
   <% if Policy.can?(Current.person, :plan, project) %>
-    <p class="mt-4"><%= link_to "Draft a Message", new_project_message_draft_path(project), class: "link" %></p>
+    <p class="mt-4"><%= link_to "Draft a message", new_project_message_draft_path(project), class: "link" %></p>
   <% end %>
 
   <% if Policy.can?(Current.person, :post_message, project) %>
     <%= render "messages/plain_form",
           project: project,
           message: project.messages.build,
-          label: "Write a Message",
+          label: "Write a message",
           submit_label: "Post Message",
           class_name: "message-composer mt-5" %>
   <% end %>

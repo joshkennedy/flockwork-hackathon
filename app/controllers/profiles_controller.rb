@@ -15,7 +15,7 @@ class ProfilesController < ApplicationController
     @person = Current.person
 
     if @person.update(profile_params)
-      redirect_to home_path, notice: "Your profile was updated."
+      redirect_to home_path, notice: "Profile saved."
     else
       load_involvement
       load_away_dates

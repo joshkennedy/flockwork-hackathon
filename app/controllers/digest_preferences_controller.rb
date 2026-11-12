@@ -11,7 +11,7 @@ class DigestPreferencesController < ApplicationController
     end
 
     if saved
-      redirect_to digest_preferences_path, notice: "Your weekly email preference was updated."
+      redirect_to digest_preferences_path, notice: "Weekly email preference saved."
     else
       render :show, status: :unprocessable_entity
     end

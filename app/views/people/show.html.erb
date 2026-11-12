@@ -36,7 +36,7 @@
         <div class="slideout-panel">
           <div class="flex items-center justify-between gap-4">
             <h2 id="edit-person-heading" class="text-ink">Edit details</h2>
-            <button type="button" class="btn btn-icon" aria-label="Close" data-action="slideout#close"><%= icon(:close) %></button>
+            <button type="button" class="btn btn-icon" aria-label="Close dialog" data-action="slideout#close"><%= icon(:close) %></button>
           </div>
           <%= turbo_frame_tag "edit-person", src: edit_person_path(@person), loading: :lazy do %>
             <p class="mt-6 text-meta text-ink-2">Loading…</p>
@@ -92,7 +92,7 @@
     <% if Policy.can?(Current.person, :log_check_in, @person) %>
       <%= form_with url: person_check_ins_path(@person), class: "mt-4 flex flex-wrap items-center gap-2" do %>
         <%= hidden_field_tag :return_to, "person", id: nil %>
-        <%= submit_tag "Log a Check-In", class: "btn btn-secondary" %>
+        <%= submit_tag "Log Check-In", class: "btn btn-secondary" %>
         <details>
           <%= disclosure_summary "Choose Date or Add Note", class: "text-meta text-ink-2" %>
           <div class="mt-2 flex flex-wrap gap-2">

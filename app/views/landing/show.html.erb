@@ -12,10 +12,10 @@
   </div>
   <div class="lp-hero-copy">
     <h1 id="landing-title">Project planning for your church.</h1>
-    <p>Meal trains, VBS, workdays, retreats: all the ways a church looks after its own. Flockwork makes them easier to plan and simpler to fill, so you can say yes to more of them.</p>
+    <p>Meal trains, VBS, workdays, retreats. One place to plan them, one link to fill them.</p>
     <div class="lp-actions">
-      <%= link_to "Plan Your First Project", sign_up_path, class: "btn btn-primary" %>
-      <%= link_to "See the Demo", new_demo_session_path, class: "btn btn-secondary" %>
+      <%= link_to "See the Demo", new_demo_session_path, class: "btn btn-primary" %>
+      <%= link_to "Plan Your First Project", sign_up_path, class: "btn btn-secondary" %>
     </div>
     <p class="lp-reassure">Free during beta. No card.</p>
   </div>
@@ -24,6 +24,8 @@
 </section>
 
 <%= render "landing/photos" %>
+
+<%= render "landing/why" %>
 
 <%= render "landing/between" %>
 
@@ -52,7 +54,13 @@
   </div>
 </section>
 
-<%= render "landing/why" %>
+<section class="lp-section lp-look" aria-labelledby="look-title">
+  <div class="lp-look-plate">
+    <h2 id="look-title">How about a look around?</h2>
+    <p>No sign-up, no sales pitch. A sample church, already full of projects and people, for you to click through.</p>
+    <%= link_to "See the Demo", new_demo_session_path, class: "btn btn-primary" %>
+  </div>
+</section>
 
 <%= render "landing/faq", faqs: faqs %>
 

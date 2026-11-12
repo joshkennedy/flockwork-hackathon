@@ -64,7 +64,7 @@ module PlannerSessionsHelper
       [ schedule_item.title, Planner::PendingItems.existing_schedule_item_source_key(schedule_item) ]
     end)
     if selected_reference.present? && options.none? { |_, reference| reference == selected_reference }
-      options << [ "Unknown session", selected_reference ]
+      options << [ "Unknown Schedule item", selected_reference ]
     end
     options
   end

@@ -1,7 +1,7 @@
 <% content_for :title, "Oversight" %>
 
 <div class="w-full">
-  <%= page_header "#{pluralize(@overextended_people.length, "person", plural: "people")} may need a check-in", subtitle: "#{pluralize(@never_asked_people.length, "person", plural: "people")} haven't been invited yet." %>
+  <%= page_header "#{pluralize(@overextended_people.length, "Person", plural: "People")} may need a check-in", subtitle: "#{pluralize(@never_asked_people.length, "Person", plural: "People")} #{@never_asked_people.length == 1 ? "hasn’t" : "haven’t"} been asked yet." %>
 
   <div class="mt-7 grid gap-7 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
     <section aria-labelledby="overextended-heading">
@@ -16,7 +16,7 @@
                   <%= person_name_link(person, class: "flex min-w-0 items-center gap-2.5 font-semibold") %>
                   <p class="mt-2 text-meta leading-normal text-ink-2"><%= @summaries[person.id] %></p>
                 </div>
-                <% if Current.person.admin? %><%= link_to "View Person", person_path(person), class: "btn btn-secondary btn-sm shrink-0" %><% end %>
+                <% if Current.person.admin? %><%= link_to "View Person", person_path(person), class: "btn btn-secondary btn-sm shrink-0", aria: { label: "View Person for #{person.name}" } %><% end %>
               </div>
               <% if Policy.can?(Current.person, :log_check_in, person) %>
                 <div class="mt-3 border-t border-hairline pt-3">
@@ -32,7 +32,7 @@
     </section>
 
     <section aria-labelledby="never-asked-heading">
-      <h2 id="never-asked-heading">Not yet invited</h2>
+      <h2 id="never-asked-heading">Not yet asked</h2>
       <p class="mt-2 text-meta text-ink-2">These people have never been invited to a Project.</p>
       <% if @never_asked_people.any? %>
         <ul class="mt-2 divide-y divide-hairline">
@@ -40,7 +40,7 @@
         </ul>
         <% if @never_asked_people.length > 3 %>
           <details class="mt-2">
-            <%= disclosure_summary "+ #{@never_asked_people.length - 3} more", class: "text-label text-ink-2" %>
+            <%= disclosure_summary "Show #{@never_asked_people.length - 3} more", class: "text-label text-ink-2" %>
             <ul class="mt-2 divide-y divide-hairline">
               <%= render partial: "not_invited", collection: @never_asked_people.drop(3), as: :person %>
             </ul>
@@ -88,7 +88,7 @@
             <p class="mt-1 text-meta font-medium text-danger" role="alert"><%= Current.organization.errors.full_messages_for(:overextended_limit).to_sentence %></p>
           <% end %>
         </div>
-        <%= form.submit "Save", class: "btn btn-primary" %>
+        <%= form.submit "Save Limit", class: "btn btn-primary" %>
       <% end %>
   </section>
   <% end %>

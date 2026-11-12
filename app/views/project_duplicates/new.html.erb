@@ -13,7 +13,7 @@
   <%= form_with model: @project_duplicate, url: project_duplicate_path(@source), class: "mt-7 space-y-6" do |form| %>
     <% if @project_duplicate.errors.any? %>
       <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
-        <p class="font-semibold">Please fix the following:</p>
+        <p class="font-semibold">Fix these to continue:</p>
         <ul class="mt-2 list-disc space-y-1 pl-5 text-meta">
           <% @project_duplicate.errors.full_messages.each do |message| %>
             <li><%= message %></li>

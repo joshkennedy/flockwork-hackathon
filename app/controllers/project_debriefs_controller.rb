@@ -12,7 +12,7 @@ class ProjectDebriefsController < ApplicationController
       @debrief.update(attributes)
     end
     if saved
-      redirect_to @project, notice: "Project debrief was saved."
+      redirect_to @project, notice: "Debrief saved."
     else
       render :edit, status: :unprocessable_entity
     end

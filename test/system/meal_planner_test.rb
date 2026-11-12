@@ -31,12 +31,12 @@ class MealPlannerSystemTest < ApplicationSystemTestCase
       fill_in "Meal", with: "Bring soup"
       fill_in "Time", with: "18:30"
       fill_in "People needed", with: "2"
-      click_button "Save", exact: true
+      click_button "Save Meal", exact: true
     end
     assert_text "Bring soup"
     assert_text "6:30 PM"
     fill_in "Project name", with: "Meals with soup"
-    assert_text "Details saved"
+    assert_text "Changes saved"
     assert_no_text "another tab"
 
     within all("article.meal-slot")[1] do
@@ -104,7 +104,7 @@ class MealPlannerSystemTest < ApplicationSystemTestCase
     assert_text "Changes not saved"
     assert_field "Meal", with: "Soup and bread"
     click_button "Retry Saving"
-    assert_text "Details saved"
+    assert_text "Changes saved"
     click_link "Back to Project"
     click_link "Finish Meal Setup"
     assert_field "Meal", with: "Soup and bread"
@@ -139,13 +139,13 @@ class MealPlannerSystemTest < ApplicationSystemTestCase
       fill_in "Meal", with: "Soup and bread"
     end
     fill_in "Project name", with: "Edited meals"
-    assert_text "Details saved"
+    assert_text "Changes saved"
     within first_meal do
       assert_field "Meal", with: "Soup and bread"
     end
     fill_in "Project name", with: "Edited meals again"
     within first_meal do
-      click_button "Save", exact: true
+      click_button "Save Meal", exact: true
     end
     assert_text "Soup and bread"
     assert_field "Project name", with: "Edited meals again"
@@ -170,7 +170,7 @@ class MealPlannerSystemTest < ApplicationSystemTestCase
     session = PlannerSession.order(:id).last!
     session.save_meal_setup!(session.meal_setup.merge("name" => "Saved in another tab"), expected_revision: session.generation_revision)
     fill_in "Meal", with: "Soup"
-    assert_text "This setup changed in another tab"
+    assert_text "This plan changed in another tab"
     click_link "Reload Saved Setup"
     assert_field "Project name", with: "Saved in another tab"
     assert_field "Meal", with: "Dinner"
@@ -246,12 +246,12 @@ class MealPlannerSystemTest < ApplicationSystemTestCase
     fill_in "Project name", with: ""
     within ".meal-setup-toolbar" do
       assert_selector "a.btn-secondary", text: "Back to Project"
-      assert_text "Details saved"
+      assert_text "Changes saved"
     end
     assert_no_selector ".meal-setup-error", visible: true
     assert_equal "", PlannerSession.order(:id).last!.meal_setup.fetch("name")
     fill_in "Project name", with: "Meals for friends"
-    assert_text "Details saved"
+    assert_text "Changes saved"
     assert_equal "Meals for friends", PlannerSession.order(:id).last!.project.name
   end
 
@@ -265,7 +265,7 @@ class MealPlannerSystemTest < ApplicationSystemTestCase
     planner_path = page.current_path
     fill_in "Project name", with: "Evening meals"
     find_field("Project name").send_keys(:enter)
-    assert_text "Details saved"
+    assert_text "Changes saved"
     assert_current_path planner_path
     session = PlannerSession.order(:id).last!
     assert_equal "Evening meals", session.project.name

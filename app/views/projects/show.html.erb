@@ -53,7 +53,7 @@
         <%= button_to "Join", join_project_path(@project), class: "btn btn-primary" %>
       <% end %>
       <% if can_update || can_duplicate || lifecycle_actions.any? %>
-        <%= actions_menu("More project actions") do %>
+        <%= actions_menu("Actions for #{@project.name}") do %>
           <%= link_to "Rename", edit_project_path(@project) if can_update %>
           <%= link_to "Edit Project", edit_project_path(@project) if can_update %>
           <%= link_to "Duplicate", new_project_duplicate_path(@project) if can_duplicate %>

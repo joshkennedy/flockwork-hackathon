@@ -11,7 +11,7 @@ class MessageDraftSystemTest < ApplicationSystemTestCase
     click_on "Explore as Leader"
     assert_selector "[data-signed-in-as]", text: "Maria Lopez"
     visit project_path(project)
-    click_on "Draft a Message"
+    click_on "Draft a message"
     stub_method(ProjectMessageDraft, :provider, -> { provider }) do
       click_on "Generate Draft"
       assert_selector "textarea", text: /About Draft browser Project/
