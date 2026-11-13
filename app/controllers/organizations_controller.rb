@@ -12,9 +12,11 @@ class OrganizationsController < ApplicationController
     @pending_invitations = Policy.visible_invitations(Current.person).includes(:project).order(created_at: :desc)
 
     visible_project_ids = Policy.visible_projects(@person).select(:id)
-    @any_projects = visible_project_ids.exists?
-    @my_slots = Slot.joins(:slot_claims).where(project_id: visible_project_ids, slot_claims: { person_id: @person.id })
+    # A spot claimed from a Public link is theirs even when they cannot open that Project.
+    claimable_project_ids = Project.where(id: visible_project_ids).or(@organization.projects.publicly_linked).select(:id)
+    @my_slots = Slot.joins(:slot_claims).where(project_id: claimable_project_ids, slot_claims: { person_id: @person.id })
       .where(date: Date.current..).includes(:project).chronological
+    @any_projects = visible_project_ids.exists? || @my_slots.exists?
     @my_tasks = @organization.tasks.where(project_id: visible_project_ids, assignee_id: @person.id, completed_at: nil)
       .includes(:project, :rich_text_details).due_first
     @home_role = if @person.admin? then :admin elsif @person.memberships.leader.exists? then :leader else :volunteer end

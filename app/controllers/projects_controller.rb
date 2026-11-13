@@ -218,6 +218,14 @@ class ProjectsController < ApplicationController
 
     def set_project
       @project = Policy.visible_projects(Current.person).find(params[:id])
+    rescue ActiveRecord::RecordNotFound
+      # A helper who claimed a Slot from the Public link is not on the Team, so reminders and Home send them
+      # here for a page they cannot open. Their own way in is the Public page.
+      claimed = Current.organization.projects.publicly_linked
+        .find_by(id: Current.person.slot_claims.joins(:slot).where(slots: { project_id: params[:id] }).select("slots.project_id"))
+      raise unless claimed && action_name == "show"
+
+      redirect_to public_project_path(claimed.public_token)
     end
 
     def set_deleted_project

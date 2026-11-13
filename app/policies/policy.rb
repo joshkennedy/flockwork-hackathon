@@ -132,6 +132,10 @@ module Policy
       person.admin? || record.memberships.leader.exists?(person: person)
     when :manage_docs, :manage_list_rows, :claim_slot
       person.admin? || record.memberships.exists?(person: person)
+    when :claim_public_slot
+      # The Public link shows open Slots to anyone, so anyone signed in to the Organization may take one from that
+      # page. It opens nothing else: the Project page, its Team and its other Tools stay with Members.
+      record.public_token.present?
     when :mark_done
       project_leader_or_admin?(person, record) && record.done_at.nil?
     when :reopen

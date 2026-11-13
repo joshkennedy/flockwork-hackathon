@@ -2,6 +2,10 @@
 
 <%= render "projects/banner", project: @project, editable: false %>
 
+<% if flash[:alert] %>
+  <p role="alert" class="mb-6 rounded-control bg-danger-soft px-4 py-3 text-danger"><%= flash[:alert] %></p>
+<% end %>
+
 <header>
   <h1 class="text-ink"><%= @project.name %></h1>
   <% if @project.description.present? %>
@@ -48,6 +52,9 @@
 <% if @open_tasks.any? %>
   <section class="mt-7" aria-labelledby="public-tasks">
     <h2 id="public-tasks" class="text-ink">Tasks</h2>
+    <% if @helper && !@on_team %>
+      <p class="mt-2 text-meta text-ink-2">Tasks are for the Team. Ask a Leader to add you.</p>
+    <% end %>
     <ul class="mt-4 space-y-3">
       <% @open_tasks.each do |task| %>
         <li class="flex flex-wrap items-start justify-between gap-3 tile-raised p-4">
@@ -57,7 +64,11 @@
               <p class="mt-1 text-meta text-ink-2">Due <%= task.due_on.to_fs(:long) %></p>
             <% end %>
           </div>
-          <%= link_to "Sign In to Help", @sign_in_path, class: "btn btn-primary" %>
+          <% if @helper.nil? %>
+            <%= link_to "Help with This", guest_sign_in_path(@project.public_token), class: "btn btn-primary" %>
+          <% elsif @on_team %>
+            <%= button_to "I’ll Do It", claim_project_task_path(@project, task), class: "btn btn-primary" %>
+          <% end %>
         </li>
       <% end %>
     </ul>
@@ -71,16 +82,29 @@
       <% @open_slots.group_by(&:date).each do |date, slots| %>
         <% slots.each do |slot| %>
           <% spots_left = slot.capacity - slot.claims_count %>
-          <li class="flex flex-wrap items-start justify-between gap-3 tile-raised p-4">
+          <% claimed = @claimed_slot_ids.include?(slot.id) %>
+          <li id="<%= dom_id(slot) %>" class="flex flex-wrap items-start justify-between gap-3 tile-raised p-4">
             <div>
               <p class="text-meta font-medium text-ink-2"><%= date.strftime("%A, %B %-d") %></p>
               <% if slot.starts_at_time.present? %>
                 <p class="text-meta font-medium text-ink-2"><%= slot.starts_at_time.strftime("%-l:%M %p") %></p>
               <% end %>
               <p class="font-semibold text-ink"><%= slot.label %></p>
-              <p class="badge-need mt-2"><%= spots_left %> <%= "spot".pluralize(spots_left) %> left</p>
+              <% if claimed %>
+                <p class="mt-2 flex items-center gap-1.5 text-meta text-ink"><%= icon(:check, class: "text-sunlit") %>You’re signed up</p>
+              <% elsif spots_left > 1 || !@helper %>
+                <%# A lone open spot is already said by the claim button. %>
+                <p class="badge-need mt-2"><%= spots_left %> <%= "spot".pluralize(spots_left) %> left</p>
+              <% end %>
             </div>
-            <%= link_to "Sign In to Help", @sign_in_path, class: "btn btn-primary" %>
+            <% if claimed %>
+              <%= button_to "Unclaim", public_slot_claim_path(@project.public_token, slot), method: :delete, class: "btn btn-text" %>
+            <% elsif @helper %>
+              <%= button_to (slot.label.downcase == "dinner" ? "I Can Bring Dinner" : "I Can Help"), public_slot_claim_path(@project.public_token, slot),
+                    class: "btn btn-primary", aria: { label: "Claim: #{slot.label}" } %>
+            <% else %>
+              <%= link_to "Help with This", guest_sign_in_path(@project.public_token, slot_id: slot.id), class: "btn btn-primary" %>
+            <% end %>
           </li>
         <% end %>
       <% end %>

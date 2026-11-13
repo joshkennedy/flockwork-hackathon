@@ -1,0 +1,7 @@
+<% content_for :preheader, "Your code works once and expires in 15 minutes." %>
+
+<%= mail_heading "Your code to help with #{@project.name}" %>
+<p style="margin:0 0 20px;font-family:<%= MailerHelper::FONT %>;font-size:32px;line-height:40px;font-weight:600;letter-spacing:0.12em;color:#141413"><%= @code %></p>
+<%= mail_paragraph "Type it on the page you left open, or sign in here." %>
+<%= mail_button "Sign In", @url %>
+<%= mail_muted "The code and the button work once and expire in 15 minutes. If you didn't ask for this, you can ignore this email." %>

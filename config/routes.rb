@@ -12,6 +12,16 @@ Rails.application.routes.draw do
   get "sign_up", to: "organizations#new", as: :sign_up
 
   get "p/:token", to: "public_projects#show", as: :public_project
+  get "p/:token/join", to: "guest_sign_ins#new", as: :guest_sign_in
+  post "p/:token/join", to: "guest_sign_ins#create"
+  get "p/:token/join/code", to: "guest_sign_ins#code", as: :guest_sign_in_code
+  post "p/:token/join/code", to: "guest_sign_ins#verify"
+  get "p/:token/join/name", to: "guest_sign_ins#name", as: :guest_sign_in_name
+  post "p/:token/join/name", to: "guest_sign_ins#finish"
+  get "go/:link_token", to: "guest_sign_ins#link", as: :guest_sign_in_link, format: false
+  post "go/:link_token", to: "guest_sign_ins#open_link", format: false
+  post "p/:token/slots/:slot_id/claim", to: "public_slot_claims#create", as: :public_slot_claim
+  delete "p/:token/slots/:slot_id/claim", to: "public_slot_claims#destroy"
 
   resources :organizations, only: :create
   get "get_involved", to: "get_involved#show"

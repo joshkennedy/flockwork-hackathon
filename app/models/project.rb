@@ -81,6 +81,9 @@ class Project < ApplicationRecord
 
   scope :active, -> { where(done_at: nil, archived_at: nil, deleted_at: nil) }
 
+  # An archived or deleted Project's Public link answers as not found.
+  scope :publicly_linked, -> { where(archived_at: nil, deleted_at: nil).where.not(public_token: nil) }
+
   normalizes :skills_needed, with: ->(skills) { Skills.normalize(skills) }
 
   has_many :invitations, dependent: :restrict_with_exception

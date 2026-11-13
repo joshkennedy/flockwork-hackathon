@@ -50,6 +50,9 @@ class RequestLogPathTokenFilterTest < ActionDispatch::IntegrationTest
     get "/invitations//#{invitation_token}"
     assert_response :success
 
+    link_token = "12-not-a-real-signature"
+    get guest_sign_in_link_path(link_token)
+
     log = io.string
     started_lines = log.lines.grep(/Started GET/)
 
@@ -57,6 +60,7 @@ class RequestLogPathTokenFilterTest < ActionDispatch::IntegrationTest
     started_lines.each do |line|
       refute_includes line, sign_in_token, line
       refute_includes line, invitation_token, line
+      refute_includes line, link_token, line
     end
   ensure
     Rails.logger = original_logger

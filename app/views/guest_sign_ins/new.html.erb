@@ -1,0 +1,19 @@
+<% content_for :title, "Sign in to help" %>
+
+<div class="w-full max-w-xl mx-auto">
+  <h1 class="text-ink">Sign in to help</h1>
+  <p class="mt-2 text-ink-2">We’ll send you a code. No password, no account to set up.</p>
+  <%= render "error", message: @error %>
+
+  <%= form_with url: guest_sign_in_path(@project.public_token), class: "mt-6 space-y-4" do |f| %>
+    <div>
+      <%= f.label :contact, "Email or mobile number", class: "block text-label font-medium text-ink-2" %>
+      <%= f.text_field :contact, value: params[:contact], required: true, autofocus: true, autocomplete: "email",
+            autocapitalize: "none", spellcheck: false, class: "mt-2 block w-full field" %>
+    </div>
+
+    <%= f.submit "Send Me a Code", class: "w-full btn btn-primary" %>
+  <% end %>
+
+  <p class="mt-6"><%= link_to "Back to #{@project.name}", public_project_path(@project.public_token), class: "link font-medium" %></p>
+</div>

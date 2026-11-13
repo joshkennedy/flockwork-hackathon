@@ -214,30 +214,13 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
     sign_in_as_leader
     post enable_public_link_project_path(project)
     token = project.reload.public_token
+    delete session_path
 
     get public_project_path(token)
     assert_response :success
     assert_select "section[aria-labelledby='public-slots']", text: /Bring dessert/
     assert_select "section[aria-labelledby='public-slots']", text: /1 spot left/
     assert_no_match volunteer.name, response.body
-  end
-
-  test "Sign in to help links point to the Organization sign-in page" do
-    sign_in_as_leader
-    project = projects(:community_meal)
-    project.update!(enabled_tools: project.enabled_tools + [ "signup_sheet" ])
-    project.tasks.create!(title: "Help with setup")
-    slot = project.slots.create!(date: "2027-02-15", label: "Setup crew", capacity: 2)
-
-    post enable_public_link_project_path(project)
-    token = project.reload.public_token
-    sign_in_path = new_sign_in_request_path
-
-    get public_project_path(token)
-    assert_response :success
-
-    assert_select "section[aria-labelledby='public-tasks'] a[href=?]", sign_in_path, text: "Sign In to Help"
-    assert_select "section[aria-labelledby='public-slots'] a[href=?]", sign_in_path, text: "Sign In to Help"
   end
 
   test "a Volunteer cannot toggle the Public link" do
