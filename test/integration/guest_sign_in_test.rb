@@ -84,6 +84,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_select "#flash [data-toast-kind=notice]", "You’re bringing dinner #{@slot.date.strftime("%A, %B %-d")}."
     assert_select "#slot_#{@slot.id}", /You’re signed up/
+    assert_select "#slot_#{@slot.id}.tile-raised", count: 0
     assert_signed_in_as @vera
     assert_equal "email_code", @vera.sessions.last.auth_method
     assert_nil @vera.reload.joined_from_project
