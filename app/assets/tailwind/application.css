@@ -203,6 +203,12 @@
   .btn-sm { @apply min-h-control-h-sm px-2.5; }
   .btn-sm:is(.btn-primary, .btn-secondary) { padding-inline: 12px; font-size: 13px; }
   .btn.btn-icon { @apply min-h-control-h-sm w-8 px-0 text-ink-2; }
+  /* A Slot's own action: the small secondary from 640px, the open tile's full-width ink action on phones. */
+  @media (width < 640px) {
+    .btn.btn-claim { @apply min-h-phone-action-h w-full border-transparent bg-ink text-heading text-on-ink shadow-button; }
+    .btn.btn-claim:active { box-shadow: var(--shadow-button-active); }
+    .button_to:has(> .btn-claim) { width: 100%; }
+  }
   .actions-menu > summary { list-style: none; }
   .actions-menu > summary::-webkit-details-marker { display: none; }
   .actions-menu-panel { @apply absolute right-0 top-full z-30 mt-1 flex w-56 flex-col rounded-panel border border-border bg-panel p-1 shadow-float; }

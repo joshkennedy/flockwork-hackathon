@@ -90,9 +90,9 @@
               <%= button_to "Unclaim", public_slot_claim_path(@project.public_token, slot), method: :delete, class: "btn btn-text" %>
             <% elsif @helper %>
               <%= button_to (slot.label.downcase == "dinner" ? "I Can Bring Dinner" : "I Can Help"), public_slot_claim_path(@project.public_token, slot),
-                    class: "btn btn-primary", aria: { label: "Claim: #{slot.label}" } %>
+                    class: "btn btn-secondary btn-sm btn-claim", aria: { label: "Claim: #{slot.label}" } %>
             <% else %>
-              <%= link_to "Help with This", guest_sign_in_path(@project.public_token, slot_id: slot.id), class: "btn btn-primary" %>
+              <%= link_to "Help with This", guest_sign_in_path(@project.public_token, slot_id: slot.id), class: "btn btn-secondary btn-sm btn-claim" %>
             <% end %>
           </li>
         <% end %>

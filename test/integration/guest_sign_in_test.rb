@@ -24,7 +24,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
   test "the Public page sends helpers to its own sign-in, carrying the Slot they tapped" do
     get public_project_path(@token)
 
-    assert_select "section[aria-labelledby='public-slots'] a[href=?]", guest_sign_in_path(@token, slot_id: @slot.id), text: "Help with This"
+    assert_select "section[aria-labelledby='public-slots'] a.btn-secondary.btn-claim[href=?]", guest_sign_in_path(@token, slot_id: @slot.id), text: "Help with This"
     assert_select "a[href=?]", new_sign_in_request_path, count: 0
   end
 
