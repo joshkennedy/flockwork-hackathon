@@ -258,8 +258,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_150000) do
     t.string "skills", default: [], null: false, array: true
     t.jsonb "in_app_preferences", default: {}, null: false
     t.jsonb "sms_preferences", default: {}, null: false
-    t.bigint "added_by_id"
     t.string "pending_email"
+    t.bigint "added_by_id"
     t.bigint "joined_from_project_id"
     t.index ["added_by_id"], name: "index_people_on_added_by_id"
     t.index ["joined_from_project_id"], name: "index_people_on_joined_from_project_id"
