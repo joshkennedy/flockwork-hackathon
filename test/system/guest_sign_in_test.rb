@@ -25,7 +25,7 @@ class GuestSignInTest < ApplicationSystemTestCase
     fill_in "6-digit code", with: ActionMailer::Base.deliveries.last.subject[/\A\d{6}/]
     click_on "Continue"
 
-    fill_in "Name", with: "Nadia Novak"
+    fill_in "First and last name", with: "Nadia Novak"
     click_on "Confirm My Spot"
 
     assert_selector ".tst", text: "You’re bringing dinner"

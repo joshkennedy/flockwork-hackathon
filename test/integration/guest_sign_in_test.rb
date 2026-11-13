@@ -155,6 +155,9 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_select "[data-chosen-slot]", "#{@slot.date.strftime("%A, %B %-d")} · Dinner"
     assert_select "input[type=submit][value=?]", "Confirm My Spot"
+    assert_select "label.sr-only[for=name]", "Name"
+    assert_select "input[name=name][placeholder=?]", "First and last name"
+    assert_select "a[href=?]", public_project_path(@token, anchor: "slot_#{@slot.id}"), text: "Back to #{@project.name}"
 
     post guest_sign_in_name_path(@token), params: { name: "Nadia Novak" }
     assert_redirected_to public_project_path(@token, anchor: "slot_#{@slot.id}")
