@@ -392,6 +392,10 @@
   /* frame is darker than panel in dark mode, so a frame-filled disabled button would vanish. */
   :root[data-dark] .btn:disabled { @apply bg-nav-active; }
   .tile-raised { @apply rounded-tile border border-border bg-panel shadow-raised; }
+  /* The public page lands on a just-claimed row by its #slot_ anchor; it takes focus for screen readers, never a ring. */
+  .slot-held:focus { outline: none; box-shadow: none; }
+  .slot-held:target { animation: slot-changed var(--duration-keep) var(--ease-enter); }
+  .slot-held:target .kept-check { animation: keep-check var(--duration-keep) var(--ease-enter); }
   .tile-ghost { @apply rounded-tile border border-dashed border-ghost-border bg-ghost-fill text-ink-2; }
   .panel { @apply rounded-panel border border-border bg-panel; }
   .page-header { @apply flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between; }

@@ -138,10 +138,9 @@ class GuestSignInsController < ApplicationController
     end
 
     # Takes the Slot the helper tapped before signing in, by the same rules as claiming on the public page.
+    # The claimed row the page lands on is the confirmation, so only a lost spot needs a notice.
     def claim_tapped_slot(slot, person)
-      if slot.slot_claims.exists?(person:) || slot.claim(person)&.persisted?
-        { claimed: helpers.claimed_slot_notice(slot) }
-      else
+      unless slot.slot_claims.exists?(person:) || slot.claim(person)&.persisted?
         { notice: "That spot filled up while you were signing in. Pick another one below." }
       end
     end

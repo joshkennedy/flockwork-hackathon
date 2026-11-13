@@ -121,7 +121,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_select "p", /Sent to v•••@st-example.test/
     assert_select "input[name=code][autocomplete='one-time-code'][inputmode=numeric]"
     assert_select "form[action=?] input[name=slot_id][value=?]", guest_sign_in_path(@token), @slot.id.to_s
-    assert_select "a[href=?]", guest_sign_in_path(@token, slot_id: @slot.id), text: "Use a different email or phone"
+    assert_select "a[href=?]", guest_sign_in_path(@token, slot_id: @slot.id), text: "Change email or phone"
 
     assert_no_difference -> { Person.count } do
       post guest_sign_in_code_path(@token), params: { code: }
@@ -130,7 +130,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_redirected_to public_project_path(@token, anchor: "slot_#{@slot.id}")
     assert_equal [ @vera ], @slot.reload.people
     follow_redirect!
-    assert_select "#flash [data-toast-kind=claimed]", "You’re bringing dinner #{@slot.date.strftime("%A, %B %-d")}."
+    assert_select "#flash [data-toast-entry]", count: 0
     assert_select "#slot_#{@slot.id}", /You’re bringing dinner/
     assert_select "#slot_#{@slot.id}.tile-raised", count: 0
     assert_signed_in_as @vera

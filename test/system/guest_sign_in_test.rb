@@ -15,6 +15,7 @@ class GuestSignInTest < ApplicationSystemTestCase
   end
 
   test "a new helper goes from the Public link to a claimed Slot with an emailed code" do
+    page.current_window.resize_to(390, 844)
     visit public_project_path(@project.public_token)
     click_on "Help with This"
 
@@ -28,11 +29,18 @@ class GuestSignInTest < ApplicationSystemTestCase
     fill_in "First and last name", with: "Nadia Novak"
     click_on "Confirm My Spot"
 
-    assert_selector ".tst", text: "You’re bringing dinner"
-    assert_selector "li[id^=slot_]", text: "You’re bringing dinner"
+    assert_selector "li[id^=slot_]:focus", text: "You’re bringing dinner"
     assert_match(/#slot_\d+\z/, page.current_url)
-    toast_bottom, row_top = page.evaluate_script("[document.querySelector('.tst').getBoundingClientRect().bottom, document.querySelector(location.hash).getBoundingClientRect().top]")
-    assert_operator toast_bottom, :<=, row_top, "the toast must not cover the claimed Slot"
+    assert_no_selector ".tst"
+    overlaps = page.evaluate_script(<<~JS)
+      [...document.querySelectorAll(".tst")].flatMap((toast) => {
+        const t = toast.getBoundingClientRect()
+        return [...document.querySelectorAll("main header > *, #public-slots")]
+          .filter((text) => { const r = text.getBoundingClientRect(); return t.left < r.right && r.left < t.right && t.top < r.bottom && r.top < t.bottom })
+          .map((text) => text.textContent.trim())
+      })
+    JS
+    assert_empty overlaps, "the claim's confirmation must not cover the page text"
     assert_equal [ "Nadia Novak" ], @project.slots.last.people.map(&:name)
   end
 end
