@@ -6,6 +6,10 @@ class SignInChallenge < ApplicationRecord
   MAX_ATTEMPTS = 5
   # Each code costs an email or a text to an address nobody has confirmed yet.
   HOURLY_LIMIT = 5
+  # Text pumping aims at premium international ranges, so for now only US and Canada (NANP) numbers get a text.
+  TEXTABLE_PHONE = /\A\+1[2-9]\d{2}[2-9]\d{6}\z/
+  # Far more than a church's helpers sign in by text in an hour, low enough that a pumping run stays cheap.
+  ORGANIZATION_HOURLY_TEXT_LIMIT = 30
 
   belongs_to :organization
   belongs_to :project, optional: true
@@ -41,6 +45,11 @@ class SignInChallenge < ApplicationRecord
       earlier.open.update_all(expires_at: Time.current)
       create!(organization:, project:, channel:, address:, expires_at: LIFETIME.from_now)
     end
+  end
+
+  def self.textable?(organization, phone)
+    TEXTABLE_PHONE.match?(phone) &&
+      where(organization:, channel: "sms", created_at: 1.hour.ago..).count < ORGANIZATION_HOURLY_TEXT_LIMIT
   end
 
   def self.find_by_link_token(token)

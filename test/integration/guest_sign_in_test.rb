@@ -282,6 +282,31 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_not_requested @sms
   end
 
+  test "only North American numbers get a text" do
+    [ "+44 20 7946 0958", "+1 123 555 0123" ].each do |phone|
+      assert_no_difference -> { SignInChallenge.count } do
+        request_code(phone)
+      end
+      assert_response :unprocessable_content
+      assert_select "[role=alert]", "Use your email for now."
+    end
+    assert_not_requested @sms
+  end
+
+  test "a church gets a capped number of sign-in texts an hour, then email still works" do
+    organization = @project.organization
+    SignInChallenge::ORGANIZATION_HOURLY_TEXT_LIMIT.times do |i|
+      SignInChallenge.create!(organization:, channel: "sms", address: "+1202555#{format("%04d", i)}", expires_at: 15.minutes.from_now)
+    end
+
+    request_code("202-555-0177")
+    assert_response :unprocessable_content
+    assert_select "[role=alert]", "Use your email for now."
+    assert_not_requested @sms
+
+    assert request_code("nadia@example.com")
+  end
+
   test "an address gets five codes an hour, and text that is neither an email nor a phone gets none" do
     5.times { request_code("nadia@example.com") }
 

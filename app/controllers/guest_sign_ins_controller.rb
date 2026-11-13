@@ -21,8 +21,9 @@ class GuestSignInsController < ApplicationController
   def create
     channel, address = SignInChallenge.parse(params[:contact])
     return ask_again("Enter an email, or a mobile number with its area code.") unless channel
-    if channel == "sms" && SmsOptOut.blocked?(address)
-      return ask_again("This number opted out of Flockwork texts. Use your email, or reply START to an earlier text.")
+    if channel == "sms"
+      return ask_again("This number opted out of Flockwork texts. Use your email, or reply START to an earlier text.") if SmsOptOut.blocked?(address)
+      return ask_again("Use your email for now.") unless SignInChallenge.textable?(@project.organization, address)
     end
     return ask_again("Use your email to sign in.") if SignInChallenge.new(organization: @project.organization, channel:, address:).texts_an_admin?
 
