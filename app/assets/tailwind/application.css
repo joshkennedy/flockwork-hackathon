@@ -204,6 +204,8 @@
   .btn-sm { @apply min-h-control-h-sm px-2.5; }
   .btn-sm:is(.btn-primary, .btn-secondary) { padding-inline: 12px; font-size: 13px; }
   .btn.btn-icon { @apply min-h-control-h-sm w-8 px-0 text-ink-2; }
+  /* A claim sits on a raised tile or a sheet row, so its own edge must hold 3:1 against what it sits on rather than lean on the shadow; 2px because 1.5px floors to 1px on 1x screens. */
+  .btn-secondary.btn-claim { border-color: var(--color-control-border); border-width: 2px; }
   /* A Slot's own action: the small secondary from 640px, a full-width secondary on phones, so a list of open Slots never stacks primaries. */
   @media (width < 640px) {
     .btn.btn-claim { @apply min-h-phone-action-h w-full; padding-inline: 16px; font-size: 14px; }
