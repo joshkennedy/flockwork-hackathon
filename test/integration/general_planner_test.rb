@@ -182,7 +182,6 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
       assert_select "li[aria-current='step']", count: 1
     end
     assert_select "button", text: "Continue", count: 0
-    assert_select ".meal-builder-status", text: "Choose an answer to continue."
 
     post select_answer_project_planner_session_path(project, planner_session), params: {
       answer: "Repair the playground", expected_revision: planner_session.generation_revision
@@ -193,7 +192,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     perform_enqueued_jobs(only: PlannerStepJob)
     get project_planner_session_path(project, planner_session)
     assert_select "button.btn-primary:not([disabled])", text: "Continue"
-    assert_select "button", text: "Finish and Review"
+    assert_select "button", text: "Finish with This"
   end
 
   test "a full snapshot previews and atomically accepts every provider item kind with explicit dates" do
@@ -394,7 +393,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_select "form[data-controller='autosave'] input[data-autosave-target='submit'][value='Save Date']"
     assert_select ".planner-review-actions" do
       assert_select "button.btn-primary", text: "Add to Project"
-      assert_select "button.btn-secondary", text: "Finish Later"
+      assert_select "button.btn-secondary", text: "Save and Leave"
     end
   end
 

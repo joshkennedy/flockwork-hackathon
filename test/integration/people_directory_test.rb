@@ -99,7 +99,7 @@ class PeopleDirectoryTest < ActionDispatch::IntegrationTest
       assert_select "p", text: "Serving on Building Cleanup and Community Meal"
     end
     assert_select "li", text: /Vera Volunteer/ do
-      assert_select "p", text: "Not serving on an Active Project right now"
+      assert_select "p", text: /Serving on/, count: 0
     end
   end
 

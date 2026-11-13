@@ -56,6 +56,7 @@
         <%= actions_menu("Actions for #{@project.name}") do %>
           <%= link_to "Rename", edit_project_path(@project) if can_update %>
           <%= link_to "Edit Project", edit_project_path(@project) if can_update %>
+          <%= render "projects/banner_upload", project: @project if can_update && !@project.banner.attached? %>
           <%= link_to "Duplicate", new_project_duplicate_path(@project) if can_duplicate %>
           <%= render "projects/recurrence_action", project: @project %>
           <%= render "projects/debrief_action", project: @project %>
@@ -105,7 +106,6 @@
           <%# Says which Slot the one-tap button claims. %>
           <p class="text-meta text-ink-2"><%= claim_slot.label %> · <%= claim_slot.date.strftime("%a, %b %-d") %></p>
         <% end %>
-        <%= render "projects/risk", project: @project, inline: true if can_plan %>
       </div>
       <% if guidance_action %>
         <% button_class = "btn #{guidance_primary ? 'btn-primary' : 'btn-secondary'} shrink-0" %>
@@ -162,7 +162,7 @@
           <%= render "projects/tools/recipients", project: @project if show_recipients %>
 
           <% if can_share || can_transfer %>
-            <section class="rounded-panel border border-border p-4" data-project-settings aria-labelledby="sharing-heading">
+            <section class="rounded-panel border border-border bg-page p-4" data-project-settings aria-labelledby="sharing-heading">
               <h2 id="sharing-heading" class="text-heading text-ink">
                 Sharing and ownership<span class="font-normal text-ink-2"><%= " · Public link on" if @project.public_token.present? %></span>
               </h2>

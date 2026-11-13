@@ -19,16 +19,21 @@
   </section>
 
   <section aria-labelledby="open-needs-heading" data-home-section="open-needs">
-    <h2 id="open-needs-heading">Still needed on your Projects</h2>
+    <%# An empty section is one line, heading and sentence together, as in Your Tasks. %>
+    <div class="flex flex-wrap items-baseline gap-x-3">
+      <h2 id="open-needs-heading">Still needed on your Projects</h2>
+      <% if @open_slots_by_project.empty? %><p class="text-meta text-ink-2">Every spot this week is filled.</p><% end %>
+    </div>
     <% if @open_slots_by_project.any? %>
       <%= render "shared/open_needs", open_slots_by_project: @open_slots_by_project %>
-    <% else %>
-      <p class="mt-2 text-meta text-ink-2">Every spot this week is filled.</p>
     <% end %>
   </section>
 
-  <section class="border-t border-border pt-7" aria-labelledby="get-involved-heading" data-home-section="get-involved">
-    <h2 id="get-involved-heading">Other ways to help</h2>
+  <section aria-labelledby="get-involved-heading" data-home-section="get-involved">
+    <div class="flex flex-wrap items-baseline gap-x-3">
+      <h2 id="get-involved-heading">Other ways to help</h2>
+      <% if @open_teams.empty? %><p class="text-meta text-ink-2">No open Teams right now.</p><% end %>
+    </div>
     <% if @open_teams.any? %>
       <ul class="mt-3 grid gap-2">
         <% @open_teams.each do |project| %>
@@ -46,8 +51,6 @@
           </li>
         <% end %>
       </ul>
-    <% else %>
-      <p class="mt-2 text-meta text-ink-2">No open Teams right now.</p>
     <% end %>
   </section>
 </div>

@@ -19,7 +19,6 @@ class PeopleController < ApplicationController
     people = Current.organization.people
     @filter = FILTERS.key?(params[:filter]) ? params[:filter] : "everyone"
     @filter_counts = FILTERS.to_h { |key, (_label, scope)| [ key, scope ? people.public_send(scope).count : people.count ] }
-    @people_count = @filter_counts.fetch("everyone")
     @filter_tabs = FILTERS.map { |key, (label, _scope)| [ key, label, @filter_counts.fetch(key) ] }
 
     @skill = Skills.normalize(params[:skill]).first

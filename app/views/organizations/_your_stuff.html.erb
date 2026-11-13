@@ -1,4 +1,6 @@
-<%# An empty section is one line, heading and sentence together, so the role's own view starts higher. %>
+<%# A Volunteer's empty section is one line, heading and sentence together. Leaders and Admins skip empty sections so their own view leads. %>
+<% show_empty = @home_role == :volunteer %>
+<% if @my_tasks.any? || show_empty %>
 <section class="<%= @my_tasks.any? ? "mt-7" : "mt-6" %>" aria-labelledby="your-tasks-heading" data-home-section="your-tasks">
   <div class="flex flex-wrap items-baseline gap-x-3">
     <h2 id="your-tasks-heading">Your Tasks</h2>
@@ -23,8 +25,10 @@
     </ul>
   <% end %>
 </section>
+<% end %>
 
-<section class="<%= @my_slots.any? || @my_tasks.any? ? "mt-7" : "mt-3" %>" aria-labelledby="coming-up-heading" data-home-section="coming-up">
+<% if @my_slots.any? || show_empty %>
+<section class="<%= @my_slots.any? || @my_tasks.any? || !show_empty ? "mt-7" : "mt-3" %>" aria-labelledby="coming-up-heading" data-home-section="coming-up">
   <div class="flex flex-wrap items-baseline gap-x-3">
     <h2 id="coming-up-heading">Coming up</h2>
     <% if @my_slots.empty? %><p class="text-meta text-ink-2">No sign-up spots ahead for you.</p><% end %>
@@ -45,3 +49,4 @@
     </ul>
   <% end %>
 </section>
+<% end %>

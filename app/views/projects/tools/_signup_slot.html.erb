@@ -25,11 +25,16 @@
     </div>
     <div class="signup-actions flex min-w-0 flex-wrap items-center gap-2.5 <%= "max-sm:w-full" if open %>">
       <% if slot.slot_claims.any? %>
-        <p class="flex items-center gap-1.5 text-meta text-ink-2"><%= icon(:check, class: "text-success") %><%= people_pill(slot.slot_claims.map(&:person)) %></p>
+        <p class="flex items-center gap-1.5 text-meta text-ink-2"><%= icon(:check, class: "text-sunlit") %><%= people_pill(slot.slot_claims.map(&:person)) %></p>
       <% end %>
       <% if open %>
-        <span class="badge-need"><%= pluralize(slot.capacity - slot.claims_count, "spot") %> left</span>
-        <% if Policy.can?(Current.person, :claim_slot, project) %>
+        <% can_claim = Policy.can?(Current.person, :claim_slot, project) %>
+        <% spots_left = slot.capacity - slot.claims_count %>
+        <%# A lone open spot is already said by the claim button; the count earns its place from two up. %>
+        <% if spots_left > 1 || !can_claim %>
+          <span class="badge-need"><%= pluralize(spots_left, "spot") %> left</span>
+        <% end %>
+        <% if can_claim %>
           <%# Leaders see the whole sheet, so a primary per slot would drown the page; volunteers get the phone action DESIGN.md specifies. %>
           <%= button_to (dinner ? "I Can Bring Dinner" : "I Can Help"), project_slot_claim_path(project, slot),
                 class: manage ? "btn btn-secondary btn-sm" : "btn btn-primary",

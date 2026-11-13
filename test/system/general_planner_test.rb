@@ -63,7 +63,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
       assert_text "Supply checklist"
     end
 
-    click_button "Finish and Review"
+    click_button "Finish with This"
     assert_no_text "Here’s what will be added"
     assert_selector "li[aria-current='step']", text: "Review and add"
     assert_selector "li[data-step-state='done']", text: "1 answer"
@@ -105,7 +105,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     click_button "Preparation"
     assert_text "Preview updated. Continue when ready."
     assert_no_text "Choose a Project start date or a due date"
-    click_button "Finish and Review"
+    click_button "Finish with This"
     fill_in "Workday date", with: "2027-04-10"
     assert_text "Due April 9, 2027"
     click_button "Add to Project"
@@ -135,7 +135,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
 
     click_button "Preparation"
     assert_text "Preview updated. Continue when ready."
-    click_button "Finish and Review"
+    click_button "Finish with This"
     assert_selector "li[aria-current='step']", text: "Review and add"
     assert_no_text "Here’s what will be added"
     fill_in "Project name", with: "Saturday workday"
@@ -156,11 +156,11 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     click_button "Class"
     click_button "Prepare the first lesson"
     assert_text "Preview updated. Continue when ready."
-    click_button "Finish and Review"
+    click_button "Finish with This"
 
     assert_field "First class date"
     assert_button "Add to Project", disabled: true
-    assert_button "Finish Later"
+    assert_button "Save and Leave"
     assert_no_text "Here’s what will be added"
     assert_no_text "Items are dated from this day."
     assert_no_button "Save Date"
@@ -171,7 +171,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     assert_no_field "First class date"
     assert_text "Due April 9, 2027"
     assert_button "Add to Project", disabled: false
-    assert_button "Finish Later"
+    assert_button "Save and Leave"
     capture_class_review("after-date-1440", 1440, 1000)
     capture_class_review("after-date-390", 390, 844)
   end
@@ -186,7 +186,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     click_button "Class"
     click_button "Set the schedule"
     assert_text "Preview updated. Continue when ready."
-    click_button "Finish and Review"
+    click_button "Finish with This"
 
     assert_no_field "First class date"
     assert_text "Fix the highlighted item to add"

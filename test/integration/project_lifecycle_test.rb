@@ -12,7 +12,7 @@ class ProjectLifecycleTest < ActionDispatch::IntegrationTest
 
     get projects_path
 
-    assert_select "span", text: "Done"
+    assert_select "section[aria-labelledby='group-done'] h3", text: project.name
 
     post reopen_project_path(project)
 

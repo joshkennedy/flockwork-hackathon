@@ -4,9 +4,9 @@
   <% end %>
 
   <%= form_with url: person_check_ins_path(person), class: "mt-3 flex flex-wrap items-start gap-2" do %>
-    <%= submit_tag "Log Check-In", class: "btn btn-secondary" %>
+    <%= submit_tag "Log a Check-In", class: "btn btn-secondary" %>
     <details>
-      <%= disclosure_summary "Choose Date or Add Note", class: "btn btn-text" %>
+      <%= disclosure_summary "Date or note", class: "btn btn-text" %>
       <div class="mt-2 flex flex-wrap gap-2">
         <%= date_field_tag "check_in[on]", Date.current, max: Date.current, aria: { label: "Date of check-in" }, class: "field" %>
         <%= text_field_tag "check_in[note]", nil, maxlength: CheckIn::NOTE_LIMIT, placeholder: "Private note, Admins only", aria: { label: "Note" }, class: "field" %>

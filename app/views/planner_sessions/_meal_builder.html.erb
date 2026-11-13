@@ -121,7 +121,7 @@
                 aria: ({ describedby: dom_id(planner_session, :add_note) } if show_add_note),
                 data: { turbo_submits_with: "Adding #{pluralize(planner_session.pending_item_count, "item")}…" } %>
             <% end %>
-            <%= button_to "Finish Later", save_and_leave_project_planner_session_path(project, planner_session), class: "btn btn-secondary",
+            <%= button_to "Save and Leave", save_and_leave_project_planner_session_path(project, planner_session), class: "btn btn-secondary",
               form: { data: { turbo_frame: "_top" } } %>
           </div>
 
@@ -136,14 +136,6 @@
           <% options = planner_session.current_card.fetch("options", []).grep_v(/\A\s*(something else|other)\W*\z/i) %>
           <% custom_answer = pending_answer.present? && options.exclude?(pending_answer) %>
           <h3 id="meal-guide-heading" class="text-heading text-ink"><%= planner_session.current_card.fetch("question") %></h3>
-
-          <div hidden data-voice-planner-target="launcher" class="mt-4">
-            <button type="button" class="voice-planner-launch" data-action="voice-planner#start" data-voice-planner-target="startButton">
-              <span class="voice-planner-mic" aria-hidden="true"><%= icon(:mic, size: 20) %></span>
-              <span><span class="block font-medium">Talk It Through</span><span class="block text-meta font-normal text-ink-2">Hands-free, one question at a time</span></span>
-            </button>
-            <p class="mt-2 text-meta text-ink-2">Your voice goes to xAI. Leave out names and private care details.</p>
-          </div>
 
           <div class="mt-5 grid gap-2" data-controller="planner-answers" data-action="keydown@window->planner-answers#choose">
             <% options.each_with_index do |option, index| %>
@@ -183,8 +175,6 @@
               <%= render "planner_sessions/break", project:, planner_session: %>
             <% elsif planner_session.ready_to_continue? %>
               <p class="meal-builder-status" data-meal-planner-target="status">Preview updated. Continue when ready.</p>
-            <% elsif pending_answer.blank? %>
-              <p class="meal-builder-status" data-meal-planner-target="status">Choose an answer to continue.</p>
             <% end %></div>
           <% end %>
 
@@ -210,13 +200,21 @@
             </div>
           <% end %>
 
-          <div class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
-            <% if planner_session.generation_busy? || pending_answer.present? %>
+          <%# Continue appears once an answer is chosen; until then the answer tiles are the next step. %>
+          <% if planner_session.generation_busy? || pending_answer.present? %>
+            <div class="mt-5 flex flex-wrap items-center gap-x-2 gap-y-3">
               <%= button_to planner_session.generation_busy? ? "Drafting…" : "Continue", continue_planning_project_planner_session_path(project, planner_session), params: { expected_revision: planner_session.generation_revision }, class: class_names("btn btn-primary", "meal-continue-drafting": planner_session.generation_busy?), disabled: !planner_session.ready_to_continue?, data: { turbo_submits_with: "Continuing…" } %>
-            <% end %>
-            <% if visible_items.any? && !planner_session.generation_busy? %>
-              <%= button_to "Finish and Review", finish_planning_project_planner_session_path(project, planner_session), params: { expected_revision: planner_session.generation_revision }, class: "btn btn-text" %>
-            <% end %>
+              <% if visible_items.any? && !planner_session.generation_busy? %>
+                <%= button_to "Finish with This", finish_planning_project_planner_session_path(project, planner_session), params: { expected_revision: planner_session.generation_revision }, class: "btn btn-text" %>
+              <% end %>
+            </div>
+          <% end %>
+
+          <div hidden data-voice-planner-target="launcher" class="mt-8 border-t border-hairline pt-6">
+            <button type="button" class="btn btn-secondary" data-action="voice-planner#start" data-voice-planner-target="startButton">
+              <%= icon(:mic) %>
+              <span>Talk It Through</span>
+            </button>
           </div>
           <% else %>
           <% if planner_session.last_error.present? %>
@@ -253,15 +251,15 @@
         <% end %>
 
         <% unless planner_session.accepted? || planner_session.reviewing? %>
-          <%# The quiet exits share one row; an open Back takes the full width so its answers read below. %>
-          <div class="meal-builder-exits mt-3 flex-wrap items-start gap-x-4">
+          <%# Back and Save and Leave share one quiet row, at either end; an open Back takes the full width so its answers read below. %>
+          <div class="meal-builder-exits mt-6 -mx-3 flex-wrap items-center justify-between gap-x-1">
             <% if planner_session.asking? && (planner_session.pending_answer&.fetch("step_index", 0) || planner_session.steps.length).positive? %>
               <details class="open:basis-full">
-                <%= disclosure_summary "Back to Earlier Choices", class: "-ms-2 btn btn-text" %>
+                <%= disclosure_summary "Back to Earlier Choices", class: "btn btn-text" %>
                 <%= render "planner_sessions/meal_answers", project:, planner_session:, previous_only: true %>
               </details>
             <% end %>
-            <%= button_to "Finish Later", save_and_leave_project_planner_session_path(project, planner_session), class: "btn btn-secondary",
+            <%= button_to "Save and Leave", save_and_leave_project_planner_session_path(project, planner_session), class: "btn btn-text",
               form: { data: { turbo_frame: "_top" } } %>
           </div>
         <% end %>

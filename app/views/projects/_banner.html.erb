@@ -1,5 +1,5 @@
 <% has_banner = project.banner.attached? %>
-<% if has_banner || editable %>
+<% if has_banner %>
   <% show_banner = project.banner_ready? %>
   <% small = show_banner && project.banner_small? %>
   <div class="mb-6 space-y-3">
@@ -101,8 +101,6 @@
       <% if small %>
         <p class="text-meta text-ink-2">This photo is small for a banner, so it sits on a soft blurred background. A larger photo fills the banner edge to edge.</p>
       <% end %>
-    <% elsif editable %>
-      <%= render "projects/banner_upload", project: project %>
     <% end %>
   </div>
 <% end %>

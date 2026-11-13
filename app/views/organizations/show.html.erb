@@ -1,7 +1,7 @@
 <%= turbo_stream_from Current.organization, :dashboard %>
 <% content_for :title, @organization.name %>
 
-<div class="w-full <%= @any_projects && @home_role != :volunteer ? "" : "max-w-2xl" %>">
+<div class="w-full <%= @any_projects && @home_role != :volunteer ? "" : "mx-auto max-w-2xl" %>">
   <%= page_header "Hi #{@person.name.split.first}" do %>
     <%= link_to "Start a Project", new_project_path, class: "btn btn-primary" if @any_projects && @home_role != :volunteer && Policy.can?(@person, :create, Project) %>
   <% end %>

@@ -19,8 +19,9 @@ module PeopleHelper
   end
 
   # Names the Active Projects a Person serves on, two at most, so a directory row stays one line.
+  # Nil when they serve on none: the row shows just the name, and the Serving now filter covers the rest.
   def serving_line(names)
-    return "Not serving on an Active Project right now" if names.empty?
+    return if names.empty?
 
     shown = names.first(2).to_sentence
     names.size > 2 ? "Serving on #{shown}, and #{names.size - 2} more" : "Serving on #{shown}"

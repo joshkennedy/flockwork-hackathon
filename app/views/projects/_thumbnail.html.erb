@@ -1,9 +1,9 @@
-<%# A small banner for lists. Without a photo, a tile tinted by the Project's lead Tool keeps the rows aligned. %>
+<%# A small banner for lists. Without a photo, list rows show nothing; only a flush card image slot keeps a tile tinted by the Project's lead Tool. %>
 <% size = local_assigns.fetch(:size, "w-20") %>
 <% flush = local_assigns.fetch(:flush, false) %>
 <% if project.banner_ready? %>
   <%= image_tag project.banner_variant(:phone), alt: "", loading: "lazy", class: class_names(size, "aspect-[3/2] shrink-0 bg-frame object-cover", "rounded-control border border-border": !flush) %>
-<% else %>
+<% elsif flush %>
   <% tool = project_lead_tool(project) %>
-  <span class="<%= class_names(size, "grid aspect-[3/2] shrink-0 place-items-center", tool ? ProjectsHelper::THUMBNAIL_TINTS.fetch(tool, "bg-frame") : "bg-frame text-ink-3", "rounded-control": !flush) %>" aria-hidden="true"><%= tool ? planner_tool_icon(tool) : icon(:projects) %></span>
+  <span class="<%= class_names(size, "grid aspect-[3/2] shrink-0 place-items-center", tool ? ProjectsHelper::THUMBNAIL_TINTS.fetch(tool, "bg-frame") : "bg-hairline text-ink-2") %>" aria-hidden="true"><%= tool ? planner_tool_icon(tool, size: 24) : icon(:projects, size: 24) %></span>
 <% end %>

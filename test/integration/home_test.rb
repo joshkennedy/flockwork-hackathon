@@ -35,7 +35,7 @@ class HomeTest < ActionDispatch::IntegrationTest
     assert_select "[data-home-section='your-projects'] li", count: 1
     assert_select "[data-home-section='your-projects'] .badge-need", text: "1 dinner still needs someone"
     assert_select "[data-home-section='your-projects'] a", text: "Fill Spots"
-    assert_select "[data-home-section='coming-up']"
+    assert_select "[data-home-section='coming-up']", count: 0, message: "a Leader with nothing coming up skips the empty section"
     assert_select "a.btn-primary", text: "Start a Project"
   end
 

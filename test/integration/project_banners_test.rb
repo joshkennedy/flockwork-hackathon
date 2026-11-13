@@ -219,13 +219,14 @@ class ProjectBannersTest < ActionDispatch::IntegrationTest
     assert_select "details summary", text: /focal point/, count: 0
   end
 
-  test "a Project with no banner offers the add dropzone to editors" do
+  test "a Project with no banner offers Add Banner in the editor's menu" do
     sign_in_as_leader
 
     get project_path(projects(:community_meal))
 
     assert_select "[data-controller~='banner-upload'] input[type=file][name='project[banner]']"
-    assert_match "Add a banner image", response.body
+    assert_select ".actions-menu-panel button", text: "Add Banner"
+    assert_no_match "Add a banner image", response.body
   end
 
   test "removing the banner purges it and resets focus and alt text" do

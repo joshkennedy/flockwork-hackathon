@@ -32,7 +32,7 @@
           <% groups[group].sort_by { |project| date = project.starts_on || project.ends_on; [ date ? 0 : 1, date || today, project.name ] }.each do |project| %>
             <% guidance = project_guidance(project, Current.person) %>
             <li>
-              <%= link_to project_path(project), class: "grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-1 border-b border-hairline px-1 py-3 hover:bg-ghost-fill sm:grid-cols-[auto_minmax(0,1fr)_11rem_14rem]" do %>
+              <%= link_to project_path(project), class: class_names("grid items-center gap-x-4 gap-y-1 border-b border-hairline px-1 py-3 hover:bg-ghost-fill", project.banner_ready? ? "grid-cols-[auto_minmax(0,1fr)] sm:grid-cols-[auto_minmax(0,1fr)_11rem_14rem]" : "sm:grid-cols-[minmax(0,1fr)_11rem_14rem]") do %>
                 <%= render "projects/thumbnail", project: project %>
                 <div class="min-w-0">
                   <h3 class="<%= project.done_at ? "text-ink-2" : "text-ink" %>"><%= project.name %></h3>
@@ -40,10 +40,10 @@
                     <span class="mt-0.5 block text-meta text-ink-2"><%= project.description %></span>
                   <% end %>
                 </div>
-                <span class="text-meta text-ink-2 max-sm:col-start-2"><%= project.starts_on || project.ends_on ? project_date_range(project.starts_on, project.ends_on) : "No dates yet" %></span>
-                <span class="max-sm:col-start-2">
+                <span class="<%= class_names("text-meta text-ink-2", "max-sm:col-start-2": project.banner_ready?) %>"><%= project.starts_on || project.ends_on ? project_date_range(project.starts_on, project.ends_on) : "No dates yet" %></span>
+                <span class="<%= class_names("max-sm:col-start-2": project.banner_ready?) %>">
+                  <%# Done rows sit under the Done heading, so they carry no status of their own. %>
                   <% if project.done_at %>
-                    <span class="rounded-badge bg-frame px-2 py-1 text-label text-ink-2">Done</span>
                   <% elsif guidance %>
                     <span class="badge-need"><%= guidance[:title] %></span>
                   <% else %>
