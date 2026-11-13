@@ -36,7 +36,8 @@ export default class extends Controller {
     if (!document.querySelector("style[data-flockwork-ding]")) {
       const style = document.createElement("style")
       style.dataset.flockworkDing = ""
-      style.textContent = "@media (max-width:639px){.tst-viewport[data-position^=top] .tst-slot{top:calc(72px + env(safe-area-inset-top,0px))}}.tst-media{width:22px;height:22px;border-radius:0;outline:none}"
+      // Public pages have no fixed bar, so there the toast keeps Ding's top edge instead of clearing the app's.
+      style.textContent = "@media (max-width:639px){body:not([data-public-layout]) .tst-viewport[data-position^=top] .tst-slot{top:calc(72px + env(safe-area-inset-top,0px))}}.tst-media{width:22px;height:22px;border-radius:0;outline:none}"
       document.head.append(style)
     }
   }
