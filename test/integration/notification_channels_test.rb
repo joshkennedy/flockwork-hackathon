@@ -21,7 +21,7 @@ class NotificationChannelsTest < ActionDispatch::IntegrationTest
       email_preferences: { invitation: "0" }
     } }
 
-    assert_redirected_to home_path
+    assert_redirected_to settings_path(anchor: "settings-details")
     person.reload
     assert person.notification_for?("sms", "invitation")
     assert_not person.notification_for?("in_app", "invitation")
@@ -49,7 +49,7 @@ class NotificationChannelsTest < ActionDispatch::IntegrationTest
       in_app_preferences: { invitation: "0" }
     } }
 
-    assert_redirected_to home_path
+    assert_redirected_to settings_path(anchor: "settings-details")
     assert_not person.reload.admin?
     assert_empty person.sms_preferences
     assert_not person.notification_for?("in_app", "invitation")

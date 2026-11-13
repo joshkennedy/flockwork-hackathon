@@ -1,25 +1,28 @@
 class ProfilesController < ApplicationController
+  include SettingsPage
+
   rate_limit to: 20, within: 1.hour, by: -> { Current.person.id }, only: :suggest_away, with: :suggest_away_rate_limited
   rate_limit to: 5, within: 10.minutes, by: -> { Current.session.id }, name: "demo_session",
     scope: "demo_outbound_actions", only: :update, if: :demo_phone_change?
   rate_limit to: 20, within: 10.minutes, by: -> { request.remote_ip }, name: "demo_ip",
     scope: "demo_outbound_actions", only: :update, if: :demo_phone_change?
 
-  def edit
+  # Your own involvement, read-only; what you can change lives on Settings.
+  def show
     @person = Current.person
-    load_involvement
-    load_away_dates
+    raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :view_involvement, @person)
+
+    @involvement = Oversight.involvement(@person)
   end
 
   def update
     @person = Current.person
+    tab = params[:tab].presence_in(%w[ details notifications ]) || "details"
 
     if @person.update(profile_params)
-      redirect_to home_path, notice: "Profile saved."
+      redirect_to settings_tab_path(tab), notice: "Settings saved."
     else
-      load_involvement
-      load_away_dates
-      render :edit, status: :unprocessable_entity
+      render_settings(tab, status: :unprocessable_entity)
     end
   end
 
@@ -38,9 +41,7 @@ class ProfilesController < ApplicationController
       end
     end
 
-    load_involvement
-    load_away_dates
-    render :edit
+    render_settings("away")
   end
 
   private
@@ -58,19 +59,7 @@ class ProfilesController < ApplicationController
 
       @person = Current.person
       flash.now[:alert] = "Too many suggestions. Try again in an hour."
-      load_involvement
-      load_away_dates
-      render :edit, status: :too_many_requests
-    end
-
-    def load_involvement
-      raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :view_involvement, @person)
-
-      @involvement = Oversight.involvement(@person)
-    end
-
-    def load_away_dates
-      @away_dates = @person.unavailabilities.upcoming.to_a
+      render_settings("away", status: :too_many_requests)
     end
 
     def profile_params
@@ -78,7 +67,9 @@ class ProfilesController < ApplicationController
         :name,
         :phone,
         skills: [],
+        # The weekly Project email is an email preference without a Notification kind.
         **Person::NOTIFICATION_CHANNELS.values.index_with { Notification::KINDS.keys }
+          .merge(email_preferences: [ *Notification::KINDS.keys, "weekly_project_digest" ])
       )
       Person::NOTIFICATION_CHANNELS.each_value do |attribute|
         preferences = permitted.delete(attribute)

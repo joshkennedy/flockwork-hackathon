@@ -15,9 +15,11 @@ Rails.application.routes.draw do
   resources :organizations, only: :create
   get "get_involved", to: "get_involved#show"
   get "my_tasks", to: redirect("/home", status: 301)
-  resource :oversight, only: %i[ show update ]
+  resource :oversight, only: :show
   resource :settings, only: %i[ show update ]
-  resource :digest_preferences, only: %i[ show update ], controller: "digest_preferences"
+  # Old homes of what now lives on Settings; links in sent emails still land on the right tab.
+  get "digest_preferences", to: redirect("/settings#settings-notifications"), as: :digest_preferences
+  get "profile/edit", to: redirect("/settings#settings-notifications")
   get "icon.svg", to: "icons#show", as: :icon
   resources :notifications, only: :index do
     member do
@@ -148,14 +150,14 @@ Rails.application.routes.draw do
   post "demo/:role", to: "demo_sessions#create", as: :demo_session
   get "people/import", to: "people/csv_imports#new", as: :new_people_csv_import
   post "people/import", to: "people/csv_imports#create", as: :people_csv_import
-  get "directory/planning_center", to: "directory/planning_center#show", as: :planning_center_directory
+  get "directory/planning_center", to: redirect("/settings#settings-directory"), as: :planning_center_directory
   patch "directory/planning_center", to: "directory/planning_center#update"
   post "directory/planning_center/sync", to: "directory/planning_center#sync", as: :sync_planning_center_directory
   resources :people, only: %i[index new create show edit update] do
     resources :notes, only: :create
     resources :check_ins, only: :create
   end
-  resource :profile, only: %i[edit update] do
+  resource :profile, only: %i[show update] do
     post :suggest_away
     resources :unavailabilities, only: %i[create destroy]
   end

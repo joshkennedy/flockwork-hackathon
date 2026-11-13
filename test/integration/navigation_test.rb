@@ -8,8 +8,9 @@ class NavigationTest < ActionDispatch::IntegrationTest
     assert_select "nav[aria-label='Main navigation'] a[href='#{home_path}']"
     assert_select "a[href='#{people_path}']", count: 0
     assert_select "a[href='#{oversight_path}']", count: 0
-    assert_select "a[href='#{settings_path}']", count: 0
-    assert_select "details.account-menu a[href='#{edit_profile_path}']", text: /Profile/, count: 1
+    assert_select "nav[aria-label='Main navigation'] a[href^='#{settings_path}']", count: 0
+    assert_select "details.account-menu a[href='#{profile_path}']", text: /Profile/, count: 1
+    assert_select "details.account-menu a[href='#{settings_path}']", text: /Settings/, count: 1
     assert_select "details.manage-menu", count: 0
   end
 
@@ -17,10 +18,10 @@ class NavigationTest < ActionDispatch::IntegrationTest
     sign_in_as_admin
     get home_path
 
-    [ people_path, oversight_path, settings_path ].each do |path|
+    [ people_path, oversight_path, settings_path(anchor: "settings-church") ].each do |path|
       assert_select "nav[aria-label='Main navigation'] details.manage-menu a[href='#{path}']", count: 2
     end
-    assert_select "details.account-menu a[href='#{settings_path}']", count: 0
+    assert_select "details.account-menu a[href='#{settings_path}']", count: 1
   end
 
   test "a Leader, allowed only Oversight, gets it as a plain destination with no Manage menu" do

@@ -6,12 +6,12 @@ class PlanningCenterSkillsSettingsTest < ActionDispatch::IntegrationTest
     organization.update!(pco_app_id: "existing-app", pco_secret: "existing-secret")
     sign_in_as_admin
     patch planning_center_directory_path, params: { organization: { pco_skills_field_id: " 77 ", id: organizations(:outsider_church).id } }
-    assert_redirected_to planning_center_directory_path
+    assert_redirected_to settings_path(anchor: "settings-directory")
     assert_equal "77", organization.reload.pco_skills_field_id
     assert_equal "existing-app", organization.pco_app_id
     assert_equal "existing-secret", organization.pco_secret
     assert_nil organizations(:outsider_church).pco_skills_field_id
-    get planning_center_directory_path
+    get settings_path
     assert_select "input[name='organization[pco_skills_field_id]'][value='77']"
     patch planning_center_directory_path, params: { organization: { pco_skills_field_id: "" } }
     assert_nil organization.reload.pco_skills_field_id

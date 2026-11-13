@@ -20,8 +20,11 @@
         <span>Switch Church</span>
       <% end %>
     <% end %>
-    <%= link_to edit_profile_path, class: "account-item" do %>
+    <%= link_to profile_path, class: "account-item" do %>
       <span>Profile</span>
+    <% end %>
+    <%= link_to settings_path, class: "account-item" do %>
+      <span>Settings</span>
     <% end %>
     <%= link_to "Terms", terms_path, class: "account-item" %>
     <%= link_to "Privacy policy", privacy_path, class: "account-item" %>

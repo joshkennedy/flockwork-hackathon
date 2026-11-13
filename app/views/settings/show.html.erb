@@ -1,40 +1,139 @@
-<% content_for :title, "Settings · #{Current.organization.name}" %>
-<% content_for :breadcrumbs do %>
-  <span class="min-w-0 truncate text-ink" aria-current="page">Settings</span>
-<% end %>
-<% organization = Current.organization %>
-<% saved_color = organization.mark_color_was || organization.mark_color %>
-<% preset = Organization::MARK_PRESETS.value?(organization.mark_color) %>
+<% content_for :title, "Settings" %>
+<% church = Policy.can?(Current.person, :manage_settings, Current.organization) %>
+<% directory = Policy.can?(Current.person, :manage_directory_source, Current.organization) %>
+<%# What is yours first, then what an Admin sets for the whole church. Each tab has a #settings-<name> URL. %>
+<% groups = [ [ "You", [ [ "details", "Details" ], [ "notifications", "Notifications" ], [ "away", "When you're away" ], [ "appearance", "Appearance" ] ] ] ] %>
+<% groups << [ Current.organization.name_in_database, [ ([ "church", "Church" ] if church), ([ "directory", "Directory" ] if directory) ].compact ] if church || directory %>
+<% panel = ->(name) { { id: "settings-#{name}", data: { tabs_target: "panel", tabs_name: name }, hidden: @settings_tab != name } } %>
 
-<div class="w-full max-w-2xl">
-  <%= page_header "Settings", subtitle: "Choices here apply to everyone at #{organization.name}." %>
+<div class="w-full max-w-4xl">
+  <%= page_header "Settings" %>
 
-  <% if organization.errors.any? %>
-    <p class="mt-7 text-meta font-medium text-danger" role="alert"><%= organization.errors.full_messages.to_sentence %></p>
-  <% end %>
-
-  <%= form_with model: organization, url: settings_path, method: :patch, class: "mt-7",
-        data: { controller: "theme-picker", action: "change->theme-picker#pick", theme_picker_default_value: Organization::DEFAULT_MARK_COLOR } do |form| %>
-    <fieldset class="space-y-4">
-      <legend class="text-heading font-semibold text-ink">Theme</legend>
-      <p class="text-meta text-ink-2">Colors the lead bird in the Flockwork mark. Saves as you pick.</p>
-
-      <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <% Organization::MARK_PRESETS.each do |name, color| %>
-          <label class="tile-raised flex cursor-pointer items-center gap-2 px-3 py-2.5 text-button has-[:checked]:border-ink has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ink">
-            <%= form.radio_button :mark_color_choice, color, checked: organization.mark_color == color, class: "sr-only" %>
-            <span class="size-4 shrink-0 rounded-badge" style="background: <%= color %>" aria-hidden="true"></span>
-            <%= name %>
-          </label>
+  <div class="mt-7 grid gap-6 md:grid-cols-[200px_minmax(0,1fr)] md:gap-10" data-controller="tabs" data-tabs-explicit-value="<%= @settings_tab_explicit %>">
+    <nav class="flex gap-1 overflow-x-auto md:flex-col md:gap-0.5" aria-label="Settings sections">
+      <% groups.each_with_index do |(heading, tabs), index| %>
+        <p class="truncate px-3 pb-1 text-label font-medium text-ink-2 max-md:hidden <%= "pt-5" unless index.zero? %>"><%= heading %></p>
+        <% tabs.each do |name, label| %>
+          <%= link_to label, "#settings-#{name}", class: "nav-item shrink-0", aria: { current: @settings_tab == name }, data: { tabs_target: "tab", tabs_name: name, action: "tabs#select" } %>
         <% end %>
-        <label for="organization_custom_mark_color" class="tile-raised flex cursor-pointer items-center gap-2 px-3 py-2.5 text-button has-[:checked]:border-ink has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ink">
-          <%= form.radio_button :mark_color_choice, "custom", checked: !preset, class: "sr-only", data: { theme_picker_target: "customChoice" } %>
-          <%= form.color_field :custom_mark_color, value: (preset ? saved_color : organization.mark_color).to_s.downcase,
-                class: "size-4 shrink-0 cursor-pointer rounded-badge border-0 p-0", aria: { label: "Custom color" },
-                data: { theme_picker_target: "custom", action: "input->theme-picker#previewCustom change->theme-picker#previewCustom" } %>
-          Custom
-        </label>
-      </div>
-    </fieldset>
-  <% end %>
+      <% end %>
+    </nav>
+
+    <div class="min-w-0 max-w-xl">
+      <%= form_with model: @person, url: profile_path, method: :patch do |form| %>
+        <% if @person.errors.any? %>
+          <div role="alert" class="mb-4 rounded-control bg-danger-soft px-4 py-3 text-meta text-danger">
+            <%= @person.errors.full_messages.to_sentence %>
+          </div>
+        <% end %>
+
+        <%= tag.section(**panel.("details"), class: "space-y-4", aria: { label: "Details" }) do %>
+          <div>
+            <%= form.label :name, class: "block text-label font-medium text-ink-2" %>
+            <%= form.text_field :name, required: true, class: "mt-2 block w-full field" %>
+          </div>
+
+          <div>
+            <p class="block text-meta font-medium text-ink-2">Email</p>
+            <p class="mt-1 text-meta text-ink-2"><%= @person.email.presence || "Can't sign in (no email)" %></p>
+          </div>
+
+          <div>
+            <%= form.label :phone, class: "block text-label font-medium text-ink-2" %>
+            <%= form.telephone_field :phone, class: "mt-2 block w-full field" %>
+          </div>
+
+          <%= render "shared/skills_field", form:, attribute: :skills, legend: "Your skills",
+            hint: "Leaders see only the skills that match their Project." %>
+
+          <%= form.button "Save Changes", name: "tab", value: "details", class: "btn btn-primary" %>
+        <% end %>
+
+        <%= tag.section(**panel.("notifications"), class: "space-y-4", aria: { label: "Notifications" }) do %>
+          <fieldset>
+            <legend class="sr-only">Notification delivery</legend>
+            <table class="mt-5 w-full table-fixed text-meta">
+              <caption class="sr-only">Delivery channels for each notification type</caption>
+              <colgroup><col class="w-[46%]"><col><col><col></colgroup>
+              <thead>
+                <tr class="text-label text-ink-2">
+                  <th scope="col" class="pb-2 text-left font-medium">Notify me about</th>
+                  <th scope="col" class="pb-2 text-center font-medium">In-app</th>
+                  <th scope="col" class="pb-2 text-center font-medium">Email</th>
+                  <th scope="col" class="pb-2 text-center font-medium">SMS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% Notification::KINDS.each do |kind, settings| %>
+                  <tr>
+                    <th scope="row" class="py-2 pr-2 text-left font-normal text-ink"><%= settings.fetch(:label) %></th>
+                    <% Person::NOTIFICATION_CHANNELS.each do |channel, attribute| %>
+                      <td class="py-2 text-center align-middle">
+                        <%= hidden_field_tag "person[#{attribute}][#{kind}]", "0", id: nil %>
+                        <label class="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center">
+                          <%= check_box_tag "person[#{attribute}][#{kind}]", "1", @person.notification_for?(channel, kind), id: "person_#{attribute}_#{kind}", class: "size-4 rounded border-hairline text-ink focus:border-ink" %>
+                          <span class="sr-only"><%= settings.fetch(:label) %> via <%= channel == "in_app" ? "in-app" : channel.upcase %></span>
+                        </label>
+                      </td>
+                    <% end %>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </fieldset>
+
+          <% if @person.admin? || @person.memberships.leader.exists? %>
+            <div class="flex items-start gap-3">
+              <%= hidden_field_tag "person[email_preferences][weekly_project_digest]", "0", id: nil %>
+              <%= check_box_tag "person[email_preferences][weekly_project_digest]", "1", @person.email_preferences.fetch("weekly_project_digest", true).then { ActiveModel::Type::Boolean.new.cast(it) },
+                    id: "person_weekly_project_digest", class: "mt-1 size-4 rounded border-hairline text-ink focus:border-ink" %>
+              <div>
+                <%= label_tag "person_weekly_project_digest", "Weekly Project email", class: "text-body text-ink" %>
+                <p class="text-meta text-ink-2">One email for each active Project you lead: open spots, overdue tasks and unanswered invitations.</p>
+              </div>
+            </div>
+          <% end %>
+
+          <div class="space-y-2 text-meta text-ink-2">
+            <p>SMS number: <span class="font-medium text-ink"><%= @person.phone.presence || "Not set" %></span>.
+              <%= link_to "Change phone", "#settings-details", class: "link", data: { action: "tabs#select", tabs_name: "details" } %>
+            </p>
+            <p>Use a number with its country code, such as +12025550100. Enabling SMS opts you in to these Flockwork texts. Message and data rates may apply. Reply STOP to opt out.</p>
+          </div>
+
+          <%= form.button "Save Changes", name: "tab", value: "notifications", class: "btn btn-primary" %>
+        <% end %>
+      <% end %>
+
+      <%= tag.div(**panel.("away")) do %>
+        <%= render "profiles/away_dates", section_class: "" %>
+      <% end %>
+
+      <%= tag.div(**panel.("appearance")) do %>
+        <fieldset class="space-y-3" data-controller="appearance" data-action="change->appearance#pick">
+          <legend class="text-body-phone font-semibold text-ink sm:text-body">Appearance on this device</legend>
+          <div class="grid grid-cols-3 gap-2 sm:max-w-md">
+            <% [["Light", "light"], ["Dark", "dark"], ["Match device", "system"]].each do |label, value| %>
+              <label class="tile-raised flex cursor-pointer items-center justify-center px-3 py-2.5 text-button has-[:checked]:border-ink has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ink">
+                <%= radio_button_tag :appearance, value, appearance == value, class: "sr-only" %>
+                <%= label %>
+              </label>
+            <% end %>
+          </div>
+        </fieldset>
+      <% end %>
+
+      <% if church %>
+        <%= tag.div(**panel.("church")) do %>
+          <%= render "settings/church" %>
+        <% end %>
+      <% end %>
+
+      <% if directory %>
+        <%= tag.div(**panel.("directory")) do %>
+          <%= render "settings/directory" %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
 </div>

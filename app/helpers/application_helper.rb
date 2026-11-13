@@ -63,16 +63,16 @@ module ApplicationHelper
     [
       [ "People", people_path, :people, :manage_people ],
       [ "Oversight", oversight_path, :oversight, :view_oversight ],
-      [ "Settings", settings_path, :settings, :manage_settings ]
+      [ "Settings", settings_path(anchor: "settings-church"), :settings, :manage_settings ]
     ].select { |*, permission| Policy.can?(Current.person, permission, Current.organization) }
   end
 
   # Every destination, for search. The nav itself draws primary_navigation and manage_navigation; the bell carries Notifications.
   def organization_navigation
-    primary_navigation + manage_navigation + [ [ "Notifications", notifications_path, :notifications ] ]
+    (primary_navigation + manage_navigation + [ [ "Notifications", notifications_path, :notifications ], [ "Settings", settings_path, :settings ] ]).uniq(&:first)
   end
 
-  # Profile lives in the account menu, not the nav.
+  # Profile and personal Settings live in the account menu, not the nav.
   # Only a Person whose email belongs to several Organizations gets the church switcher.
   def other_churches?
     Current.session.organization_choice_eligible? && Person.where(email: Current.session.verified_email).many?
@@ -188,6 +188,7 @@ module ApplicationHelper
   end
 
   def navigation_current?(path)
+    path = path.split("#").first
     current_page?(path) || (path != home_path && request.path.start_with?("#{path}/"))
   end
 

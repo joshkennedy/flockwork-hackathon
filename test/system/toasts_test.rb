@@ -6,18 +6,18 @@ class ToastsSystemTest < ApplicationSystemTestCase
     click_on "Explore as Leader"
 
     find(".account-menu summary", match: :first).click
-    click_on "Profile"
+    click_on "Settings"
     click_on "Save Changes", match: :first
 
-    assert_selector ".tst-viewport [role=status]", text: "Profile saved.", visible: :all
+    assert_selector ".tst-viewport [role=status]", text: "Settings saved.", visible: :all
     page.execute_script("document.querySelector('.tst-viewport').dataset.systemTest = 'same-root'")
 
     find(".account-menu summary", match: :first).click
-    click_on "Profile"
+    click_on "Settings"
     assert_selector ".tst-viewport[data-system-test=same-root]", count: 1, visible: :all
     click_on "Save Changes", match: :first
 
-    assert_selector ".tst-viewport [role=status]", text: "Profile saved.", visible: :all
+    assert_selector ".tst-viewport [role=status]", text: "Settings saved.", visible: :all
     assert_selector ".tst-viewport", count: 1, visible: :all
   end
 end

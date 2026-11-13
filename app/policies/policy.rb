@@ -86,7 +86,6 @@ module Policy
       return false unless record.id == person.organization_id
 
       return person.admin? || leader_somewhere?(person) if action == :view_oversight
-      return person.admin? if action == :update_oversight
       return person.admin? if action == :manage_people
       return person.admin? if action == :manage_directory_source
       return person.admin? if action == :manage_settings

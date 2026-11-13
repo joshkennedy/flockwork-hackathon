@@ -158,6 +158,17 @@
   --shadow-secondary-active: inset 0 1px 3px rgba(0,0,0,.5);
 }
 
+/* The church's color (--color-mark, set inline on <body> by the layouts) tints the canvas around the sheet and the
+   current nav pill, so a church sees its own color across the app. Sunlit keeps its meaning for open needs. */
+body {
+  --color-frame: color-mix(in oklab, var(--color-mark) 7%, #F3F2EF);
+  --color-nav-active: color-mix(in oklab, var(--color-mark) 14%, #E6E4DF);
+}
+:root[data-dark] body {
+  --color-frame: color-mix(in oklab, var(--color-mark) 6%, #141413);
+  --color-nav-active: color-mix(in oklab, var(--color-mark) 14%, #2B2A27);
+}
+
 @layer base {
   /* Native color inputs render as a plain swatch, matching the preset swatches beside them. */
   input[type=color] { appearance: none; background: none; }
@@ -354,11 +365,11 @@
   .page-surface { @apply relative mx-2 mb-2 min-h-[calc(100dvh-72px-64px-env(safe-area-inset-bottom))] min-w-0 rounded-panel border border-border bg-panel; }
   /* Wider screens: the same sheet on the frame, as wide as the bar above it. */
   @media (width >= 768px) { .page-surface { @apply mx-auto mb-6 mt-5 rounded-sheet; width: min(100% - 32px, var(--container-page-w)); min-height: calc(100dvh - 116px); } }
-  .header-wash { @apply pointer-events-none absolute inset-x-0 top-0 h-[300px] overflow-hidden rounded-t-panel md:rounded-t-sheet; mask-image: linear-gradient(#000 35%, transparent); --wash-a: rgb(245 176 0 / .2); --wash-b: rgb(232 89 12 / .09); }
+  .header-wash { @apply pointer-events-none absolute inset-x-0 top-0 h-[300px] overflow-hidden rounded-t-panel md:rounded-t-sheet; mask-image: linear-gradient(#000 35%, transparent); --wash-a: color-mix(in oklab, var(--color-mark) 22%, transparent); --wash-b: rgb(232 89 12 / .09); }
   /* DESIGN.md: the wash never sits behind the Planner. */
   .header-wash.wash-none { opacity: 0; }
-  .header-wash.wash-admin { --wash-a: rgb(14 165 164 / .16); --wash-b: rgb(245 176 0 / .14); }
-  .header-wash.wash-volunteer { --wash-a: rgb(232 89 12 / .14); --wash-b: rgb(245 176 0 / .18); }
+  .header-wash.wash-admin { --wash-a: rgb(14 165 164 / .16); --wash-b: color-mix(in oklab, var(--color-mark) 16%, transparent); }
+  .header-wash.wash-volunteer { --wash-a: rgb(232 89 12 / .14); --wash-b: color-mix(in oklab, var(--color-mark) 20%, transparent); }
   .header-wash::before, .header-wash::after { content: ""; position: absolute; border-radius: 50%; filter: blur(24px); }
   .header-wash::before { width: 600px; height: 340px; left: var(--wash-a-x); top: var(--wash-a-y); background: radial-gradient(closest-side, var(--wash-a), transparent); }
   .header-wash::after { width: 480px; height: 300px; left: var(--wash-b-x); top: var(--wash-b-y); background: radial-gradient(closest-side, var(--wash-b), transparent); }

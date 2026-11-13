@@ -6,9 +6,9 @@ class UnavailabilitiesController < ApplicationController
 
     if drafts.map(&:valid?).all?
       Unavailability.transaction { drafts.each(&:save!) }
-      redirect_to edit_profile_path, notice: "Saved your away dates."
+      redirect_to settings_path(anchor: "settings-away"), notice: "Saved your away dates."
     else
-      redirect_to edit_profile_path, alert: drafts.flat_map { |draft| draft.errors.full_messages }.uniq.to_sentence
+      redirect_to settings_path(anchor: "settings-away"), alert: drafts.flat_map { |draft| draft.errors.full_messages }.uniq.to_sentence
     end
   end
 
@@ -17,6 +17,6 @@ class UnavailabilitiesController < ApplicationController
     raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :destroy, unavailability)
 
     unavailability.destroy!
-    redirect_to edit_profile_path, notice: "Removed away dates."
+    redirect_to settings_path(anchor: "settings-away"), notice: "Removed away dates."
   end
 end

@@ -1,16 +1,15 @@
-<% content_for :title, "Planning Center · #{Current.organization.name}" %>
-<% content_for :breadcrumbs do %>
-  <%= link_to "People", people_path, class: "shrink-0 whitespace-nowrap hover:text-ink" %>
-  <span aria-hidden="true" class="shrink-0 text-ink-3">/</span>
-  <span class="min-w-0 truncate text-ink" aria-current="page"><%= breadcrumb_label %></span>
-<% end %>
-
-<div class="w-full max-w-2xl">
-  <%= page_header "Planning Center", subtitle: "Connect a personal access token to pull names and contact details into this directory." %>
-
+<%# Where the People directory comes from: Planning Center or a CSV file. %>
+<div>
+  <div class="flex flex-wrap items-start justify-between gap-3">
+    <div>
+      <h2 class="text-heading font-semibold text-ink">Planning Center</h2>
+      <p class="mt-1 text-meta text-ink-2">Connect a personal access token to pull names and contact details into People.</p>
+    </div>
+    <%= link_to "Import CSV", new_people_csv_import_path, class: "btn btn-secondary" %>
+  </div>
 
   <% if Current.organization.planning_center_connected? %>
-    <div class="mt-7 rounded-tile bg-sunlit-soft p-4">
+    <div class="mt-5 rounded-tile bg-sunlit-soft p-4">
       <p class="font-medium text-ink">Connected</p>
       <% if Current.organization.pco_last_synced_at.present? %>
         <p class="mt-1 text-meta text-ink-2">Last synced <%= time_ago_in_words(Current.organization.pco_last_synced_at) %> ago.</p>
@@ -37,7 +36,7 @@
     <%= button_to "Sync Now", sync_planning_center_directory_path, class: "mt-5 btn btn-primary" %>
   <% end %>
 
-  <% if Current.organization.errors.any? %>
+  <% if Current.organization.errors.any? && @settings_tab == "directory" %>
     <p role="alert" class="mt-5 text-meta text-danger"><%= Current.organization.errors.full_messages.to_sentence %></p>
   <% end %>
 

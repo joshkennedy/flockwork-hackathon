@@ -46,7 +46,7 @@ class OversightAwayTest < ActionDispatch::IntegrationTest
 
   test "the person sees their own note on Profile" do
     sign_in_as_volunteer
-    get edit_profile_path
+    get settings_path
 
     assert_select "[data-away-range]", text: /Private trip details/
   end

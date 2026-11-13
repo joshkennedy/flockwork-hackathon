@@ -24,17 +24,19 @@ class OversightTest < ActionDispatch::IntegrationTest
     get oversight_path
 
     assert_response :success
-    assert_select "input[name='organization[overextended_limit]'][value='3']"
+    assert_select "a[href=?]", settings_path(anchor: "settings-church"), text: "Change in Settings"
     assert_select "[data-overextended-person]", 1
     assert_select "[data-overextended-person='Lucy Leader'][data-serving-load='3']"
     assert_select "[data-overextended-person='Vic Volunteer']", 0
     assert_select "[data-overextended-person='Rowan Recipient']", 0
 
-    patch oversight_path, params: { organization: { overextended_limit: 2 } }
+    get settings_path
+    assert_select "input[name='organization[overextended_limit]'][value='3']"
+    patch settings_path, params: { organization: { overextended_limit: 2 } }
 
-    assert_redirected_to oversight_path
+    assert_redirected_to settings_path(anchor: "settings-church")
     assert_equal 2, organization.reload.overextended_limit
-    follow_redirect!
+    get oversight_path
     rows = css_select("[data-overextended-person]").map do |row|
       [ row["data-overextended-person"], row["data-serving-load"].to_i ]
     end
@@ -141,10 +143,10 @@ class OversightTest < ActionDispatch::IntegrationTest
     involved_person = create_involvement_history
     sign_in_as(involved_person)
 
-    get edit_profile_path
+    get profile_path
 
     assert_response :success
-    assert_select "h2", "Your Involvement"
+    assert_select "h2", "Your involvement"
     assert_equal [ [ 2026, 1, 1, 2 ], [ 2025, 1, 2, 3 ] ], involvement_timeline_rows
 
     get edit_person_path(people(:leader))

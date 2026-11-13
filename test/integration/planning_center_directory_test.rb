@@ -14,7 +14,7 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
       organization: { pco_app_id: "cassette-app-id", pco_secret: "cassette-secret" }
     }
 
-    assert_redirected_to planning_center_directory_path
+    assert_redirected_to settings_path(anchor: "settings-directory")
     follow_redirect!
     assert_select "p", text: "Connected"
     assert organizations(:st_example).reload.planning_center_connected?
@@ -202,7 +202,7 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
       pco_last_sync_result: result
     )
     sign_in_as_admin
-    get planning_center_directory_path
+    get settings_path
     assert_select "li", text: "Ada Admin: kept ada@st-example.test; skipped attacker@example.test from Planning Center."
   end
 
@@ -271,8 +271,9 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
   test "non-Admin gets 404 on Planning Center connection" do
     sign_in_as_volunteer
 
-    get planning_center_directory_path
-
+    get settings_path
+    assert_select "#settings-directory", count: 0
+    patch planning_center_directory_path, params: { organization: { pco_app_id: "app", pco_secret: "secret" } }
     assert_response :not_found
   end
 
@@ -281,7 +282,7 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
 
     get people_path
 
-    assert_select "a[href=?]", planning_center_directory_path, text: "Planning Center"
+    assert_select "a[href=?]", settings_path(anchor: "settings-directory"), text: "Planning Center"
   end
 
   private
