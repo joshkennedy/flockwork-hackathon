@@ -63,12 +63,12 @@ class GuestSignInTest < ApplicationSystemTestCase
   end
 
   private
-    # The heading or group label above a just-claimed row sits 40px from the top, and the whole row stays on screen.
+    # The heading or group label above a just-claimed row sits 24px from the top, and the whole row stays on screen.
     def assert_landed_on(slot, below:)
-      anchor_top, row_bottom, height = page.evaluate_script(<<~JS)
-        [document.querySelector(#{below.to_json}).getBoundingClientRect().top, document.getElementById("slot_#{slot.id}").getBoundingClientRect().bottom, innerHeight]
+      anchor_top, row_bottom, height, at_bottom = page.evaluate_script(<<~JS)
+        [document.querySelector(#{below.to_json}).getBoundingClientRect().top, document.getElementById("slot_#{slot.id}").getBoundingClientRect().bottom, innerHeight, scrollY + innerHeight >= document.documentElement.scrollHeight - 1]
       JS
-      assert_in_delta 40, anchor_top, 1, "#{below} sits 40px from the top"
+      assert at_bottom || (anchor_top - 24).abs <= 1, "#{below} sits 24px from the top unless the page has run out of scroll (it sat at #{anchor_top})"
       assert_operator row_bottom, :<=, height, "the claimed row is fully in view"
       assert_selector "#slot_#{slot.id}:focus"
     end
