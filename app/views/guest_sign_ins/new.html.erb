@@ -6,6 +6,7 @@
   <%= render "error", message: @error %>
 
   <%= form_with url: guest_sign_in_path(@project.public_token), class: "mt-6 space-y-4" do |f| %>
+    <%= hidden_field_tag :slot_id, @slot.id if @slot %>
     <div>
       <%= f.label :contact, "Email or mobile number", class: "block text-label font-medium text-ink-2" %>
       <%= f.text_field :contact, value: params[:contact], required: true, autofocus: true, autocomplete: "email",

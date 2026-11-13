@@ -13,6 +13,8 @@ class SignInChallenge < ApplicationRecord
 
   belongs_to :organization
   belongs_to :project, optional: true
+  # The Slot the helper tapped, kept here rather than in the session so the emailed link claims it on any device.
+  belongs_to :slot, optional: true
 
   validates :channel, inclusion: { in: CHANNELS }
   validates :address, presence: true
@@ -36,14 +38,14 @@ class SignInChallenge < ApplicationRecord
   end
 
   # A new challenge ends the earlier open ones for the address. Returns nil once the address has had its hour's share.
-  def self.issue(organization:, project:, channel:, address:)
+  def self.issue(organization:, project:, channel:, address:, slot: nil)
     earlier = where(organization:, address:)
     return if earlier.where(created_at: 1.hour.ago..).count >= HOURLY_LIMIT
 
     transaction do
       earlier.where(created_at: ...1.day.ago).delete_all
       earlier.open.update_all(expires_at: Time.current)
-      create!(organization:, project:, channel:, address:, expires_at: LIFETIME.from_now)
+      create!(organization:, project:, slot:, channel:, address:, expires_at: LIFETIME.from_now)
     end
   end
 

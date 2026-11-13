@@ -16,7 +16,7 @@
   <% end %>
 
   <div class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
-    <%= button_to "Resend Code", guest_sign_in_path(@project.public_token), params: { contact: @challenge.address, resend: 1 }, class: "btn btn-secondary" %>
-    <%= link_to "Use a different email or phone", guest_sign_in_path(@project.public_token), class: "link font-medium" %>
+    <%= button_to "Resend Code", guest_sign_in_path(@project.public_token), params: { contact: @challenge.address, slot_id: @challenge.slot_id, resend: 1 }.compact, class: "btn btn-secondary" %>
+    <%= link_to "Use a different email or phone", guest_sign_in_path(@project.public_token, slot_id: @challenge.slot_id), class: "link font-medium" %>
   </div>
 </div>

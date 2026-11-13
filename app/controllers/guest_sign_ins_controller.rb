@@ -5,6 +5,7 @@ class GuestSignInsController < ApplicationController
 
   allow_unauthenticated_access
   before_action :set_project, except: %i[ link open_link ]
+  before_action :set_slot, only: %i[ new create ]
   rate_limit to: 10, within: 3.minutes, only: :create, with: -> { too_many_requests }
   rate_limit to: 20, within: 3.minutes, only: %i[ verify open_link ], name: "verify", with: -> { too_many_requests }
   before_action :set_challenge, only: %i[ code verify ]
@@ -12,9 +13,7 @@ class GuestSignInsController < ApplicationController
 
   def new
     if authenticated? && Current.person.organization_id == @project.organization_id
-      redirect_to public_project_path(@project.public_token)
-    else
-      session[:guest_slot_id] = params[:slot_id].presence
+      redirect_to public_project_path(@project.public_token, anchor: (helpers.dom_id(@slot) if @slot))
     end
   end
 
@@ -27,7 +26,7 @@ class GuestSignInsController < ApplicationController
     end
     return ask_again("Use your email to sign in.") if SignInChallenge.new(organization: @project.organization, channel:, address:).texts_an_admin?
 
-    challenge = SignInChallenge.issue(organization: @project.organization, project: @project, channel:, address:)
+    challenge = SignInChallenge.issue(organization: @project.organization, project: @project, slot: @slot, channel:, address:)
     return ask_again("Too many codes sent. Wait an hour, then try again.", :too_many_requests) unless challenge
 
     SignInChallengeJob.perform_later(challenge) if DemoOutboundLimit.allow?(@project.organization)
@@ -83,6 +82,11 @@ class GuestSignInsController < ApplicationController
       @project = Project.publicly_linked.find_by!(public_token: params[:token])
     end
 
+    # The slot_id comes from the page's link, so it only counts when it is one of this Project's Slots.
+    def set_slot
+      @slot = @project.slots.find_by(id: params[:slot_id])
+    end
+
     def set_challenge
       @challenge = SignInChallenge.find_by(id: session[:guest_challenge_id], project: @project)
       redirect_to guest_sign_in_path(@project.public_token) unless @challenge
@@ -115,12 +119,23 @@ class GuestSignInsController < ApplicationController
     # The challenge is deleted once it has signed someone in, so neither the code nor the name step can be replayed.
     # Checked again here because the phone's Person can change between sending the code and using it.
     def sign_in(person, challenge, auth_method)
-      slot = challenge.project.slots.find_by(id: session[:guest_slot_id])
-      %i[ guest_challenge_id guest_verified_challenge_id guest_auth_method guest_slot_id ].each { |key| session.delete(key) }
+      project = challenge.project
+      slot = @slot = project.slots.find_by(id: challenge.slot_id)
+      %i[ guest_challenge_id guest_verified_challenge_id guest_auth_method ].each { |key| session.delete(key) }
       challenge.destroy!
       return ask_again("Use your email to sign in.") if challenge.texts_an_admin?(person)
       start_new_session_for person, auth_method:, verified_email: (challenge.address if challenge.channel == "email")
-      redirect_to public_project_path(challenge.project.public_token, anchor: (helpers.dom_id(slot) if slot)), status: :see_other
+      notice = claim_tapped_slot(slot, person) if slot && Policy.can?(person, :claim_public_slot, project)
+      redirect_to public_project_path(project.public_token, anchor: (helpers.dom_id(slot) if slot)), status: :see_other, notice:
+    end
+
+    # Takes the Slot the helper tapped before signing in, by the same rules as claiming on the public page.
+    def claim_tapped_slot(slot, person)
+      if slot.slot_claims.exists?(person:) || slot.claim(person)&.persisted?
+        helpers.claimed_slot_notice(slot)
+      else
+        "That spot filled up while you were signing in. Pick another one below."
+      end
     end
 
     def ask_again(message, status = :unprocessable_content)

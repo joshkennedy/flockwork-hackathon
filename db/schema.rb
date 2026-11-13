@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -397,9 +397,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_090000) do
     t.datetime "consumed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "slot_id"
     t.index ["organization_id", "address"], name: "index_sign_in_challenges_on_organization_id_and_address"
     t.index ["organization_id"], name: "index_sign_in_challenges_on_organization_id"
     t.index ["project_id"], name: "index_sign_in_challenges_on_project_id"
+    t.index ["slot_id"], name: "index_sign_in_challenges_on_slot_id"
   end
 
   create_table "slot_claims", force: :cascade do |t|
@@ -690,6 +692,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_090000) do
   add_foreign_key "sessions", "people"
   add_foreign_key "sign_in_challenges", "organizations", on_delete: :cascade
   add_foreign_key "sign_in_challenges", "projects", on_delete: :cascade
+  add_foreign_key "sign_in_challenges", "slots", on_delete: :nullify
   add_foreign_key "slot_claims", "people"
   add_foreign_key "slot_claims", "slots"
   add_foreign_key "slots", "projects"

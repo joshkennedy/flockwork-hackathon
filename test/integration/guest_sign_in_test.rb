@@ -45,26 +45,65 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_select "section[aria-labelledby='public-tasks'] form[action=?] button", claim_project_task_path(@project, task), text: "I’ll Do It"
   end
 
-  test "someone already in the church signs in with an emailed code and lands on the Slot they tapped" do
+  test "someone already in the church signs in with an emailed code and holds the Slot they tapped" do
     get guest_sign_in_path(@token, slot_id: @slot.id)
     assert_select "h1", "Sign in to help"
+    assert_select "input[type=hidden][name=slot_id][value=?]", @slot.id.to_s
 
-    code = request_code("Vera@St-Example.test ")
+    code = request_code("Vera@St-Example.test ", slot: @slot)
     mail = ActionMailer::Base.deliveries.last
     assert_equal [ @vera.email ], mail.to
     follow_redirect!
     assert_select "h1", "Enter your code"
     assert_select "p", /Sent to v•••@st-example.test/
     assert_select "input[name=code][autocomplete='one-time-code'][inputmode=numeric]"
+    assert_select "form[action=?] input[name=slot_id][value=?]", guest_sign_in_path(@token), @slot.id.to_s
+    assert_select "a[href=?]", guest_sign_in_path(@token, slot_id: @slot.id), text: "Use a different email or phone"
 
     assert_no_difference -> { Person.count } do
       post guest_sign_in_code_path(@token), params: { code: }
     end
 
     assert_redirected_to public_project_path(@token, anchor: "slot_#{@slot.id}")
+    assert_equal [ @vera ], @slot.reload.people
+    follow_redirect!
+    assert_select "#flash [data-toast-kind=notice]", "You’re bringing dinner #{@slot.date.strftime("%A, %B %-d")}."
+    assert_select "#slot_#{@slot.id}", /You’re signed up/
     assert_signed_in_as @vera
     assert_equal "email_code", @vera.sessions.last.auth_method
     assert_nil @vera.reload.joined_from_project
+  end
+
+  test "the one-tap link holds the tapped Slot even when opened in another browser" do
+    request_code(@vera.email, slot: @slot)
+    link = ActionMailer::Base.deliveries.last.text_part.body.encoded[%r{/go/(\S+)}, 1]
+
+    open_session do |phone|
+      phone.post guest_sign_in_link_path(link)
+      phone.assert_redirected_to public_project_path(@token, anchor: "slot_#{@slot.id}")
+    end
+    assert_equal [ @vera ], @slot.reload.people
+  end
+
+  test "a Slot that filled up during sign-in is left alone, with a calm note" do
+    code = request_code(@vera.email, slot: @slot)
+    @slot.claim(people(:volunteer))
+
+    post guest_sign_in_code_path(@token), params: { code: }
+    assert_redirected_to public_project_path(@token, anchor: "slot_#{@slot.id}")
+    assert_equal [ people(:volunteer) ], @slot.reload.people
+    follow_redirect!
+    assert_select "#flash [data-toast-kind=notice]", "That spot filled up while you were signing in. Pick another one below."
+  end
+
+  test "a slot_id from another Project is ignored" do
+    other = projects(:community_meal).organization.projects.where.not(id: @project.id).first!
+    foreign = other.slots.create!(date: Date.current + 3, label: "Dinner", capacity: 1)
+    code = request_code(@vera.email, slot: foreign)
+
+    post guest_sign_in_code_path(@token), params: { code: }
+    assert_redirected_to public_project_path(@token)
+    assert_empty foreign.reload.people
   end
 
   test "someone already in the church signs in with a texted code, however their phone was typed in" do
@@ -360,8 +399,8 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
 
   private
     # Asks for a code the way the form does and reads it from the email or text that went out.
-    def request_code(contact)
-      perform_enqueued_jobs { post guest_sign_in_path(@token), params: { contact: } }
+    def request_code(contact, slot: nil)
+      perform_enqueued_jobs { post guest_sign_in_path(@token), params: { contact:, slot_id: slot&.id } }
       return last_sms&.fetch("text")&.[](/\b\d{6}\b/) unless contact.include?("@")
 
       ActionMailer::Base.deliveries.last&.subject&.[](/\A\d{6}/)
