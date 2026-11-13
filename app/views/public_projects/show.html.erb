@@ -1,10 +1,10 @@
 <% content_for :title, @project.name %>
 <% if authenticated? %>
   <% content_for :account do %>
-    <div class="flex min-w-0 items-center gap-1 text-meta font-medium text-ink-2" data-public-account>
+    <div class="flex min-w-0 items-center gap-3 text-meta font-medium text-ink-2" data-public-account>
       <%# Phones keep only the name, the useful part; screen readers still hear the whole phrase. %>
       <span class="min-w-0 truncate"><span class="max-sm:sr-only">Signed in as </span><%= Current.person.name %></span>
-      <%= button_to "Not You?", guest_sign_out_path(@project.public_token), method: :delete, class: "btn btn-text btn-sm", form_class: "button_to shrink-0" %>
+      <%= button_to "Not You?", guest_sign_out_path(@project.public_token), method: :delete, class: "link -my-3.5 cursor-pointer py-3.5 text-meta font-medium text-ink-2 sm:my-0 sm:py-0", form_class: "button_to shrink-0" %>
     </div>
   <% end %>
 <% end %>
