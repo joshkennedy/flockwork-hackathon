@@ -11,7 +11,7 @@ module PeopleHelper
     chips << tag.span("Away until #{short_date(away_until)}", class: "status-chip") if away_until
     chips << tag.span("Not yet asked", class: "status-chip status-chip-need") if never_asked
     chips << tag.span("Joined from a public link", class: "status-chip") if person.joined_from_project_id?
-    chips << tag.span("Can't sign in", class: "status-chip") unless person.can_sign_in?
+    chips << tag.span("Can't sign in", class: "status-chip") unless person.can_sign_in? || person.can_sign_in_by_text?
     tag.span(safe_join(chips), class: "inline-flex min-w-0 flex-wrap items-center gap-1.5")
   end
 

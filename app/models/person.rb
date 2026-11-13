@@ -113,6 +113,12 @@ class Person < ApplicationRecord
     email.present?
   end
 
+  # A Public link texts a code to a North American mobile, but never to an Admin (see SignInChallenge#texts_an_admin?).
+  def can_sign_in_by_text?
+    channel, phone = SignInChallenge.parse(self.phone)
+    !admin? && channel == "sms" && SignInChallenge::TEXTABLE_PHONE.match?(phone)
+  end
+
   def email_for?(kind)
     notification_for?("email", kind)
   end

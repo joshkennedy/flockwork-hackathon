@@ -87,6 +87,22 @@ class PeopleDirectoryTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "a helper with only a North American mobile can sign in by text, so is not marked as unable to" do
+    organization = organizations(:st_example)
+    organization.people.create!(name: "Tom Text", phone: "(202) 555-0177")
+    organization.people.create!(name: "Una Overseas", phone: "+44 20 7946 0958")
+    sign_in_as_admin
+
+    get people_path
+
+    assert_select "li", text: /Tom Text/ do
+      assert_select "span.status-chip", text: "Can't sign in", count: 0
+    end
+    assert_select "li", text: /Una Overseas/ do
+      assert_select "span.status-chip", text: "Can't sign in"
+    end
+  end
+
   test "each row says only what the Person serves on" do
     sign_in_as_admin
 
