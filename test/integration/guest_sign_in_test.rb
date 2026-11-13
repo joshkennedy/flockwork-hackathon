@@ -349,7 +349,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     post guest_sign_in_code_path(@token), params: { code: code == "000000" ? "111111" : "000000" }
 
     assert_response :unprocessable_content
-    assert_select "[role=alert]", "That code didn’t match. Try again or resend it."
+    assert_select "[role=alert]", "That code didn’t match. Try again."
     assert_select "p", text: /\ASent to v\S+@/
     assert_select "input[name=code][autocomplete=one-time-code]"
     assert_select "button", "Resend Code"
@@ -363,7 +363,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     4.times do
       post guest_sign_in_code_path(@token), params: { code: wrong }
       assert_response :unprocessable_content
-      assert_select "[role=alert]", "That code didn’t match. Try again or resend it."
+      assert_select "[role=alert]", "That code didn’t match. Try again."
     end
     post guest_sign_in_code_path(@token), params: { code: wrong }
     assert_select "[role=alert]", "That code has expired or was tried too many times. Send a new one."
