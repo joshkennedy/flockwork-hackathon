@@ -1,7 +1,5 @@
 <% slots = project.slots.includes(slot_claims: :person).chronological.to_a %>
-<% past, upcoming = slots.partition { |slot| slot.date < Date.current } %>
-<% this_week, upcoming = upcoming.partition { |slot| slot.date <= Date.current.end_of_week } %>
-<% next_week, later = upcoming.partition { |slot| slot.date <= Date.current.next_week.end_of_week } %>
+<% slot_weeks(slots) => { past:, this_week:, next_week:, later: } %>
 <section class="tool-section" aria-labelledby="tool-signup-sheet" data-controller="slideout">
   <%= render "projects/tools/planner_arrival", tool: "signup_sheet" %>
   <div class="flex flex-wrap items-center justify-between gap-4">
@@ -54,7 +52,7 @@
       <% if later.any? %>
         <%# Kept open when nothing nearer exists, so a far-off sheet is never hidden behind a click. %>
         <details data-signup-later <%= "open" if this_week.empty? && next_week.empty? %>>
-          <%= disclosure_summary "Later Slots", meta: "#{pluralize(later.size, "Slot")}, #{pluralize(later.sum { |slot| [ slot.capacity - slot.claims_count, 0 ].max }, "spot")} left", class: "disclosure-bar" %>
+          <%= disclosure_summary "Later Slots", meta: later_slots_meta(later), class: "disclosure-bar" %>
           <ul class="mt-2"><%= render partial: "projects/tools/signup_slot", collection: later, as: :slot, locals: { project: } %></ul>
         </details>
       <% end %>

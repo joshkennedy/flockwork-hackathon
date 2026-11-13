@@ -41,6 +41,29 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_select "#slot_#{roomy.id} .badge-need", "3 spots left"
   end
 
+  test "the Public page groups Slots like the Sign-up sheet and opens Later when it holds the helper's spot" do
+    @slot.destroy!
+    travel_to Date.new(2026, 11, 11) do
+      past = @project.slots.create!(date: Date.new(2026, 11, 10), label: "Dinner", capacity: 1)
+      soon = @project.slots.create!(date: Date.new(2026, 11, 13), label: "Dinner", capacity: 1)
+      after = @project.slots.create!(date: Date.new(2026, 11, 18), label: "Dinner", capacity: 1)
+      far = @project.slots.create!(date: Date.new(2026, 12, 2), label: "Dinner", capacity: 2)
+
+      get public_project_path(@token)
+      assert_select "#slot_#{past.id}", count: 0
+      assert_select "h3", "This week"
+      assert_select "h3", "Next week"
+      assert_select "details[data-signup-later] #slot_#{soon.id}, details[data-signup-later] #slot_#{after.id}", count: 0
+      assert_select "details[data-signup-later]:not([open])", /1 Slot, 2 spots left/
+      assert_select "details[data-signup-later] #slot_#{far.id}"
+
+      sign_in_as @vera
+      far.claim(@vera)
+      get public_project_path(@token)
+      assert_select "details[data-signup-later][open] #slot_#{far.id}"
+    end
+  end
+
   test "the sign-in steps wear the church's mark color, as the Public page does" do
     @project.organization.update!(mark_color: "#0F766E")
 
