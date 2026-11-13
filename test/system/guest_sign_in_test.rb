@@ -31,6 +31,8 @@ class GuestSignInTest < ApplicationSystemTestCase
     assert_selector ".tst", text: "You’re bringing dinner"
     assert_selector "li[id^=slot_]", text: "You’re bringing dinner"
     assert_match(/#slot_\d+\z/, page.current_url)
+    toast_bottom, row_top = page.evaluate_script("[document.querySelector('.tst').getBoundingClientRect().bottom, document.querySelector(location.hash).getBoundingClientRect().top]")
+    assert_operator toast_bottom, :<=, row_top, "the toast must not cover the claimed Slot"
     assert_equal [ "Nadia Novak" ], @project.slots.last.people.map(&:name)
   end
 end
