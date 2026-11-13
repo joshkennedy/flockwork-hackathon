@@ -22,13 +22,27 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
   end
 
   test "the Public page sends helpers to its own sign-in, carrying the Slot they tapped" do
-    @project.tasks.create!(title: "Help with setup")
-
     get public_project_path(@token)
 
-    assert_select "section[aria-labelledby='public-tasks'] a[href=?]", guest_sign_in_path(@token), text: "Help with This"
     assert_select "section[aria-labelledby='public-slots'] a[href=?]", guest_sign_in_path(@token, slot_id: @slot.id), text: "Help with This"
     assert_select "a[href=?]", new_sign_in_request_path, count: 0
+  end
+
+  test "Tasks show on the Public page only to the Team, who can take one" do
+    task = @project.tasks.create!(title: "Help with setup")
+
+    get public_project_path(@token)
+    assert_select "#public-tasks", count: 0
+    assert_no_match "Help with setup", response.body
+
+    sign_in_as @vera
+    get public_project_path(@token)
+    assert_select "#public-tasks", count: 0
+    assert_no_match "Help with setup", response.body
+
+    sign_in_as_volunteer
+    get public_project_path(@token)
+    assert_select "section[aria-labelledby='public-tasks'] form[action=?] button", claim_project_task_path(@project, task), text: "I’ll Do It"
   end
 
   test "someone already in the church signs in with an emailed code and lands on the Slot they tapped" do
