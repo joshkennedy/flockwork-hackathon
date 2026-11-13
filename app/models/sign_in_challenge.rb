@@ -38,12 +38,13 @@ class SignInChallenge < ApplicationRecord
   end
 
   # A new challenge ends the earlier open ones for the address. Returns nil once the address has had its hour's share.
+  # Used challenges stay as the hourly limits' record, and rows a day old are past every limit's window.
   def self.issue(organization:, project:, channel:, address:, slot: nil)
     earlier = where(organization:, address:)
     return if earlier.where(created_at: 1.hour.ago..).count >= HOURLY_LIMIT
 
     transaction do
-      earlier.where(created_at: ...1.day.ago).delete_all
+      where(organization:, created_at: ...1.day.ago).delete_all
       earlier.open.update_all(expires_at: Time.current)
       create!(organization:, project:, slot:, channel:, address:, expires_at: LIFETIME.from_now)
     end
@@ -96,7 +97,12 @@ class SignInChallenge < ApplicationRecord
 
   # The address is proven, but a new helper has not given a name yet.
   def verified?
-    consumed_at.present? && consumed_at > LIFETIME.ago
+    consumed_at.present? && consumed_at > LIFETIME.ago && signed_in_at.nil?
+  end
+
+  # The row outlives the sign-in so the hourly limits still count it, but without a code it can never be used again.
+  def mark_signed_in
+    self.class.where(id:, signed_in_at: nil).update_all(signed_in_at: Time.current, code_digest: nil) == 1
   end
 
   # Several People can share one phone, and nobody confirms a phone an Admin typed in. The match with the least

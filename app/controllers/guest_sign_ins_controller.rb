@@ -124,13 +124,13 @@ class GuestSignInsController < ApplicationController
       end
     end
 
-    # The challenge is deleted once it has signed someone in, so neither the code nor the name step can be replayed.
+    # The challenge is spent once it has signed someone in, so neither the code nor the name step can be replayed.
     # Checked again here because the phone's Person can change between sending the code and using it.
     def sign_in(person, challenge, auth_method)
       project = challenge.project
       slot = @slot = project.slots.find_by(id: challenge.slot_id)
       %i[ guest_challenge_id guest_verified_challenge_id guest_auth_method ].each { |key| session.delete(key) }
-      challenge.destroy!
+      challenge.mark_signed_in
       return ask_again("Use your email to sign in.") if challenge.texts_an_admin?(person)
       start_new_session_for person, auth_method:, verified_email: (challenge.address if challenge.channel == "email")
       flash_message = claim_tapped_slot(slot, person) if slot && Policy.can?(person, :claim_public_slot, project)

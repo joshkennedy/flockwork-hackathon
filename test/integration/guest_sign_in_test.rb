@@ -478,6 +478,32 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_select "[role=alert]", "Enter an email, or a mobile number with its area code."
   end
 
+  test "signing in with a code still counts toward the address's five codes an hour" do
+    5.times do
+      post guest_sign_in_code_path(@token), params: { code: request_code(@vera.email) }
+      assert_signed_in_as @vera
+      delete session_path
+    end
+
+    assert_no_emails { request_code(@vera.email) }
+    assert_response :too_many_requests
+  end
+
+  test "signing in with a texted code still counts toward the church's texts an hour" do
+    @vera.update!(phone: "(202) 555-0123")
+    organization = @project.organization
+    (SignInChallenge::ORGANIZATION_HOURLY_TEXT_LIMIT - 1).times do |i|
+      SignInChallenge.create!(organization:, channel: "sms", address: "+1202555#{format("%04d", 1000 + i)}", expires_at: 15.minutes.from_now)
+    end
+
+    post guest_sign_in_code_path(@token), params: { code: request_code("202-555-0123") }
+    assert_signed_in_as @vera
+    delete session_path
+
+    request_code("202-555-0177")
+    assert_select "[role=alert]", "Use your email for now."
+  end
+
   test "someone signed in to another church cannot claim here, and a full Slot says so" do
     sign_in_as_outsider
     post public_slot_claim_path(@token, @slot)

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_150000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -258,8 +258,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_120000) do
     t.string "skills", default: [], null: false, array: true
     t.jsonb "in_app_preferences", default: {}, null: false
     t.jsonb "sms_preferences", default: {}, null: false
-    t.string "pending_email"
     t.bigint "added_by_id"
+    t.string "pending_email"
     t.bigint "joined_from_project_id"
     t.index ["added_by_id"], name: "index_people_on_added_by_id"
     t.index ["joined_from_project_id"], name: "index_people_on_joined_from_project_id"
@@ -398,6 +398,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_120000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "slot_id"
+    t.datetime "signed_in_at"
     t.index ["organization_id", "address"], name: "index_sign_in_challenges_on_organization_id_and_address"
     t.index ["organization_id"], name: "index_sign_in_challenges_on_organization_id"
     t.index ["project_id"], name: "index_sign_in_challenges_on_project_id"
