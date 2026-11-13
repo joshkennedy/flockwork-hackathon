@@ -1,6 +1,6 @@
 <% content_for :title, "What’s your name?" %>
 
-<div class="w-full max-w-[480px]">
+<div class="w-full max-w-[480px] sm:mx-auto">
   <h1 class="text-ink">What’s your name?</h1>
   <% if @challenge.slot %>
     <p class="mt-2 text-meta text-ink-2" data-chosen-slot><%= slot_summary(@challenge.slot) %></p>
