@@ -55,6 +55,9 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
 
   test "someone already in the church signs in with a texted code, however their phone was typed in" do
     @vera.update!(phone: "(202) 555-0123")
+    get guest_sign_in_path(@token)
+    assert_select "input[name=contact][aria-describedby=?]", "contact-texts"
+    assert_select "#contact-texts", "Msg & data rates may apply. Reply STOP to opt out."
 
     code = request_code("(202) 555-0123")
 

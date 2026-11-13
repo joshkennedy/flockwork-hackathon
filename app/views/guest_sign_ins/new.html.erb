@@ -9,7 +9,8 @@
     <div>
       <%= f.label :contact, "Email or mobile number", class: "block text-label font-medium text-ink-2" %>
       <%= f.text_field :contact, value: params[:contact], required: true, autofocus: true, autocomplete: "email",
-            autocapitalize: "none", spellcheck: false, class: "mt-2 block w-full field" %>
+            autocapitalize: "none", spellcheck: false, aria: { describedby: "contact-texts" }, class: "mt-2 block w-full field" %>
+      <p id="contact-texts" class="mt-2 text-meta text-ink-2">Msg &amp; data rates may apply. Reply STOP to opt out.</p>
     </div>
 
     <%= f.submit "Send Me a Code", class: "w-full btn btn-primary" %>
