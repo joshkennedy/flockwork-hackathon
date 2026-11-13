@@ -6,7 +6,7 @@
 
   <%= form_with model: @debrief, url: project_debrief_path(@project), method: :patch, class: "mt-6 space-y-5" do |form| %>
     <% if @debrief.errors.any? %>
-      <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
+      <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-ink">
         <p class="font-semibold">Fix these to continue:</p>
         <ul class="mt-2 list-disc space-y-1 pl-5 text-meta">
           <% @debrief.errors.full_messages.each do |message| %>

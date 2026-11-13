@@ -2,7 +2,7 @@
       class: "space-y-7",
       data: { controller: "slot-session", turbo_frame: ("_top" unless request.headers["Turbo-Frame"] == "slot-form") } do |form| %>
   <% if slot.errors.any? %>
-    <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
+    <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-ink">
       <p class="font-semibold">Fix these to continue:</p>
       <ul class="mt-2 list-disc space-y-1 pl-5 text-meta">
         <% slot.errors.full_messages.each do |message| %>

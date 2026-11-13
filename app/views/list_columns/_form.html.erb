@@ -1,6 +1,6 @@
 <%= form_with model: [ project, list, list_column ], class: "space-y-7" do |form| %>
   <% if list_column.errors.any? %>
-    <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
+    <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-ink">
       <p class="font-semibold">Fix these to continue:</p>
       <ul class="mt-2 list-disc space-y-1 pl-5 text-meta">
         <% list_column.errors.full_messages.each do |message| %>

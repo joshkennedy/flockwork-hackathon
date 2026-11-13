@@ -52,7 +52,7 @@
 }
 .auth-error {
   background:var(--color-danger-soft);
-  color:var(--color-danger);
+  color:var(--color-ink);
   padding:16px;
   border-radius:6px;
   margin-bottom:24px

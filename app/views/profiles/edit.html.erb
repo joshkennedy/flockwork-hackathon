@@ -20,7 +20,7 @@
     <div class="min-w-0 max-w-xl">
       <%= form_with model: @person, url: profile_path, method: :patch do |form| %>
         <% if @person.errors.any? %>
-          <div role="alert" class="mb-4 rounded-control bg-danger-soft px-4 py-3 text-meta text-danger">
+          <div role="alert" class="mb-4 rounded-control bg-danger-soft px-4 py-3 text-meta text-ink">
             <%= @person.errors.full_messages.to_sentence %>
           </div>
         <% end %>

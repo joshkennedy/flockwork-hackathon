@@ -6,7 +6,7 @@
     data-voice-state="<%= planner_session.status %>"
     data-voice-card="<%= planner_session.current_card&.fetch("question", nil) %>">
     <% if planner_session.last_error.present? %>
-      <p role="alert" class="mb-7 rounded-control bg-danger-soft px-4 py-3 text-danger"><%= PlannerSession::ERROR_MESSAGE %></p>
+      <p role="alert" class="mb-7 rounded-control bg-danger-soft px-4 py-3 text-ink"><%= PlannerSession::ERROR_MESSAGE %></p>
     <% end %>
 
     <% if planner_session.current_card.present? %>

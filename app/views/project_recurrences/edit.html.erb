@@ -10,7 +10,7 @@
     <p class="mt-4 text-meta text-ink-2">Dates repeat from <%= (@recurrence.anchor_on || @project.starts_on).strftime("%B %-d, %Y") %>. Copies are created only while this Project is active and the person who saved this rule can still lead it.</p>
     <%= form_with model: @recurrence, url: project_recurrence_path(@project), method: :patch, class: "mt-6 space-y-5" do |form| %>
       <% if @recurrence.errors.any? %>
-        <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
+        <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-ink">
           <p class="font-semibold">Fix these to continue:</p>
           <ul class="mt-2 list-disc space-y-1 pl-5 text-meta">
             <% @recurrence.errors.full_messages.each do |message| %>

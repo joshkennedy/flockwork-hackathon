@@ -1,6 +1,6 @@
 <%= form_with model: person, url: person.persisted? ? person_path(person) : people_path, class: "mt-7 space-y-4" do |form| %>
   <% if person.errors.any? %>
-    <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-meta text-danger">
+    <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-meta text-ink">
       <%= person.errors.full_messages.to_sentence %>
     </div>
   <% end %>
