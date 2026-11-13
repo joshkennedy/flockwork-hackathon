@@ -345,7 +345,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     sign_in_as @vera
     post public_slot_claim_path(@token, @slot)
     follow_redirect!
-    assert_select "[role=alert]", "This Slot is full. Pick another one."
+    assert_select "#flash [data-toast-kind=alert]", "This Slot is full. Pick another one."
   end
 
   test "turning the Public link off closes the sign-in and claiming" do

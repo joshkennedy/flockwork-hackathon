@@ -2,10 +2,6 @@
 
 <%= render "projects/banner", project: @project, editable: false %>
 
-<% if flash[:alert] %>
-  <p role="alert" class="mb-6 rounded-control bg-danger-soft px-4 py-3 text-danger"><%= flash[:alert] %></p>
-<% end %>
-
 <header>
   <h1 class="text-ink"><%= @project.name %></h1>
   <% if @project.description.present? %>
