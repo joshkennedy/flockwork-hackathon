@@ -160,6 +160,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     post guest_sign_in_code_path(@token), params: { code: }
     follow_redirect!
     assert_select "[data-chosen-slot]", "#{@slot.date.strftime("%A, %B %-d")} · 6:00 PM · Dinner"
+    assert_select "p", "Last step. This saves your spot."
     assert_select "input[type=submit][value=?]", "Confirm My Spot"
     assert_select "label.sr-only[for=name]", "Name"
     assert_select "input[name=name][placeholder=?]", "First and last name"
@@ -260,6 +261,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_select "h1", "What’s your name?"
     assert_select "[data-chosen-slot]", count: 0
+    assert_select "p", text: "Last step. This saves your spot.", count: 0
     assert_select "input[type=submit][value=?]", "Continue"
 
     post guest_sign_in_name_path(@token), params: { name: "" }

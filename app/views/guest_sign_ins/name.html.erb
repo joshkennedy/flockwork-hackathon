@@ -1,9 +1,10 @@
 <% content_for :title, "What’s your name?" %>
 
-<div class="w-full max-w-[480px] sm:mx-auto">
+<div class="w-full max-w-[480px]">
   <h1 class="text-ink">What’s your name?</h1>
   <% if @challenge.slot %>
     <p class="mt-2 text-meta text-ink-2 sm:mt-3" data-chosen-slot><%= slot_summary(@challenge.slot) %></p>
+    <p class="mt-1 text-meta text-ink-2">Last step. This saves your spot.</p>
   <% else %>
     <p class="mt-2 text-ink-2">So <%= @project.organization.name %> knows who’s helping.</p>
   <% end %>
