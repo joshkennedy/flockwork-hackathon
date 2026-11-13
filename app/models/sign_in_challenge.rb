@@ -107,14 +107,16 @@ class SignInChallenge < ApplicationRecord
     self.class.where(id:, signed_in_at: nil).update_all(signed_in_at: Time.current, code_digest: nil) == 1
   end
 
-  # The name step, at most once: the row lock makes a second submission wait, then find the challenge used.
+  # The name step, at most once. The Organization's lock, the one issue takes, makes a second submission wait and
+  # then find the challenge used, or find the Person another challenge for the same address just made.
   # Returns nil when the challenge is no longer verified, and an unsaved Person when the name is not valid.
   def finish(name:)
-    with_lock do
+    organization.with_lock do
+      reload
       next unless verified?
 
       person = self.person || build_person(name:)
-      mark_signed_in if person.save
+      mark_signed_in if person.persisted? || person.save
       person
     end
   end

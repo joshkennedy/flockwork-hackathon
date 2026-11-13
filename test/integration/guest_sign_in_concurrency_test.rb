@@ -26,25 +26,41 @@ class GuestSignInConcurrencyTest < ActionDispatch::IntegrationTest
   end
 
   test "sending the name step twice at once makes one Person" do
-    perform_enqueued_jobs { post guest_sign_in_path(@token), params: { contact: "202-555-0177" } }
-    code = nil
-    assert_requested(:post, SENDLY) { |request| code = JSON.parse(request.body)["text"][/\b\d{6}\b/] }
-    post guest_sign_in_code_path(@token), params: { code: }
-    assert_redirected_to guest_sign_in_name_path(@token)
+    browser = open_session
+    verify_phone(browser)
+    browsers = 2.times.map { open_session.tap { |copy| browser.cookies.to_hash.each { |name, value| copy.cookies[name] = value } } }
 
-    browsers = 2.times.map { open_session.tap { |browser| cookies.to_hash.each { |name, value| browser.cookies[name] = value } } }
+    send_names_at_once(browsers)
+
+    assert_equal 1, Person.where(phone: "+12025550177").count
+    assert_equal 1, browsers.count { |each| each.response.redirect_url == public_project_url(@token) }
+  end
+
+  test "two browsers that each proved the same phone make one Person when they send their names at once" do
+    browsers = 2.times.map { open_session.tap { |browser| verify_phone(browser) } }
+
+    send_names_at_once(browsers)
+
+    assert_equal 1, Person.where(phone: "+12025550177").count
+  end
+
+  private
+    def verify_phone(browser)
+      perform_enqueued_jobs { browser.post guest_sign_in_path(@token), params: { contact: "202-555-0177" } }
+      code = nil
+      assert_requested(:post, SENDLY, at_least_times: 1) { |request| code = JSON.parse(request.body)["text"][/\b\d{6}\b/] }
+      browser.post guest_sign_in_code_path(@token), params: { code: }
+      assert_equal guest_sign_in_name_url(@token), browser.response.redirect_url
+    end
+
     # Holds each new Person at the insert until the other request gets there too, or a second passes, so both
     # requests are in flight at once instead of one finishing before the other starts.
-    both_creating = Concurrent::CountDownLatch.new(2)
-    barrier = ->(_) { both_creating.count_down; both_creating.wait(1) }
-    Person.set_callback(:create, :before, barrier)
-    begin
+    def send_names_at_once(browsers)
+      both_creating = Concurrent::CountDownLatch.new(2)
+      barrier = ->(_) { both_creating.count_down; both_creating.wait(1) }
+      Person.set_callback(:create, :before, barrier)
       browsers.map { |browser| Thread.new { browser.post guest_sign_in_name_path(@token), params: { name: "Tom Text" } } }.each(&:join)
     ensure
       Person.skip_callback(:create, :before, barrier)
     end
-
-    assert_equal 1, Person.where(phone: "+12025550177").count
-    assert_equal 1, browsers.count { |browser| browser.response.redirect_url == public_project_url(@token) }
-  end
 end
