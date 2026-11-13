@@ -344,6 +344,17 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
   end
 
+  test "a wrong code says so on the code step and keeps where it was sent" do
+    code = request_code(@vera.email)
+    post guest_sign_in_code_path(@token), params: { code: code == "000000" ? "111111" : "000000" }
+
+    assert_response :unprocessable_content
+    assert_select "[role=alert]", "That code didn’t match. Try again or resend it."
+    assert_select "p", text: /\ASent to v\S+@/
+    assert_select "input[name=code][autocomplete=one-time-code]"
+    assert_select "button", "Resend Code"
+  end
+
   test "five wrong codes end the challenge, even for the right code and the link" do
     code = request_code(@vera.email)
     link = ActionMailer::Base.deliveries.last.text_part.body.encoded[%r{/go/(\S+)}, 1]
@@ -352,7 +363,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     4.times do
       post guest_sign_in_code_path(@token), params: { code: wrong }
       assert_response :unprocessable_content
-      assert_select "[role=alert]", "That code isn’t right. Check it and try again."
+      assert_select "[role=alert]", "That code didn’t match. Try again or resend it."
     end
     post guest_sign_in_code_path(@token), params: { code: wrong }
     assert_select "[role=alert]", "That code has expired or was tried too many times. Send a new one."

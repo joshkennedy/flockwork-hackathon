@@ -44,7 +44,7 @@ class GuestSignInsController < ApplicationController
     if @challenge.verify(params[:code].to_s.gsub(/\D/, ""))
       sign_in_or_ask_name(@challenge, "#{@challenge.channel}_code")
     elsif @challenge.open?
-      @error = "That code isn’t right. Check it and try again."
+      @error = "That code didn’t match. Try again or resend it."
       render :code, status: :unprocessable_content
     else
       ask_again("That code has expired or was tried too many times. Send a new one.")
