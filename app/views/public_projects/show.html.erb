@@ -1,9 +1,9 @@
 <% content_for :title, @project.name %>
 <% if authenticated? %>
   <% content_for :account do %>
-    <div class="flex items-center gap-1 text-meta text-ink-2" data-public-account>
-      <span>Signed in as <%= Current.person.name %></span>
-      <%= button_to "Not You?", guest_sign_out_path(@project.public_token), method: :delete, class: "btn btn-text btn-sm" %>
+    <div class="flex min-w-0 items-center gap-1 text-meta font-medium text-ink-2" data-public-account>
+      <span class="truncate">Signed in as <%= Current.person.name %></span>
+      <%= button_to "Not You?", guest_sign_out_path(@project.public_token), method: :delete, class: "btn btn-text btn-sm", form_class: "button_to shrink-0" %>
     </div>
   <% end %>
 <% end %>

@@ -1,6 +1,6 @@
 <% content_for :title, "Enter your code" %>
 
-<div class="w-full max-w-xl">
+<div class="w-full max-w-[480px]">
   <h1 class="text-ink">Enter your code</h1>
   <% if @challenge.slot %><p class="mt-2 text-meta text-ink-2" data-chosen-slot><%= slot_summary(@challenge.slot) %></p><% end %>
   <p class="mt-2 text-ink-2">Sent to <span class="font-medium text-ink"><%= @challenge.masked_address %></span>.</p>
@@ -8,12 +8,12 @@
 
   <%= form_with url: guest_sign_in_code_path(@project.public_token), class: "mt-6 space-y-5" do |f| %>
     <div>
-      <%= f.label :code, "6-digit code", class: "block text-label font-medium text-ink-2" %>
+      <%= f.label :code, "6-digit code", class: "sr-only" %>
       <%= f.text_field :code, required: true, autofocus: true, autocomplete: "one-time-code", inputmode: "numeric",
-            pattern: "[0-9 ]*", maxlength: 7, class: "mt-2 block w-full field field-code" %>
+            pattern: "[0-9 ]*", maxlength: 7, class: "block w-full field field-code" %>
     </div>
 
-    <%= f.submit "Continue", class: "w-full btn btn-primary" %>
+    <%= f.submit "Verify Code", class: "w-full btn btn-primary" %>
   <% end %>
 
   <div class="mt-6 flex flex-wrap items-center gap-3">

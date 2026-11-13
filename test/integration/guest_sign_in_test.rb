@@ -303,12 +303,14 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_signed_in_as tom
   end
 
-  test "the form answers the same way for a known and an unknown address" do
-    request_code(@vera.email)
-    assert_redirected_to guest_sign_in_code_path(@token)
-
-    request_code("stranger@example.com")
-    assert_redirected_to guest_sign_in_code_path(@token)
+  test "the form and the code step answer the same way for a known and an unknown address" do
+    [ @vera.email, "stranger@example.com" ].each do |contact|
+      request_code(contact, slot: @slot)
+      assert_redirected_to guest_sign_in_code_path(@token)
+      follow_redirect!
+      assert_select "input[type=submit][value=?]", "Verify Code"
+      assert_select "label.sr-only", "6-digit code"
+    end
   end
 
   test "the one-tap link waits for a button press, then works once" do
