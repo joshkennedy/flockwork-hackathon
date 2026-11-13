@@ -397,9 +397,8 @@
   :root[data-dark] .btn-secondary { @apply border-control-border; }
   .tile-raised { @apply rounded-tile border border-border bg-panel shadow-raised; }
   /* The public page lands on a just-claimed row by its #slot_ anchor; it takes focus for screen readers, never a ring. */
-  .slot-held { @apply rounded-tile border border-border; }
-  /* Open Slots are lighter panels in dark, so a flat held row needs a firmer edge to read as kept rather than spent. */
-  :root[data-dark] .slot-held { @apply border-border-strong; }
+  /* A flat held row needs a 3:1 edge on the page to read as kept rather than spent beside the raised open tiles; border-strong is only 2.1:1 in light. */
+  .slot-held { @apply rounded-tile border border-control-border; }
   .slot-held:focus { outline: none; box-shadow: none; }
   .slot-held:target { animation: slot-changed var(--duration-keep) var(--ease-enter); }
   .slot-held:target .kept-check { animation: keep-check var(--duration-keep) var(--ease-enter); }
