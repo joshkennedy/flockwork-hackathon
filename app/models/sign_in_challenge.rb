@@ -90,10 +90,15 @@ class SignInChallenge < ApplicationRecord
 
   # Several People can share one phone, and nobody confirms a phone an Admin typed in. The match with the least
   # access wins (a non-Admin before an Admin, then the oldest), so a family phone never signs anyone in as an Admin
-  # by accident. Stored phones without a country code never match, because the verified address is always E.164.
+  # by accident. Most stored phones are as typed ("(202) 555-0123"), so the match is on digits, and a +1 number
+  # also matches its ten-digit form, the same reading parse gives a bare ten-digit number.
   def person
     people = organization.people
-    channel == "email" ? people.find_by(email: address) : people.where(phone: address).order(:admin, :id).first
+    return people.find_by(email: address) if channel == "email"
+
+    digits = address.delete("+")
+    national = digits.delete_prefix("1") if digits.length == 11 && digits.start_with?("1")
+    people.where("regexp_replace(phone, '\\D', '', 'g') IN (?)", [ digits, national ].compact).order(:admin, :id).first
   end
 
   def build_person(name:)

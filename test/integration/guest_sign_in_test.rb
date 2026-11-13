@@ -53,8 +53,8 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_nil @vera.reload.joined_from_project
   end
 
-  test "someone already in the church signs in with a texted code" do
-    @vera.update!(phone: "+12025550123")
+  test "someone already in the church signs in with a texted code, however their phone was typed in" do
+    @vera.update!(phone: "(202) 555-0123")
 
     code = request_code("(202) 555-0123")
 
@@ -75,7 +75,8 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
 
   test "a shared phone signs in the Person with the least access" do
     people(:admin).update!(phone: "+12025550123")
-    @vera.update!(phone: "+12025550123")
+    @vera.update!(phone: "1-202-555-0123")
+    people(:outsider).update!(phone: "2025550123")
 
     post guest_sign_in_code_path(@token), params: { code: request_code("+12025550123") }
 
