@@ -133,16 +133,16 @@ class GuestSignInsController < ApplicationController
       challenge.destroy!
       return ask_again("Use your email to sign in.") if challenge.texts_an_admin?(person)
       start_new_session_for person, auth_method:, verified_email: (challenge.address if challenge.channel == "email")
-      notice = claim_tapped_slot(slot, person) if slot && Policy.can?(person, :claim_public_slot, project)
-      redirect_to public_project_path(project.public_token, anchor: (helpers.dom_id(slot) if slot)), status: :see_other, notice:
+      flash_message = claim_tapped_slot(slot, person) if slot && Policy.can?(person, :claim_public_slot, project)
+      redirect_to public_project_path(project.public_token, anchor: (helpers.dom_id(slot) if slot)), status: :see_other, flash: flash_message
     end
 
     # Takes the Slot the helper tapped before signing in, by the same rules as claiming on the public page.
     def claim_tapped_slot(slot, person)
       if slot.slot_claims.exists?(person:) || slot.claim(person)&.persisted?
-        helpers.claimed_slot_notice(slot)
+        { claimed: helpers.claimed_slot_notice(slot) }
       else
-        "That spot filled up while you were signing in. Pick another one below."
+        { notice: "That spot filled up while you were signing in. Pick another one below." }
       end
     end
 

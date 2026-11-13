@@ -130,8 +130,8 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_redirected_to public_project_path(@token, anchor: "slot_#{@slot.id}")
     assert_equal [ @vera ], @slot.reload.people
     follow_redirect!
-    assert_select "#flash [data-toast-kind=notice]", "You’re bringing dinner #{@slot.date.strftime("%A, %B %-d")}."
-    assert_select "#slot_#{@slot.id}", /You’re signed up/
+    assert_select "#flash [data-toast-kind=claimed]", "You’re bringing dinner #{@slot.date.strftime("%A, %B %-d")}."
+    assert_select "#slot_#{@slot.id}", /You’re bringing dinner/
     assert_select "#slot_#{@slot.id}.tile-raised", count: 0
     assert_signed_in_as @vera
     assert_equal "email_code", @vera.sessions.last.auth_method
@@ -272,7 +272,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_redirected_to public_project_path(@token, anchor: "slot_#{@slot.id}")
     assert_equal [ nadia ], @slot.reload.people
     follow_redirect!
-    assert_select "#slot_#{@slot.id}", /You’re signed up/
+    assert_select "#slot_#{@slot.id}", /You’re bringing dinner/
 
     # The Public link opens that page only: the Team's Project page stays closed, and Home and reminders lead back here.
     get home_path

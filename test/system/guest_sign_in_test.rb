@@ -28,8 +28,8 @@ class GuestSignInTest < ApplicationSystemTestCase
     fill_in "Name", with: "Nadia Novak"
     click_on "Confirm My Spot"
 
-    assert_text "You’re bringing dinner"
-    assert_text "You’re signed up"
+    assert_selector ".tst", text: "You’re bringing dinner"
+    assert_selector "li[id^=slot_]", text: "You’re bringing dinner"
     assert_match(/#slot_\d+\z/, page.current_url)
     assert_equal [ "Nadia Novak" ], @project.slots.last.people.map(&:name)
   end

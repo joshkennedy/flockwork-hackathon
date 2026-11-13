@@ -1,7 +1,7 @@
 <%# Ding's viewport moves inside this permanent host, so Turbo carries the active toast across body swaps. %>
 <div id="toasts" data-turbo-permanent data-controller="toasts"></div>
 <div id="flash" hidden>
-  <% { notice: flash[:notice], alert: flash[:alert] }.compact_blank.each do |kind, message| %>
+  <% { notice: flash[:notice], claimed: flash[:claimed], alert: flash[:alert] }.compact_blank.each do |kind, message| %>
     <span data-toast-entry data-toast-kind="<%= kind %>"><%= message %></span>
   <% end %>
 </div>
