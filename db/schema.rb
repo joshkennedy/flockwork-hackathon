@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_09_214144) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -260,7 +260,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_09_214144) do
     t.jsonb "sms_preferences", default: {}, null: false
     t.bigint "added_by_id"
     t.string "pending_email"
+    t.bigint "joined_from_project_id"
     t.index ["added_by_id"], name: "index_people_on_added_by_id"
+    t.index ["joined_from_project_id"], name: "index_people_on_joined_from_project_id"
     t.index ["name"], name: "index_people_search", opclass: :gin_trgm_ops, using: :gin
     t.index ["organization_id", "email"], name: "index_people_on_organization_id_and_email", unique: true, where: "(email IS NOT NULL)"
     t.index ["organization_id", "external_source", "external_id"], name: "index_people_on_organization_and_external_identity", unique: true, where: "(external_id IS NOT NULL)"
@@ -382,6 +384,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_09_214144) do
     t.string "auth_method"
     t.string "verified_email"
     t.index ["person_id"], name: "index_sessions_on_person_id"
+  end
+
+  create_table "sign_in_challenges", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.bigint "project_id"
+    t.string "channel", null: false
+    t.string "address", null: false
+    t.string "code_digest"
+    t.integer "attempts", default: 0, null: false
+    t.datetime "expires_at", null: false
+    t.datetime "consumed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id", "address"], name: "index_sign_in_challenges_on_organization_id_and_address"
+    t.index ["organization_id"], name: "index_sign_in_challenges_on_organization_id"
+    t.index ["project_id"], name: "index_sign_in_challenges_on_project_id"
   end
 
   create_table "slot_claims", force: :cascade do |t|
@@ -656,6 +674,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_09_214144) do
   add_foreign_key "notifications", "people", column: "recipient_id"
   add_foreign_key "people", "organizations"
   add_foreign_key "people", "people", column: "added_by_id", on_delete: :nullify
+  add_foreign_key "people", "projects", column: "joined_from_project_id", on_delete: :nullify
   add_foreign_key "planner_sessions", "people", column: "started_by_id"
   add_foreign_key "planner_sessions", "projects"
   add_foreign_key "project_debriefs", "projects"
@@ -669,6 +688,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_09_214144) do
   add_foreign_key "recipients", "projects"
   add_foreign_key "schedule_items", "projects"
   add_foreign_key "sessions", "people"
+  add_foreign_key "sign_in_challenges", "organizations", on_delete: :cascade
+  add_foreign_key "sign_in_challenges", "projects", on_delete: :cascade
   add_foreign_key "slot_claims", "people"
   add_foreign_key "slot_claims", "slots"
   add_foreign_key "slots", "projects"

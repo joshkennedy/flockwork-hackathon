@@ -10,6 +10,8 @@ class Person < ApplicationRecord
   }.freeze
 
   belongs_to :added_by, class_name: "Person", optional: true
+  # Set when someone added themselves by signing in from a Project's Public link.
+  belongs_to :joined_from_project, class_name: "Project", optional: true
 
   has_many :sessions, dependent: :destroy
   has_many :memberships, dependent: :destroy
@@ -61,7 +63,10 @@ class Person < ApplicationRecord
   # Invitations and ownership preserve Team history after Membership deletion; soft-deleted Projects retain Memberships.
   # Admins already lead the church, so listing them as not yet invited would misstate their involvement.
   # Recipients are being cared for by a Project, even on deleted Projects and without Team history.
-  scope :never_asked, -> { where(admin: false).where.missing(:invitations, :memberships, :owned_projects, :recipients) }
+  # Someone who joined from a Public link answered an ask already, so they are not waiting for one.
+  scope :never_asked, -> {
+    where(admin: false, joined_from_project_id: nil).where.missing(:invitations, :memberships, :owned_projects, :recipients)
+  }
 
   normalizes :email, with: ->(email) { email.strip.downcase.presence }
   normalizes :pending_email, with: ->(email) { email.strip.downcase.presence }
