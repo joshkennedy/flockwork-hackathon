@@ -2,7 +2,7 @@
 
 <div class="w-full">
   <%= page_header "People" do %>
-    <%= link_to "Planning Center", planning_center_directory_path, class: "btn btn-secondary" %>
+    <%= link_to "Planning Center", settings_path(anchor: "settings-directory"), class: "btn btn-secondary" %>
     <%= link_to "Import CSV", new_people_csv_import_path, class: "btn btn-secondary" %>
     <%= link_to "Add Person", new_person_path, class: "btn btn-primary" %>
   <% end %>

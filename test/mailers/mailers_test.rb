@@ -65,7 +65,7 @@ class MailersTest < ActionMailer::TestCase
     assert_match "Leo Leader assigned you a task", html
     assert_match "Friday, March 8, 2030", html
     assert_match "Six of them.", html
-    assert_match "http://example.com/profile/edit", html
+    assert_match "http://example.com/settings#settings-notifications", html
     assert_match "Due: Friday, March 8, 2030", mail.text_part.body.decoded
   end
 

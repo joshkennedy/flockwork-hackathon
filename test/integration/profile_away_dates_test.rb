@@ -21,7 +21,7 @@ class ProfileAwayDatesTest < ActionDispatch::IntegrationTest
 
     post profile_unavailabilities_path, params: { unavailabilities: [ { starts_on: "2026-07-01", ends_on: "2026-07-31", note: "Family trip" } ] }
 
-    assert_redirected_to edit_profile_path
+    assert_redirected_to settings_path(anchor: "settings-away")
     assert_equal 1, @volunteer.unavailabilities.count
     assert_equal "Family trip", @volunteer.unavailabilities.first.note
   end
@@ -43,7 +43,7 @@ class ProfileAwayDatesTest < ActionDispatch::IntegrationTest
   test "a range that ends before it starts is refused and saves nothing" do
     post profile_unavailabilities_path, params: { unavailabilities: [ { starts_on: "2026-03-14", ends_on: "2026-03-01" } ] }
 
-    assert_redirected_to edit_profile_path
+    assert_redirected_to settings_path(anchor: "settings-away")
     assert_equal "Ends on must be on or after the start date", flash[:alert]
     assert_equal 0, @volunteer.unavailabilities.count
   end
@@ -66,7 +66,7 @@ class ProfileAwayDatesTest < ActionDispatch::IntegrationTest
     assert Unavailability.exists?(other.id)
 
     delete profile_unavailability_path(own)
-    assert_redirected_to edit_profile_path
+    assert_redirected_to settings_path(anchor: "settings-away")
     assert_not Unavailability.exists?(own.id)
 
     # Regression: the Profile page never rendered flash, so this notice was lost. The layout toast shows it.

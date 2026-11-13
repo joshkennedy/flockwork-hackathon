@@ -1,0 +1,46 @@
+<%# Admin-only choices that apply to everyone at the church. %>
+<% organization = Current.organization %>
+<% saved_color = organization.mark_color_was || organization.mark_color %>
+<% preset = Organization::MARK_PRESETS.value?(organization.mark_color) %>
+
+<% if organization.errors.any? && @settings_tab == "church" %>
+  <p class="mb-5 text-meta font-medium text-danger" role="alert"><%= organization.errors.full_messages.to_sentence %></p>
+<% end %>
+
+<%= form_with model: organization, url: settings_path, method: :patch, class: "space-y-4" do |form| %>
+  <div>
+    <%= form.label :name, "Church name", class: "block text-label font-medium text-ink-2" %>
+    <%= form.text_field :name, required: true, class: "mt-2 block w-full field" %>
+  </div>
+  <div>
+    <%= form.label :overextended_limit, "Serving load limit", class: "block text-label font-medium text-ink-2" %>
+    <%= form.number_field :overextended_limit, min: 1, required: true, class: "mt-2 w-24 field", aria: { describedby: "overextended-limit-help" } %>
+    <p id="overextended-limit-help" class="mt-2 text-meta text-ink-2">Oversight asks you to check in with anyone serving on this many Projects or more.</p>
+  </div>
+  <%= form.submit "Save Changes", class: "btn btn-primary" %>
+<% end %>
+
+  <%= form_with model: organization, url: settings_path, method: :patch, class: "mt-10",
+        data: { controller: "theme-picker", action: "change->theme-picker#pick", theme_picker_default_value: Organization::DEFAULT_MARK_COLOR } do |form| %>
+    <fieldset class="space-y-4">
+      <legend class="text-heading font-semibold text-ink">Theme</legend>
+      <p class="text-meta text-ink-2">Tints the app for everyone at your church: the mark, the page around the sheet, the header wash and the current tab. Saves as you pick.</p>
+
+      <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <% Organization::MARK_PRESETS.each do |name, color| %>
+          <label class="tile-raised flex cursor-pointer items-center gap-2 px-3 py-2.5 text-button has-[:checked]:border-ink has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ink">
+            <%= form.radio_button :mark_color_choice, color, checked: organization.mark_color == color, class: "sr-only" %>
+            <span class="size-4 shrink-0 rounded-badge" style="background: <%= color %>" aria-hidden="true"></span>
+            <%= name %>
+          </label>
+        <% end %>
+        <label for="organization_custom_mark_color" class="tile-raised flex cursor-pointer items-center gap-2 px-3 py-2.5 text-button has-[:checked]:border-ink has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ink">
+          <%= form.radio_button :mark_color_choice, "custom", checked: !preset, class: "sr-only", data: { theme_picker_target: "customChoice" } %>
+          <%= form.color_field :custom_mark_color, value: (preset ? saved_color : organization.mark_color).to_s.downcase,
+                class: "size-4 shrink-0 cursor-pointer rounded-badge border-0 p-0", aria: { label: "Custom color" },
+                data: { theme_picker_target: "custom", action: "input->theme-picker#previewCustom change->theme-picker#previewCustom" } %>
+          Custom
+        </label>
+      </div>
+    </fieldset>
+  <% end %>

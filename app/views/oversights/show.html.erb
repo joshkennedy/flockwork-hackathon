@@ -78,18 +78,10 @@
   <% end %>
 
   <% if Current.person.admin? %>
-  <section class="mt-7 border-t border-hairline pt-5" aria-label="Oversight settings">
-      <%= form_with model: Current.organization, url: oversight_path, method: :patch, class: "flex items-end gap-3" do |form| %>
-        <div>
-          <%= form.label :overextended_limit, "Serving load limit", class: "block text-label font-medium text-ink-2" %>
-          <%= form.number_field :overextended_limit, min: 1, required: true, class: "mt-2 w-24 field" %>
-          <% if Current.organization.errors[:overextended_limit].any? %>
-            <p class="mt-1 text-meta font-medium text-danger" role="alert"><%= Current.organization.errors.full_messages_for(:overextended_limit).to_sentence %></p>
-          <% end %>
-        </div>
-        <%= form.submit "Save Limit", class: "btn btn-primary" %>
-      <% end %>
-  </section>
+    <p class="mt-7 border-t border-hairline pt-5 text-meta text-ink-2">
+      Check-ins start at <%= pluralize(Current.organization.overextended_limit, "Project") %>.
+      <%= link_to "Change in Settings", settings_path(anchor: "settings-church"), class: "link" %>
+    </p>
   <% end %>
 
   <% if @involvement %>

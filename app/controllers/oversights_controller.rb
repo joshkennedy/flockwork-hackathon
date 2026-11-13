@@ -5,19 +5,9 @@ class OversightsController < ApplicationController
     load_oversight
   end
 
-  def update
-    if Current.organization.update(oversight_params)
-      redirect_to oversight_path, notice: "Oversight settings saved."
-    else
-      load_oversight
-      render :show, status: :unprocessable_content
-    end
-  end
-
   private
     def authorize_oversight
-      action = action_name == "update" ? :update_oversight : :view_oversight
-      raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, action, Current.organization)
+      raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :view_oversight, Current.organization)
     end
 
     def load_oversight
@@ -31,11 +21,7 @@ class OversightsController < ApplicationController
       @never_asked_people = Oversight.never_asked(Current.organization).load
       @away_ranges = Oversight.upcoming_away(Current.organization, today: today).to_a
       @involvement_year = Time.current.year
-      # Settings and the cross-church involvement table are Admin-only; Leaders see the urgent lists.
+      # The cross-church involvement table is Admin-only; Leaders see the urgent lists.
       @involvement = Oversight.involvement_list(Current.organization, @involvement_year) if Current.person.admin?
-    end
-
-    def oversight_params
-      params.expect(organization: [ :overextended_limit ])
     end
 end

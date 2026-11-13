@@ -19,14 +19,14 @@
       <% if @away_notice %><p class="mt-1 text-meta text-ink-2"><%= @away_notice %></p><% end %>
       <%= form_with url: profile_unavailabilities_path, method: :post, class: "mt-3 space-y-4" do %>
         <% @away_drafts.each do |range| %>
-          <%= render "away_range_fields", range: range %>
+          <%= render "profiles/away_range_fields", range: range %>
         <% end %>
         <%= submit_tag "Save These Dates", class: "btn btn-secondary" %>
       <% end %>
     </div>
   <% else %>
     <%= form_with url: profile_unavailabilities_path, method: :post, class: "mt-6 space-y-4" do %>
-      <%= render "away_range_fields", range: Unavailability.new %>
+      <%= render "profiles/away_range_fields", range: Unavailability.new %>
       <%= submit_tag "Add Dates", class: "btn btn-secondary" %>
     <% end %>
   <% end %>

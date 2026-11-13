@@ -114,7 +114,7 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
       person: { name: "Vic Updated", phone: "555-7777" }
     }
 
-    assert_redirected_to home_path
+    assert_redirected_to settings_path(anchor: "settings-details")
     people(:volunteer).reload
     assert_equal "Vic Updated", people(:volunteer).name
     assert_equal "555-7777", people(:volunteer).phone
@@ -127,7 +127,7 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
       person: { name: people(:volunteer).name, phone: "", admin: "1", email: "hacker@example.com" }
     }
 
-    assert_redirected_to home_path
+    assert_redirected_to settings_path(anchor: "settings-details")
     people(:volunteer).reload
     assert_not people(:volunteer).admin?
     assert_equal "vic@st-example.test", people(:volunteer).email
@@ -160,13 +160,13 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     sign_in_as_admin
     get home_path
     assert_select "a[href=?]", people_path, text: "People"
-    assert_select "a[href=?]", edit_profile_path
+    assert_select "a[href=?]", profile_path
 
     delete session_path
     sign_in_as_volunteer
     get home_path
     assert_select "a[href=?]", people_path, count: 0
-    assert_select "a[href=?]", edit_profile_path
+    assert_select "a[href=?]", profile_path
   end
 
   test "the directory lists People sorted by name" do

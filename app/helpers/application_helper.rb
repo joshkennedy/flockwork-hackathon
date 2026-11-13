@@ -32,7 +32,10 @@ module ApplicationHelper
     user: "M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1",
     chevron: "m6 9 6 6 6-6",
     search: "M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z M16 16l5 5",
-    updown: "m7.5 9.5 4.5-4.5 4.5 4.5 M7.5 14.5l4.5 4.5 4.5-4.5"
+    updown: "m7.5 9.5 4.5-4.5 4.5 4.5 M7.5 14.5l4.5 4.5 4.5-4.5",
+    sun: "M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z M12 2v2 M12 20v2 m-7.07-17.07 1.41 1.41 m11.32 11.32 1.41 1.41 M2 12h2 M20 12h2 M6.34 17.66l-1.41 1.41 M19.07 4.93l-1.41 1.41",
+    moon: "M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z",
+    device: "M4 4h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z M8 20h8 M12 16v4"
   }.freeze
 
   def icon(name, size: 16, view_box: "0 0 24 24", **options)
@@ -63,16 +66,16 @@ module ApplicationHelper
     [
       [ "People", people_path, :people, :manage_people ],
       [ "Oversight", oversight_path, :oversight, :view_oversight ],
-      [ "Settings", settings_path, :settings, :manage_settings ]
+      [ "Settings", settings_path(anchor: "settings-church"), :settings, :manage_settings ]
     ].select { |*, permission| Policy.can?(Current.person, permission, Current.organization) }
   end
 
   # Every destination, for search. The nav itself draws primary_navigation and manage_navigation; the bell carries Notifications.
   def organization_navigation
-    primary_navigation + manage_navigation + [ [ "Notifications", notifications_path, :notifications ] ]
+    (primary_navigation + manage_navigation + [ [ "Notifications", notifications_path, :notifications ], [ "Settings", settings_path, :settings ] ]).uniq(&:first)
   end
 
-  # Profile lives in the account menu, not the nav.
+  # Profile and personal Settings live in the account menu, not the nav.
   # Only a Person whose email belongs to several Organizations gets the church switcher.
   def other_churches?
     Current.session.organization_choice_eligible? && Person.where(email: Current.session.verified_email).many?
@@ -188,6 +191,7 @@ module ApplicationHelper
   end
 
   def navigation_current?(path)
+    path = path.split("#").first
     current_page?(path) || (path != home_path && request.path.start_with?("#{path}/"))
   end
 

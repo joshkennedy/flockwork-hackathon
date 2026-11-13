@@ -192,7 +192,7 @@ class NotificationsTest < ActionDispatch::IntegrationTest
       }
     }
 
-    assert_redirected_to home_path
+    assert_redirected_to settings_path(anchor: "settings-details")
     assert_not mentioned_person.reload.email_for?("mention")
 
     delete session_path
@@ -259,7 +259,7 @@ class NotificationsTest < ActionDispatch::IntegrationTest
   test "the profile form shows every email preference with registry defaults" do
     person = sign_in_as_volunteer
 
-    get edit_profile_path
+    get settings_path
 
     assert_response :success
     assert_select "fieldset legend", "Notification delivery"

@@ -159,6 +159,17 @@
   --shadow-secondary-active: inset 0 1px 3px rgba(0,0,0,.5);
 }
 
+/* The church's color (--color-mark, set inline on <body> by the layouts) tints the canvas around the sheet and the
+   current nav pill, so a church sees its own color across the app. Sunlit keeps its meaning for open needs. */
+body {
+  --color-frame: color-mix(in oklab, var(--color-mark) 7%, #F3F2EF);
+  --color-nav-active: color-mix(in oklab, var(--color-mark) 14%, #E6E4DF);
+}
+:root[data-dark] body {
+  --color-frame: color-mix(in oklab, var(--color-mark) 6%, #141413);
+  --color-nav-active: color-mix(in oklab, var(--color-mark) 14%, #2B2A27);
+}
+
 @layer base {
   /* Native color inputs render as a plain swatch, matching the preset swatches beside them. */
   input[type=color] { appearance: none; background: none; }
@@ -258,6 +269,15 @@
   .slideout-panel { @apply h-full overflow-y-auto border-l border-border bg-panel p-6 shadow-float; }
   dialog.modal { @apply m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-2xl overflow-visible rounded-panel bg-transparent p-0; }
   dialog.modal::backdrop { background: rgb(20 20 19 / .32); }
+  /* Sheet: a bottom drawer on a native modal <dialog> that slides up over the blurred page. */
+  dialog.sheet { @apply mx-auto mb-0 mt-auto max-h-[calc(100dvh-3rem)] w-full max-w-3xl overflow-visible bg-transparent p-0; }
+  dialog.sheet::backdrop { background: rgb(20 20 19 / .24); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+  .sheet-panel { @apply flex flex-col max-h-[calc(100dvh-3rem)] overflow-y-auto rounded-t-panel border border-b-0 border-border bg-panel p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-float; }
+  /* A document form fills the sheet like a page: the body editor takes the spare height and the submit sits at the bottom. */
+  .sheet-panel:has(.sheet-fill) { height: calc(100dvh - 3rem); }
+  .sheet-panel > turbo-frame, .sheet-panel > turbo-frame > div, .sheet-panel .sheet-fill, .sheet-panel .sheet-grow { @apply flex min-h-0 flex-1 flex-col; }
+  .sheet-panel .sheet-fill > :last-child { @apply self-start; }
+  .sheet-panel .sheet-grow trix-editor { @apply min-h-60 flex-1 overflow-y-auto; }
   .modal-panel { @apply max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-panel border border-border bg-panel p-6 shadow-float; }
   dialog.confirm-dialog { @apply max-w-sm; }
   .search-trigger { @apply inline-flex shrink-0 items-center gap-2 rounded-nav border border-border bg-page px-3 py-1 text-button text-ink-2; }
@@ -297,6 +317,17 @@
   @media (prefers-reduced-motion: no-preference) {
     dialog.slideout[open] .slideout-panel { animation: slideout-in 220ms var(--ease-enter); }
     dialog.modal[open] .modal-panel { animation: popover-in 180ms var(--ease-enter); }
+    /* The sheet slides up and back down; allow-discrete keeps a closing dialog in the top layer until its exit ends. */
+    dialog.sheet, dialog.sheet::backdrop {
+      transition: opacity 200ms var(--ease-exit), transform 200ms var(--ease-exit), display 200ms allow-discrete, overlay 200ms allow-discrete;
+    }
+    dialog.sheet:not([open]) { transform: translateY(100%); }
+    dialog.sheet:not([open])::backdrop { opacity: 0; }
+    dialog.sheet[open], dialog.sheet[open]::backdrop { transition-duration: 300ms; transition-timing-function: var(--ease-enter); }
+    @starting-style {
+      dialog.sheet[open] { transform: translateY(100%); }
+      dialog.sheet[open]::backdrop { opacity: 0; }
+    }
   }
   .person-pill { @apply inline-flex h-6 max-w-full min-w-0 items-center gap-1.5 rounded-nav pl-0.5 pr-2.5 align-middle text-meta text-ink; --pill-fill: color-mix(in oklab, var(--color-hairline) 55%, var(--color-panel)); background-color: var(--pill-fill); --avatar-ring: var(--pill-fill); }
   :is(.account-menu, .manage-menu, .notifications-menu) > summary { list-style: none; }
@@ -362,11 +393,17 @@
   .page-surface { @apply relative mx-2 mb-2 min-h-[calc(100dvh-72px-64px-env(safe-area-inset-bottom))] min-w-0 rounded-panel border border-border bg-panel; }
   /* Wider screens: the same sheet on the frame, as wide as the bar above it. */
   @media (width >= 768px) { .page-surface { @apply mx-auto mb-6 mt-5 rounded-sheet; width: min(100% - 32px, var(--container-page-w)); min-height: calc(100dvh - 116px); } }
-  .header-wash { @apply pointer-events-none absolute inset-x-0 top-0 h-[300px] overflow-hidden rounded-t-panel md:rounded-t-sheet; mask-image: linear-gradient(#000 35%, transparent); --wash-a: rgb(245 176 0 / .2); --wash-b: rgb(232 89 12 / .09); }
+  /* Footer: quiet legal links and the mark on the frame under the sheet, lined up with its edges. */
+  .app-footer { @apply mx-2 flex flex-wrap items-center justify-between gap-4 px-4 pb-8 pt-4 text-label text-ink-2; }
+  @media (width >= 768px) { .app-footer { @apply mx-auto px-7 pb-10 pt-2; width: min(100% - 32px, var(--container-page-w)); } }
+  .app-footer a { @apply text-ink-2 no-underline hover:text-ink; }
+  .appearance-switch { @apply flex items-center gap-0.5 rounded-full border border-border bg-panel p-0.5; }
+  .appearance-switch label { @apply grid size-7 cursor-pointer place-items-center rounded-full text-ink-2 has-[:checked]:bg-nav-active has-[:checked]:text-ink has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ink; transition: background-color var(--duration-hover), color var(--duration-hover); }
+  .header-wash { @apply pointer-events-none absolute inset-x-0 top-0 h-[300px] overflow-hidden rounded-t-panel md:rounded-t-sheet; mask-image: linear-gradient(#000 35%, transparent); --wash-a: color-mix(in oklab, var(--color-mark) 22%, transparent); --wash-b: rgb(232 89 12 / .09); }
   /* DESIGN.md: the wash never sits behind the Planner. */
   .header-wash.wash-none { opacity: 0; }
-  .header-wash.wash-admin { --wash-a: rgb(14 165 164 / .16); --wash-b: rgb(245 176 0 / .14); }
-  .header-wash.wash-volunteer { --wash-a: rgb(232 89 12 / .14); --wash-b: rgb(245 176 0 / .18); }
+  .header-wash.wash-admin { --wash-a: rgb(14 165 164 / .16); --wash-b: color-mix(in oklab, var(--color-mark) 16%, transparent); }
+  .header-wash.wash-volunteer { --wash-a: rgb(232 89 12 / .14); --wash-b: color-mix(in oklab, var(--color-mark) 20%, transparent); }
   .header-wash::before, .header-wash::after { content: ""; position: absolute; border-radius: 50%; filter: blur(24px); }
   .header-wash::before { width: 600px; height: 340px; left: var(--wash-a-x); top: var(--wash-a-y); background: radial-gradient(closest-side, var(--wash-a), transparent); }
   .header-wash::after { width: 480px; height: 300px; left: var(--wash-b-x); top: var(--wash-b-y); background: radial-gradient(closest-side, var(--wash-b), transparent); }

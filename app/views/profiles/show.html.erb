@@ -1,0 +1,14 @@
+<% content_for :title, "Profile" %>
+
+<div class="w-full max-w-4xl">
+  <div class="flex items-center gap-4">
+    <%= avatar(@person, size: :lg) %>
+    <div class="min-w-0 flex-1">
+      <%= page_header @person.name do %>
+        <%= link_to "Edit Details", settings_path(anchor: "settings-details"), class: "btn btn-secondary" %>
+      <% end %>
+    </div>
+  </div>
+
+  <%= render "shared/involvement_timeline", involvement: @involvement, title: "Your involvement" %>
+</div>

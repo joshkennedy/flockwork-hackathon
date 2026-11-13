@@ -20,11 +20,25 @@
         <span>Switch Church</span>
       <% end %>
     <% end %>
-    <%= link_to edit_profile_path, class: "account-item" do %>
+    <%= link_to profile_path, class: "account-item" do %>
       <span>Profile</span>
     <% end %>
-    <%= link_to "Terms", terms_path, class: "account-item" %>
-    <%= link_to "Privacy policy", privacy_path, class: "account-item" %>
+    <%= link_to settings_path, class: "account-item" do %>
+      <span>Settings</span>
+    <% end %>
+    <div class="flex min-h-control-h items-center justify-between gap-3 px-3">
+      <span class="text-button text-ink" aria-hidden="true">Appearance</span>
+      <fieldset class="appearance-switch" data-controller="appearance" data-action="change->appearance#pick">
+        <legend class="sr-only">Appearance on this device</legend>
+        <% [["Light", "light", :sun], ["Dark", "dark", :moon], ["Match device", "system", :device]].each do |label, value, symbol| %>
+          <label title="<%= label %>">
+            <%= radio_button_tag :menu_appearance, value, appearance == value, id: "menu-appearance-#{value}", class: "sr-only" %>
+            <%= icon(symbol) %>
+            <span class="sr-only"><%= label %></span>
+          </label>
+        <% end %>
+      </fieldset>
+    </div>
     <hr class="my-1 border-hairline">
     <%= button_to session_path, method: :delete, class: "account-item" do %>
       <span>Sign Out</span>

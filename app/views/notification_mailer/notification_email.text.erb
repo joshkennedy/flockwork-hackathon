@@ -1,5 +1,5 @@
 <% partial = "notification_mailer/kinds/#{@notification.kind}" %>
 <%= render lookup_context.exists?(partial, [], true) ? partial : "notification_mailer/kinds/generic" %>
 <% content_for :footer_text do %>
-You get emails for <%= Notification::KINDS.fetch(@notification.kind).fetch(:label) %>. Change your email preferences: <%= edit_profile_url %>
+You get emails for <%= Notification::KINDS.fetch(@notification.kind).fetch(:label) %>. Change your email preferences: <%= settings_url(anchor: "settings-notifications") %>
 <% end %>
