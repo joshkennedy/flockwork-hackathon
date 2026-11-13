@@ -28,6 +28,19 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", new_sign_in_request_path, count: 0
   end
 
+  test "the need badge shows from two open spots up, signed in or out" do
+    roomy = @project.slots.create!(date: Date.current + 4, label: "Dinner", capacity: 3)
+
+    get public_project_path(@token)
+    assert_select "#slot_#{@slot.id} .badge-need", count: 0
+    assert_select "#slot_#{roomy.id} .badge-need", "3 spots left"
+
+    sign_in_as @vera
+    get public_project_path(@token)
+    assert_select "#slot_#{@slot.id} .badge-need", count: 0
+    assert_select "#slot_#{roomy.id} .badge-need", "3 spots left"
+  end
+
   test "Tasks show on the Public page only to the Team, who can take one" do
     task = @project.tasks.create!(title: "Help with setup")
 

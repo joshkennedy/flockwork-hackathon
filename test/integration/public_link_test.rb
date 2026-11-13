@@ -208,7 +208,7 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
     volunteer = sign_in_as_volunteer
     project = projects(:community_meal)
     project.update!(enabled_tools: project.enabled_tools + [ "signup_sheet" ])
-    slot = project.slots.create!(date: "2027-02-15", label: "Bring dessert", capacity: 2)
+    slot = project.slots.create!(date: "2027-02-15", label: "Bring dessert", capacity: 3)
     slot.claim(volunteer)
 
     sign_in_as_leader
@@ -219,7 +219,7 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
     get public_project_path(token)
     assert_response :success
     assert_select "section[aria-labelledby='public-slots']", text: /Bring dessert/
-    assert_select "section[aria-labelledby='public-slots']", text: /1 spot left/
+    assert_select "section[aria-labelledby='public-slots']", text: /2 spots left/
     assert_no_match volunteer.name, response.body
   end
 
