@@ -101,6 +101,11 @@ class SignInChallenge < ApplicationRecord
     people.where("regexp_replace(phone, '\\D', '', 'g') IN (?)", [ digits, national ].compact).order(:admin, :id).first
   end
 
+  # Nobody confirms a phone typed onto an Admin, so a wrong or recycled number must never hand over the Admin.
+  def texts_an_admin?(person = self.person)
+    channel == "sms" && person&.admin?
+  end
+
   def build_person(name:)
     contact = channel == "email" ? { email: address } : { phone: address }
     organization.people.build(name:, joined_from_project: project, **contact)

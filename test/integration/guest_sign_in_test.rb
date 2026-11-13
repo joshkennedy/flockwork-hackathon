@@ -83,6 +83,35 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_signed_in_as @vera
   end
 
+  test "an Admin's phone gets no text and is asked for email, which still signs the Admin in" do
+    admin = people(:admin)
+    admin.update!(phone: "(202) 555-0123")
+
+    assert_no_difference -> { SignInChallenge.count } do
+      request_code("202-555-0123")
+    end
+
+    assert_response :unprocessable_content
+    assert_select "[role=alert]", "Use your email to sign in."
+    assert_not_requested @sms
+
+    post guest_sign_in_code_path(@token), params: { code: request_code(admin.email) }
+    assert_signed_in_as admin
+  end
+
+  test "a texted code does not sign in an Admin who took over the phone after it was sent" do
+    people(:admin).update!(phone: "+12025550123")
+    @vera.update!(phone: "+12025550123")
+    code = request_code("+12025550123")
+    @vera.update!(phone: nil)
+
+    post guest_sign_in_code_path(@token), params: { code: }
+
+    assert_select "[role=alert]", "Use your email to sign in."
+    get home_path
+    assert_redirected_to root_path
+  end
+
   test "a new helper gives a name after the code, joins this church only, and can claim a Slot" do
     code = request_code("nadia@example.com")
     post guest_sign_in_code_path(@token), params: { code: }

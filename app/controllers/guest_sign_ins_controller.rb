@@ -24,6 +24,7 @@ class GuestSignInsController < ApplicationController
     if channel == "sms" && SmsOptOut.blocked?(address)
       return ask_again("This number opted out of Flockwork texts. Use your email, or reply START to an earlier text.")
     end
+    return ask_again("Use your email to sign in.") if SignInChallenge.new(organization: @project.organization, channel:, address:).texts_an_admin?
 
     challenge = SignInChallenge.issue(organization: @project.organization, project: @project, channel:, address:)
     return ask_again("Too many codes sent. Wait an hour, then try again.", :too_many_requests) unless challenge
@@ -111,10 +112,12 @@ class GuestSignInsController < ApplicationController
     end
 
     # The challenge is deleted once it has signed someone in, so neither the code nor the name step can be replayed.
+    # Checked again here because the phone's Person can change between sending the code and using it.
     def sign_in(person, challenge, auth_method)
       slot = challenge.project.slots.find_by(id: session[:guest_slot_id])
       %i[ guest_challenge_id guest_verified_challenge_id guest_auth_method guest_slot_id ].each { |key| session.delete(key) }
       challenge.destroy!
+      return ask_again("Use your email to sign in.") if challenge.texts_an_admin?(person)
       start_new_session_for person, auth_method:, verified_email: (challenge.address if challenge.channel == "email")
       redirect_to public_project_path(challenge.project.public_token, anchor: (helpers.dom_id(slot) if slot)), status: :see_other
     end
