@@ -7,7 +7,7 @@
     <p class="font-semibold text-ink"><%= slot.date.strftime("%A, %B %-d") %><% if slot.starts_at_time.present? %> · <%= slot.starts_at_time.strftime("%-l:%M %p") %><% end %></p>
     <p class="text-meta text-ink-2"><%= slot.label %></p>
     <% if claimed %>
-      <p class="mt-2 flex items-center gap-1.5 text-meta text-ink"><%= icon(:check, class: "kept-check stroke-2 text-sunlit") %><%= claimed_slot_phrase(slot) %></p>
+      <p class="mt-2 flex items-center gap-1.5 text-meta font-semibold text-ink"><%= icon(:check, class: "kept-check stroke-2 text-sunlit-strong") %><%= claimed_slot_phrase(slot) %></p>
     <% elsif spots_left > 1 %>
       <%# A lone open spot is already said by the row's button. %>
       <p class="badge-need mt-2"><%= spots_left %> <%= "spot".pluralize(spots_left) %> left</p>

@@ -17,6 +17,7 @@
   --color-ink-3: #9A9893;
   --color-sunlit: #F5B000;
   --color-sunlit-soft: #FFF4D6;
+  --color-sunlit-strong: #B87A00;
   --color-mark: #D69000;
   --color-success: #1F9D55;
   --color-danger: #D93D2B;
@@ -203,10 +204,9 @@
   .btn-sm { @apply min-h-control-h-sm px-2.5; }
   .btn-sm:is(.btn-primary, .btn-secondary) { padding-inline: 12px; font-size: 13px; }
   .btn.btn-icon { @apply min-h-control-h-sm w-8 px-0 text-ink-2; }
-  /* A Slot's own action: the small secondary from 640px, the open tile's full-width ink action on phones. */
+  /* A Slot's own action: the small secondary from 640px, a full-width secondary on phones, so a list of open Slots never stacks primaries. */
   @media (width < 640px) {
-    .btn.btn-claim { @apply min-h-phone-action-h w-full border-transparent bg-ink text-heading text-on-ink shadow-button; }
-    .btn.btn-claim:active { box-shadow: var(--shadow-button-active); }
+    .btn.btn-claim { @apply min-h-phone-action-h w-full; padding-inline: 16px; font-size: 14px; }
     .button_to:has(> .btn-claim) { width: 100%; }
   }
   .actions-menu > summary { list-style: none; }

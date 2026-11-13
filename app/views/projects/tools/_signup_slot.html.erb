@@ -20,7 +20,7 @@
         <p class="signup-session text-meta text-ink-2">Schedule item: <%= slot.schedule_item.title %></p>
       <% end %>
       <% if own_claim %>
-        <p class="flex items-center gap-1.5 text-meta text-ink"><%= icon(:check, class: "text-sunlit") %><%= claimed_slot_phrase(slot) %></p>
+        <p class="flex items-center gap-1.5 text-meta font-semibold text-ink"><%= icon(:check, class: "stroke-2 text-sunlit-strong") %><%= claimed_slot_phrase(slot) %></p>
       <% end %>
     </div>
     <div class="signup-actions flex min-w-0 flex-wrap items-center gap-2.5 <%= "max-sm:w-full" if open %>">
@@ -35,9 +35,8 @@
           <span class="badge-need"><%= pluralize(spots_left, "spot") %> left</span>
         <% end %>
         <% if can_claim %>
-          <%# Leaders see the whole sheet, so a primary per slot would drown the page; volunteers get the phone action DESIGN.md specifies. %>
           <%= button_to (dinner ? "I Can Bring Dinner" : "I Can Help"), project_slot_claim_path(project, slot),
-                class: manage ? "btn btn-secondary btn-sm" : "btn btn-primary",
+                class: "btn btn-secondary btn-sm btn-claim",
                 form_class: "button_to max-sm:w-full",
                 aria: { label: "Claim: #{slot.label}" } %>
         <% end %>
