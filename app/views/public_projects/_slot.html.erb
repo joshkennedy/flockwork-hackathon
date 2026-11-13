@@ -2,24 +2,26 @@
 <% claimed = @claimed_slot_ids.include?(slot.id) %>
 <%# A held spot is done, so it lies flat; only open Slots stay raised to be pressed. A claimed row is the claim's confirmation: landing on it focuses it so screen readers hear it, and leaves room above for the group label. %>
 <li id="<%= dom_id(slot) %>" <%= tag.attributes(tabindex: (-1 if claimed)) %> class="flex scroll-mt-10 flex-wrap items-start justify-between gap-3 p-4 <%= claimed ? "slot-held" : "tile-raised" %>">
-  <div class="min-w-0">
+  <div class="min-w-0 <%= "w-full" if claimed %>">
     <%# The day is what helpers choose by, so it leads; the label is the same on most rows. %>
     <p class="font-semibold text-ink"><%= slot.date.strftime("%A, %B %-d") %><% if slot.starts_at_time.present? %> · <%= slot.starts_at_time.strftime("%-l:%M %p") %><% end %></p>
     <p class="text-meta text-ink-2"><%= slot.label %></p>
     <% if claimed %>
-      <p class="mt-2 flex items-center gap-1.5 text-meta font-semibold text-ink"><%= icon(:check, class: "kept-check stroke-2 text-sunlit-strong") %><%= claimed_slot_phrase(slot) %></p>
+      <%# Unclaim rides the confirmation line as a quiet link, so the claim reads first; its padding gives phones a 44px target without growing the row. %>
+      <div class="mt-2 flex flex-wrap items-center justify-between gap-x-4">
+        <p class="flex items-center gap-1.5 text-heading text-ink"><%= icon(:check, size: 18, class: "kept-check stroke-2 text-sunlit-strong") %><%= claimed_slot_phrase(slot) %></p>
+        <%= button_to "Unclaim", public_slot_claim_path(@project.public_token, slot), method: :delete, class: "link -my-3.5 cursor-pointer py-3.5 text-meta font-medium text-ink-2 sm:my-0 sm:py-0" %>
+      </div>
     <% elsif spots_left > 1 %>
       <%# A lone open spot is already said by the row's button. %>
       <p class="badge-need mt-2"><%= spots_left %> <%= "spot".pluralize(spots_left) %> left</p>
     <% end %>
   </div>
-  <% if claimed %>
-    <%# On phones Unclaim wraps under the row, so it gives back its padding to line up with the text. %>
-    <%= button_to "Unclaim", public_slot_claim_path(@project.public_token, slot), method: :delete, class: "btn btn-text max-sm:-ml-[13px]" %>
-  <% elsif @helper %>
+  <%# A held row's only action is on its confirmation line. %>
+  <% if !claimed && @helper %>
     <%= button_to (slot.label.downcase == "dinner" ? "I Can Bring Dinner" : "I Can Help"), public_slot_claim_path(@project.public_token, slot),
           class: "btn btn-secondary btn-sm btn-claim", aria: { label: "Claim: #{slot.label}" } %>
-  <% else %>
+  <% elsif !claimed %>
     <%= link_to "Help with This", guest_sign_in_path(@project.public_token, slot_id: slot.id), class: "btn btn-secondary btn-sm btn-claim" %>
   <% end %>
 </li>

@@ -20,7 +20,7 @@
         <p class="signup-session text-meta text-ink-2">Schedule item: <%= slot.schedule_item.title %></p>
       <% end %>
       <% if own_claim %>
-        <p class="flex items-center gap-1.5 text-meta font-semibold text-ink"><%= icon(:check, class: "stroke-2 text-sunlit-strong") %><%= claimed_slot_phrase(slot) %></p>
+        <p class="flex items-center gap-1.5 text-heading text-ink"><%= icon(:check, size: 18, class: "stroke-2 text-sunlit-strong") %><%= claimed_slot_phrase(slot) %></p>
       <% end %>
     </div>
     <div class="signup-actions flex min-w-0 flex-wrap items-center gap-2.5 <%= "max-sm:w-full" if open %>">
