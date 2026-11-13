@@ -8,17 +8,28 @@ module Messaging
 
     ENDPOINT = URI("https://sendly.live/api/v1/messages").freeze
 
+    # Texts go to the local inbox whenever email does (development), so nothing leaves the machine.
+    def self.inbox?
+      ActionMailer::Base.delivery_method == :letter_opener_web
+    end
+
     def initialize(api_key: ENV["SENDLY_API_KEY"].presence || (ENV["SENDLY_SANDBOX_API_KEY"] if Rails.env.development? || Rails.env.test?))
       @api_key = api_key.to_s.strip
     end
 
     def send_sms(to:, text:, idempotency_key:, message_type: "transactional")
-      raise Error, "SENDLY_API_KEY is missing" if @api_key.empty?
+      capture = self.class.inbox?
+      raise Error, "SENDLY_API_KEY is missing" if @api_key.empty? && !capture
       raise ArgumentError, "Use an E.164 phone number" unless to.is_a?(String) && /\A\+[1-9]\d{6,14}\z/.match?(to)
       raise ArgumentError, "Text is required" unless text.is_a?(String) && !text.strip.empty?
       raise ArgumentError, "Idempotency key is required" if idempotency_key.to_s.strip.empty?
       raise ArgumentError, "Use 1 to 255 printable ASCII characters for the idempotency key" unless idempotency_key.is_a?(String) && /\A[\x20-\x7E]{1,255}\z/.match?(idempotency_key)
       raise ArgumentError, "Use transactional or marketing for the message type" unless %w[transactional marketing].include?(message_type)
+
+      if capture
+        SmsInboxMailer.sms(to:, text:).deliver_now
+        return { "id" => "inbox-#{idempotency_key}", "status" => "delivered", "simulated" => true }
+      end
 
       request = Net::HTTP::Post.new(ENDPOINT)
       request["Authorization"] = "Bearer #{@api_key}"

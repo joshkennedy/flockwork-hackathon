@@ -42,8 +42,12 @@ Rails.application.configure do
   # Make template changes take effect immediately.
   config.action_mailer.perform_caching = false
 
-  # Set localhost to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
+  # Mailed links follow the port this server runs on, so a second server on another port links to itself.
+  config.action_mailer.default_url_options = { host: "localhost", port: ENV.fetch("PORT", 3000) }
+
+  # Email lands in the local inbox at /letter_opener. Messaging::Sendly sees this and puts texts there too.
+  config.action_mailer.delivery_method = :letter_opener_web
+  config.action_mailer.perform_deliveries = true
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log

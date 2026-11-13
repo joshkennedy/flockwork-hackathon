@@ -4,6 +4,19 @@ require_relative "../../support/method_stubs"
 class Messaging::SendlyTest < ActiveSupport::TestCase
   include MethodStubs
 
+  test "with the local inbox on, a text becomes an email there and nothing reaches Sendly" do
+    result = stub_method(Messaging::Sendly, :inbox?, -> { true }) do
+      Messaging::Sendly.new(api_key: "").send_sms(to: "+15005550000", text: "Your code", idempotency_key: "inbox-1")
+    end
+
+    mail = ActionMailer::Base.deliveries.last
+    assert_equal [ "sms-+15005550000@sms.localhost" ], mail.to
+    assert_equal "SMS to +15005550000", mail.subject
+    assert_equal "Your code", mail.body.to_s.strip
+    assert_equal({ "id" => "inbox-inbox-1", "status" => "delivered", "simulated" => true }, result)
+    assert_not_requested :post, Messaging::Sendly::ENDPOINT.to_s
+  end
+
   test "production never falls back to sandbox credentials" do
     previous = ENV.to_h.slice("SENDLY_API_KEY", "SENDLY_SANDBOX_API_KEY")
     ENV.delete("SENDLY_API_KEY")
