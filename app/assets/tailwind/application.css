@@ -391,6 +391,8 @@
   .btn:disabled { @apply bg-frame text-ink-2 shadow-none; cursor: not-allowed; transform: none; }
   /* frame is darker than panel in dark mode, so a frame-filled disabled button would vanish. */
   :root[data-dark] .btn:disabled { @apply bg-nav-active; }
+  /* border is barely lighter than panel in dark, so a secondary on a raised tile needs the 3:1 control edge to read as a button. */
+  :root[data-dark] .btn-secondary { @apply border-control-border; }
   .tile-raised { @apply rounded-tile border border-border bg-panel shadow-raised; }
   /* The public page lands on a just-claimed row by its #slot_ anchor; it takes focus for screen readers, never a ring. */
   .slot-held:focus { outline: none; box-shadow: none; }
