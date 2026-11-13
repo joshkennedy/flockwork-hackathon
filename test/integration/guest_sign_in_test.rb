@@ -41,6 +41,22 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_select "#slot_#{roomy.id} .badge-need", "3 spots left"
   end
 
+  test "a signed-in helper sees who they are on the Public page, and Not You? signs out back to it" do
+    get public_project_path(@token)
+    assert_select "[data-public-account]", count: 0
+
+    sign_in_as @vera
+    get public_project_path(@token)
+    assert_select "[data-public-account]", /Signed in as #{@vera.name}/
+    assert_select "[data-public-account] form[action=?] button", guest_sign_out_path(@token), text: "Not You?"
+
+    delete guest_sign_out_path(@token)
+    assert_redirected_to public_project_path(@token)
+    follow_redirect!
+    assert_select "[data-public-account]", count: 0
+    assert_select "a", text: "Help with This"
+  end
+
   test "Tasks show on the Public page only to the Team, who can take one" do
     task = @project.tasks.create!(title: "Help with setup")
 

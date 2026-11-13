@@ -18,6 +18,7 @@ Rails.application.routes.draw do
   post "p/:token/join/code", to: "guest_sign_ins#verify"
   get "p/:token/join/name", to: "guest_sign_ins#name", as: :guest_sign_in_name
   post "p/:token/join/name", to: "guest_sign_ins#finish"
+  delete "p/:token/join", to: "guest_sign_ins#destroy", as: :guest_sign_out
   get "go/:link_token", to: "guest_sign_ins#link", as: :guest_sign_in_link, format: false
   post "go/:link_token", to: "guest_sign_ins#open_link", format: false
   post "p/:token/slots/:slot_id/claim", to: "public_slot_claims#create", as: :public_slot_claim

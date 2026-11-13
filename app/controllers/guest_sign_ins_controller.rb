@@ -63,6 +63,12 @@ class GuestSignInsController < ApplicationController
     end
   end
 
+  # "Not You?" on the Public page: sign out and stay on that page, rather than land on the marketing home.
+  def destroy
+    terminate_session if authenticated?
+    redirect_to public_project_path(@project.public_token), status: :see_other
+  end
+
   # Show a confirmation button instead of consuming on GET, so link scanners that prefetch messages cannot use up the link.
   def link
     render :invalid_link, status: :unprocessable_content unless linked_challenge
