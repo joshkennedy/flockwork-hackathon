@@ -1,6 +1,6 @@
 <% content_for :title, "Sign in to help" %>
 
-<div class="w-full max-w-xl mx-auto">
+<div class="w-full max-w-xl">
   <h1 class="text-ink">Sign in to help</h1>
   <% if @slot %>
     <p class="mt-2 text-meta text-ink-2" data-chosen-slot><%= slot_summary(@slot) %></p>
@@ -9,7 +9,7 @@
   <% end %>
   <%= render "error", message: @error %>
 
-  <%= form_with url: guest_sign_in_path(@project.public_token), class: "mt-6 space-y-4" do |f| %>
+  <%= form_with url: guest_sign_in_path(@project.public_token), class: "mt-6 space-y-5" do |f| %>
     <%= hidden_field_tag :slot_id, @slot.id if @slot %>
     <div>
       <%= f.label :contact, "Email or mobile number", class: "block text-label font-medium text-ink-2" %>

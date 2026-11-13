@@ -1,12 +1,12 @@
 <% content_for :title, "Enter your code" %>
 
-<div class="w-full max-w-xl mx-auto">
+<div class="w-full max-w-xl">
   <h1 class="text-ink">Enter your code</h1>
   <% if @challenge.slot %><p class="mt-2 text-meta text-ink-2" data-chosen-slot><%= slot_summary(@challenge.slot) %></p><% end %>
   <p class="mt-2 text-ink-2">Sent to <span class="font-medium text-ink"><%= @challenge.masked_address %></span>. Type it here, or tap the link in the message.</p>
   <%= render "error", message: @error %>
 
-  <%= form_with url: guest_sign_in_code_path(@project.public_token), class: "mt-6 space-y-4" do |f| %>
+  <%= form_with url: guest_sign_in_code_path(@project.public_token), class: "mt-6 space-y-5" do |f| %>
     <div>
       <%= f.label :code, "6-digit code", class: "block text-label font-medium text-ink-2" %>
       <%= f.text_field :code, required: true, autofocus: true, autocomplete: "one-time-code", inputmode: "numeric",
