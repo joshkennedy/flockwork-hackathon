@@ -395,6 +395,9 @@
   :root[data-dark] .btn-secondary { @apply border-control-border; }
   .tile-raised { @apply rounded-tile border border-border bg-panel shadow-raised; }
   /* The public page lands on a just-claimed row by its #slot_ anchor; it takes focus for screen readers, never a ring. */
+  .slot-held { @apply rounded-tile border border-border; }
+  /* Open Slots are lighter panels in dark, so a flat held row needs a firmer edge to read as kept rather than spent. */
+  :root[data-dark] .slot-held { @apply border-border-strong; }
   .slot-held:focus { outline: none; box-shadow: none; }
   .slot-held:target { animation: slot-changed var(--duration-keep) var(--ease-enter); }
   .slot-held:target .kept-check { animation: keep-check var(--duration-keep) var(--ease-enter); }
@@ -425,6 +428,7 @@
   .field-error, .field[aria-invalid="true"] { border-color: var(--color-danger); }
   /* One field, so paste and the phone's code autofill work; the wide tracking reads as six digits. */
   .field-code { @apply text-stat; min-height: var(--spacing-input-h-phone); letter-spacing: 0.3em; }
+  .field-code::placeholder { @apply text-body-phone sm:text-body; letter-spacing: normal; }
   :is(textarea, trix-editor).field { min-height: 112px; }
   .nav-item { @apply flex min-h-control-h items-center gap-3 rounded-full px-4 py-1.5 text-meta text-ink-2; transition: background-color var(--duration-hover), color var(--duration-hover); }
   .nav-item:is([aria-current="page"], [aria-current="true"]) { @apply bg-nav-active font-semibold text-ink; }

@@ -2,7 +2,8 @@
 <% if authenticated? %>
   <% content_for :account do %>
     <div class="flex min-w-0 items-center gap-1 text-meta font-medium text-ink-2" data-public-account>
-      <span class="truncate">Signed in as <%= Current.person.name %></span>
+      <%# Phones keep only the name, the useful part; screen readers still hear the whole phrase. %>
+      <span class="min-w-0 truncate"><span class="max-sm:sr-only">Signed in as </span><%= Current.person.name %></span>
       <%= button_to "Not You?", guest_sign_out_path(@project.public_token), method: :delete, class: "btn btn-text btn-sm", form_class: "button_to shrink-0" %>
     </div>
   <% end %>

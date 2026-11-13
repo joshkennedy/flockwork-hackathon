@@ -8,7 +8,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     @project.update!(enabled_tools: @project.enabled_tools | [ "signup_sheet" ])
     @project.enable_public_link!
     @token = @project.public_token
-    @slot = @project.slots.create!(date: Date.current + 3, label: "Dinner", capacity: 1)
+    @slot = @project.slots.create!(date: Date.current + 3, starts_at_time: "18:00", label: "Dinner", capacity: 1)
     # Vera is in the church but not on this Team, so nothing but the Public link lets her claim here.
     @vera = people(:other_volunteer)
 
@@ -106,20 +106,26 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_select "section[aria-labelledby='public-tasks'] form[action=?] button", claim_project_task_path(@project, task), text: "I’ll Do It"
   end
 
+  test "a Slot without a time is named by its day and label" do
+    slot = @project.slots.create!(date: Date.current + 4, label: "Lunch", capacity: 1)
+    get guest_sign_in_path(@token, slot_id: slot.id)
+    assert_select "[data-chosen-slot]", "#{slot.date.strftime("%A, %B %-d")} · Lunch"
+  end
+
   test "someone already in the church signs in with an emailed code and holds the Slot they tapped" do
     get guest_sign_in_path(@token, slot_id: @slot.id)
     assert_select "h1", "Sign in to help"
     assert_select "input[type=hidden][name=slot_id][value=?]", @slot.id.to_s
-    assert_select "[data-chosen-slot]", "#{@slot.date.strftime("%A, %B %-d")} · Dinner"
+    assert_select "[data-chosen-slot]", "#{@slot.date.strftime("%A, %B %-d")} · 6:00 PM · Dinner"
 
     code = request_code("Vera@St-Example.test ", slot: @slot)
     mail = ActionMailer::Base.deliveries.last
     assert_equal [ @vera.email ], mail.to
     follow_redirect!
     assert_select "h1", "Enter your code"
-    assert_select "[data-chosen-slot]", "#{@slot.date.strftime("%A, %B %-d")} · Dinner"
+    assert_select "[data-chosen-slot]", "#{@slot.date.strftime("%A, %B %-d")} · 6:00 PM · Dinner"
     assert_select "p", /Sent to v•••@st-example.test/
-    assert_select "input[name=code][autocomplete='one-time-code'][inputmode=numeric]"
+    assert_select "input[name=code][autocomplete='one-time-code'][inputmode=numeric][placeholder='6-digit code']"
     assert_select "form[action=?] input[name=slot_id][value=?]", guest_sign_in_path(@token), @slot.id.to_s
     assert_select "a[href=?]", guest_sign_in_path(@token, slot_id: @slot.id), text: "Change email or phone"
 
@@ -153,7 +159,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     code = request_code("nadia@example.com", slot: @slot)
     post guest_sign_in_code_path(@token), params: { code: }
     follow_redirect!
-    assert_select "[data-chosen-slot]", "#{@slot.date.strftime("%A, %B %-d")} · Dinner"
+    assert_select "[data-chosen-slot]", "#{@slot.date.strftime("%A, %B %-d")} · 6:00 PM · Dinner"
     assert_select "input[type=submit][value=?]", "Confirm My Spot"
     assert_select "label.sr-only[for=name]", "Name"
     assert_select "input[name=name][placeholder=?]", "First and last name"

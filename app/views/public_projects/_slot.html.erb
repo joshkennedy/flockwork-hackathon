@@ -1,7 +1,7 @@
 <% spots_left = slot.capacity - slot.claims_count %>
 <% claimed = @claimed_slot_ids.include?(slot.id) %>
 <%# A held spot is done, so it lies flat; only open Slots stay raised to be pressed. A claimed row is the claim's confirmation: landing on it focuses it so screen readers hear it, and leaves room above for the group label. %>
-<li id="<%= dom_id(slot) %>" <%= tag.attributes(tabindex: (-1 if claimed)) %> class="flex scroll-mt-10 flex-wrap items-start justify-between gap-3 p-4 <%= claimed ? "slot-held rounded-tile border border-border" : "tile-raised" %>">
+<li id="<%= dom_id(slot) %>" <%= tag.attributes(tabindex: (-1 if claimed)) %> class="flex scroll-mt-10 flex-wrap items-start justify-between gap-3 p-4 <%= claimed ? "slot-held" : "tile-raised" %>">
   <div class="min-w-0">
     <%# The day is what helpers choose by, so it leads; the label is the same on most rows. %>
     <p class="font-semibold text-ink"><%= slot.date.strftime("%A, %B %-d") %><% if slot.starts_at_time.present? %> · <%= slot.starts_at_time.strftime("%-l:%M %p") %><% end %></p>
