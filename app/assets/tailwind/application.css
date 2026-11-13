@@ -307,12 +307,10 @@
     /* A floating pill inset 12px inside the panel; it stays put as the page scrolls. */
     .app-bar-shell { @apply sticky top-0 z-30 px-4 pt-4; }
     /* Floats in the content column, the wordmark lined up with the content's left edge. */
-    .app-bar { @apply mx-auto grid max-w-page-w grid-cols-[1fr_auto_1fr] rounded-full bg-panel pl-7 pr-2 shadow-float; }
+    .app-bar { @apply mx-auto grid max-w-page-w grid-cols-[1fr_auto_1fr] rounded-full bg-panel pl-7 pr-2; box-shadow: var(--shadow-raised), 0 0 0 1px var(--color-border); }
     /* Covers the gap above the pill once scrolled, fading out just below it (app_bar_controller). */
     .app-bar-shell::before { content: ""; position: absolute; inset: 0 0 -20px; z-index: -1; background: linear-gradient(var(--color-frame) 60%, transparent); opacity: 0; pointer-events: none; transition: opacity var(--duration-hover); }
     .app-bar-shell[data-scrolled]::before { opacity: 1; }
-    /* Dark panel and pill share a fill, so the pill takes a hairline edge to read as raised. */
-    :root[data-dark] .app-bar { box-shadow: var(--shadow-float), 0 0 0 1px var(--color-border); }
   }
   .app-bar-button { @apply grid size-11 cursor-pointer place-items-center rounded-full text-ink; transition: background-color var(--duration-hover); }
   .app-bar-button[aria-current="page"] { @apply bg-nav-active; }

@@ -211,7 +211,7 @@ App shell, 768px and up: a `frame` canvas holding one white `panel` sheet (28px 
 
 ## Elevation & Depth
 
-Three levels only. Flat: panels, lists, team notes (border or tint, no shadow). Raised: answer tiles, open Slots, kept Suggestions, highlight tiles (`0 1px 2px rgba(20,20,19,.05), 0 4px 12px rgba(20,20,19,.04)`). Floating: popovers, menus, dialogs, toasts (`0 8px 24px rgba(20,20,19,.12), 0 2px 6px rgba(20,20,19,.06)`). Buttons carry their own inner highlight and press shadow (see components). Never a zero-offset glow, never a card inside a card.
+Three levels only. Flat: panels, lists, team notes (border or tint, no shadow). Raised: the top bar (with a hairline edge, like the sheet), answer tiles, open Slots, kept Suggestions, highlight tiles (`0 1px 2px rgba(20,20,19,.05), 0 4px 12px rgba(20,20,19,.04)`). Floating: popovers, menus, dialogs, toasts (`0 8px 24px rgba(20,20,19,.12), 0 2px 6px rgba(20,20,19,.06)`). Buttons carry their own inner highlight and press shadow (see components). Never a zero-offset glow, never a card inside a card.
 
 ## Shapes
 
