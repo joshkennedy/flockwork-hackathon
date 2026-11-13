@@ -344,14 +344,15 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
   end
 
-  test "a wrong code says so on the code step and keeps where it was sent" do
+  test "a wrong code says so on the code step, keeps where it was sent, and keeps the digits tied to the alert" do
     code = request_code(@vera.email)
-    post guest_sign_in_code_path(@token), params: { code: code == "000000" ? "111111" : "000000" }
+    wrong = code == "000000" ? "111111" : "000000"
+    post guest_sign_in_code_path(@token), params: { code: wrong }
 
     assert_response :unprocessable_content
-    assert_select "[role=alert]", "That code didn’t match. Try again."
+    assert_select "[role=alert]#sign-in-error", "That code didn’t match. Try again."
     assert_select "p", text: /\ASent to v\S+@/
-    assert_select "input[name=code][autocomplete=one-time-code]"
+    assert_select "input[name=code][autocomplete=one-time-code][value=?][aria-invalid=true][aria-describedby=sign-in-error]", wrong
     assert_select "button", "Resend Code"
   end
 

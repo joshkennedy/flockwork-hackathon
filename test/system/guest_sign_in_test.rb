@@ -23,7 +23,15 @@ class GuestSignInTest < ApplicationSystemTestCase
     click_on "Send Me a Code"
 
     assert_selector "h1", text: "Enter your code"
-    fill_in "6-digit code", with: ActionMailer::Base.deliveries.last.subject[/\A\d{6}/]
+    code = ActionMailer::Base.deliveries.last.subject[/\A\d{6}/]
+    fill_in "6-digit code", with: code == "000000" ? "111111" : "000000"
+    click_on "Verify Code"
+
+    assert_selector "[role=alert]", text: "That code didn’t match."
+    field = find_field("6-digit code")
+    assert_equal [ 0, 6 ], page.evaluate_script("[document.activeElement.selectionStart, document.activeElement.selectionEnd]"), "the wrong digits are selected"
+    field.send_keys code
+    assert_equal code, field.value, "typing replaces the selected digits"
     click_on "Verify Code"
 
     fill_in "First and last name", with: "Nadia Novak"

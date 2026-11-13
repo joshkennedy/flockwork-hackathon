@@ -9,7 +9,7 @@
     <% if claimed %>
       <%# Unclaim rides the confirmation line as a quiet link, so the claim reads first; its padding gives phones a 44px target without growing the row. %>
       <div class="mt-2 flex flex-wrap items-center justify-between gap-x-4">
-        <p class="flex items-center gap-1.5 text-heading text-ink"><%= icon(:check, size: 18, class: "kept-check stroke-2 text-sunlit-strong") %><%= claimed_slot_phrase(slot) %></p>
+        <p class="flex items-center gap-1.5 text-heading text-ink"><%= icon(:check, size: 18, view_box: "3 2 18 18", class: "kept-check stroke-2 text-sunlit-strong") %><%= claimed_slot_phrase(slot) %></p>
         <%= button_to "Unclaim", public_slot_claim_path(@project.public_token, slot), method: :delete, class: "link -my-3.5 cursor-pointer py-3.5 text-meta font-medium text-ink-2 sm:my-0 sm:py-0" %>
       </div>
     <% elsif spots_left > 1 %>

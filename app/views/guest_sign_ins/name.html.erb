@@ -13,7 +13,8 @@
     <div>
       <%# The heading already asks for it, so the label stays for screen readers only. %>
       <%= f.label :name, "Name", class: "sr-only" %>
-      <%= f.text_field :name, value: params[:name], required: true, autofocus: true, autocomplete: "name", placeholder: "First and last name", class: "block w-full field" %>
+      <%= f.text_field :name, value: params[:name], required: true, autofocus: true, autocomplete: "name", placeholder: "First and last name", class: "block w-full field",
+            aria: ({ invalid: true, describedby: "sign-in-error" } if @person&.errors&.any?) %>
     </div>
 
     <%= f.submit (@challenge.slot ? "Confirm My Spot" : "Continue"), class: "w-full btn btn-primary" %>

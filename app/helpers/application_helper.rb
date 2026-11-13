@@ -35,8 +35,8 @@ module ApplicationHelper
     updown: "m7.5 9.5 4.5-4.5 4.5 4.5 M7.5 14.5l4.5 4.5 4.5-4.5"
   }.freeze
 
-  def icon(name, size: 16, **options)
-    tag.svg(viewBox: "0 0 24 24", width: size, height: size, fill: "none", stroke: "currentColor",
+  def icon(name, size: 16, view_box: "0 0 24 24", **options)
+    tag.svg(viewBox: view_box, width: size, height: size, fill: "none", stroke: "currentColor",
       "stroke-width": 1.7, "stroke-linecap": "round", "stroke-linejoin": "round",
       aria: { hidden: true }, focusable: false, class: class_names("shrink-0", options[:class])) do
       if name == :kept

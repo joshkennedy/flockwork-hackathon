@@ -10,7 +10,9 @@
     <div>
       <%= f.label :code, "6-digit code", class: "sr-only" %>
       <%= f.text_field :code, required: true, autofocus: true, autocomplete: "one-time-code", inputmode: "numeric", placeholder: "6-digit code",
-            pattern: "[0-9 ]*", maxlength: 7, class: "block w-full field field-code" %>
+            pattern: "[0-9 ]*", maxlength: 7, class: "block w-full field field-code", value: params[:code],
+            aria: ({ invalid: true, describedby: "sign-in-error" } if @error),
+            data: ({ controller: "select", action: "focus->select#all" } if @error) %>
     </div>
 
     <%= f.submit "Verify Code", class: "w-full btn btn-primary" %>
