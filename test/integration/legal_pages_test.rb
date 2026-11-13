@@ -16,7 +16,7 @@ class LegalPagesTest < ActionDispatch::IntegrationTest
     assert_not_includes response.body, "PLACEHOLDER"
   end
 
-  test "public discovery and the account menu link to legal pages" do
+  test "public discovery and the app footer link to legal pages" do
     get root_path
     [ terms_path, privacy_path ].each { |path| assert_select ".lp-footer a[href=?]", path }
     get "/sitemap.xml"
@@ -25,7 +25,9 @@ class LegalPagesTest < ActionDispatch::IntegrationTest
     [ terms_url, privacy_url ].each { |url| assert_includes response.body, url }
     sign_in_as_leader
     get home_path
-    [ terms_path, privacy_path ].each { |path| assert_select ".account-menu a[href=?]", path, count: 1 }
+    [ terms_path, privacy_path ].each { |path| assert_select ".app-footer a[href=?]", path, count: 1 }
+    assert_select ".account-menu a[href=?]", terms_path, count: 0
+    assert_select ".account-menu input[name=menu_appearance][value=system][checked]"
     get privacy_path
     assert_response :success
     assert_select ".legal-page"

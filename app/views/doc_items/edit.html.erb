@@ -3,7 +3,9 @@
 <div class="w-full max-w-2xl">
   <%= page_header "Edit #{@doc_item.kind.humanize.downcase}" %>
 
-  <div class="mt-7">
-    <%= render "form", project: @project, doc_item: @doc_item %>
-  </div>
+  <%= turbo_frame_tag "doc-item-form" do %>
+    <div class="mt-7">
+      <%= render "form", project: @project, doc_item: @doc_item %>
+    </div>
+  <% end %>
 </div>

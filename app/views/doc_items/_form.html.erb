@@ -1,5 +1,5 @@
 <% upload_data = doc_item.file? ? { controller: "upload", upload_key_value: "doc-item-#{project.id}-#{doc_item.id || 'new'}", action: "turbo:submit-start->upload#start turbo:submit-end->upload#finish direct-upload:start->upload#start direct-upload:progress->upload#progress direct-upload:error->upload#directError" } : {} %>
-<%= form_with model: [ project, doc_item ], class: "space-y-7", data: upload_data do |form| %>
+<%= form_with model: [ project, doc_item ], class: [ "space-y-7", ("sheet-fill" if doc_item.document?) ], data: upload_data do |form| %>
   <% if doc_item.errors.any? %>
     <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-danger">
       <p class="font-semibold">Fix these to continue:</p>
@@ -19,7 +19,7 @@
   </div>
 
   <% if doc_item.document? %>
-    <div>
+    <div class="sheet-grow">
       <%= form.label :body, class: "block text-label font-medium text-ink" %>
       <%= form.rich_text_area :body, class: "mt-2 block w-full field" %>
     </div>

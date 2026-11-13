@@ -21,7 +21,7 @@
     <% if Policy.can?(Current.person, :update, item) || Policy.can?(Current.person, :destroy, item) %>
       <%= actions_menu("Actions for #{item.title}") do %>
         <% if Policy.can?(Current.person, :update, item) %>
-          <%= link_to "Edit", edit_project_doc_item_path(project, item) %>
+          <%= link_to "Edit", edit_project_doc_item_path(project, item), data: { action: "slideout#open", slideout_title_param: "Edit #{item.kind.humanize}" } %>
         <% end %>
         <% if Policy.can?(Current.person, :destroy, item) %>
           <%= button_to "Delete", project_doc_item_path(project, item), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete “#{item.title}”? Its comments are deleted too." } } %>
