@@ -81,7 +81,7 @@
           <% spots_left = slot.capacity - slot.claims_count %>
           <% claimed = @claimed_slot_ids.include?(slot.id) %>
           <%# A held spot is done, so it lies flat; only open Slots stay raised to be pressed. %>
-          <li id="<%= dom_id(slot) %>" class="flex flex-wrap items-start justify-between gap-3 p-4 <%= claimed ? "rounded-tile border border-border bg-panel" : "tile-raised" %>">
+          <li id="<%= dom_id(slot) %>" class="flex scroll-mt-36 flex-wrap items-start justify-between gap-3 p-4 sm:scroll-mt-24 <%= claimed ? "rounded-tile border border-border bg-panel" : "tile-raised" %>">
             <div>
               <p class="text-meta font-medium text-ink-2"><%= date.strftime("%A, %B %-d") %></p>
               <% if slot.starts_at_time.present? %>
