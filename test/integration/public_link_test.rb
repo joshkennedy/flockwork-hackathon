@@ -195,7 +195,8 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
     assert_select "section[aria-labelledby='public-tasks']", text: /Hidden Assigned Task/, count: 0
     assert_select "section[aria-labelledby='public-tasks']", text: /Hidden Done Task/, count: 0
 
-    assert_select "section[aria-labelledby='public-slots']", text: /Serve dinner/
+    assert_select "#slot_#{slot.id} p.font-semibold:first-child", "Monday, February 15 · 6:30 PM"
+    assert_select "#slot_#{slot.id} p.text-meta", "Serve dinner"
     assert_select "section[aria-labelledby='public-slots']", text: /3 spots left/
     assert_select "section[aria-labelledby='public-slots']", text: /Full slot/, count: 0
 
