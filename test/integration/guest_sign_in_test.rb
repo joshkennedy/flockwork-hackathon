@@ -41,6 +41,15 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_select "#slot_#{roomy.id} .badge-need", "3 spots left"
   end
 
+  test "the sign-in steps wear the church's mark color, as the Public page does" do
+    @project.organization.update!(mark_color: "#0F766E")
+
+    get public_project_path(@token)
+    assert_select "body[style=?]", "--color-mark: #0F766E"
+    get guest_sign_in_path(@token, slot_id: @slot.id)
+    assert_select "body[style=?]", "--color-mark: #0F766E"
+  end
+
   test "a signed-in helper sees who they are on the Public page, and Not You? signs out back to it" do
     get public_project_path(@token)
     assert_select "[data-public-account]", count: 0

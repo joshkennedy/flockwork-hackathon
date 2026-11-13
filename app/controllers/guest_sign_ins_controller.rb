@@ -86,6 +86,7 @@ class GuestSignInsController < ApplicationController
   private
     def set_project
       @project = Project.publicly_linked.find_by!(public_token: params[:token])
+      @organization = @project.organization
     end
 
     # The slot_id comes from the page's link, so it only counts when it is one of this Project's Slots.
@@ -109,6 +110,7 @@ class GuestSignInsController < ApplicationController
     def linked_challenge
       challenge = SignInChallenge.find_by_link_token(params[:link_token])
       @project = Project.publicly_linked.find_by(id: challenge&.project_id)
+      @organization = @project&.organization
       challenge if @project
     end
 
