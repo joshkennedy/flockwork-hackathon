@@ -427,8 +427,12 @@
   select.field { appearance: none; padding-right: 38px; cursor: pointer; text-overflow: ellipsis; background-image: var(--select-chevron); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235F5E5A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); }
   :root[data-dark] select.field { --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23AAA8A2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); }
   .field-error, .field[aria-invalid="true"] { border-color: var(--color-danger); }
+  /* Focused, the ring carries the error instead, so the field never shows a red edge inside an ink ring. */
+  :is(.field-error, .field[aria-invalid="true"]):focus-visible { border-color: var(--color-control-border); outline-color: var(--color-danger); }
   /* One field, so paste and the phone's code autofill work; the wide tracking reads as six digits. */
   .field-code { @apply text-stat; min-height: var(--spacing-input-h-phone); letter-spacing: 0.3em; }
+  /* A wrong code stays selected for retyping; an ink tint keeps the digits reading as ink, not the system blue. */
+  .field-code::selection { background: color-mix(in srgb, var(--color-ink) 16%, transparent); color: var(--color-ink); }
   .field-code::placeholder { @apply text-body-phone sm:text-body; letter-spacing: normal; }
   :is(textarea, trix-editor).field { min-height: 112px; }
   .nav-item { @apply flex min-h-control-h items-center gap-3 rounded-full px-4 py-1.5 text-meta text-ink-2; transition: background-color var(--duration-hover), color var(--duration-hover); }
