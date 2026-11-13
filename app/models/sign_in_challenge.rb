@@ -39,11 +39,13 @@ class SignInChallenge < ApplicationRecord
 
   # A new challenge ends the earlier open ones for the address. Returns nil once the address has had its hour's share.
   # Used challenges stay as the hourly limits' record, and rows a day old are past every limit's window.
+  # The Organization's row lock queues simultaneous requests, so the limits are counted one request at a time.
   def self.issue(organization:, project:, channel:, address:, slot: nil)
-    earlier = where(organization:, address:)
-    return if earlier.where(created_at: 1.hour.ago..).count >= HOURLY_LIMIT
+    organization.with_lock do
+      earlier = where(organization:, address:)
+      next if earlier.where(created_at: 1.hour.ago..).count >= HOURLY_LIMIT
+      next if channel == "sms" && !textable?(organization, address)
 
-    transaction do
       where(organization:, created_at: ...1.day.ago).delete_all
       earlier.open.update_all(expires_at: Time.current)
       create!(organization:, project:, slot:, channel:, address:, expires_at: LIFETIME.from_now)
