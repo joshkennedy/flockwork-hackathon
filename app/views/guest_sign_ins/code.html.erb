@@ -2,6 +2,7 @@
 
 <div class="w-full max-w-xl mx-auto">
   <h1 class="text-ink">Enter your code</h1>
+  <% if @challenge.slot %><p class="mt-2 text-meta text-ink-2" data-chosen-slot><%= slot_summary(@challenge.slot) %></p><% end %>
   <p class="mt-2 text-ink-2">Sent to <span class="font-medium text-ink"><%= @challenge.masked_address %></span>. Type it here, or tap the link in the message.</p>
   <%= render "error", message: @error %>
 

@@ -49,12 +49,14 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     get guest_sign_in_path(@token, slot_id: @slot.id)
     assert_select "h1", "Sign in to help"
     assert_select "input[type=hidden][name=slot_id][value=?]", @slot.id.to_s
+    assert_select "[data-chosen-slot]", "#{@slot.date.strftime("%A, %B %-d")} · Dinner"
 
     code = request_code("Vera@St-Example.test ", slot: @slot)
     mail = ActionMailer::Base.deliveries.last
     assert_equal [ @vera.email ], mail.to
     follow_redirect!
     assert_select "h1", "Enter your code"
+    assert_select "[data-chosen-slot]", "#{@slot.date.strftime("%A, %B %-d")} · Dinner"
     assert_select "p", /Sent to v•••@st-example.test/
     assert_select "input[name=code][autocomplete='one-time-code'][inputmode=numeric]"
     assert_select "form[action=?] input[name=slot_id][value=?]", guest_sign_in_path(@token), @slot.id.to_s
@@ -83,6 +85,18 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
       phone.assert_redirected_to public_project_path(@token, anchor: "slot_#{@slot.id}")
     end
     assert_equal [ @vera ], @slot.reload.people
+  end
+
+  test "a new helper with a tapped Slot sees it on the name step and confirms the spot there" do
+    code = request_code("nadia@example.com", slot: @slot)
+    post guest_sign_in_code_path(@token), params: { code: }
+    follow_redirect!
+    assert_select "[data-chosen-slot]", "#{@slot.date.strftime("%A, %B %-d")} · Dinner"
+    assert_select "input[type=submit][value=?]", "Confirm My Spot"
+
+    post guest_sign_in_name_path(@token), params: { name: "Nadia Novak" }
+    assert_redirected_to public_project_path(@token, anchor: "slot_#{@slot.id}")
+    assert_equal [ "Nadia Novak" ], @slot.reload.people.map(&:name)
   end
 
   test "a Slot that filled up during sign-in is left alone, with a calm note" do
@@ -174,6 +188,8 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_redirected_to guest_sign_in_name_path(@token)
     follow_redirect!
     assert_select "h1", "What’s your name?"
+    assert_select "[data-chosen-slot]", count: 0
+    assert_select "input[type=submit][value=?]", "Continue"
 
     post guest_sign_in_name_path(@token), params: { name: "" }
     assert_response :unprocessable_content

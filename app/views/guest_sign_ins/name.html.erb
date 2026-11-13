@@ -2,7 +2,11 @@
 
 <div class="w-full max-w-xl mx-auto">
   <h1 class="text-ink">What’s your name?</h1>
-  <p class="mt-2 text-ink-2">So <%= @project.organization.name %> knows who’s helping.</p>
+  <% if @challenge.slot %>
+    <p class="mt-2 text-meta text-ink-2" data-chosen-slot><%= slot_summary(@challenge.slot) %></p>
+  <% else %>
+    <p class="mt-2 text-ink-2">So <%= @project.organization.name %> knows who’s helping.</p>
+  <% end %>
   <%= render "error", message: @person&.errors&.full_messages&.to_sentence %>
 
   <%= form_with url: guest_sign_in_name_path(@project.public_token), class: "mt-6 space-y-4" do |f| %>
@@ -11,6 +15,6 @@
       <%= f.text_field :name, value: params[:name], required: true, autofocus: true, autocomplete: "name", class: "mt-2 block w-full field" %>
     </div>
 
-    <%= f.submit "Continue", class: "w-full btn btn-primary" %>
+    <%= f.submit (@challenge.slot ? "Confirm My Spot" : "Continue"), class: "w-full btn btn-primary" %>
   <% end %>
 </div>
