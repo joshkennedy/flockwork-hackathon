@@ -420,6 +420,22 @@ class DemoSpendLimitsTest < ActionDispatch::IntegrationTest
     assert_select "h1", "Check your inbox"
   end
 
+  test "a demo church's Public link sends no sign-in code after the Organization cap" do
+    project = projects(:community_meal)
+    project.organization.update!(demo: true)
+    project.enable_public_link!
+
+    with_rate_limit_store do
+      20.times { assert DemoOutboundLimit.allow?(project.organization) }
+
+      assert_no_enqueued_jobs only: SignInChallengeJob do
+        post guest_sign_in_path(project.public_token), params: { contact: "nadia@example.com" }
+      end
+    end
+
+    assert_redirected_to guest_sign_in_code_path(project.public_token)
+  end
+
   test "a demo Person receives no sign-in email after the Organization cap" do
     organization = organizations(:grace_fellowship)
     person = people(:grace_leader)

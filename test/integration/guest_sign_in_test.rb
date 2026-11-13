@@ -346,6 +346,38 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
   end
 
+  test "a one-tap link with a changed signature does not sign in" do
+    request_code(@vera.email)
+    link = ActionMailer::Base.deliveries.last.text_part.body.encoded[%r{/go/(\S+)}, 1]
+    tampered = link.sub(/.\z/) { |last| last == "A" ? "B" : "A" }
+
+    post guest_sign_in_link_path(tampered)
+    assert_response :unprocessable_content
+    get home_path
+    assert_redirected_to root_path
+
+    post guest_sign_in_link_path(link)
+    assert_signed_in_as @vera
+  end
+
+  test "Not You? needs the page's form token, so another site cannot sign a helper out" do
+    post guest_sign_in_code_path(@token), params: { code: request_code(@vera.email) }
+    forgery_protection = ActionController::Base.allow_forgery_protection
+    ActionController::Base.allow_forgery_protection = true
+
+    delete guest_sign_out_path(@token)
+    assert_response :unprocessable_content
+    assert_signed_in_as @vera
+  ensure
+    ActionController::Base.allow_forgery_protection = forgery_protection
+  end
+
+  test "the contact and the code stay out of the logs" do
+    filter = ActiveSupport::ParameterFilter.new(Rails.application.config.filter_parameters)
+
+    assert_equal({ "contact" => "[FILTERED]", "code" => "[FILTERED]" }, filter.filter("contact" => "+12025550123", "code" => "123456"))
+  end
+
   test "a wrong code says so on the code step, keeps where it was sent, and keeps the digits tied to the alert" do
     code = request_code(@vera.email)
     wrong = code == "000000" ? "111111" : "000000"
