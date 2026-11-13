@@ -6,8 +6,11 @@ class SignInChallengeJob < ApplicationJob
   # One SMS segment. A longer Project name is cut so the link survives.
   SMS_LENGTH = 160
 
+  # A challenge that was used, ran out, or was replaced while queued sends nothing. The lock waits out an issue in
+  # progress; the send happens after it, so a slow provider never holds the row.
   def perform(challenge)
-    code = challenge.new_code!
+    code = challenge.with_lock { challenge.new_code! if challenge.open? }
+    return unless code
 
     if challenge.channel == "email"
       SignInMailer.code(challenge, code).deliver_now
