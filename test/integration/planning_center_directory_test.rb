@@ -9,15 +9,28 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
 
   test "Admin connects Planning Center and sees the connected state" do
     sign_in_as_admin
-
-    patch planning_center_directory_path, params: {
-      organization: { pco_app_id: "cassette-app-id", pco_secret: "cassette-secret" }
-    }
+    connect
 
     assert_redirected_to settings_path(anchor: "settings-directory")
     follow_redirect!
     assert_select "p", text: "Connected"
     assert organizations(:st_example).reload.planning_center_connected?
+  end
+
+  test "rejected credentials fail on connect and do not show Connected" do
+    sign_in_as_admin
+    organization = organizations(:st_example)
+
+    VCR.use_cassette("planning_center/unauthorized") do
+      patch planning_center_directory_path, params: {
+        organization: { pco_app_id: "wrong", pco_secret: "wrong" }
+      }
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "[role=alert]", text: "Planning Center didn't accept those credentials."
+    assert_select "p", text: "Connected", count: 0
+    assert_not organization.reload.planning_center_connected?
   end
 
   test "sync creates every recorded Planning Center Person and reports literal counts" do
@@ -255,8 +268,8 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
 
   test "rejected credentials show a plain error and change no People" do
     sign_in_as_admin
-    connect(app_id: "wrong", secret: "wrong")
     organization = organizations(:st_example)
+    organization.update!(pco_app_id: "wrong", pco_secret: "wrong")
 
     assert_no_difference -> { organization.people.count } do
       VCR.use_cassette("planning_center/unauthorized") do
@@ -264,8 +277,8 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
       end
     end
 
-    follow_redirect!
-    assert_select "p", text: "Planning Center didn't accept those credentials."
+    assert_response :unprocessable_entity
+    assert_select "p[role=alert]", text: "Planning Center didn't accept those credentials."
   end
 
   test "non-Admin gets 404 on Planning Center connection" do
@@ -287,13 +300,15 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
 
   private
     def connect(app_id: "cassette-app-id", secret: "cassette-secret")
-      patch planning_center_directory_path, params: {
-        organization: { pco_app_id: app_id, pco_secret: secret }
-      }
+      VCR.use_cassette("planning_center/people") do
+        patch planning_center_directory_path, params: {
+          organization: { pco_app_id: app_id, pco_secret: secret }
+        }
+      end
     end
 
     def sync_with_recording
-      VCR.use_cassette("planning_center/people") do
+      VCR.use_cassette("planning_center/people", allow_playback_repeats: true) do
         perform_enqueued_jobs { post sync_planning_center_directory_path }
       end
     end

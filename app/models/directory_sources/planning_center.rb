@@ -39,6 +39,11 @@ module DirectorySources
       raise Error, "Couldn't reach Planning Center. Nothing was changed."
     end
 
+    def verify_credentials!
+      get(PEOPLE_URL)
+      true
+    end
+
     private
       attr_reader :app_id, :secret, :skills_field_id
 
