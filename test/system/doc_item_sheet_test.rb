@@ -33,4 +33,31 @@ class DocItemSheetSystemTest < ApplicationSystemTestCase
     assert_current_path project_path(@project)
     assert_link "Parking map", href: "https://example.com/parking"
   end
+
+  test "an oversized file is rejected before upload" do
+    file = Tempfile.new([ "too-large", ".txt" ])
+    file.truncate(DocItem::FILE_MAX_BYTES + 1)
+    file.close
+    sign_in_as_leader_in_browser
+    visit project_path(@project)
+    click_on "Add File"
+
+    within "dialog.sheet[open]" do
+      attach_file "File", file.path
+      assert_equal DocItem::FILE_MAX_BYTES.to_s, find("form[data-controller~='upload']")["data-upload-max-bytes-value"]
+      assert_equal 0, find_field("File").evaluate_script("this.files.length")
+    end
+
+    assert_selector ".tst-viewport [role=alert]", text: "Choose a file 25 MB or smaller", visible: :all
+    assert_not @project.doc_items.exists?(title: "Oversized file")
+  ensure
+    file&.unlink
+  end
+
+  private
+    def sign_in_as_leader_in_browser
+      visit new_demo_session_path
+      click_on "Explore as Leader"
+      assert_selector "[data-signed-in-as]", text: "Maria Lopez"
+    end
 end

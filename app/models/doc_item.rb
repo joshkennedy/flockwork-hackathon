@@ -1,6 +1,8 @@
 class DocItem < ApplicationRecord
   include OrganizationOwnedBlobs
 
+  FILE_MAX_BYTES = 25.megabytes
+
   belongs_to :project
   belongs_to :author, class_name: "Person"
   broadcasts_refreshes_to :project
@@ -15,6 +17,7 @@ class DocItem < ApplicationRecord
   validates :title, presence: true
   validates_organization_owned_blobs attachments: [ :file ], rich_texts: [ :body ]
   validate :validate_kind_specific_fields
+  validate :file_is_within_size_limit
 
   scope :ordered, -> { order(:kind, :title, :id) }
 
@@ -44,6 +47,12 @@ class DocItem < ApplicationRecord
           errors.add(:url, "must be an http or https URL")
         end
       end
+    end
+
+    def file_is_within_size_limit
+      return unless file? && file.attached? && file.blob.byte_size > FILE_MAX_BYTES
+
+      errors.add(:file, "must be 25 MB or smaller")
     end
 
     def http_url?(value)

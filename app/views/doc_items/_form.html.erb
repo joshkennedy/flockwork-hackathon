@@ -1,4 +1,4 @@
-<% upload_data = doc_item.file? ? { controller: "upload", upload_key_value: "doc-item-#{project.id}-#{doc_item.id || 'new'}", action: "turbo:submit-start->upload#start turbo:submit-end->upload#finish direct-upload:start->upload#start direct-upload:progress->upload#progress direct-upload:error->upload#directError" } : {} %>
+<% upload_data = doc_item.file? ? { controller: "upload", upload_key_value: "doc-item-#{project.id}-#{doc_item.id || 'new'}", upload_max_bytes_value: DocItem::FILE_MAX_BYTES, upload_max_size_label_value: "25 MB", action: "submit->upload#validate turbo:submit-start->upload#start turbo:submit-end->upload#finish direct-upload:start->upload#start direct-upload:progress->upload#progress direct-upload:error->upload#directError" } : {} %>
 <%= form_with model: [ project, doc_item ], class: [ "space-y-7", ("sheet-fill" if doc_item.document?) ], data: upload_data do |form| %>
   <% if doc_item.errors.any? %>
     <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-ink">
@@ -26,7 +26,7 @@
   <% elsif doc_item.file? %>
     <div>
       <%= form.label :file, class: "block text-label font-medium text-ink" %>
-      <%= form.file_field :file, required: !doc_item.file.attached?, class: "mt-2 block w-full text-meta text-ink", data: { upload_target: "input" } %>
+      <%= form.file_field :file, required: !doc_item.file.attached?, class: "mt-2 block w-full text-meta text-ink", data: { upload_target: "input", action: "change->upload#validate" } %>
     </div>
   <% elsif doc_item.link? %>
     <div>

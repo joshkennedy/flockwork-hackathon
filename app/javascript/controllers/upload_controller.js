@@ -3,7 +3,25 @@ import { toast } from "ding"
 
 export default class extends Controller {
   static targets = [ "input" ]
-  static values = { key: String }
+  static values = {
+    key: String,
+    maxBytes: Number,
+    maxSizeLabel: String,
+    acceptedTypes: Array,
+    acceptedExtensions: Array,
+    typeError: String
+  }
+
+  validate(event) {
+    const file = this.file(event)
+    const error = this.validationError(file)
+    if (!error) return
+
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    this.inputTargets.forEach((input) => { input.value = "" })
+    toast.error(error)
+  }
 
   start(event) {
     const file = this.file(event)
@@ -68,6 +86,22 @@ export default class extends Controller {
   file(event) {
     if (event.target?.files?.[0]) return event.target.files[0]
     return this.inputTargets.find((input) => input.files?.length)?.files[0]
+  }
+
+  validationError(file) {
+    if (!file) return null
+    if (this.hasMaxBytesValue && file.size > this.maxBytesValue) {
+      return `${file.name} is too large. Choose a file ${this.maxSizeLabelValue} or smaller.`
+    }
+    if (this.hasTypeErrorValue && !this.accepts(file)) return this.typeErrorValue
+
+    return null
+  }
+
+  accepts(file) {
+    const type = file.type.toLowerCase()
+    const name = file.name.toLowerCase()
+    return this.acceptedTypesValue.includes(type) || this.acceptedExtensionsValue.some((extension) => name.endsWith(extension))
   }
 
   get loadingTitle() {
