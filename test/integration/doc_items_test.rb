@@ -1,6 +1,20 @@
 require "test_helper"
 
 class DocItemsTest < ActionDispatch::IntegrationTest
+  test "submitting a file item without a file shows a validation error" do
+    sign_in_as_volunteer
+    project = enable_docs_tool!(projects(:community_meal))
+
+    assert_no_difference "DocItem.count" do
+      post project_doc_items_path(project), params: {
+        doc_item: { kind: "file", title: "Missing file" }
+      }
+    end
+
+    assert_response :unprocessable_content
+    assert_select "turbo-frame#doc-item-form [role=alert]", text: /Choose a file to upload/
+  end
+
   test "a file over 25 MB is refused with a clear error" do
     sign_in_as_volunteer
     project = enable_docs_tool!(projects(:community_meal))

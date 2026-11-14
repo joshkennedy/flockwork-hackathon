@@ -39,7 +39,7 @@ class DocItem < ApplicationRecord
       when "document"
         errors.add(:body, "can't be blank") if body.blank?
       when "file"
-        errors.add(:file, "must be attached") unless file.attached?
+        errors.add(:base, "Choose a file to upload") unless file.attached?
       when "link"
         if url.blank?
           errors.add(:url, "can't be blank")

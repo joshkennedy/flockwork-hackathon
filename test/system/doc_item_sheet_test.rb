@@ -24,6 +24,7 @@ class DocItemSheetSystemTest < ApplicationSystemTestCase
 
     within "dialog.sheet[open]" do
       assert_selector "h2", text: "Add Link"
+      assert_selector "input[name='doc_item[title]']:focus"
       fill_in "Title", with: "Parking map"
       fill_in "URL", with: "https://example.com/parking"
       click_on "Add Link"
@@ -52,6 +53,20 @@ class DocItemSheetSystemTest < ApplicationSystemTestCase
     assert_not @project.doc_items.exists?(title: "Oversized file")
   ensure
     file&.unlink
+  end
+
+  test "submitting without a file explains what is missing inside the sheet" do
+    sign_in_as_leader_in_browser
+    visit project_path(@project)
+    click_on "Add File"
+
+    within "dialog.sheet[open]" do
+      fill_in "Title", with: "Missing attachment"
+      click_on "Add File"
+      assert_selector "[role=alert]", text: "Choose a file to upload"
+    end
+
+    assert_current_path project_path(@project)
   end
 
   private

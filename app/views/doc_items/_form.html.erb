@@ -26,7 +26,7 @@
   <% elsif doc_item.file? %>
     <div>
       <%= form.label :file, class: "block text-label font-medium text-ink" %>
-      <%= form.file_field :file, required: !doc_item.file.attached?, class: "mt-2 block w-full text-meta text-ink", data: { upload_target: "input", action: "change->upload#validate" } %>
+      <%= form.file_field :file, class: "mt-2 block w-full text-meta text-ink", data: { upload_target: "input", action: "change->upload#validate" } %>
     </div>
   <% elsif doc_item.link? %>
     <div>
