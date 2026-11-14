@@ -57,11 +57,11 @@ class BudgetLine < ApplicationRecord
   end
 
   def self.estimated_total_cents(lines)
-    lines.filter_map(&:estimated_cents).sum
+    lines.reject(&:cancelled?).filter_map(&:estimated_cents).sum
   end
 
   def self.actual_total_cents(lines)
-    lines.sum(&:actual_cents_for_total)
+    lines.reject(&:cancelled?).sum(&:actual_cents_for_total)
   end
 
   private

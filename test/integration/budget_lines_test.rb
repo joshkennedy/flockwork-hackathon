@@ -106,6 +106,33 @@ class BudgetLinesTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "cancelled lines are excluded from every displayed total" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    project.budget_lines.create!(
+      kind: :booking,
+      description: "Cancelled bus",
+      estimated_cents: 50_000,
+      actual_cents: 40_000,
+      status: :cancelled
+    )
+
+    assert_equal({ estimated_cents: 100_000, actual_cents: 0 }, project.budget_kind_totals(:booking))
+    assert_equal({ estimated_cents: 125_000, actual_cents: 2_499 }, project.budget_grand_totals)
+
+    get project_path(project)
+
+    assert_response :success
+    assert_select "section[aria-labelledby='tool-budget']" do
+      assert_select "dt", text: "Estimated total"
+      assert_select "dd", text: "$1,250.00", count: 1
+      assert_select "dt", text: "Actual total"
+      assert_select "dd", text: "$24.99", count: 1
+      assert_select "h3", text: "Bookings"
+      assert_select "p", text: /Estimated \$1,000\.00.*Actual \$0\.00/
+    end
+  end
+
   test "an unknown estimate is omitted from totals and named on its row" do
     sign_in_as_leader
     project = projects(:community_meal)
