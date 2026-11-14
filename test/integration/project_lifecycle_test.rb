@@ -60,6 +60,16 @@ class ProjectLifecycleTest < ActionDispatch::IntegrationTest
     assert_nil project.reload.archived_at
   end
 
+  test "Archive confirms that the Project becomes read-only" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+
+    get project_path(project)
+
+    assert_response :success
+    assert_select "form[action='#{archive_project_path(project)}'][data-turbo-confirm='Archive “Community Meal”? It becomes read-only for everyone until you unarchive it.'] button", text: "Archive"
+  end
+
   test "the Owner transfers ownership to another Leader on the Team" do
     sign_in_as_leader
     project = projects(:community_meal)
