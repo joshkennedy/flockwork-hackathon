@@ -25,6 +25,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     get public_project_path(@token)
 
     assert_select "section[aria-labelledby='public-slots'] a.btn-secondary.btn-claim[href=?]", guest_sign_in_path(@token, slot_id: @slot.id), text: "Help with This"
+    assert_select "a[href=?]", guest_sign_in_path(@token), text: "Already signed up? Sign in"
     assert_select "a[href=?]", new_sign_in_request_path, count: 0
   end
 
@@ -76,17 +77,31 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
   test "a signed-in helper sees who they are on the Public page, and Not You? signs out back to it" do
     get public_project_path(@token)
     assert_select "[data-public-account]", count: 0
+    assert_select "a[href=?]", guest_sign_in_path(@token), text: "Already signed up? Sign in"
 
     sign_in_as @vera
     get public_project_path(@token)
     assert_select "[data-public-account]", /Signed in as #{@vera.name}/
     assert_select "[data-public-account] form[action=?] button", guest_sign_out_path(@token), text: "Not You?"
+    assert_select "a[href=?]", guest_sign_in_path(@token), text: "Already signed up? Sign in", count: 0
 
     delete guest_sign_out_path(@token)
     assert_redirected_to public_project_path(@token)
     follow_redirect!
     assert_select "[data-public-account]", count: 0
     assert_select "a", text: "Help with This"
+  end
+
+  test "signing in without a chosen Slot returns to the Public page with existing claims shown" do
+    @slot.claim(@vera)
+    code = request_code(@vera.email)
+
+    post guest_sign_in_code_path(@token), params: { code: }
+
+    assert_redirected_to public_project_path(@token)
+    follow_redirect!
+    assert_select "#slot_#{@slot.id}", /You’re bringing dinner/
+    assert_select "#slot_#{@slot.id} form[action=?] button", public_slot_claim_path(@token, @slot), text: "Unclaim"
   end
 
   test "a signed-in helper opening the internal Project URL returns to its Public page" do
