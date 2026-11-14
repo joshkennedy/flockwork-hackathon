@@ -19,6 +19,7 @@ class ProjectDuplicatesTest < ActionDispatch::IntegrationTest
 
   test "a Leader duplicates Project structure with every date shifted and People cleared" do
     leader = sign_in_as_leader
+    projects(:building_cleanup).memberships.create!(person: leader, role: :leader)
     source = projects(:community_meal)
     source.update!(
       open_team: true,
@@ -238,7 +239,7 @@ class ProjectDuplicatesTest < ActionDispatch::IntegrationTest
   end
 
   test "a Volunteer cannot see or use Duplicate" do
-    sign_in_as_volunteer
+    volunteer = sign_in_as_volunteer
     source = projects(:community_meal)
 
     get project_path(source)
@@ -255,6 +256,32 @@ class ProjectDuplicatesTest < ActionDispatch::IntegrationTest
       }
     end
 
+    assert_response :not_found
+
+    duplicate = ProjectDuplicate.new(source:, start_on: Date.new(2028, 2, 12), by: volunteer)
+    duplicate.name = "Volunteer Service Copy"
+    assert_no_difference "Project.count" do
+      assert_raises(ActiveRecord::RecordNotFound) { duplicate.call }
+    end
+  end
+
+  test "a former Leader of only an archived Project cannot duplicate it into a new Project" do
+    sign_in_as_leader
+    source = projects(:community_meal)
+    source.update!(archived_at: Time.current)
+
+    get project_path(source)
+    assert_response :success
+    assert_select "a", text: "Duplicate", count: 0
+
+    get new_project_duplicate_path(source)
+    assert_response :not_found
+
+    assert_no_difference "Project.count" do
+      post project_duplicate_path(source), params: {
+        project_duplicate: { name: "Archived Volunteer Copy", start_on: "2028-02-12" }
+      }
+    end
     assert_response :not_found
   end
 

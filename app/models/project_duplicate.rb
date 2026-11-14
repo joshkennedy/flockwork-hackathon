@@ -16,6 +16,7 @@ class ProjectDuplicate
   end
 
   def call
+    raise ActiveRecord::RecordNotFound unless Policy.can?(by, :create, Project)
     raise ActiveModel::ValidationError, self unless valid?
 
     Project.transaction do

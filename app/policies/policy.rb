@@ -38,7 +38,7 @@ module Policy
     end
 
     if record == ::Project
-      return true if action == :create
+      return person.admin? || leader_somewhere?(person) if action == :create
       return person.admin? if action == :view_deleted
 
       return false
@@ -149,7 +149,9 @@ module Policy
       person.admin? || record.memberships.exists?(person: person)
     when :manage_recipients
       person.admin? || record.memberships.leader.exists?(person: person)
-    when :manage_public_link, :duplicate, :plan, :edit_debrief
+    when :duplicate
+      project_leader_or_admin?(person, record) && can?(person, :create, Project)
+    when :manage_public_link, :plan, :edit_debrief
       project_leader_or_admin?(person, record)
     when :comment
       person.admin? || record.memberships.exists?(person: person)

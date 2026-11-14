@@ -3,7 +3,8 @@ require "test_helper"
 class SearchTest < ActionDispatch::IntegrationTest
   test "search limits Projects to visible records in the current church" do
     person = sign_in_as_volunteer
-    visible = Project.create_for(creator: person, attributes: { name: "Unique search visible" })
+    visible = Project.create_for(creator: people(:leader), attributes: { name: "Unique search visible" })
+    visible.memberships.create!(person:, role: :volunteer)
     hidden = Project.create_for(creator: people(:admin), attributes: { name: "Unique search hidden" })
     other = Project.create_for(creator: people(:outsider), attributes: { name: "Unique search other" })
     get search_path, params: { query: "Unique search" }

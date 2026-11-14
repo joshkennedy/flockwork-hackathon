@@ -118,6 +118,50 @@ class ProjectsTest < ActionDispatch::IntegrationTest
     assert_equal "Community Meal", project.reload.name
   end
 
+  test "a Volunteer cannot open or submit any Project creation entry point" do
+    sign_in_as_volunteer
+
+    get projects_path
+    assert_response :success
+    assert_select "a[href='#{new_project_path}']", count: 0
+
+    get new_project_path
+    assert_response :not_found
+
+    assert_no_difference "Project.count" do
+      post projects_path, params: { project: { name: "Volunteer Project" } }
+    end
+    assert_response :not_found
+
+    assert_no_difference "Project.count" do
+      post start_planner_projects_path, params: { planning_kind: "retreat" }
+    end
+    assert_response :not_found
+
+    assert_no_difference "Project.count" do
+      post start_meal_planner_projects_path
+    end
+    assert_response :not_found
+
+    get oversight_path
+    assert_response :not_found
+
+    get search_person_path(people(:other_volunteer))
+    assert_response :not_found
+  end
+
+  test "a Leader may use every Project creation entry point" do
+    sign_in_as_leader
+
+    assert_project_creation_entry_points_work
+  end
+
+  test "an Admin may use every Project creation entry point" do
+    sign_in_as_admin
+
+    assert_project_creation_entry_points_work
+  end
+
   test "an Admin sees every non-deleted Project in their Organization" do
     sign_in_as_admin
 
@@ -223,4 +267,29 @@ class ProjectsTest < ActionDispatch::IntegrationTest
     assert_select "section[aria-labelledby='group-coming-up'] .badge-need", "1 dinner still needs someone"
     assert_select "section[aria-labelledby='group-done'] h3", "Building Cleanup"
   end
+
+  private
+    def assert_project_creation_entry_points_work
+      get projects_path
+      assert_response :success
+      assert_select "a[href='#{new_project_path}']", text: "Start a Project"
+
+      get new_project_path
+      assert_response :success
+
+      assert_difference "Project.count", 1 do
+        post projects_path, params: { project: { name: "Manual Project #{Person.maximum(:id)}" } }
+      end
+      assert_response :redirect
+
+      assert_difference "Project.count", 1 do
+        post start_planner_projects_path, params: { planning_kind: "retreat" }
+      end
+      assert_response :see_other
+
+      assert_difference "Project.count", 1 do
+        post start_meal_planner_projects_path
+      end
+      assert_response :see_other
+    end
 end

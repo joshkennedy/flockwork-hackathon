@@ -580,9 +580,10 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
 
     delete session_path
     sign_in_as_volunteer
-    post start_planner_projects_path, params: { planning_kind: "workday" }
-    assert_response :see_other
-    assert_equal people(:volunteer), PlannerSession.order(:id).last!.started_by
+    assert_no_difference [ "Project.count", "PlannerSession.count" ] do
+      post start_planner_projects_path, params: { planning_kind: "workday" }
+    end
+    assert_response :not_found
     get project_planner_session_path(project, planner_session)
     assert_response :not_found
 
