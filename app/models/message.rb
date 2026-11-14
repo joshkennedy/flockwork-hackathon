@@ -20,7 +20,10 @@ class Message < ApplicationRecord
 
   scope :roots, -> { where(parent_id: nil) }
 
+  # Only a new thread goes to the whole Team; a reply would otherwise ping everyone on every turn.
   def notify_team
+    return if parent_id.present?
+
     mentioned_person_ids = mentions.pluck(:person_id)
     project.memberships.includes(:person).find_each do |membership|
       next if membership.person_id.in?(mentioned_person_ids)

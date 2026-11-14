@@ -48,6 +48,17 @@ class NotificationsTest < ActionDispatch::IntegrationTest
     assert_not author.notifications.exists?(notifiable: message)
   end
 
+  test "a reply to a Project Message does not notify the whole Team" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    post project_messages_path(project), params: { message: { body: "Original update." } }
+    root = project.messages.roots.order(:id).last!
+
+    assert_no_difference -> { Notification.where(kind: "project_message").count } do
+      post project_messages_path(project), params: { message: { parent_id: root.id, body: "A reply." } }
+    end
+  end
+
   test "editing a Project Message does not notify the Team or a new mention" do
     sign_in_as_leader
     project = projects(:community_meal)
