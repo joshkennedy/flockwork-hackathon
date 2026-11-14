@@ -1,6 +1,6 @@
 require "application_system_test_case"
 
-class DemoSignInTest < ApplicationSystemTestCase
+class DemoSignInSystemTest < ApplicationSystemTestCase
   test "Explore as Volunteer signs straight in and lands on the Organization home" do
     visit new_demo_session_path
 

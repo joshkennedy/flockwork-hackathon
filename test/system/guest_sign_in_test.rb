@@ -1,6 +1,6 @@
 require "application_system_test_case"
 
-class GuestSignInTest < ApplicationSystemTestCase
+class GuestSignInSystemTest < ApplicationSystemTestCase
   setup do
     @original_queue_adapter = ActiveJob::Base.queue_adapter
     ActiveJob::Base.queue_adapter = :inline

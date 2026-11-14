@@ -392,7 +392,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     delete session_path
     post guest_sign_in_link_path(link)
     assert_response :unprocessable_content
-    assert_select "h1", "Sign-in link not valid"
+    assert_select "h1", "This sign-in link is no longer active"
     get home_path
     assert_redirected_to root_path
   end
@@ -500,6 +500,18 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_not_equal first, second unless first == second
   end
 
+  test "resetting the Public link ends outstanding sign-in links" do
+    request_code(@vera.email)
+    link = ActionMailer::Base.deliveries.last.text_part.body.encoded[%r{/go/(\S+)}, 1]
+
+    @project.reset_public_link!
+
+    post guest_sign_in_link_path(link)
+    assert_response :unprocessable_content
+    get home_path
+    assert_redirected_to root_path
+  end
+
   test "only the browser that proved the address may name the new Person" do
     request_code("nadia@example.com")
     link = ActionMailer::Base.deliveries.last.text_part.body.encoded[%r{/go/(\S+)}, 1]
@@ -599,6 +611,19 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_select "#flash [data-toast-kind=alert]", "This Slot is full. Pick another one."
   end
 
+  test "a Public-link helper cannot claim a past Slot by posting directly" do
+    past_slot = @project.slots.create!(date: Date.yesterday, label: "Past dinner", capacity: 1)
+    sign_in_as @vera
+
+    assert_no_difference "SlotClaim.count" do
+      post public_slot_claim_path(@token, past_slot)
+    end
+
+    assert_redirected_to public_project_path(@token, anchor: "slot_#{past_slot.id}")
+    follow_redirect!
+    assert_select "#flash [data-toast-kind=alert]", "This Slot has passed."
+  end
+
   test "turning the Public link off closes the sign-in and claiming" do
     sign_in_as @vera
     @project.disable_public_link!
@@ -607,6 +632,19 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_response :not_found
     post public_slot_claim_path(@token, @slot)
     assert_response :not_found
+  end
+
+  test "a sign-in link disabled with its Public link explains what happened and offers a way forward" do
+    request_code(@vera.email)
+    link = ActionMailer::Base.deliveries.last.text_part.body.encoded[%r{/go/(\S+)}, 1]
+    @project.disable_public_link!
+
+    get guest_sign_in_link_path(link)
+
+    assert_response :unprocessable_content
+    assert_select "h1", "This sign-in link is no longer active"
+    assert_select "p", text: /turned off or reset its Public link/
+    assert_select "a.btn-primary[href=?]", root_path, text: "Go to Flockwork Home"
   end
 
   private

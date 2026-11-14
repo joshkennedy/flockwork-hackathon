@@ -34,7 +34,8 @@ class ProjectsHelperTest < ActionView::TestCase
   end
 
   test "status counts covered Slots by their shared label and names the next open one" do
-    @project.slots.create!(date: Date.new(2027, 2, 9), label: "Dinner", capacity: 1).claim(people(:volunteer))
+    @project.slots.create!(date: Date.new(2027, 2, 9), label: "Dinner", capacity: 1)
+      .slot_claims.create!(person: people(:volunteer))
     @project.slots.create!(date: Date.new(2027, 2, 12), label: "Dinner", capacity: 1)
 
     assert_equal [ [ "When", "Feb 10 – Feb 20" ], [ "Filled", "1 of 2 dinners" ], [ "Next open", "Fri, Feb 12" ] ],

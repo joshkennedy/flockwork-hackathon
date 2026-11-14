@@ -1,9 +1,11 @@
-<% content_for :title, "Sign-in link not valid" %>
+<% content_for :title, "Sign-in link no longer active" %>
 
 <div class="w-full max-w-[480px]">
-  <h1 class="text-ink">Sign-in link not valid</h1>
-  <p class="mt-2 text-ink-2">That link has expired or was already used.</p>
+  <h1 class="text-ink">This sign-in link is no longer active</h1>
+  <p class="mt-2 text-ink-2">The church may have turned off or reset its Public link. Ask them for the latest link.</p>
   <% if @project %>
     <p class="mt-6"><%= link_to "Send a New Code", guest_sign_in_path(@project.public_token), class: "btn btn-primary" %></p>
+  <% else %>
+    <p class="mt-6"><%= link_to "Go to Flockwork Home", root_path, class: "btn btn-primary" %></p>
   <% end %>
 </div>

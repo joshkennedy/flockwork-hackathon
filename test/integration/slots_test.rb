@@ -116,6 +116,20 @@ class SlotsTest < ActionDispatch::IntegrationTest
     assert_select "form[action='#{project_slot_claim_path(project, slot)}'] button", text: "Claim", count: 0
   end
 
+  test "a Team member cannot claim a past Slot by posting directly" do
+    member = sign_in_as_volunteer
+    project = projects(:community_meal)
+    slot = project.slots.create!(date: Date.yesterday, label: "Past dinner", capacity: 1)
+
+    assert_no_difference "SlotClaim.count" do
+      post project_slot_claim_path(project, slot)
+    end
+
+    assert_redirected_to project_path(project)
+    assert_equal "This Slot has passed.", flash[:alert]
+    assert_not slot.slot_claims.exists?(person: member)
+  end
+
   test "past Slots fold away and Leaders get a quiet claim button" do
     sign_in_as_leader
     project = projects(:community_meal)

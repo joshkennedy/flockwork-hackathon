@@ -690,7 +690,11 @@ class DemoOrganization::ProjectSeeder
     end
 
     def claim!(slot, name, created_at:)
-      claim = slot.claim(person(name))
+      claim = if slot.date < Date.current
+        slot.slot_claims.create(person: person(name))
+      else
+        slot.claim(person(name))
+      end
       raise ActiveRecord::RecordInvalid, claim unless claim&.persisted?
 
       claim.update_columns(created_at:, updated_at: created_at)
