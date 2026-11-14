@@ -42,6 +42,17 @@ class SettingsTest < ActionDispatch::IntegrationTest
     assert_select "[data-organization-name]", "St. Example Parish"
   end
 
+  test "Admin sets the church time zone used by calendars" do
+    sign_in_as_admin
+
+    patch settings_path, params: { organization: { time_zone: "America/New_York" } }
+
+    assert_redirected_to settings_path(anchor: "settings-church")
+    assert_equal "America/New_York", organizations(:st_example).reload.time_zone
+    get settings_path(anchor: "settings-church")
+    assert_select "select[name='organization[time_zone]'] option[value='America/New_York'][selected]"
+  end
+
   test "a blank church name re-renders the Church tab with the error" do
     sign_in_as_admin
 

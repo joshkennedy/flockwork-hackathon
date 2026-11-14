@@ -3,7 +3,7 @@ require "test_helper"
 class CalendarDownloadsTest < ActionDispatch::IntegrationTest
   setup do
     @project = projects(:community_meal)
-    @slot = @project.slots.create!(date: "2027-02-12", label: "Serve dinner")
+    @slot = @project.slots.create!(date: "2027-02-12", starts_at_time: "18:00", label: "Serve dinner")
     @item = schedule_items(:community_meal_lunch)
   end
 
@@ -16,10 +16,13 @@ class CalendarDownloadsTest < ActionDispatch::IntegrationTest
     assert_equal "text/calendar", response.media_type
     assert_match(/attachment;.*\.ics/, response.headers["Content-Disposition"])
     assert_includes response.body, "SUMMARY:Serve dinner\r\n"
+    assert_includes response.body, "DTSTART;TZID=America/Chicago:20270212T180000\r\n"
+    assert_includes response.body, "DTEND;TZID=America/Chicago:20270212T190000\r\n"
 
     get project_schedule_item_calendar_path(@project, @item)
     assert_response :success
     assert_includes response.body, "SUMMARY:Lunch\r\n"
+    assert_includes response.body, "DTSTART;TZID=America/Chicago:20270212T120000\r\n"
   end
 
   test "a person cannot download an unclaimed or released Slot" do

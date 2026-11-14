@@ -2,6 +2,7 @@ class CalendarEvent
   def initialize(record, url:)
     @record = record
     @url = url
+    @time_zone = record.project.organization.time_zone
   end
 
   def to_ical
@@ -17,8 +18,12 @@ class CalendarEvent
       "URL:#{escape(@url)}"
     ]
     if @record.starts_at_time
-      lines << "DTSTART:#{timestamp(@record.starts_at_time)}"
-      lines << "DTEND:#{timestamp(@record.ends_at_time)}" if @record.is_a?(ScheduleItem) && @record.ends_at_time
+      lines << "DTSTART;TZID=#{@time_zone}:#{timestamp(@record.date, @record.starts_at_time)}"
+      if @record.is_a?(ScheduleItem) && @record.ends_at_time
+        lines << "DTEND;TZID=#{@time_zone}:#{timestamp(@record.date, @record.ends_at_time)}"
+      elsif @record.is_a?(Slot)
+        lines << "DTEND;TZID=#{@time_zone}:#{default_slot_end.strftime('%Y%m%dT%H%M%S')}"
+      end
     else
       lines << "DTSTART;VALUE=DATE:#{@record.date.strftime('%Y%m%d')}"
       lines << "DTEND;VALUE=DATE:#{(@record.date + 1).strftime('%Y%m%d')}"
@@ -32,9 +37,13 @@ class CalendarEvent
       @record.is_a?(Slot) ? @record.label : @record.title
     end
 
-    # Times have no church timezone; preserve the displayed wall time on import.
-    def timestamp(time)
-      Time.utc(@record.date.year, @record.date.month, @record.date.day, time.hour, time.min, time.sec).strftime("%Y%m%dT%H%M%S")
+    def timestamp(date, time)
+      "%04d%02d%02dT%02d%02d%02d" % [ date.year, date.month, date.day, time.hour, time.min, time.sec ]
+    end
+
+    def default_slot_end
+      zone = ActiveSupport::TimeZone[@time_zone]
+      zone.local(@record.date.year, @record.date.month, @record.date.day, @record.starts_at_time.hour, @record.starts_at_time.min, @record.starts_at_time.sec) + 1.hour
     end
 
     def escape(value)

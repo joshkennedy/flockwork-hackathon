@@ -1,11 +1,11 @@
 require "test_helper"
 
 class CalendarEventTest < ActiveSupport::TestCase
-  test "timed Schedule items preserve wall time without inventing a timezone" do
+  test "timed Schedule items carry the church time zone" do
     event = CalendarEvent.new(schedule_items(:community_meal_lunch), url: "https://example.test/projects/1").to_ical
 
-    assert_includes event, "DTSTART:20270212T120000\r\n"
-    assert_includes event, "DTEND:20270212T130000\r\n"
+    assert_includes event, "DTSTART;TZID=America/Chicago:20270212T120000\r\n"
+    assert_includes event, "DTEND;TZID=America/Chicago:20270212T130000\r\n"
     assert_includes event, "LOCATION:Fellowship Hall\r\n"
     assert_includes event, "URL:https://example.test/projects/1\r\n"
     assert_no_match(/(?<!\r)\n/, event)
@@ -19,14 +19,14 @@ class CalendarEventTest < ActiveSupport::TestCase
     assert_includes event, "DTEND;VALUE=DATE:20270213\r\n"
   end
 
-  test "a Slot has no invented end time and keeps its UID after edits" do
-    slot = projects(:community_meal).slots.create!(date: "2027-02-12", starts_at_time: "18:30", label: "Serve")
+  test "a Slot ends one hour later and keeps its UID after edits" do
+    slot = projects(:community_meal).slots.create!(date: "2027-02-12", starts_at_time: "23:30", label: "Serve")
     first = CalendarEvent.new(slot, url: "https://example.test").to_ical
     slot.update!(label: "Clean up")
     second = CalendarEvent.new(slot, url: "https://example.test").to_ical
 
-    assert_includes first, "DTSTART:20270212T183000\r\n"
-    assert_no_match(/^DTEND/, first)
+    assert_includes first, "DTSTART;TZID=America/Chicago:20270212T233000\r\n"
+    assert_includes first, "DTEND;TZID=America/Chicago:20270213T003000\r\n"
     assert_equal first[/^UID:.+\r\n/], second[/^UID:.+\r\n/]
   end
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_150000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_14_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -240,6 +240,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_150000) do
     t.text "pco_last_sync_error"
     t.string "mark_color", default: "#D69000", null: false
     t.string "pco_skills_field_id"
+    t.string "time_zone", default: "America/Chicago", null: false
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
   end
 
