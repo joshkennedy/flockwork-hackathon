@@ -1,9 +1,9 @@
 class PeopleController < ApplicationController
   before_action :authorize_people_management
   rate_limit to: 5, within: 10.minutes, by: -> { Current.session.id }, name: "demo_session",
-    scope: "demo_outbound_actions", only: :create, if: :demo_organization?
+    scope: "demo_outbound_actions", only: :create, if: :demo_organization?, with: :person_create_rate_limited
   rate_limit to: 20, within: 10.minutes, by: -> { request.remote_ip }, name: "demo_ip",
-    scope: "demo_outbound_actions", only: :create, if: :demo_organization?
+    scope: "demo_outbound_actions", only: :create, if: :demo_organization?, with: :person_create_rate_limited
 
   # Quick filters on the directory: each is a Person scope, and its count is for the whole church.
   FILTERS = {
@@ -80,6 +80,12 @@ class PeopleController < ApplicationController
   end
 
   private
+    def person_create_rate_limited
+      @person = Current.organization.people.build(person_params)
+      flash.now[:alert] = "Demo limit reached. Try again in 10 minutes."
+      render :new, status: :too_many_requests
+    end
+
     def authorize_people_management
       raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :manage_people, Current.organization)
     end

@@ -303,6 +303,8 @@ class DemoSpendLimitsTest < ActionDispatch::IntegrationTest
         }
       end
       assert_response :too_many_requests
+      assert_select "[data-toast-entry][data-toast-kind=alert]", text: "Demo limit reached. Try again in 10 minutes."
+      assert_select "input[name='person[name]'][value='Demo Person 6']"
     end
 
     assert_equal 5, organization.people.where("email LIKE ?", "demo-person-%@example.test").count
