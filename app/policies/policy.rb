@@ -360,6 +360,7 @@ module Policy
       .or(notifications.where(notifiable_type: "Invitation", notifiable_id: invitation_ids))
       .or(notifications.where(notifiable_type: "Task", notifiable_id: Task.where(project_id: project_ids).select(:id)))
       .or(notifications.where(notifiable_type: "Slot", notifiable_id: Slot.where(project_id: project_ids).select(:id)))
+      .or(notifications.where(notifiable_type: "Message", notifiable_id: Message.where(project_id: project_ids).select(:id)))
       .or(notifications.where(notifiable_type: "Comment", notifiable_id: comment_ids))
       .or(notifications.where(notifiable_type: "Mention", notifiable_id: mention_ids))
   end

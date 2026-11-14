@@ -48,6 +48,19 @@ class NotificationsTest < ActionDispatch::IntegrationTest
     assert_not author.notifications.exists?(notifiable: message)
   end
 
+  test "a Project Message notification shows on the recipient's Notifications page" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    post project_messages_path(project), params: { message: { body: "Bring a folding chair Saturday." } }
+    recipient = Notification.where(kind: "project_message").order(:id).last!.recipient
+
+    sign_in_as recipient
+    get notifications_path
+
+    assert_response :success
+    assert_match "posted a message in #{project.name}", response.body
+  end
+
   test "a reply to a Project Message does not notify the whole Team" do
     sign_in_as_leader
     project = projects(:community_meal)
