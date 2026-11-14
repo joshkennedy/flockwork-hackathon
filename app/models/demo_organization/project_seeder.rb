@@ -16,6 +16,9 @@ class DemoOrganization::ProjectSeeder
     seed_mens_retreat!
     seed_kids_night!
     seed_community_serve!
+    seed_welcome_team!
+    seed_thanksgiving_baskets!
+    seed_parking_team!
     seed_finished_projects!
     seed_people_history!
   end
@@ -107,6 +110,8 @@ class DemoOrganization::ProjectSeeder
       project.slots.chronological.first(14).each_with_index do |slot, index|
         claim!(slot, "Ruth Bennett", created_at: (13 - index).days.ago)
       end
+      project.enable_public_link!
+      add_public_helpers!(project)
       recipient.update_columns(created_at: 5.weeks.ago, updated_at: 5.weeks.ago)
     end
 
@@ -275,7 +280,8 @@ class DemoOrganization::ProjectSeeder
         skills: [ "Childcare", "Teaching", "Cooking" ],
         tools: %w[tasks schedule signup_sheet messages list],
         photo: "kids-crafts.webp",
-        alt: "Children making colorful crafts together at a table."
+        alt: "Children making colorful crafts together at a table.",
+        open_team: true
       )
       add_members!(project, { "Sam Chen" => :volunteer, "Tasha Williams" => :volunteer, "Maya Thompson" => :volunteer }, joined_at: 6.weeks.ago)
       add_tasks!(project, [
@@ -313,7 +319,8 @@ class DemoOrganization::ProjectSeeder
         skills: [ "Hospitality", "Driving", "Setup and teardown" ],
         tools: %w[tasks signup_sheet budget recipients docs],
         photo: "community-serve.webp",
-        alt: "Volunteers sorting groceries for a community food pantry."
+        alt: "Volunteers sorting groceries for a community food pantry.",
+        open_team: true
       )
       add_members!(project, { "Maria Lopez" => :leader, "Sam Chen" => :volunteer, "Elijah Brooks" => :volunteer, "Aaron Price" => :volunteer }, joined_at: 4.weeks.ago)
       add_tasks!(project, [
@@ -334,6 +341,110 @@ class DemoOrganization::ProjectSeeder
         [ "Grace Kim", :leaders, "Please include the low-sodium pantry list" ]
       ])
       document!(project, "Grace Kim", "Pantry welcome guide", "Greet each household by name, explain what is in the box, and offer help carrying it.")
+      project.enable_public_link!
+    end
+
+    def seed_welcome_team!
+      sundays = 4.times.map { |index| Date.current.next_occurring(:sunday) + index.weeks }
+      project = create_project!(
+        name: "Sunday Welcome & Coffee Team",
+        creator: "Owen Parker",
+        description: "Welcome people at the doors and keep coffee ready before Sunday worship.",
+        starts_on: sundays.first,
+        ends_on: sundays.last,
+        created_at: 6.weeks.ago,
+        skills: [ "Hospitality", "Cooking" ],
+        tools: %w[tasks signup_sheet messages],
+        photo: "kitchen-crew.webp",
+        alt: "Volunteers preparing coffee together in the church kitchen.",
+        open_team: true
+      )
+      add_members!(project, {
+        "Priya Shah" => :volunteer,
+        "Chloe Martin" => :volunteer,
+        "Noah Davis" => :volunteer
+      }, joined_at: 5.weeks.ago)
+      add_tasks!(project, [
+        [ "Restock cups and coffee", "Priya Shah", Date.current + 2.days, false ],
+        [ "Print the welcome desk name tags", "Chloe Martin", Date.current + 5.days, false ]
+      ])
+      sundays.each_with_index do |date, index|
+        claims = index.zero? ? [ "Owen Parker", "Priya Shah" ] : []
+        add_slots!(project, [ [ date, "08:30", "Welcome doors", 3, claims ] ])
+      end
+      add_slots!(project, [
+        [ sundays.first, "08:00", "Coffee setup", 4, [ "Chloe Martin", "Noah Davis", "Priya Shah" ] ],
+        [ sundays.second, "08:00", "Coffee setup", 4, [ "Noah Davis" ] ]
+      ])
+      root = message!(project, "Owen Parker", "The new coffee station signs are ready for Sunday.", 5.days.ago)
+      message!(project, "Priya Shah", "I will bring the extra airpots and set them out early.", 4.days.ago, parent: root)
+      comment!(root, "Chloe Martin", "Name tags are printed and waiting at the welcome desk.", 3.days.ago)
+    end
+
+    def seed_thanksgiving_baskets!
+      project = create_project!(
+        name: "Thanksgiving Baskets",
+        creator: "Lydia Evans",
+        description: "Pack pantry staples and deliver Thanksgiving baskets to families around Grace Fellowship.",
+        starts_on: Date.current + 10.days,
+        ends_on: Date.current + 16.days,
+        created_at: 5.weeks.ago,
+        skills: [ "Driving", "Hospitality", "Setup and teardown" ],
+        tools: %w[tasks signup_sheet messages],
+        photo: "planning-table.webp",
+        alt: "Volunteers planning together around a table.",
+        open_team: true
+      )
+      add_members!(project, {
+        "Josiah Clark" => :volunteer,
+        "Miriam Wright" => :volunteer,
+        "Esther Young" => :volunteer
+      }, joined_at: 4.weeks.ago)
+      add_tasks!(project, [
+        [ "Confirm the basket shopping list", "Lydia Evans", Date.current + 3.days, false ],
+        [ "Call delivery households", "Miriam Wright", Date.current + 6.days, false ],
+        [ "Label delivery routes", "Josiah Clark", project.starts_on - 1.day, false ]
+      ])
+      add_slots!(project, [
+        [ project.starts_on, "09:00", "Basket packing", 6, [ "Lydia Evans", "Josiah Clark", "Miriam Wright", "Esther Young", "Aaron Price" ] ],
+        [ project.starts_on + 2.days, "10:00", "Basket delivery", 8, [ "Lydia Evans", "Esther Young" ] ],
+        [ project.ends_on, "17:00", "Follow-up calls", 4, [] ]
+      ])
+      root = message!(project, "Lydia Evans", "The family list is final. We are packing twenty-four baskets this year.", 4.days.ago)
+      message!(project, "Josiah Clark", "I split the deliveries into four routes and added drive times.", 3.days.ago, parent: root)
+      comment!(root, "Miriam Wright", "I can call each household the day before delivery.", 2.days.ago)
+    end
+
+    def seed_parking_team!
+      project = create_project!(
+        name: "Parking & Arrival Team",
+        creator: "Isaac Rivera",
+        description: "Help guests find parking and make the walk from the lot feel welcoming.",
+        starts_on: Date.current + 2.weeks,
+        ends_on: Date.current + 2.weeks,
+        created_at: 4.weeks.ago,
+        skills: [ "Hospitality", "Setup and teardown" ],
+        tools: %w[tasks signup_sheet messages],
+        photo: nil,
+        alt: nil,
+        open_team: true
+      )
+      add_members!(project, {
+        "Lucas Martinez" => :volunteer,
+        "Zoe Campbell" => :volunteer,
+        "Ethan Wilson" => :volunteer
+      }, joined_at: 3.weeks.ago)
+      add_tasks!(project, [
+        [ "Set out parking signs", "Isaac Rivera", Date.current + 4.days, false ],
+        [ "Check radios and umbrellas", "Lucas Martinez", Date.current + 6.days, false ]
+      ])
+      add_slots!(project, [
+        [ project.starts_on, "08:15", "Parking guides", 6, [ "Isaac Rivera", "Ethan Wilson" ] ],
+        [ project.starts_on, "08:30", "Front walk welcome", 4, [ "Lucas Martinez", "Zoe Campbell", "Isaac Rivera" ] ]
+      ])
+      root = message!(project, "Isaac Rivera", "Rain is possible, so the umbrellas will be beside the radio chargers.", 3.days.ago)
+      message!(project, "Zoe Campbell", "I checked the umbrellas and replaced two broken ones.", 2.days.ago, parent: root)
+      comment!(root, "Isaac Rivera", "The parking signs are stacked by the east doors.", 1.day.ago)
     end
 
     def seed_finished_projects!
@@ -454,9 +565,9 @@ class DemoOrganization::ProjectSeeder
 
     def ensure_role_notifications!
       targets = {
-        "Daniel Okafor" => projects.fetch("Kids' Night"),
-        "Maria Lopez" => projects.fetch("Women's Fall Retreat"),
-        "Sam Chen" => projects.fetch("Men's Retreat")
+        "Daniel Okafor" => projects.fetch("Thanksgiving Baskets"),
+        "Maria Lopez" => projects.fetch("Sunday Welcome & Coffee Team"),
+        "Sam Chen" => projects.fetch("Parking & Arrival Team")
       }
       targets.each do |name, project|
         authors = project.people.where.not(id: person(name).id).order(:id).first(2)
@@ -486,8 +597,24 @@ class DemoOrganization::ProjectSeeder
       )
       projects[name] = project
       project.memberships.update_all(created_at:, updated_at: created_at)
-      attach_banner!(project, photo, alt)
+      attach_banner!(project, photo, alt) if photo
       project
+    end
+
+    def add_public_helpers!(project)
+      [
+        [ "Nadia Brooks", "+12025552001", 4 ],
+        [ "Tom Alvarez", "+12025552002", 6 ],
+        [ "Evelyn Price", "+12025552003", 8 ],
+        [ "Jordan Bell", "+12025552004", 10 ]
+      ].each_with_index do |(name, phone, day_offset), index|
+        helper = organization.people.create!(name:, phone:, joined_from_project: project)
+        slot = project.slots.find_by!(date: Date.current + day_offset)
+        claim = slot.claim(helper)
+        raise ActiveRecord::RecordInvalid, claim unless claim&.persisted?
+
+        claim.update_columns(created_at: (4 - index).days.ago, updated_at: (4 - index).days.ago)
+      end
     end
 
     def attach_banner!(project, filename, alt)

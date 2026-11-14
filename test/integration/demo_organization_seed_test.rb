@@ -11,8 +11,11 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
     "Meal Train for the Hernandez Family",
     "Men's Retreat",
     "Men's Retreat #{Date.current.year - 1}",
+    "Parking & Arrival Team",
     "Spring Church Workday",
     "Summer Kids' Night",
+    "Sunday Welcome & Coffee Team",
+    "Thanksgiving Baskets",
     "Vacation Bible School #{Date.current.year - 1}",
     "Vacation Bible School #{Date.current.year}",
     "Women's Fall Retreat"
@@ -22,13 +25,13 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
     travel_to Time.zone.local(2026, 10, 30, 12) do
       organization = DemoOrganization.seed!
 
-      assert_equal 60, organization.people.count
+      assert_equal 64, organization.people.count
       assert_equal 3, organization.overextended_limit
       assert_equal PROJECT_NAMES.sort, organization.projects.order(:name).pluck(:name)
-      assert_equal 7, organization.projects.active.count
+      assert_equal 10, organization.projects.active.count
       assert_equal 6, organization.projects.where.not(done_at: nil).count
-      assert organization.projects.all? { |project| project.banner.attached? }
-      assert organization.projects.all? { |project| project.banner.blob.metadata["organization_id"].to_s == organization.id.to_s }
+      assert_equal [ "Parking & Arrival Team" ], organization.projects.select { |project| !project.banner.attached? }.map(&:name)
+      assert organization.projects.select { |project| project.banner.attached? }.all? { |project| project.banner.blob.metadata["organization_id"].to_s == organization.id.to_s }
       assert_equal Project::TOOLS.sort, organization.projects.flat_map(&:enabled_tools).uniq.sort
       assert_equal [ "Maria Lopez", "Sam Chen", "Grace Kim" ], Oversight.overextended(organization).map(&:name)
       assert_equal 11, Oversight.never_asked(organization).count
@@ -90,8 +93,8 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
     DemoOrganization.reset!
 
     replacement = Organization.find_by!(slug: DemoOrganization::SLUG)
-    assert_equal 60, replacement.people.count
-    assert_equal 13, replacement.projects.count
+    assert_equal 64, replacement.people.count
+    assert_equal 16, replacement.projects.count
     assert_equal other_counts, [ other_organization.reload.people.count, other_organization.projects.count ]
     assert_not Session.where(id: old_session_ids).exists?
     assert_not ActionText::RichText.where(id: old_rich_text_ids).exists?
@@ -113,10 +116,12 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
         organization.projects.count,
         Membership.where(project: organization.projects).count
       ]
-      assert_equal 0, organization.people.where.not(external_source: "planning_center").count
-      assert_equal 0, organization.people.where(external_id: nil).count
+      assert_equal 1, Organization.where(slug: DemoOrganization::SLUG, demo: true).count
+      directory_people = organization.people.where(joined_from_project_id: nil)
+      assert_equal 0, directory_people.where.not(external_source: "planning_center").count
+      assert_equal 0, directory_people.where(external_id: nil).count
       assert_equal 0, organization.people.where.not(email: nil).where.not("email LIKE ?", "%@grace.example").count
-      assert organization.people.all? { |person| person.phone.match?(/\A202-555-01\d\d\z/) }
+      assert directory_people.all? { |person| person.phone.match?(/\A202-555-01\d\d\z/) }
       assert_equal [
         "Claire Robinson",
         "Felicia Cox",
@@ -145,9 +150,18 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
 
       meal_train = organization.projects.find_by!(name: "Meal Train for the Alvarez Family")
       assert_equal 29, meal_train.slots.count
-      assert_equal 14, meal_train.slots.where("claims_count > 0").count
-      assert_equal 15, meal_train.slots.where(claims_count: 0).count
+      assert_equal 18, meal_train.slots.where("claims_count > 0").count
+      assert_equal 11, meal_train.slots.where(claims_count: 0).count
       assert_equal 2, meal_train.messages.count
+      assert meal_train.public_token.present?
+
+      public_helpers = organization.people.where(joined_from_project: meal_train)
+      assert_equal 4, public_helpers.count
+      assert public_helpers.all? { |helper| helper.email.nil? && helper.external_source.nil? && helper.external_id.nil? }
+      assert public_helpers.all? { |helper| helper.phone.match?(/\A\+1202555200[1-4]\z/) }
+      helper_claims = SlotClaim.joins(:slot).where(person: public_helpers, slots: { project_id: meal_train.id })
+      assert_equal public_helpers.count, helper_claims.select(:person_id).distinct.count
+      assert_not Membership.where(person: public_helpers).exists?
 
       source = organization.projects.find_by!(name: "Vacation Bible School 2025")
       vbs = organization.projects.find_by!(name: "Vacation Bible School 2026")
@@ -185,6 +199,11 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
       assert_equal [ "Building map", "Volunteer handbook", "Workday safety notes" ], workday.doc_items.order(:title).pluck(:title)
       assert_equal "https://example.com/grace-fellowship/workday-map", workday.doc_items.find_by!(title: "Building map").url
 
+      open_projects = organization.projects.active.where(open_team: true)
+      assert_operator open_projects.count, :>=, 5
+      assert_operator open_projects.where.not(id: sam.projects).count, :>=, 3
+      assert organization.projects.find_by!(name: "Community Food Pantry Serve Day").public_token.present?
+
       [ retreat, vbs ].each do |project|
         assert project.invitations.pending.exists?
         assert project.invitations.accepted.exists?
@@ -217,6 +236,7 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
     assert_operator organization.people.joins(:unavailabilities).distinct.count, :>=, 3
     DemoOrganization::ROLE_EMAILS.each_value do |email|
       assert_operator organization.people.find_by!(email:).notifications.unread.count, :>=, 2
+      assert organization.people.find_by!(email:).notifications.unread.in_app.exists?
     end
   end
 
@@ -300,8 +320,8 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
     DemoResetJob.perform_now
 
     replacement = Organization.find_by!(slug: DemoOrganization::SLUG)
-    assert_equal 60, replacement.people.count
-    assert_equal 13, replacement.projects.count
+    assert_equal 64, replacement.people.count
+    assert_equal 16, replacement.projects.count
     assert_not replacement.people.exists?(name: "Temporary Judge")
 
     recurring = YAML.load_file(Rails.root.join("config/recurring.yml"))
