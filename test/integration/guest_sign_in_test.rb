@@ -643,7 +643,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_content
     assert_select "h1", "This sign-in link is no longer active"
-    assert_select "p", text: /turned off or reset its Public link/
+    assert_select "p", text: /turned off this Public link/
     assert_select "a.btn-primary[href=?]", root_path, text: "Go to Flockwork Home"
   end
 
