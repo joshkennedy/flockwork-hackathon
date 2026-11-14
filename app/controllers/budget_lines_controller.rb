@@ -56,6 +56,6 @@ class BudgetLinesController < ApplicationController
     end
 
     def budget_line_params
-      params.expect(budget_line: [ :kind, :description, :estimated, :actual, :status, :responsible_person_id ])
+      params.expect(budget_line: [ :kind, :description, :estimated, :responsible_person_id ])
     end
 end
