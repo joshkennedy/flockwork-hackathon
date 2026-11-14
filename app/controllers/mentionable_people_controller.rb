@@ -1,6 +1,8 @@
 class MentionablePeopleController < ApplicationController
   def index
     project = Policy.visible_projects(Current.person).find(params[:id])
+    raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :comment, project)
+
     query = ActiveRecord::Base.sanitize_sql_like(params[:q].to_s)
     people = Current.organization.people.where(id: project.memberships.select(:person_id))
       .or(Current.organization.people.where(admin: true))
