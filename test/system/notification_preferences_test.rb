@@ -36,7 +36,8 @@ class NotificationPreferencesTest < ApplicationSystemTestCase
     page.save_screenshot(Rails.root.join("tmp/notification-preferences-mobile.png"))
     within "#settings-notifications" do
       all("input[type=checkbox]").each(&:check)
-      assert_selector "input[type=checkbox]:checked", count: 18
+      preference_count = Notification::KINDS.size * Person::NOTIFICATION_CHANNELS.size
+      assert_selector "input[type=checkbox]:checked", count: preference_count
       all("input[type=checkbox]").each(&:uncheck)
       click_button "Save Changes"
     end

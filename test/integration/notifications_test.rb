@@ -1,6 +1,75 @@
 require "test_helper"
 
 class NotificationsTest < ActionDispatch::IntegrationTest
+  test "posting a Project Message notifies and emails every other Team member" do
+    author = sign_in_as_leader
+    project = projects(:community_meal)
+    ActionMailer::Base.deliveries.clear
+
+    assert_difference -> { Notification.count }, 2 do
+      assert_emails 2 do
+        perform_enqueued_jobs do
+          post project_messages_path(project), params: {
+            message: { body: "Bring a folding chair Saturday." }
+          }
+        end
+      end
+    end
+
+    message = project.messages.order(:id).last!
+    notifications = Notification.where(kind: "project_message", notifiable: message)
+    assert_equal [ people(:other_leader).id, people(:volunteer).id ].sort, notifications.pluck(:recipient_id).sort
+    assert notifications.all?(&:in_app?)
+    assert notifications.all? { |notification| notification.actor == author }
+    assert_not notifications.exists?(recipient: author)
+    assert_not notifications.exists?(recipient: people(:admin))
+  end
+
+  test "posting a Project Message does not notify an at-mentioned Team member twice" do
+    author = sign_in_as_leader
+    project = projects(:community_meal)
+    mentioned_person = people(:other_leader)
+    ActionMailer::Base.deliveries.clear
+
+    assert_difference -> { Notification.count }, 2 do
+      assert_emails 2 do
+        perform_enqueued_jobs do
+          post project_messages_path(project), params: {
+            message: { body: "Please check this, @[Lucy Leader](person:#{mentioned_person.id})." }
+          }
+        end
+      end
+    end
+
+    message = project.messages.order(:id).last!
+    assert_equal 1, mentioned_person.notifications.where(kind: "mention", notifiable: message.mentions).count
+    assert_not mentioned_person.notifications.exists?(kind: "project_message", notifiable: message)
+    assert_equal 1, people(:volunteer).notifications.where(kind: "project_message", notifiable: message).count
+    assert_not author.notifications.exists?(notifiable: message)
+  end
+
+  test "editing a Project Message does not notify the Team or a new mention" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    post project_messages_path(project), params: { message: { body: "Original update." } }
+    message = project.messages.order(:id).last!
+    notification_count = Notification.count
+    ActionMailer::Base.deliveries.clear
+
+    assert_no_difference -> { Notification.count } do
+      assert_no_emails do
+        perform_enqueued_jobs do
+          patch project_message_path(project, message), params: {
+            message: { body: "Edited for @[Lucy Leader](person:#{people(:other_leader).id})." }
+          }
+        end
+      end
+    end
+
+    assert_equal notification_count, Notification.count
+    assert message.reload.mentions.exists?(person: people(:other_leader))
+  end
+
   test "an Invitation creates an in-app notification and sends the existing invitation email" do
     leader = sign_in_as_leader
     project = projects(:community_meal)
@@ -269,7 +338,9 @@ class NotificationsTest < ActionDispatch::IntegrationTest
     assert_select "input[type='checkbox'][name='person[email_preferences][slot_reminder]'][checked]", count: 1
     assert_select "input[type='checkbox'][name='person[email_preferences][followed_reply]'][checked]", count: 0
     assert_select "input[type='checkbox'][name='person[email_preferences][team_departure]'][checked]", count: 1
+    assert_select "input[type='checkbox'][name='person[email_preferences][project_message]'][checked]", count: 1
     assert_select "th[scope='row']", text: "Replies on things you follow"
+    assert_select "th[scope='row']", text: "Project messages"
   end
 
   test "the Slot reminder job notifies and emails each claimer only once" do

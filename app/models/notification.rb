@@ -5,7 +5,8 @@ class Notification < ApplicationRecord
     "mention" => { email_default: true, label: "@mentions" },
     "slot_reminder" => { email_default: true, label: "Slot reminders" },
     "followed_reply" => { email_default: false, label: "Replies on things you follow" },
-    "team_departure" => { email_default: true, label: "Team departures" }
+    "team_departure" => { email_default: true, label: "Team departures" },
+    "project_message" => { email_default: true, label: "Project messages" }
   }.freeze
 
   belongs_to :recipient, class_name: "Person", inverse_of: :notifications
@@ -97,6 +98,8 @@ class Notification < ApplicationRecord
       "#{actor_name} replied to something you follow in #{project.name}."
     when "team_departure"
       "A Team member left #{project.name}."
+    when "project_message"
+      "#{actor_name} posted a message in #{project.name}."
     end
   end
 
