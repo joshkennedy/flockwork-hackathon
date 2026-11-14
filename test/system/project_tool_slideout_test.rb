@@ -88,6 +88,21 @@ class ProjectToolSlideoutSystemTest < ApplicationSystemTestCase
     assert_text "$85.00"
   end
 
+  test "Task primary action stays reachable when its long form opens on a phone" do
+    page.current_window.resize_to(390, 844)
+    visit project_path(@project)
+    click_on "Add Task"
+
+    within "dialog.slideout[open]" do
+      action_bounds = find_button("Add Task").evaluate_script("this.getBoundingClientRect().toJSON()")
+      viewport_height = page.evaluate_script("window.innerHeight")
+
+      assert_operator action_bounds.fetch("top"), :>=, 0
+      assert_operator action_bounds.fetch("bottom"), :<=, viewport_height
+      assert_equal 0, find(".slideout-panel").evaluate_script("this.scrollTop")
+    end
+  end
+
   private
     def sign_in_as_leader_in_browser
       visit new_demo_session_path
