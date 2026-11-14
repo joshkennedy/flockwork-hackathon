@@ -604,7 +604,7 @@ class DemoOrganization::ProjectSeeder
     def add_public_helpers!(project)
       [
         [ "Nadia Brooks", "+12025552001", 4 ],
-        [ "Tom Alvarez", "+12025552002", 6 ],
+        [ "Tom Ellison", "+12025552002", 6 ],
         [ "Evelyn Price", "+12025552003", 8 ],
         [ "Jordan Bell", "+12025552004", 10 ]
       ].each_with_index do |(name, phone, day_offset), index|
