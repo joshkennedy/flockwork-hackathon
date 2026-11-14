@@ -86,6 +86,7 @@ class SlotsTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_select "section[aria-labelledby='tool-signup-sheet']", text: /1 of 2 filled/
     assert_select "section[aria-labelledby='tool-signup-sheet']", text: /#{member.name}/
+    assert_select "section[aria-labelledby='tool-signup-sheet'] .signup-people .person-pill", text: /#{member.name}/
     assert_select "form[action='#{project_slot_claim_path(project, slot)}'] button", text: "Release"
 
     assert_difference "SlotClaim.count", -1 do
