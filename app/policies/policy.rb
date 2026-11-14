@@ -38,7 +38,7 @@ module Policy
     end
 
     if record == ::Project
-      return person.admin? || leader_somewhere?(person) if action == :create
+      return person.admin? || led_a_project?(person) if action == :create
       return person.admin? if action == :view_deleted
 
       return false
@@ -255,6 +255,12 @@ module Policy
     person.memberships.leader.joins(:project).merge(Project.active).exists?
   end
   private :leader_somewhere?
+
+  # Creating counts finished and archived Projects too, so a Leader can run next year's event from last year's.
+  def led_a_project?(person)
+    person.memberships.leader.joins(:project).where(projects: { deleted_at: nil }).exists?
+  end
+  private :led_a_project?
 
   # A non-admin Leader may only check in people on a Project they lead.
   def leads_member?(leader, member)
