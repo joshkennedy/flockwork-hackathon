@@ -16,13 +16,13 @@ class BudgetLineTest < ActiveSupport::TestCase
     assert_equal 2_500, BudgetLine.estimated_total_cents([ unknown, known ])
   end
 
-  test "estimated and actual totals exclude cancelled lines" do
+  test "the estimated total drops cancelled lines but the actual total keeps money already spent" do
     project = projects(:community_meal)
     active = project.budget_lines.build(kind: :purchase, description: "Brushes", estimated_cents: 2_500, actual_cents: 2_000)
     cancelled = project.budget_lines.build(kind: :purchase, description: "Unused paint", estimated_cents: 10_000, actual_cents: 8_000, status: :cancelled)
 
     assert_equal 2_500, BudgetLine.estimated_total_cents([ active, cancelled ])
-    assert_equal 2_000, BudgetLine.actual_total_cents([ active, cancelled ])
+    assert_equal 10_000, BudgetLine.actual_total_cents([ active, cancelled ])
   end
 
   test "a cost that is not a dollar amount is rejected with a fix" do

@@ -61,7 +61,8 @@ class BudgetLine < ApplicationRecord
   end
 
   def self.actual_total_cents(lines)
-    lines.reject(&:cancelled?).sum(&:actual_cents_for_total)
+    # Money already spent on a cancelled line (a lost deposit) still counts.
+    lines.sum(&:actual_cents_for_total)
   end
 
   private
