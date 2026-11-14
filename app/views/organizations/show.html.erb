@@ -28,8 +28,10 @@
   <% else %>
     <section class="mt-7 border-t border-hairline pt-7">
       <% if Policy.can?(@person, :create, Project) %>
-        <h2>No Projects yet</h2>
+        <h2>Start your first Project</h2>
+        <p class="mt-2 max-w-xl text-ink-2">The Planner is the fastest way to make the plan. Add People after you know who the Project needs.</p>
         <%= link_to "Start a Project", new_project_path, class: "mt-5 btn btn-primary" %>
+        <p class="mt-4 text-meta"><%= link_to "Add People", new_person_path, class: "link" %></p>
       <% else %>
         <h2>You’re not on a Team yet</h2>
         <%= link_to "Get Involved", get_involved_path, class: "mt-5 btn btn-primary" %>

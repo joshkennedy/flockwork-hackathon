@@ -33,8 +33,13 @@ class MailersTest < ActionMailer::TestCase
     assert_equal [ admin.email ], mail.to
     assert_equal "#{admin.organization.name} is set up on Flockwork", mail.subject
     [ mail.html_part, mail.text_part ].each do |part|
-      assert_match "There's no password", part.body.decoded
-      assert_match "http://example.com/home", part.body.decoded
+      body = part.body.decoded
+      assert_match "There's no password", body
+      assert_match "Start your first Project", body
+      assert_match "The Planner", body
+      assert_match "Add People", body
+      assert_operator body.index("Start your first Project"), :<, body.index("Add People")
+      assert_match "http://example.com/projects/new", body
     end
     assert_no_match %r{/sign_in/\S}, mail.body.encoded
   end
