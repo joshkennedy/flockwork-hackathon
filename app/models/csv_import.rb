@@ -75,7 +75,7 @@ class CsvImport
       normalized_email = email.to_s.strip.downcase.presence
       person = @organization.people.find_by(email: normalized_email) if normalized_email
 
-      skills = row.headers.include?("skills") ? { skills: Skills.normalize(row["skills"]) } : {}
+      skills = row.headers.include?("skills") && row["skills"].present? ? { skills: Skills.normalize(row["skills"]) } : {}
 
       if person
         person.assign_attributes(name:, **skills)

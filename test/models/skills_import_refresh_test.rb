@@ -18,6 +18,16 @@ class SkillsImportRefreshTest < ActiveSupport::TestCase
     assert_equal [ "teaching" ], organization.people.find_by!(email: "new-helper@example.test").skills
   end
 
+  test "CSV leaves existing skills when the skills cell is blank" do
+    person = people(:leader)
+    person.update!(skills: [ "music" ])
+
+    result = CsvImport.new(person.organization, "name,email,skills\nLeo,#{person.email},   \n").call
+
+    assert_equal 1, result.updated_count
+    assert_equal [ "music" ], person.reload.skills
+  end
+
   test "skill changes refresh affected active Projects only with no directory data" do
     project = projects(:building_cleanup)
     project.update!(skills_needed: [ "music" ])
