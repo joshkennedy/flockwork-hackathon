@@ -634,6 +634,18 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "a sign-in link killed by a Public link reset does not reveal the new link" do
+    request_code(@vera.email)
+    link = ActionMailer::Base.deliveries.last.text_part.body.encoded[%r{/go/(\S+)}, 1]
+    @project.reset_public_link!
+
+    get guest_sign_in_link_path(link)
+
+    assert_response :unprocessable_content
+    assert_not_includes response.body, @project.reload.public_token
+    assert_select "a.btn-primary[href=?]", root_path
+  end
+
   test "a sign-in link disabled with its Public link explains what happened and offers a way forward" do
     request_code(@vera.email)
     link = ActionMailer::Base.deliveries.last.text_part.body.encoded[%r{/go/(\S+)}, 1]
@@ -643,7 +655,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_content
     assert_select "h1", "This sign-in link is no longer active"
-    assert_select "p", text: /turned off this Public link/
+    assert_select "p", text: /the church turned off its Public link/
     assert_select "a.btn-primary[href=?]", root_path, text: "Go to Flockwork Home"
   end
 
