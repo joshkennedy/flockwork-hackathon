@@ -37,18 +37,32 @@ class Notification < ApplicationRecord
     url = if invitation?
       routes.invitation_url(notifiable.generate_token_for(:access), **options)
     else
-      routes.project_url(project, anchor:, **options)
+      project_url_for_recipient
     end
     "Flockwork: #{message} #{url} Reply STOP to opt out."
+  end
+
+  def project_url_for_recipient
+    routes = Rails.application.routes.url_helpers
+    options = Rails.application.config.action_mailer.default_url_options
+    if !Policy.visible_projects(recipient).exists?(project.id) && Project.publicly_linked.exists?(project.id)
+      public_anchor = ActionView::RecordIdentifier.dom_id(notifiable) if notifiable.is_a?(Slot)
+      routes.public_project_url(project.public_token, anchor: public_anchor, **options)
+    else
+      routes.project_url(project, anchor:, **options)
+    end
   end
 
   def sms_relevant?
     return false unless notifiable && project && project.organization_id == recipient.organization_id
     return false if project.deleted_at? || project.archived_at?
     return notifiable.pending? && notifiable.person_id == recipient_id if invitation?
+    if slot_reminder?
+      can_open = Policy.can?(recipient, :show, project) || Project.publicly_linked.exists?(project.id)
+      return can_open && notifiable.date == Date.tomorrow && notifiable.slot_claims.exists?(person_id: recipient_id)
+    end
     return false unless Policy.can?(recipient, :show, project)
     return notifiable.assignee_id == recipient_id && !notifiable.completed_at? if task_assigned?
-    return notifiable.date == Date.tomorrow && notifiable.slot_claims.exists?(person_id: recipient_id) if slot_reminder?
 
     true
   end

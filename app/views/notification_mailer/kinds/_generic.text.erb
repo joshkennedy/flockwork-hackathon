@@ -4,4 +4,4 @@ Hi <%= @notification.recipient.name %>,
 
 Open <%= @project.name %>:
 
-<%= project_url(@project, anchor: @notification.anchor) %>
+<%= @notification.project_url_for_recipient %>

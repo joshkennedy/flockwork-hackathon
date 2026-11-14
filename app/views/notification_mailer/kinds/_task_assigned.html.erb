@@ -11,5 +11,5 @@
   "Details" => task.details.to_plain_text.squish.truncate(280).presence
 ) %>
 
-<%= mail_button "Open #{@project.name}", project_url(@project, anchor: @notification.anchor) %>
+<%= mail_button "Open #{@project.name}", @notification.project_url_for_recipient %>
 <%= mail_muted "Check it off there when it's done, so the Team can see." %>

@@ -12,4 +12,4 @@ Details: <%= task.details.to_plain_text.squish.truncate(280) %>
 
 Open <%= @project.name %> to check it off when it's done:
 
-<%= project_url(@project, anchor: @notification.anchor) %>
+<%= @notification.project_url_for_recipient %>

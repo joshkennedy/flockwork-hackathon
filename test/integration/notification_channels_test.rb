@@ -125,6 +125,52 @@ class NotificationChannelsTest < ActionDispatch::IntegrationTest
     assert_requested request, times: 1
   end
 
+  test "a Public-link helper gets Slot reminder SMS and email links back to the Public page" do
+    project = projects(:community_meal)
+    project.enable_public_link!
+    helper = people(:other_volunteer)
+    helper.update!(joined_from_project: project, phone: "+15005550000", sms_preferences: { slot_reminder: true })
+    slot = project.slots.create!(date: Date.tomorrow, label: "Bring dessert", capacity: 1)
+    slot.slot_claims.create!(person: helper)
+    sent_text = nil
+    request = stub_sms.with do |sent|
+      sent_text = JSON.parse(sent.body).fetch("text")
+      true
+    end
+
+    assert_emails 1 do
+      perform_enqueued_jobs { SlotReminderJob.perform_now }
+    end
+
+    public_url = "http://example.com#{public_project_path(project.public_token, anchor: "slot_#{slot.id}")}"
+    assert_includes sent_text, public_url
+    assert_includes ActionMailer::Base.deliveries.last.text_part.body.decoded, public_url
+    assert_requested request, times: 1
+  end
+
+  test "a Team member's Slot reminder SMS and email keep the internal Project link" do
+    project = projects(:community_meal)
+    project.enable_public_link!
+    member = people(:volunteer)
+    member.update!(phone: "+15005550000", sms_preferences: { slot_reminder: true })
+    slot = project.slots.create!(date: Date.tomorrow, label: "Bring dessert", capacity: 1)
+    slot.slot_claims.create!(person: member)
+    sent_text = nil
+    request = stub_sms.with do |sent|
+      sent_text = JSON.parse(sent.body).fetch("text")
+      true
+    end
+
+    assert_emails 1 do
+      perform_enqueued_jobs { SlotReminderJob.perform_now }
+    end
+
+    internal_url = "http://example.com#{project_path(project, anchor: "slot_#{slot.id}")}"
+    assert_includes sent_text, internal_url
+    assert_includes ActionMailer::Base.deliveries.last.text_part.body.decoded, internal_url
+    assert_requested request, times: 1
+  end
+
   test "hidden notifications cannot be opened or counted in the inbox" do
     person = sign_in_as_volunteer
     person.update!(in_app_preferences: { task_assigned: false })

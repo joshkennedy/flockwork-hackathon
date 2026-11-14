@@ -89,6 +89,42 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_select "a", text: "Help with This"
   end
 
+  test "a signed-in helper opening the internal Project URL returns to its Public page" do
+    @vera.update!(joined_from_project: @project)
+    sign_in_as @vera
+
+    get project_path(@project)
+
+    assert_redirected_to public_project_path(@token)
+  end
+
+  test "a hidden Project with its Public link off stays not found" do
+    @project.disable_public_link!
+    sign_in_as @vera
+
+    get project_path(@project)
+
+    assert_response :not_found
+  end
+
+  test "a publicly linked Project in another Organization stays not found" do
+    other_project = projects(:outsider_project)
+    other_project.enable_public_link!
+    sign_in_as @vera
+
+    get project_path(other_project)
+
+    assert_response :not_found
+  end
+
+  test "non-show actions on a hidden publicly linked Project stay not found" do
+    sign_in_as @vera
+
+    get edit_project_path(@project)
+
+    assert_response :not_found
+  end
+
   test "Tasks show on the Public page only to the Team, who can take one" do
     task = @project.tasks.create!(title: "Help with setup")
 

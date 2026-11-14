@@ -9,4 +9,4 @@ When: <%= [ mail_date(slot.date), (mail_time(slot.starts_at_time) if slot.starts
 
 Can't make it anymore? Open the Project and give up your spot so someone else can take it:
 
-<%= project_url(@project, anchor: @notification.anchor) %>
+<%= @notification.project_url_for_recipient %>
