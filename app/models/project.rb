@@ -214,6 +214,7 @@ class Project < ApplicationRecord
         transaction.after_rollback { new_blob.purge } if new_blob
 
         new_blob ? banner.attach(new_blob) : banner.detach
+        SignInChallenge.open.where(project: self).update_all(expires_at: Time.current)
         update!(attributes)
       end
     rescue StandardError

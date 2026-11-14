@@ -500,6 +500,18 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_not_equal first, second unless first == second
   end
 
+  test "resetting the Public link ends outstanding sign-in links" do
+    request_code(@vera.email)
+    link = ActionMailer::Base.deliveries.last.text_part.body.encoded[%r{/go/(\S+)}, 1]
+
+    @project.reset_public_link!
+
+    post guest_sign_in_link_path(link)
+    assert_response :unprocessable_content
+    get home_path
+    assert_redirected_to root_path
+  end
+
   test "only the browser that proved the address may name the new Person" do
     request_code("nadia@example.com")
     link = ActionMailer::Base.deliveries.last.text_part.body.encoded[%r{/go/(\S+)}, 1]
