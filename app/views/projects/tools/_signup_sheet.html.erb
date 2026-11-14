@@ -25,7 +25,9 @@
               </div>
               <button type="button" class="btn btn-icon shrink-0" aria-label="Close" data-action="dialog#close"><%= icon(:close) %></button>
             </div>
-            <%= render "slot_runs/form", slot_run: SlotRun.new(project: project), project: project, autofocus: false, class_name: "mt-6 space-y-5" %>
+            <%= turbo_frame_tag "slot-run-form", data: { action: "turbo:submit-end->dialog#submitted" } do %>
+              <%= render "slot_runs/form", slot_run: SlotRun.new(project: project), project: project, autofocus: false, class_name: "mt-6 space-y-5", within_frame: true %>
+            <% end %>
           </div>
         </dialog>
       </div>

@@ -145,9 +145,31 @@ class SlotsTest < ActionDispatch::IntegrationTest
     assert_select ".actions-menu-panel a[data-action='dialog#open']", text: "Add Multiple Slots"
     assert_select "dialog.modal h2", text: "Add multiple Slots"
     assert_select "dialog.modal", text: /One Slot for every day in the range/
-    assert_select "dialog.modal form[action=?]", project_slot_run_path(project)
+    assert_select "dialog.modal turbo-frame#slot-run-form[data-action='turbo:submit-end->dialog#submitted'] form[action=?]", project_slot_run_path(project)
     assert_select "dialog.slideout turbo-frame#slot-form[data-slideout-target='frame']"
     assert_select "dialog.slideout turbo-frame#slot-form[data-action='turbo:submit-end->slideout#submitted']"
+  end
+
+  test "a reversed bulk Slot date range renders its error inside the modal frame" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+
+    assert_no_difference "Slot.count" do
+      post project_slot_run_path(project), params: {
+        slot_run: {
+          start_date: "2027-02-20",
+          end_date: "2027-02-19",
+          label: "Serve dinner",
+          capacity: 2
+        }
+      }, headers: { "Turbo-Frame" => "slot-run-form" }
+    end
+
+    assert_response :unprocessable_content
+    assert_select "turbo-frame#slot-run-form" do
+      assert_select "li", text: "End date must be on or after the start date"
+      assert_select "form[data-turbo-frame]", count: 0
+    end
   end
 
   test "Slot forms keep validation inside the slideout frame but direct pages submit at the top" do
