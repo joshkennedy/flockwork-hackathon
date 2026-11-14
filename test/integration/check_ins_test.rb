@@ -37,6 +37,23 @@ class CheckInsTest < ActionDispatch::IntegrationTest
     assert_equal 0, CheckIn.count
   end
 
+  test "Oversight hides check-in controls for a Person the Leader cannot check in" do
+    ineligible = people(:admin)
+    ineligible.update!(name: "Ineligible Admin")
+    3.times do |index|
+      project = @organization.projects.create!(name: "Admin Project #{index}", owner: ineligible)
+      project.memberships.create!(person: ineligible, role: :leader)
+    end
+    sign_in_as_leader
+
+    get oversight_path
+
+    assert_select "[data-overextended-person='Ineligible Admin']" do
+      assert_select "form[action=?]", person_check_ins_path(ineligible), count: 0
+      assert_select "input[type=submit][value='Log a Check-In']", count: 0
+    end
+  end
+
   test "an Admin logs a check-in for someone on no Project" do
     sign_in_as_admin
     stranger = people(:other_volunteer)
