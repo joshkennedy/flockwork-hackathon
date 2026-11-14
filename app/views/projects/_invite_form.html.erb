@@ -1,6 +1,8 @@
+<% person_id_field = "invitation_person_id_#{person.id}" %>
+<% role_field = "invitation_role_#{person.id}" %>
 <%= form_with model: [ project, Invitation.new ], class: "flex items-center gap-2" do |form| %>
-  <%= form.hidden_field :person_id, value: person.id %>
-  <%= form.label :role, "Role", class: "sr-only" %>
-  <%= form.select :role, Invitation.roles.keys.map { |role| [ role.humanize, role ] }, { selected: "volunteer" }, class: "field min-w-0 flex-1" %>
+  <%= form.hidden_field :person_id, value: person.id, id: person_id_field %>
+  <%= form.label :role, "Role", for: role_field, class: "sr-only" %>
+  <%= form.select :role, Invitation.roles.keys.map { |role| [ role.humanize, role ] }, { selected: "volunteer" }, id: role_field, class: "field min-w-0 flex-1" %>
   <%= form.submit "Invite", class: "btn btn-secondary", aria: { label: "Invite #{person.name}" } %>
 <% end %>
