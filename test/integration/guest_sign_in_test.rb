@@ -392,7 +392,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     delete session_path
     post guest_sign_in_link_path(link)
     assert_response :unprocessable_content
-    assert_select "h1", "Sign-in link not valid"
+    assert_select "h1", "This sign-in link is no longer active"
     get home_path
     assert_redirected_to root_path
   end
@@ -632,6 +632,19 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_response :not_found
     post public_slot_claim_path(@token, @slot)
     assert_response :not_found
+  end
+
+  test "a sign-in link disabled with its Public link explains what happened and offers a way forward" do
+    request_code(@vera.email)
+    link = ActionMailer::Base.deliveries.last.text_part.body.encoded[%r{/go/(\S+)}, 1]
+    @project.disable_public_link!
+
+    get guest_sign_in_link_path(link)
+
+    assert_response :unprocessable_content
+    assert_select "h1", "This sign-in link is no longer active"
+    assert_select "p", text: /turned off or reset its Public link/
+    assert_select "a.btn-primary[href=?]", root_path, text: "Go to Flockwork Home"
   end
 
   private
