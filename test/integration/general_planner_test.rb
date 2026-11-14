@@ -336,6 +336,38 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_predicate planner_session.reload, :reviewing?
   end
 
+  test "a blank budget estimate saves and stays marked for later" do
+    sign_in_as_leader
+    project, planner_session = build_reviewing_session(
+      planning_kind: "retreat",
+      items: [ item("booking", "booking-1", description: "Book venue", estimated_dollars: 400) ]
+    )
+    budget_item = planner_session.visible_pending_items.sole
+    field_id = "pending_#{budget_item.fetch('id')}_estimated_dollars"
+
+    get project_planner_session_path(project, planner_session)
+
+    assert_response :success
+    assert_select "input##{field_id}[required]", count: 0
+
+    patch pending_item_project_planner_session_path(project, planner_session), params: {
+      expected_revision: planner_session.generation_revision,
+      item: {
+        id: budget_item.fetch("id"),
+        decision: "edit",
+        fields: { description: "Book overnight venue", estimated_dollars: "" }
+      }
+    }
+
+    assert_response :see_other
+    saved = planner_session.reload.visible_pending_items.sole
+    assert_equal "Book overnight venue", saved.dig("fields", "description")
+    assert_equal "", saved.dig("fields", "estimated_dollars")
+
+    get project_planner_session_path(project, planner_session)
+    assert_select "article#pending-item-#{budget_item.fetch('id')} .badge-need", text: "Estimate later"
+  end
+
   test "review treats an unknown estimate as informational and links to the remaining blocker" do
     sign_in_as_leader
     project, planner_session = build_reviewing_session(
