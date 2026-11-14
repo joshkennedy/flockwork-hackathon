@@ -611,6 +611,19 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_select "#flash [data-toast-kind=alert]", "This Slot is full. Pick another one."
   end
 
+  test "a Public-link helper cannot claim a past Slot by posting directly" do
+    past_slot = @project.slots.create!(date: Date.yesterday, label: "Past dinner", capacity: 1)
+    sign_in_as @vera
+
+    assert_no_difference "SlotClaim.count" do
+      post public_slot_claim_path(@token, past_slot)
+    end
+
+    assert_redirected_to public_project_path(@token, anchor: "slot_#{past_slot.id}")
+    follow_redirect!
+    assert_select "#flash [data-toast-kind=alert]", "This Slot has passed."
+  end
+
   test "turning the Public link off closes the sign-in and claiming" do
     sign_in_as @vera
     @project.disable_public_link!

@@ -56,4 +56,14 @@ class SlotTest < ActiveSupport::TestCase
         "capacity #{capacity} with #{attempts} claim attempts"
     end
   end
+
+  test "past Slots cannot be claimed" do
+    slot = projects(:community_meal).slots.create!(date: Date.yesterday, label: "Past dinner", capacity: 1)
+
+    assert_no_difference "SlotClaim.count" do
+      assert_nil slot.claim(people(:volunteer))
+    end
+
+    assert_equal [ "This Slot has passed." ], slot.errors[:base]
+  end
 end

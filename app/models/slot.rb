@@ -33,7 +33,9 @@ class Slot < ApplicationRecord
     self.class.transaction do
       lock!
 
-      if slot_claims.count >= capacity
+      if date < Date.current
+        errors.add(:base, "This Slot has passed.")
+      elsif slot_claims.count >= capacity
         errors.add(:base, "This Slot is full. Pick another one.")
       else
         claim = slot_claims.create(person:)
