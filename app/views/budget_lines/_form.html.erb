@@ -20,26 +20,14 @@
     <%= form.text_field :description, required: true, autofocus: true, class: "mt-2 block w-full field" %>
   </div>
 
-  <div class="grid gap-5 sm:grid-cols-2">
-    <div>
-      <%= form.label :estimated, "Estimated cost", class: "block text-label font-medium text-ink" %>
-      <%= form.text_field :estimated, placeholder: "0.00", class: "mt-2 block w-full field" %>
-    </div>
-    <div>
-      <%= form.label :actual, "Actual cost", class: "block text-label font-medium text-ink" %>
-      <%= form.text_field :actual, placeholder: "Leave blank if unknown", class: "mt-2 block w-full field" %>
-    </div>
+  <div>
+    <%= form.label :estimated, "Estimated cost", class: "block text-label font-medium text-ink" %>
+    <%= form.text_field :estimated, placeholder: "0.00", class: "mt-2 block w-full field" %>
   </div>
 
-  <div class="grid gap-5 sm:grid-cols-2">
-    <div>
-      <%= form.label :status, class: "block text-label font-medium text-ink" %>
-      <%= form.select :status, BudgetLine.statuses.keys.map { |status| [ status.humanize, status ] }, {}, class: "mt-2 block w-full field" %>
-    </div>
-    <div>
-      <%= form.label :responsible_person_id, "Responsible person", class: "block text-label font-medium text-ink" %>
-      <%= form.collection_select :responsible_person_id, team_people, :id, :name, { include_blank: "None" }, class: "mt-2 block w-full field" %>
-    </div>
+  <div>
+    <%= form.label :responsible_person_id, "Responsible person", class: "block text-label font-medium text-ink" %>
+    <%= form.collection_select :responsible_person_id, team_people, :id, :name, { include_blank: "None" }, class: "mt-2 block w-full field" %>
   </div>
 
   <%= form.submit budget_line.persisted? ? "Save Budget Line" : "Add Budget Line", class: "btn btn-primary" %>

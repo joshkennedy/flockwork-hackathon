@@ -63,8 +63,9 @@
           <% { mark_done: [ "Mark Done", mark_done_project_path(@project) ],
                reopen: [ "Reopen", reopen_project_path(@project) ],
                archive: [ "Archive", archive_project_path(@project) ],
-               unarchive: [ "Unarchive", unarchive_project_path(@project) ] }.slice(*lifecycle_actions).each_value do |label, path| %>
-            <%= button_to label, path %>
+               unarchive: [ "Unarchive", unarchive_project_path(@project) ] }.slice(*lifecycle_actions).each do |action, (label, path)| %>
+            <% form_options = action == :archive ? { data: { turbo_confirm: "Archive “#{@project.name}”? It becomes read-only for everyone until you unarchive it." } } : {} %>
+            <%= button_to label, path, form: form_options %>
           <% end %>
           <% if lifecycle_actions.include?(:destroy) %>
             <hr>

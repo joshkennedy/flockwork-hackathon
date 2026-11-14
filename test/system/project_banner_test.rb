@@ -71,6 +71,17 @@ class ProjectBannerSystemTest < ApplicationSystemTestCase
     assert_not @project.banner_focus_manual?
   end
 
+  test "a non-image banner is rejected before upload" do
+    original_blob_id = @project.banner.blob_id
+    sign_in_as_leader_in_browser
+    visit project_path(@project)
+
+    find("input[type=file][name='project[banner]']", visible: :all).set(file_fixture("sample_upload.txt").to_s)
+
+    assert_selector ".tst-viewport [role=alert]", text: "Choose a JPEG, PNG, WebP or HEIC image.", visible: :all
+    assert_equal original_blob_id, @project.reload.banner.blob_id
+  end
+
   test "a Leader edits the optional alt text from the banner popover" do
     sign_in_as_leader_in_browser
     visit project_path(@project)

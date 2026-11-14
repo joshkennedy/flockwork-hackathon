@@ -224,7 +224,7 @@ class ProjectBannersTest < ActionDispatch::IntegrationTest
 
     get project_path(projects(:community_meal))
 
-    assert_select "[data-controller~='banner-upload'] input[type=file][name='project[banner]']"
+    assert_select "[data-controller~='banner-upload'][data-upload-max-bytes-value='#{Project::BANNER_MAX_BYTES}'][data-upload-type-error-value] input[type=file][name='project[banner]'][data-action*='upload#validate']"
     assert_select ".actions-menu-panel button", text: "Add Banner"
     assert_no_match "Add a banner image", response.body
   end

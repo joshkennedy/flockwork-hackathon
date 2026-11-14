@@ -8,6 +8,7 @@ class ProjectDuplicate
   attr_reader :source, :by
 
   validates :name, :start_on, presence: true
+  validates :name, length: { maximum: Project::NAME_MAX_LENGTH }
 
   def initialize(source:, start_on:, by:)
     @source = source

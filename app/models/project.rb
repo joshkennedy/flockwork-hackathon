@@ -1,6 +1,8 @@
 class Project < ApplicationRecord
   include RefreshesDashboard
   include OrganizationOwnedBlobs
+
+  NAME_MAX_LENGTH = 120
   belongs_to :organization
 
   TOOL_LABELS = {
@@ -88,7 +90,7 @@ class Project < ApplicationRecord
 
   has_many :invitations, dependent: :restrict_with_exception
 
-  validates :name, presence: true
+  validates :name, presence: true, length: { maximum: NAME_MAX_LENGTH }
   validate :ends_on_is_not_before_starts_on
   validate :enabled_tools_are_known
 

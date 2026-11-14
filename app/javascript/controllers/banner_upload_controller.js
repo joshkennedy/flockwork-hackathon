@@ -9,8 +9,12 @@ export default class extends Controller {
     this.inputTarget.click()
   }
 
-  submit() {
-    this.inputTarget.form.requestSubmit()
+  submit(event) {
+    queueMicrotask(() => {
+      if (event?.defaultPrevented || !this.inputTarget.files.length) return
+
+      this.inputTarget.form.requestSubmit()
+    })
   }
 
   over(event) {
@@ -30,6 +34,6 @@ export default class extends Controller {
     if (this.element.hasAttribute("data-repositioning") || !event.dataTransfer.files.length) return
 
     this.inputTarget.files = event.dataTransfer.files
-    this.submit()
+    this.inputTarget.dispatchEvent(new Event("change", { bubbles: true }))
   }
 }

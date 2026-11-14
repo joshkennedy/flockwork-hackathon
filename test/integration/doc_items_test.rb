@@ -1,6 +1,39 @@
 require "test_helper"
 
 class DocItemsTest < ActionDispatch::IntegrationTest
+  test "submitting a file item without a file shows a validation error" do
+    sign_in_as_volunteer
+    project = enable_docs_tool!(projects(:community_meal))
+
+    assert_no_difference "DocItem.count" do
+      post project_doc_items_path(project), params: {
+        doc_item: { kind: "file", title: "Missing file" }
+      }
+    end
+
+    assert_response :unprocessable_content
+    assert_select "turbo-frame#doc-item-form [role=alert]", text: /Choose a file to upload/
+  end
+
+  test "a file over 25 MB is refused with a clear error" do
+    sign_in_as_volunteer
+    project = enable_docs_tool!(projects(:community_meal))
+    blob = ActiveStorage::Blob.create_and_upload!(
+      io: StringIO.new(""),
+      filename: "too-large.bin",
+      content_type: "application/octet-stream",
+      metadata: { "organization_id" => project.organization_id }
+    )
+    blob.update_column(:byte_size, DocItem::FILE_MAX_BYTES + 1)
+    item = project.doc_items.build(kind: :file, title: "Oversized file", author: people(:volunteer))
+    item.file.attach(blob)
+
+    assert_not item.valid?
+    assert_includes item.errors.full_messages, "File must be 25 MB or smaller"
+  ensure
+    blob&.purge
+  end
+
   test "a Volunteer creates and edits a document with body text on the project page" do
     sign_in_as_volunteer
     project = enable_docs_tool!(projects(:community_meal))

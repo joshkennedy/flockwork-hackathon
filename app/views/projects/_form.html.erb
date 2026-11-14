@@ -13,7 +13,7 @@
   <div>
     <% name_error_id = form.field_id(:name, :error) if project.errors.include?(:name) %>
     <%= form.label :name, class: "block text-label font-medium text-ink" %>
-    <%= form.text_field :name, required: true, autofocus: true, class: "mt-2 block w-full field",
+    <%= form.text_field :name, required: true, maxlength: Project::NAME_MAX_LENGTH, autofocus: true, class: "mt-2 block w-full field",
       aria: { invalid: name_error_id.present?, describedby: name_error_id } %>
     <% if name_error_id %>
       <p id="<%= name_error_id %>" class="mt-1 text-meta text-danger"><%= project.errors.full_messages_for(:name).to_sentence %></p>

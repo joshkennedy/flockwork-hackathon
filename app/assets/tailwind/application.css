@@ -719,6 +719,8 @@ body {
     .signup-row .signup-date { @apply w-auto; grid-column: 1; grid-row: 1; }
     .signup-row .signup-details { grid-column: 2; grid-row: 1; }
     .signup-row .signup-actions { @apply w-full; grid-column: 1 / 3; grid-row: 2; }
+    .signup-row .signup-people { @apply w-full; }
+    .signup-row .signup-people .person-pill { @apply flex-1; }
     .signup-row > div > .actions-menu { @apply justify-self-end; grid-column: 3; grid-row: 1; }
     summary:not(.btn) { padding-block: 12px; }
     /* Lists stack into one card per row: a phone cannot show a wide table. */

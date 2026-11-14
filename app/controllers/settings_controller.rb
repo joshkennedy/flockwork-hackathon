@@ -26,7 +26,7 @@ class SettingsController < ApplicationController
 
     # A preset radio and the custom field share one form; "custom" means use the typed hex.
     def church_params
-      permitted = params.require(:organization).permit(:name, :overextended_limit)
+      permitted = params.require(:organization).permit(:name, :overextended_limit, :time_zone)
       if theme_pick?
         choice = params[:organization][:mark_color_choice].to_s
         permitted[:mark_color] = choice == "custom" ? params[:organization][:custom_mark_color].to_s : choice

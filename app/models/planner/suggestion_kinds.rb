@@ -145,7 +145,7 @@ module Planner
             input: :number,
             min: 0,
             step: "0.01",
-            schema: { type: "number", minimum: 0 }
+            schema: { type: [ "number", "null" ], minimum: 0 }
           },
           "role" => { label: "Open role", input: :text, schema: { type: [ "string", "null" ] } }
         },
@@ -168,7 +168,7 @@ module Planner
             input: :number,
             min: 0,
             step: "0.01",
-            schema: { type: "number", minimum: 0 }
+            schema: { type: [ "number", "null" ], minimum: 0 }
           },
           "role" => { label: "Open role", input: :text, schema: { type: [ "string", "null" ] } }
         },

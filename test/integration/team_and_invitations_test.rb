@@ -26,6 +26,25 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     assert_select "section[aria-labelledby='directory-heading'] li", count: 50
   end
 
+  test "each invite row has unique IDs with a label for its role select" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    people = 2.times.map do |index|
+      project.organization.people.create!(name: "Zed Candidate #{index}", email: "zed-candidate-#{index}@example.test")
+    end
+
+    get team_project_path(project), params: { query: "Zed Candidate" }
+
+    assert_response :success
+    people.each do |person|
+      assert_select "input#invitation_person_id_#{person.id}[value='#{person.id}']", count: 1
+      assert_select "label[for='invitation_role_#{person.id}']", text: "Role", count: 1
+      assert_select "select#invitation_role_#{person.id}", count: 1
+    end
+    ids = css_select("section[aria-labelledby='directory-heading'] [id]").map { |element| element["id"] }
+    assert_equal ids.uniq, ids
+  end
+
   test "a Leader searches the directory and the Invite button stays disabled for a Person without email" do
     sign_in_as_leader
     project = projects(:community_meal)

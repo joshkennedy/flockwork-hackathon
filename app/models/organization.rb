@@ -33,6 +33,7 @@ class Organization < ApplicationRecord
   validates :slug, presence: true, uniqueness: true, format: { with: /\A[a-z0-9]+(?:-[a-z0-9]+)*\z/ }
   validates :mark_color, format: { with: /\A#\h{6}\z/, message: "must be a hex color like #D69000" }
   validates :overextended_limit, numericality: { only_integer: true, greater_than: 0 }
+  validate :time_zone_is_known
 
   def to_param
     slug
@@ -43,6 +44,10 @@ class Organization < ApplicationRecord
   end
 
   private
+    def time_zone_is_known
+      errors.add(:time_zone, "must be a recognized time zone") unless ActiveSupport::TimeZone[time_zone]
+    end
+
     def assign_slug
       base = name.to_s.parameterize.presence || "organization"
       taken = RESERVED_SLUGS.include?(base) || Organization.exists?(slug: base)

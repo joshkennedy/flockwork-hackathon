@@ -59,7 +59,7 @@
       <% name_form_id = dom_id(planner_session, :project_name) %>
       <%= label_tag "#{name_form_id}_field", "Project name", class: "sr-only" %>
       <%= text_field_tag "project[name]", project.name, form: name_form_id, id: "#{name_form_id}_field",
-        class: "meal-setup-name", aria: { label: "Project name" }, disabled: planner_session.generation_busy?,
+        maxlength: Project::NAME_MAX_LENGTH, class: "meal-setup-name", aria: { label: "Project name" }, disabled: planner_session.generation_busy?,
         data: { project_name_target: "field", action: "change->project-name#save blur->project-name#save keydown.enter->project-name#save" } %>
       <%= form_with url: planning_details_project_planner_session_path(project, planner_session), method: :patch,
         id: name_form_id, html: { hidden: true }, data: { project_name_target: "form" } do |form| %>

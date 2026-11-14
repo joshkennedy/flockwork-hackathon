@@ -1,6 +1,6 @@
 <%# The ⋯ menu's Add Banner item: choosing a file submits it, and the server checks the real type and size. %>
 <%= form_with model: project, url: project_banner_path(project), method: :patch, multipart: true,
-      data: { controller: "banner-upload upload", upload_key_value: "project-banner-#{project.id}", action: "turbo:submit-start->upload#start turbo:submit-end->upload#finish direct-upload:start->upload#start direct-upload:progress->upload#progress direct-upload:error->upload#directError" } do |form| %>
+      data: { controller: "banner-upload upload", upload_key_value: "project-banner-#{project.id}", upload_max_bytes_value: Project::BANNER_MAX_BYTES, upload_max_size_label_value: "10 MB", upload_accepted_types_value: Project::BANNER_TYPES, upload_accepted_extensions_value: %w[.jpg .jpeg .png .webp .heic .heif], upload_type_error_value: "Choose a JPEG, PNG, WebP or HEIC image.", action: "submit->upload#validate turbo:submit-start->upload#start turbo:submit-end->upload#finish direct-upload:start->upload#start direct-upload:progress->upload#progress direct-upload:error->upload#directError" } do |form| %>
   <button type="button" data-action="banner-upload#pick">Add Banner</button>
-  <%= form.file_field :banner, accept: Project::BANNER_TYPES.join(","), tabindex: -1, class: "sr-only", data: { banner_upload_target: "input", upload_target: "input", action: "change->banner-upload#submit" } %>
+  <%= form.file_field :banner, accept: Project::BANNER_TYPES.join(","), tabindex: -1, class: "sr-only", data: { banner_upload_target: "input", upload_target: "input", action: "change->upload#validate change->banner-upload#submit" } %>
 <% end %>

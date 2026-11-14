@@ -198,6 +198,21 @@ class ProjectsTest < ActionDispatch::IntegrationTest
     assert_equal Date.new(2027, 2, 12), project.ends_on
   end
 
+  test "Project forms cap names at 120 characters and reject longer requests" do
+    sign_in_as_leader
+
+    get new_project_path(manual: true)
+    assert_response :success
+    assert_select "input[name='project[name]'][maxlength='120']"
+
+    assert_no_difference "Project.count" do
+      post projects_path, params: { project: { name: "P" * 121 } }
+    end
+
+    assert_response :unprocessable_content
+    assert_select "[role=alert]", text: /Name is too long \(maximum is 120 characters\)/
+  end
+
   test "a Project rejects Tools outside the fixed registry" do
     sign_in_as_leader
     project = projects(:community_meal)
