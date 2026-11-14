@@ -1,8 +1,9 @@
 class MentionParser
   TOKEN_PATTERN = /@\[[^\]\r\n]*\]\(person:(\d+)\)/
 
-  def initialize(mentionable)
+  def initialize(mentionable, notify: true)
     @mentionable = mentionable
+    @notify = notify
   end
 
   def call
@@ -12,14 +13,16 @@ class MentionParser
     Mention.transaction do
       mentionable.mentions.where.not(person_id: visible_person_ids).destroy_all
       visible_people.each do |person|
-        mentionable.mentions.create_or_find_by!(person:)
+        mentionable.mentions.create_or_find_by!(person:) do |mention|
+          mention.suppress_notification = !notify
+        end
         followable.follows.create_or_find_by!(person:)
       end
     end
   end
 
   private
-    attr_reader :mentionable
+    attr_reader :mentionable, :notify
 
     def mentioned_people
       project.organization.people.where(id: mentioned_person_ids)

@@ -106,6 +106,53 @@ class NotificationChannelsTest < ActionDispatch::IntegrationTest
     assert_requested request, times: 1
   end
 
+  test "a Project Message respects a Team member's SMS opt-out" do
+    sign_in_as_leader
+    recipient = people(:volunteer)
+    recipient.update!(
+      phone: "+15005550000",
+      sms_preferences: { project_message: true },
+      email_preferences: { project_message: false }
+    )
+    SmsOptOut.opt_out!(recipient.phone, at: Time.current)
+
+    assert_no_enqueued_jobs only: SmsNotificationJob do
+      post project_messages_path(projects(:community_meal)), params: {
+        message: { body: "Bring a folding chair Saturday." }
+      }
+    end
+
+    notification = recipient.notifications.find_by!(kind: "project_message")
+    assert notification.in_app?
+    assert_nil notification.sms_status
+    assert_empty notification.sms_payload
+    assert_not_requested :post, Messaging::Sendly::ENDPOINT.to_s
+  end
+
+  test "a Project Message sends SMS when a Team member enables it" do
+    sign_in_as_leader
+    recipient = people(:volunteer)
+    recipient.update!(
+      phone: "+15005550000",
+      sms_preferences: { project_message: true },
+      email_preferences: { project_message: false }
+    )
+    request = stub_sms
+
+    assert_emails 1 do
+      perform_enqueued_jobs do
+        post project_messages_path(projects(:community_meal)), params: {
+          message: { body: "Bring a folding chair Saturday." }
+        }
+      end
+    end
+
+    notification = recipient.notifications.find_by!(kind: "project_message")
+    assert_equal "msg_test", notification.sms_message_id
+    assert_empty notification.sms_payload
+    assert_requested request, times: 1
+  end
+
   test "SMS only slot reminders still deduplicate when in app is off" do
     person = people(:volunteer)
     person.update!(phone: "+15005550000", sms_preferences: { slot_reminder: true },

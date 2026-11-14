@@ -16,7 +16,7 @@ Three buttons on `/demo` sign you in as fixed synthetic People (no email link ne
 
 Non-demo Organizations use email magic links only; the Explore buttons appear when `organization.demo?` is true.
 
-Anyone signed in can create a Project. Admins and Leaders of at least one active Project can view Oversight. Only Admins can change Oversight settings.
+Admins and Leaders of at least one active Project can create Projects and view Oversight. Only Admins can change Oversight settings.
 
 ## How the AI Planner works
 

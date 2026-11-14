@@ -1,6 +1,13 @@
 require "test_helper"
 
 class OrganizationCreationTest < ActionDispatch::IntegrationTest
+  test "sign-up says the new Admin is signed in now and uses email next time" do
+    get sign_up_path
+
+    assert_response :success
+    assert_select "p", text: "No password to remember. We’ll sign you in now and email you a sign-in link next time."
+  end
+
   test "creating an Organization makes the creator its Admin, signs them in, and lands on New Project" do
     post organizations_path, params: { church_name: "Hope Church", your_name: "Casey Creator", email: "Casey@Hope.test" }
 

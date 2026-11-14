@@ -78,6 +78,9 @@ class HomeTest < ActionDispatch::IntegrationTest
     get home_path
 
     assert_select "[data-home-section]", count: 0
-    assert_select "a.btn-primary", count: 1
+    assert_select "h2", text: "Start your first Project"
+    assert_select "p", text: "The Planner is the fastest way to make the plan. Add People after you know who the Project needs."
+    assert_select "a.btn-primary[href='#{new_project_path}']", text: "Start a Project", count: 1
+    assert_select "a[href='#{new_person_path}']", text: "Add People", count: 1
   end
 end

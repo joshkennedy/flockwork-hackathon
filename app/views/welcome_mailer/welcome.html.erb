@@ -1,15 +1,14 @@
 <% content_for :preheader, "You're the first Admin. Here's where to start." %>
 
 <%= mail_heading "Welcome to Flockwork, #{@person.name}" %>
-<%= mail_paragraph "#{@organization.name} is set up, and you're its first Admin. A good first hour looks like this:" %>
+<%= mail_paragraph "#{@organization.name} is set up, and you're its first Admin. Start with your first Project:" %>
 
 <%= mail_details(
-  "1" => "Add your People. Type them in, import a CSV, or connect Planning Center.",
-  "2" => "Start a Project, or let the Planner draft one from a few questions.",
-  "3" => "Invite a Team. They get an email and can accept or decline from their phone."
+  "1" => "Start your first Project. The Planner turns a few answers into a plan.",
+  "2" => "Add People, then invite them to the Project Team."
 ) %>
 
-<%= mail_button "Open Flockwork", home_url %>
+<%= mail_button "Start Your First Project", new_project_url %>
 
 <%= mail_muted do %>
   There's no password. Next time, go to <%= mail_link "the sign-in page", new_sign_in_request_url %> and we'll email you a link to <%= @person.email %>.

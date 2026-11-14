@@ -13,6 +13,7 @@ class MessagesController < ApplicationController
     @message.author = Current.person
 
     if @message.save
+      @message.notify_team
       redirect_to @project
     else
       redirect_to @project, alert: @message.errors.full_messages.to_sentence

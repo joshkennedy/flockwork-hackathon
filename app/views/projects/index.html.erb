@@ -3,7 +3,7 @@
 
 <div class="w-full">
   <%= page_header "Projects" do %>
-    <%= link_to "Start a Project", new_project_path, class: "btn btn-primary" %>
+    <%= link_to "Start a Project", new_project_path, class: "btn btn-primary" if Policy.can?(Current.person, :create, Project) %>
   <% end %>
 
   <nav class="mt-5 tab-bar" aria-label="Project lists">

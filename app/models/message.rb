@@ -20,9 +20,24 @@ class Message < ApplicationRecord
 
   scope :roots, -> { where(parent_id: nil) }
 
+  def notify_team
+    mentioned_person_ids = mentions.pluck(:person_id)
+    project.memberships.includes(:person).find_each do |membership|
+      next if membership.person_id.in?(mentioned_person_ids)
+
+      Notifier.notify(
+        recipient: membership.person,
+        kind: "project_message",
+        notifiable: self,
+        actor: author
+      )
+    end
+  end
+
   before_validation :attach_reply_to_root, on: :create
   after_create :follow_author
-  after_save :parse_mentions
+  after_create :parse_mentions
+  after_update :parse_mentions_without_notifications
 
   private
     def follow_author
@@ -31,6 +46,10 @@ class Message < ApplicationRecord
 
     def parse_mentions
       MentionParser.new(self).call
+    end
+
+    def parse_mentions_without_notifications
+      MentionParser.new(self, notify: false).call
     end
 
     def attach_reply_to_root

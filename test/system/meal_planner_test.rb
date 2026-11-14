@@ -281,6 +281,8 @@ class MealPlannerSystemTest < ApplicationSystemTestCase
     end
 
     def sign_in_as_leader_in_browser
+      leader = people(:grace_leader)
+      Project.create_for(creator: leader, attributes: { name: "Meal Planner Test Project" }) unless Policy.can?(leader, :create, Project)
       visit new_demo_session_path
       click_on "Explore as Leader"
       assert_selector "[data-signed-in-as]", text: "Maria Lopez"

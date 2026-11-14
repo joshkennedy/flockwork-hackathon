@@ -1,6 +1,16 @@
 require "test_helper"
 
 class PolicyTest < ActiveSupport::TestCase
+  test "only Admins and Leaders of an active Project may create Projects" do
+    inactive_leader = people(:other_leader)
+    inactive_leader.memberships.leader.joins(:project).merge(Project.active).destroy_all
+
+    assert Policy.can?(people(:admin), :create, Project)
+    assert Policy.can?(people(:leader), :create, Project)
+    assert_not Policy.can?(people(:volunteer), :create, Project)
+    assert_not Policy.can?(inactive_leader, :create, Project)
+  end
+
   test "only an Admin may manage a directory source" do
     assert Policy.can?(people(:admin), :manage_directory_source, organizations(:st_example))
     assert_not Policy.can?(people(:leader), :manage_directory_source, organizations(:st_example))
