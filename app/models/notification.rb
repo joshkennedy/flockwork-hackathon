@@ -37,7 +37,7 @@ class Notification < ApplicationRecord
     url = if invitation?
       routes.invitation_url(notifiable.generate_token_for(:access), **options)
     else
-      routes.project_url(project, **options)
+      routes.project_url(project, anchor:, **options)
     end
     "Flockwork: #{message} #{url} Reply STOP to opt out."
   end
@@ -58,6 +58,15 @@ class Notification < ApplicationRecord
     return notifiable.mentionable.project if notifiable.is_a?(Mention)
 
     notifiable.project
+  end
+
+  # The element on the project page this points at. The page opens the tab holding it and scrolls to it.
+  def anchor
+    target = notifiable.is_a?(Mention) ? notifiable.mentionable : notifiable
+    case target
+    when Comment, Message, Task, Slot then ActionView::RecordIdentifier.dom_id(target)
+    when Project then "tab-team" if team_departure?
+    end
   end
 
   def message

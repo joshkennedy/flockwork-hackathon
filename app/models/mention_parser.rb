@@ -25,8 +25,11 @@ class MentionParser
       project.organization.people.where(id: mentioned_person_ids)
     end
 
+    # Comments mention by attaching the Person; plain-text bodies (and older comments) use the @[Name](person:ID) token.
     def mentioned_person_ids
-      mentionable.body.to_plain_text.scan(TOKEN_PATTERN).flatten.map(&:to_i).uniq
+      attached_ids = mentionable.body.body&.attachables.to_a.grep(Person).map(&:id)
+      token_ids = mentionable.body.to_plain_text.scan(TOKEN_PATTERN).flatten.map(&:to_i)
+      (attached_ids + token_ids).uniq
     end
 
     def project

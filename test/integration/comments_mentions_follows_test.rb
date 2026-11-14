@@ -131,6 +131,63 @@ class CommentsMentionsFollowsTest < ActionDispatch::IntegrationTest
     assert task.follows.exists?(person: mentioned_person)
   end
 
+  test "a Person attached to the comment body is mentioned and renders as a pill" do
+    sign_in_as_volunteer
+    project = projects(:community_meal)
+    task = project.tasks.create!(title: "Confirm the tables")
+    mentioned_person = people(:other_leader)
+
+    post project_comments_path(project), params: {
+      comment: {
+        commentable_type: "Task",
+        commentable_id: task.id,
+        body: %(<div>Thanks <action-text-attachment sgid="#{mentioned_person.attachable_sgid}"></action-text-attachment></div>)
+      }
+    }
+
+    comment = task.comments.last!
+    assert comment.mentions.exists?(person: mentioned_person)
+    assert task.follows.exists?(person: mentioned_person)
+    assert_equal "Thanks @Lucy Leader", comment.body.to_plain_text.squish
+
+    get project_path(project)
+    assert_select "ol .person-pill", text: /Lucy Leader/
+  end
+
+  test "a comment cannot mention someone from another church" do
+    sign_in_as_volunteer
+    project = projects(:community_meal)
+    task = project.tasks.create!(title: "Confirm the chairs")
+    outsider = people(:outsider)
+
+    assert_no_difference -> { task.comments.count } do
+      post project_comments_path(project), params: {
+        comment: {
+          commentable_type: "Task",
+          commentable_id: task.id,
+          body: %(<div>Hi <action-text-attachment sgid="#{outsider.attachable_sgid}"></action-text-attachment></div>)
+        }
+      }
+    end
+    assert_not Mention.exists?(person: outsider)
+  end
+
+  test "a mention notification links to the comment it came from" do
+    sign_in_as_volunteer
+    project = projects(:community_meal)
+    task = project.tasks.create!(title: "Bring the coffee")
+    mentioned_person = people(:other_leader)
+
+    post project_comments_path(project), params: {
+      comment: { commentable_type: "Task", commentable_id: task.id, body: "Thanks @[Lucy Leader](person:#{mentioned_person.id})" }
+    }
+
+    comment = task.comments.last!
+    notification = mentioned_person.notifications.find_by!(kind: "mention")
+    assert_equal "comment_#{comment.id}", notification.anchor
+    assert_includes notification.sms_text, "##{notification.anchor}"
+  end
+
   test "mentioning a Person who cannot see the Project records nothing for them" do
     sign_in_as_volunteer
     project = projects(:community_meal)
@@ -199,6 +256,10 @@ class CommentsMentionsFollowsTest < ActionDispatch::IntegrationTest
     assert message.mentions.exists?(person: mentioned_person)
     assert message.follows.exists?(person: mentioned_person)
     assert message.follows.exists?(person: author)
+
+    get project_path(project)
+    assert_select "#message_#{message.id} [data-message-body] .person-pill", text: /Lucy Leader/
+    assert_select "#message_#{message.id} [data-message-body]", text: /person:/, count: 0
   end
 
   test "the mention picker returns only People who can see the Project" do

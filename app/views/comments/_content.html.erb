@@ -1,8 +1,8 @@
-<div class="space-y-4 pb-2 pt-3">
+<div class="space-y-4">
   <% if comments.any? %>
     <ol class="space-y-4">
       <% comments.each do |comment| %>
-        <li>
+        <li id="<%= dom_id(comment) %>">
           <div class="flex flex-wrap items-baseline justify-between gap-2">
             <span class="text-meta font-semibold text-ink"><%= person_pill(comment.author) %></span>
             <span class="text-label text-ink-2"><%= time_ago_in_words(comment.created_at) %> ago</span>

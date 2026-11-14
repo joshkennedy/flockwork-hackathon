@@ -16,7 +16,7 @@
         <% can_claim = task.assignee.blank? && Policy.can?(Current.person, :claim_task, task) %>
         <% can_unclaim = Policy.can?(Current.person, :unclaim_task, task) %>
         <% can_manage = Policy.can?(Current.person, :manage_tasks, project) %>
-        <li class="flex gap-3 py-4 text-ink">
+        <li id="<%= dom_id(task) %>" class="flex gap-3 py-4 text-ink">
           <% if can_finish %>
             <%= button_to mark_done_project_task_path(project, task), class: "task-check", form_class: "shrink-0", aria: { label: "Mark #{task.title} done" } do %>
               <%= icon(:check, class: "task-check-glyph") %>
@@ -74,7 +74,7 @@
       <% done_tasks.each do |task| %>
         <% can_reopen = Policy.can?(Current.person, :reopen_task, task) %>
         <% can_manage = Policy.can?(Current.person, :manage_tasks, project) %>
-        <li class="flex gap-3 py-3 text-ink-2">
+        <li id="<%= dom_id(task) %>" class="flex gap-3 py-3 text-ink-2">
           <% if can_reopen %>
             <%= button_to reopen_project_task_path(project, task), class: "task-check task-check-done", form_class: "shrink-0", aria: { label: "Reopen #{task.title}" } do %>
               <%= icon(:check, class: "task-check-glyph") %>

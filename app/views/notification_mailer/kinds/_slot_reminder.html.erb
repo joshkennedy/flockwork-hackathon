@@ -11,5 +11,5 @@
   "When" => when_text
 ) %>
 
-<%= mail_button "Open #{@project.name}", project_url(@project) %>
+<%= mail_button "Open #{@project.name}", project_url(@project, anchor: @notification.anchor) %>
 <%= mail_muted "Can't make it anymore? Open the Project and give up your spot so someone else can take it." %>

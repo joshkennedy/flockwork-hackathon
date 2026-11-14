@@ -1,5 +1,7 @@
 class Person < ApplicationRecord
   include RefreshesStaffingSuggestions
+  # A mention in rich text is an attachment of the Person; it renders as their pill (people/_person).
+  include ActionText::Attachable
   belongs_to :organization
 
   EMAIL_TAKEN = "is already used by someone else in this church"
@@ -107,6 +109,11 @@ class Person < ApplicationRecord
     person.with_lock do
       person if find_by_token_for(:email_change, token) == person && person.update(email: person.pending_email, pending_email: nil)
     end
+  end
+
+  # How a mention reads in plain text, such as notification emails.
+  def attachable_plain_text_representation(_caption = nil)
+    "@#{name}"
   end
 
   def can_sign_in?

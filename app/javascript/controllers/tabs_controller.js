@@ -13,6 +13,7 @@ export default class extends Controller {
     const stored = !this.explicitValue && this.panelTargets.find((panel) => panel.dataset.tabsName === this.remembered)
     const panel = fromHash || stored
     if (panel) this.show(panel.dataset.tabsName)
+    if (fromHash) this.reveal(anchored)
     else this.scrollTabIntoView(this.tabTargets.find((tab) => tab.getAttribute("aria-current") === "true"))
     this.tabBar = this.element.querySelector(".project-tab-strip .tab-bar")
     this.tabBar?.addEventListener("scroll", this.updateTabOverflow)
@@ -35,7 +36,17 @@ export default class extends Controller {
     if (panel) {
       this.show(panel.dataset.tabsName)
       this.remembered = panel.dataset.tabsName
+      this.reveal(anchored)
     }
+  }
+
+  // A link can point inside a collapsed comment thread (a notification does); open everything around it, then scroll there.
+  reveal(target) {
+    for (let element = target.parentElement; element && element !== this.element; element = element.parentElement) {
+      if (element.tagName === "DETAILS") element.open = true
+      else if (element.hidden && !this.panelTargets.includes(element)) element.hidden = false
+    }
+    requestAnimationFrame(() => target.scrollIntoView({ block: "center" }))
   }
 
   // A morph refresh keeps this element, so connect() never re-runs; keep the shown tab instead of the server default.

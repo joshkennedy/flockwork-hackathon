@@ -26,6 +26,11 @@ module OrganizationOwnedBlobs
         rich_text.body.attachables.grep(ActiveStorage::Blob).uniq.each do |blob|
           validate_blob_owner(blob, name, target_organization_id)
         end
+
+        # A mention attaches a Person; only the church's own People may appear.
+        if rich_text.body.attachables.grep(Person).any? { |person| person.organization_id.to_s != target_organization_id.to_s }
+          errors.add(name, "mentions someone from another church")
+        end
       end
     end
 

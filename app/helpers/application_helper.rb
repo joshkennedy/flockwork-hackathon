@@ -124,19 +124,34 @@ module ApplicationHelper
     end
   end
 
-  # Mentions are stored as @[Name](person:ID) in the rich text; each one renders as a Person pill. Only the church's own People resolve.
+  # New mentions are Person attachments, which render through people/_person. Older comments stored @[Name](person:ID)
+  # tokens; each still renders as a Person pill. Only the church's own People resolve.
   def mention_pills(body)
-    people = Current.organization.people.where(id: body.to_plain_text.scan(MentionParser::TOKEN_PATTERN).flatten).index_by(&:id)
+    people = mentioned_people(body.to_plain_text)
     fragment = Nokogiri::HTML5.fragment(body.to_s)
     fragment.xpath(".//text()[not(ancestor::a)]").each do |node|
       next unless node.text.match?(MentionParser::TOKEN_PATTERN)
 
-      node.replace(ERB::Util.h(node.text).gsub(MentionParser::TOKEN_PATTERN) do |token|
-        person = people[Regexp.last_match(1).to_i]
-        person ? person_pill(person) : token
-      end)
+      node.replace(pill_mention_tokens(node.text, people))
     end
     fragment.to_html.html_safe
+  end
+
+  # A plain-text body (a Message) with each @[Name](person:ID) token shown as a Person pill.
+  def plain_text_mention_pills(text)
+    pill_mention_tokens(text, mentioned_people(text)).html_safe
+  end
+
+  def mentioned_people(text)
+    Current.organization.people.where(id: text.scan(MentionParser::TOKEN_PATTERN).flatten).index_by(&:id)
+  end
+
+  # Escapes the text, then swaps each token for its Person's pill (a token naming no one here stays as typed).
+  def pill_mention_tokens(text, people)
+    ERB::Util.h(text).gsub(MentionParser::TOKEN_PATTERN) do |token|
+      person = people[Regexp.last_match(1).to_i]
+      person ? person_pill(person) : token
+    end
   end
 
   # Up to three overlapping people, then "+N". The names sit in the text beside it, so the stack is decorative.

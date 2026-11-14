@@ -488,7 +488,7 @@ class NotificationsTest < ActionDispatch::IntegrationTest
     get notifications_path
 
     assert_response :success
-    assert_select "a[href='#{project_path(project)}']", "Someone assigned you “Fold the tablecloths”."
+    assert_select "a[href='#{project_path(project, anchor: "task_#{task.id}")}']", "Someone assigned you “Fold the tablecloths”."
   end
 
   test "deleting a notified item removes its notification" do

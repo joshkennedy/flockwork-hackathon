@@ -1,3 +1,3 @@
 <%= mail_heading @notification.message %>
 <%= mail_paragraph "Hi #{@notification.recipient.name}, here's what's new in #{@project.name}." %>
-<%= mail_button "Open #{@project.name}", project_url(@project) %>
+<%= mail_button "Open #{@project.name}", project_url(@project, anchor: @notification.anchor) %>

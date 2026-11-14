@@ -10,14 +10,18 @@
         <h3>Comments</h3>
         <button type="button" class="btn btn-icon" aria-label="Close Comments" data-action="comment-thread#close"><%= icon(:close) %></button>
       </div>
-      <%= render "comments/content", commentable:, comments:, project:, follow:, can_comment: %>
+      <div class="mt-3">
+        <%= render "comments/content", commentable:, comments:, project:, follow:, can_comment: %>
+      </div>
     </section>
   <% else %>
     <details class="<%= comments.any? ? "mt-4" : "mt-1" %> min-w-0 text-left" data-controller="comment-thread" data-commentable-type="<%= commentable.class.name %>" data-commentable-id="<%= commentable.id %>">
       <summary class="comment-toggle btn btn-text btn-sm -ml-2">
         <span><%= comments.any? ? pluralize(comments.length, "Comment") : "Add Comment" %></span>
       </summary>
-      <%= render "comments/content", commentable:, comments:, project:, follow:, can_comment: %>
+      <div class="comment-panel">
+        <%= render "comments/content", commentable:, comments:, project:, follow:, can_comment: %>
+      </div>
     </details>
   <% end %>
 <% end %>
