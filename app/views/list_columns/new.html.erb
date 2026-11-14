@@ -3,7 +3,9 @@
 <div class="w-full max-w-2xl">
   <%= page_header "Add column to #{@list.name}" %>
 
-  <div class="mt-7">
-    <%= render "form", project: @project, list: @list, list_column: @list_column %>
-  </div>
+  <%= turbo_frame_tag "list-form" do %>
+    <div class="mt-7">
+      <%= render "form", project: @project, list: @list, list_column: @list_column %>
+    </div>
+  <% end %>
 </div>

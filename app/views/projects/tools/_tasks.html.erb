@@ -1,11 +1,11 @@
 <% open_tasks = project.tasks.open.includes(:assignee, :rich_text_details).due_first %>
 <% done_tasks = project.tasks.done.includes(:assignee, :completed_by, :rich_text_details).order(completed_at: :desc, id: :desc) %>
-<section class="tool-section" aria-labelledby="tool-tasks">
+<section class="tool-section" aria-labelledby="tool-tasks" data-controller="slideout">
   <%= render "projects/tools/planner_arrival", tool: "tasks" %>
   <div class="flex flex-wrap items-start justify-between gap-4">
     <h2 id="tool-tasks" class="text-ink"><%= Project::TOOL_LABELS.fetch("tasks") %></h2>
     <% if Policy.can?(Current.person, :manage_tasks, project) %>
-      <%= link_to new_project_task_path(project), class: "btn btn-secondary btn-sm" do %>Add Task<% end %>
+      <%= link_to new_project_task_path(project), class: "btn btn-secondary btn-sm", data: { action: "slideout#open", slideout_title_param: "Add Task" } do %>Add Task<% end %>
     <% end %>
   </div>
 
@@ -43,7 +43,7 @@
                 <% if can_manage || can_unclaim %>
                   <%= actions_menu("Actions for #{task.title}") do %>
                     <% if can_manage %>
-                      <%= link_to "Edit Task", edit_project_task_path(project, task) %>
+                      <%= link_to "Edit Task", edit_project_task_path(project, task), data: { action: "slideout#open", slideout_title_param: "Edit Task" } %>
                     <% end %>
                     <% if can_unclaim %>
                       <%= button_to "Release", unclaim_project_task_path(project, task) %>
@@ -92,7 +92,7 @@
               <% if can_manage %>
                 <div class="flex shrink-0 items-center gap-1">
                   <%= actions_menu("Actions for #{task.title}") do %>
-                    <%= link_to "Edit Task", edit_project_task_path(project, task) %>
+                    <%= link_to "Edit Task", edit_project_task_path(project, task), data: { action: "slideout#open", slideout_title_param: "Edit Task" } %>
                     <hr>
                     <%= button_to "Delete Task", project_task_path(project, task), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete “#{task.title}”? Its comments are deleted too." } } %>
                   <% end %>
@@ -105,4 +105,16 @@
       <% end %>
     </ul>
   <% end %>
+
+  <dialog class="slideout" aria-labelledby="task-form-heading" data-slideout-target="dialog" data-action="click->slideout#backdrop">
+    <div class="slideout-panel">
+      <div class="flex items-center justify-between gap-4">
+        <h2 id="task-form-heading" class="text-ink" data-slideout-target="title">Task</h2>
+        <button type="button" class="btn btn-icon" aria-label="Close" data-action="slideout#close"><%= icon(:close) %></button>
+      </div>
+      <%= turbo_frame_tag "task-form", data: { slideout_target: "frame", action: "turbo:submit-end->slideout#submitted" } do %>
+        <p class="mt-6 text-meta text-ink-2">Loading…</p>
+      <% end %>
+    </div>
+  </dialog>
 </section>

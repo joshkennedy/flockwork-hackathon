@@ -1,4 +1,4 @@
-<section class="tool-section" aria-labelledby="tool-messages">
+<section class="tool-section" aria-labelledby="tool-messages" data-controller="slideout">
   <%= render "projects/tools/planner_arrival", tool: "messages" %>
   <% roots = project.message_board_roots %>
 
@@ -57,4 +57,16 @@
   <% else %>
     <p class="mt-6 text-meta text-ink-2">No messages yet</p>
   <% end %>
+
+  <dialog class="slideout" aria-labelledby="message-form-heading" data-slideout-target="dialog" data-action="click->slideout#backdrop">
+    <div class="slideout-panel">
+      <div class="flex items-center justify-between gap-4">
+        <h2 id="message-form-heading" class="text-ink" data-slideout-target="title">Message</h2>
+        <button type="button" class="btn btn-icon" aria-label="Close" data-action="slideout#close"><%= icon(:close) %></button>
+      </div>
+      <%= turbo_frame_tag "message-form", data: { slideout_target: "frame", action: "turbo:submit-end->slideout#submitted" } do %>
+        <p class="mt-6 text-meta text-ink-2">Loading…</p>
+      <% end %>
+    </div>
+  </dialog>
 </section>

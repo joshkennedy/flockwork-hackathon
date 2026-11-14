@@ -3,4 +3,5 @@
       message: message,
       label: "Message",
       submit_label: "Save Message",
-      autofocus: true %>
+      autofocus: true,
+      data: { turbo_frame: ("_top" unless request.headers["Turbo-Frame"] == "message-form") } %>

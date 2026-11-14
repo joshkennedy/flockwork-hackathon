@@ -6,7 +6,7 @@
       <div class="ml-auto shrink-0">
         <%= actions_menu("Actions for this message") do %>
           <% if Policy.can?(Current.person, :edit_message, message) %>
-            <%= link_to "Edit", edit_project_message_path(project, message) %>
+            <%= link_to "Edit", edit_project_message_path(project, message), data: { action: "slideout#open", slideout_title_param: "Edit Message" } %>
           <% end %>
           <% if Policy.can?(Current.person, :delete_message, message) %>
             <%= button_to "Delete", project_message_path(project, message), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: message.parent_id ? "Delete this reply?" : "Delete this message and its replies?" } } %>

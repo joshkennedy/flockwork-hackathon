@@ -3,7 +3,9 @@
 <div class="w-full max-w-2xl">
   <%= page_header "Add budget line" %>
 
-  <div class="mt-7">
-    <%= render "form", project: @project, budget_line: @budget_line, team_people: @team_people %>
-  </div>
+  <%= turbo_frame_tag "budget-form" do %>
+    <div class="mt-7">
+      <%= render "form", project: @project, budget_line: @budget_line, team_people: @team_people %>
+    </div>
+  <% end %>
 </div>
