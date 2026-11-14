@@ -235,6 +235,9 @@ class Project < ApplicationRecord
           identify: false
         )
       end
+    rescue ActiveStorage::FileNotFoundError
+      # A banner whose file is gone can't be copied; drop it rather than block the link reset.
+      nil
     end
 
     def banner_is_an_image_within_limits

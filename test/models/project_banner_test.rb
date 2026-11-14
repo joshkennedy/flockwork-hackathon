@@ -52,6 +52,18 @@ class ProjectBannerTest < ActiveSupport::TestCase
     assert_not_equal "old-token", @project.public_token
   end
 
+  test "resetting the public link drops a banner whose file is missing instead of failing" do
+    @project.update!(public_token: "old-token")
+    blob = @project.banner.blob
+    blob.service.delete(blob.key)
+
+    @project.reset_public_link!
+
+    @project.reload
+    assert_not_equal "old-token", @project.public_token
+    assert_not @project.banner.attached?
+  end
+
   test "deleting drops a banner that was stored without dimensions" do
     revoke_with_dimensionless_banner(&:soft_delete!)
 
