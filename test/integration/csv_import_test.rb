@@ -16,6 +16,20 @@ class CsvImportTest < ActionDispatch::IntegrationTest
     assert organization.people.exists?(name: "No Email Person", email: nil)
   end
 
+  test "Turbo submission shows import results without reporting an upload failure" do
+    sign_in_as_admin
+
+    post people_csv_import_path,
+      params: { csv_file: fixture_file_upload("people_import.csv", "text/csv") },
+      headers: { "Accept" => "text/vnd.turbo-stream.html, text/html" }
+
+    assert_response :success
+    assert_equal "text/vnd.turbo-stream.html", response.media_type
+    assert_select "turbo-stream[action=replace][target=people-csv-import]"
+    assert_select "template h1", text: "Import results"
+    assert_select "template p", text: /2 created, 1 updated, 0 rejected/
+  end
+
   test "matching email updates instead of duplicating" do
     sign_in_as_admin
     organization = organizations(:st_example)

@@ -1,0 +1,28 @@
+<div id="people-csv-import" class="w-full max-w-2xl">
+  <%= page_header "Import results" %>
+
+  <p class="mt-7 text-ink">
+    <%= result.created_count %> created,
+    <%= result.updated_count %> updated,
+    <%= result.rejected_rows.size %> rejected
+  </p>
+
+  <% if result.rejected_rows.any? %>
+    <table class="mt-6 w-full overflow-hidden border-b border-hairline text-left text-meta">
+      <thead class="bg-frame text-ink-2">
+        <tr>
+          <th class="px-4 py-2 font-medium">Line</th>
+          <th class="px-4 py-2 font-medium">Reason</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-hairline">
+        <% result.rejected_rows.each do |line_number, reason| %>
+          <tr>
+            <td class="px-4 py-2 text-ink"><%= line_number %></td>
+            <td class="px-4 py-2 text-ink-2"><%= reason %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</div>

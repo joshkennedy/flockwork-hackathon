@@ -5,7 +5,7 @@
   <span class="min-w-0 truncate text-ink" aria-current="page"><%= breadcrumb_label %></span>
 <% end %>
 
-<div class="w-full max-w-2xl">
+<div id="people-csv-import" class="w-full max-w-2xl">
   <%= page_header "Import CSV", subtitle: "Columns: name, email, phone, and optional skills separated by commas. Existing People are matched by email." %>
 
   <% alert = flash[:alert] %>
