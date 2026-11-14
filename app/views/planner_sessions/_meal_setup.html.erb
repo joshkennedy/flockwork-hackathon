@@ -14,7 +14,7 @@
     <h1 class="sr-only">Meal train setup</h1>
     <div class="meal-setup-identity">
       <%= label_tag "#{form_id}_name", "Project name", class: "sr-only" %>
-      <%= text_field_tag "meal_setup[name]", plan.name, id: "#{form_id}_name", form: form_id, required: true, maxlength: 200,
+      <%= text_field_tag "meal_setup[name]", plan.name, id: "#{form_id}_name", form: form_id, required: true, maxlength: Project::NAME_MAX_LENGTH,
         placeholder: "Name your meal train", class: "meal-setup-name", data: { action: "input->meal-setup#change change->meal-setup#change keydown.enter->meal-setup#saveName" } %>
     </div>
 

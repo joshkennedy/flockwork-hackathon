@@ -1,6 +1,14 @@
 require "test_helper"
 
 class ProjectTest < ActiveSupport::TestCase
+  test "a Project name is limited to 120 characters" do
+    project = projects(:community_meal)
+    project.name = "P" * 121
+
+    assert_not project.valid?
+    assert_includes project.errors.full_messages, "Name is too long (maximum is 120 characters)"
+  end
+
   test "active excludes done, archived, and deleted projects by name" do
     organization = organizations(:st_example)
     organization.projects.create!(
