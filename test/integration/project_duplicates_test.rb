@@ -265,24 +265,19 @@ class ProjectDuplicatesTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "a former Leader of only an archived Project cannot duplicate it into a new Project" do
+  test "the Leader of only an archived Project can still duplicate it for next time" do
     sign_in_as_leader
     source = projects(:community_meal)
     source.update!(archived_at: Time.current)
 
-    get project_path(source)
-    assert_response :success
-    assert_select "a", text: "Duplicate", count: 0
-
     get new_project_duplicate_path(source)
-    assert_response :not_found
+    assert_response :success
 
-    assert_no_difference "Project.count" do
+    assert_difference "Project.count", 1 do
       post project_duplicate_path(source), params: {
-        project_duplicate: { name: "Archived Volunteer Copy", start_on: "2028-02-12" }
+        project_duplicate: { name: "Next Year's Meal", start_on: "2028-02-12" }
       }
     end
-    assert_response :not_found
   end
 
   test "25 seeded random duplicates preserve every pairwise date difference" do
