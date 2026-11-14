@@ -9,6 +9,7 @@ class Note < ApplicationRecord
 
   belongs_to :notable, polymorphic: true
   belongs_to :author, class_name: "Person", inverse_of: :authored_notes
+  after_commit -> { project&.broadcast_refresh_later }
 
   enum :visibility, { team: 0, leaders: 1, admins: 2 }, default: :team, validate: true
 
