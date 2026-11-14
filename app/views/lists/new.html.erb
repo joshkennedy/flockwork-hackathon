@@ -3,7 +3,9 @@
 <div class="w-full max-w-2xl">
   <%= page_header "Add List" %>
 
-  <div class="mt-7">
-    <%= render "form", project: @project, list: @list %>
-  </div>
+  <%= turbo_frame_tag "list-form" do %>
+    <div class="mt-7">
+      <%= render "form", project: @project, list: @list %>
+    </div>
+  <% end %>
 </div>

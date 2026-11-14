@@ -7,10 +7,17 @@ export default class extends Controller {
 
   connect() {
     if (this.hasFrameTarget) this.placeholder = this.frameTarget.innerHTML
+    this.restoreFocus = this.restoreFocus.bind(this)
+    this.dialogTarget.addEventListener("close", this.restoreFocus)
+  }
+
+  disconnect() {
+    this.dialogTarget.removeEventListener("close", this.restoreFocus)
   }
 
   open(event) {
     event.preventDefault()
+    this.trigger = event.currentTarget
     // Swap back to the placeholder first so a different form never flashes the previous one.
     if (this.hasFrameTarget && this.frameTarget.src !== event.currentTarget.href) {
       this.frameTarget.innerHTML = this.placeholder
@@ -35,5 +42,10 @@ export default class extends Controller {
   // A click that lands on the dialog element itself is on the backdrop, outside the panel.
   backdrop(event) {
     if (event.target === this.dialogTarget) this.close()
+  }
+
+  restoreFocus() {
+    if (this.trigger?.isConnected) this.trigger.focus()
+    this.trigger = null
   }
 }

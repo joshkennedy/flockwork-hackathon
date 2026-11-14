@@ -3,7 +3,9 @@
 <div class="w-full max-w-2xl">
   <%= page_header "Edit Task" %>
 
-  <div class="mt-7">
-    <%= render "form", project: @project, task: @task, team_people: @team_people %>
-  </div>
+  <%= turbo_frame_tag "task-form" do %>
+    <div class="mt-7">
+      <%= render "form", project: @project, task: @task, team_people: @team_people %>
+    </div>
+  <% end %>
 </div>

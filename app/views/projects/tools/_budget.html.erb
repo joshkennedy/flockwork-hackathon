@@ -3,14 +3,14 @@
 <% purchase_lines = project.budget_lines_by_kind(:purchase) %>
 <% booking_totals = project.budget_kind_totals(:booking) %>
 <% purchase_totals = project.budget_kind_totals(:purchase) %>
-<section class="tool-section" aria-labelledby="tool-budget">
+<section class="tool-section" aria-labelledby="tool-budget" data-controller="slideout">
   <%= render "projects/tools/planner_arrival", tool: "budget" %>
   <div class="flex flex-wrap items-start justify-between gap-4">
     <h2 id="tool-budget" class="text-ink"><%= Project::TOOL_LABELS.fetch("budget") %></h2>
     <% if Policy.can?(Current.person, :manage_budget, project) %>
       <div class="flex flex-wrap gap-2">
-        <%= link_to new_project_budget_line_path(project, kind: "booking"), class: "btn btn-secondary btn-sm" do %>Add Booking<% end %>
-        <%= link_to new_project_budget_line_path(project, kind: "purchase"), class: "btn btn-secondary btn-sm" do %>Add Purchase<% end %>
+        <%= link_to new_project_budget_line_path(project, kind: "booking"), class: "btn btn-secondary btn-sm", data: { action: "slideout#open", slideout_title_param: "Add Booking" } do %>Add Booking<% end %>
+        <%= link_to new_project_budget_line_path(project, kind: "purchase"), class: "btn btn-secondary btn-sm", data: { action: "slideout#open", slideout_title_param: "Add Purchase" } do %>Add Purchase<% end %>
       </div>
     <% end %>
   </div>
@@ -37,4 +37,16 @@
         kind_label: "Purchases",
         lines: purchase_lines,
         totals: purchase_totals %>
+
+  <dialog class="slideout" aria-labelledby="budget-form-heading" data-slideout-target="dialog" data-action="click->slideout#backdrop">
+    <div class="slideout-panel">
+      <div class="flex items-center justify-between gap-4">
+        <h2 id="budget-form-heading" class="text-ink" data-slideout-target="title">Budget Line</h2>
+        <button type="button" class="btn btn-icon" aria-label="Close" data-action="slideout#close"><%= icon(:close) %></button>
+      </div>
+      <%= turbo_frame_tag "budget-form", data: { slideout_target: "frame", action: "turbo:submit-end->slideout#submitted" } do %>
+        <p class="mt-6 text-meta text-ink-2">Loading…</p>
+      <% end %>
+    </div>
+  </dialog>
 </section>

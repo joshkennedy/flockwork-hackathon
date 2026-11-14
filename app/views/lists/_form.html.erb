@@ -1,4 +1,5 @@
-<%= form_with model: [ project, list ], class: "space-y-7" do |form| %>
+<%= form_with model: [ project, list ], class: "space-y-7",
+      data: { turbo_frame: ("_top" unless request.headers["Turbo-Frame"] == "list-form") } do |form| %>
   <% if list.errors.any? %>
     <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-ink">
       <p class="font-semibold">Fix these to continue:</p>

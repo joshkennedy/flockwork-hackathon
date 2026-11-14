@@ -1,4 +1,4 @@
-<%= form_with model: [ project, message ], class: class_names("space-y-3", local_assigns[:class_name]) do |form| %>
+<%= form_with model: [ project, message ], class: class_names("space-y-3", local_assigns[:class_name]), data: local_assigns[:data] do |form| %>
   <% if message.errors.any? %>
     <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-ink">
       <p class="font-semibold">Fix these to continue:</p>

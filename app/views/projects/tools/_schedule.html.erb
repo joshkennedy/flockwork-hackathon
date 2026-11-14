@@ -1,10 +1,10 @@
 <% schedule_items_by_day = project.schedule_items.grouped_by_day %>
-<section class="tool-section" aria-labelledby="tool-schedule">
+<section class="tool-section" aria-labelledby="tool-schedule" data-controller="slideout">
   <%= render "projects/tools/planner_arrival", tool: "schedule" %>
   <div class="flex flex-wrap items-start justify-between gap-4">
     <h2 id="tool-schedule" class="text-ink"><%= Project::TOOL_LABELS.fetch("schedule") %></h2>
     <% if Policy.can?(Current.person, :manage_schedule, project) %>
-      <%= link_to new_project_schedule_item_path(project), class: "btn btn-secondary btn-sm" do %>Add Item<% end %>
+      <%= link_to new_project_schedule_item_path(project), class: "btn btn-secondary btn-sm", data: { action: "slideout#open", slideout_title_param: "Add Schedule Item" } do %>Add Item<% end %>
     <% end %>
   </div>
 
@@ -28,7 +28,7 @@
                   <%= actions_menu("Actions for #{item.title}") do %>
                     <%= link_to "Add to Calendar", project_schedule_item_calendar_path(project, item), data: { turbo: false } %>
                     <% if Policy.can?(Current.person, :manage_schedule, project) %>
-                      <%= link_to "Edit Item", edit_project_schedule_item_path(project, item) %>
+                      <%= link_to "Edit Item", edit_project_schedule_item_path(project, item), data: { action: "slideout#open", slideout_title_param: "Edit Schedule Item" } %>
                       <hr>
                       <%= button_to "Delete Item", project_schedule_item_path(project, item), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete “#{item.title}”? Its comments are deleted too, and linked Slots stay without a Schedule item." } } %>
                     <% end %>
@@ -57,4 +57,16 @@
   <% else %>
     <p class="mt-7 text-meta text-ink-2">No items yet</p>
   <% end %>
+
+  <dialog class="slideout" aria-labelledby="schedule-item-form-heading" data-slideout-target="dialog" data-action="click->slideout#backdrop">
+    <div class="slideout-panel">
+      <div class="flex items-center justify-between gap-4">
+        <h2 id="schedule-item-form-heading" class="text-ink" data-slideout-target="title">Schedule Item</h2>
+        <button type="button" class="btn btn-icon" aria-label="Close" data-action="slideout#close"><%= icon(:close) %></button>
+      </div>
+      <%= turbo_frame_tag "schedule-item-form", data: { slideout_target: "frame", action: "turbo:submit-end->slideout#submitted" } do %>
+        <p class="mt-6 text-meta text-ink-2">Loading…</p>
+      <% end %>
+    </div>
+  </dialog>
 </section>

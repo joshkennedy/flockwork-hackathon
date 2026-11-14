@@ -3,7 +3,9 @@
 <div class="w-full max-w-2xl">
   <%= page_header "Update status and actual cost" %>
 
-  <div class="mt-7">
-    <%= render "form", project: @project, budget_line: @budget_line %>
-  </div>
+  <%= turbo_frame_tag "budget-form" do %>
+    <div class="mt-7">
+      <%= render "form", project: @project, budget_line: @budget_line %>
+    </div>
+  <% end %>
 </div>

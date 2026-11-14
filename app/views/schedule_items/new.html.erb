@@ -3,7 +3,9 @@
 <div class="w-full max-w-2xl">
   <%= page_header "Add Schedule item" %>
 
-  <div class="mt-7">
-    <%= render "form", project: @project, schedule_item: @schedule_item %>
-  </div>
+  <%= turbo_frame_tag "schedule-item-form" do %>
+    <div class="mt-7">
+      <%= render "form", project: @project, schedule_item: @schedule_item %>
+    </div>
+  <% end %>
 </div>

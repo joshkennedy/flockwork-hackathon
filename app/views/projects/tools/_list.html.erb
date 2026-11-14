@@ -1,10 +1,10 @@
 <% lists = project.lists.includes(:columns, :rows) %>
-<section class="tool-section" aria-labelledby="tool-list">
+<section class="tool-section" aria-labelledby="tool-list" data-controller="slideout">
   <%= render "projects/tools/planner_arrival", tool: "list" %>
   <div class="flex flex-wrap items-start justify-between gap-4">
     <h2 id="tool-list" class="text-ink"><%= Project::TOOL_LABELS.fetch("list") %></h2>
     <% if Policy.can?(Current.person, :manage_lists, project) %>
-      <%= link_to "Add List", new_project_list_path(project), class: "inline-flex min-h-6 items-center text-meta font-semibold text-ink-2 hover:text-ink" %>
+      <%= link_to "Add List", new_project_list_path(project), class: "inline-flex min-h-6 items-center text-meta font-semibold text-ink-2 hover:text-ink", data: { action: "slideout#open", slideout_title_param: "Add List" } %>
     <% end %>
   </div>
 
@@ -16,10 +16,10 @@
             <h3 id="list-<%= list.id %>" class="text-body-phone sm:text-body font-semibold text-ink"><%= list.name %></h3>
             <div class="flex flex-wrap justify-end gap-2">
               <% if Policy.can?(Current.person, :manage_list_rows, project) %>
-                <%= link_to new_project_list_list_row_path(project, list), class: "btn btn-secondary btn-sm" do %>Add Row<% end %>
+                <%= link_to new_project_list_list_row_path(project, list), class: "btn btn-secondary btn-sm", data: { action: "slideout#open", slideout_title_param: "Add Row" } do %>Add Row<% end %>
               <% end %>
               <% if Policy.can?(Current.person, :manage_lists, project) %>
-                <%= link_to new_project_list_list_column_path(project, list), class: "btn btn-secondary btn-sm" do %>Add Column<% end %>
+                <%= link_to new_project_list_list_column_path(project, list), class: "btn btn-secondary btn-sm", data: { action: "slideout#open", slideout_title_param: "Add Column" } do %>Add Column<% end %>
               <% end %>
             </div>
           </div>
@@ -36,7 +36,7 @@
                         <div class="mt-0.5 flex items-center justify-between gap-2">
                           <span class="text-label font-normal text-ink-2"><%= column.column_type.humanize %></span>
                           <%= actions_menu("Actions for #{column.name} column", align: index.zero? ? :start : :end) do %>
-                            <%= link_to "Edit Column", edit_project_list_list_column_path(project, list, column) %>
+                            <%= link_to "Edit Column", edit_project_list_list_column_path(project, list, column), data: { action: "slideout#open", slideout_title_param: "Edit Column" } %>
                             <% if index.positive? %>
                               <%= button_to "Move Up", move_up_project_list_list_column_path(project, list, column), method: :patch %>
                             <% end %>
@@ -69,7 +69,7 @@
                       <% if Policy.can?(Current.person, :manage_list_rows, project) %>
                         <div class="list-row-actions flex items-center justify-end gap-1">
                           <%= actions_menu("Actions for this row") do %>
-                            <%= link_to "Edit Row", edit_project_list_list_row_path(project, list, row) %>
+                            <%= link_to "Edit Row", edit_project_list_list_row_path(project, list, row), data: { action: "slideout#open", slideout_title_param: "Edit Row" } %>
                             <hr>
                             <%= button_to "Delete Row", project_list_list_row_path(project, list, row), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete this row? Its comments are deleted too." } } %>
                           <% end %>
@@ -92,4 +92,16 @@
   <% else %>
     <p class="mt-7 text-meta text-ink-2">No Lists yet</p>
   <% end %>
+
+  <dialog class="slideout" aria-labelledby="list-form-heading" data-slideout-target="dialog" data-action="click->slideout#backdrop">
+    <div class="slideout-panel">
+      <div class="flex items-center justify-between gap-4">
+        <h2 id="list-form-heading" class="text-ink" data-slideout-target="title">List</h2>
+        <button type="button" class="btn btn-icon" aria-label="Close" data-action="slideout#close"><%= icon(:close) %></button>
+      </div>
+      <%= turbo_frame_tag "list-form", data: { slideout_target: "frame", action: "turbo:submit-end->slideout#submitted" } do %>
+        <p class="mt-6 text-meta text-ink-2">Loading…</p>
+      <% end %>
+    </div>
+  </dialog>
 </section>
