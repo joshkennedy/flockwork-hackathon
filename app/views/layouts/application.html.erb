@@ -23,6 +23,7 @@
   <body data-controller="global-search" data-action="keydown@window->global-search#shortcut turbo:before-morph-element->global-search#keepOpen" style="<%= mark_color_style %>" class="min-h-screen <%="bg-frame" if authenticated? && !marketing_page? %>">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-panel focus:p-3">Skip to content</a>
     <% if authenticated? && !marketing_page? %>
+      <%= render "layouts/demo_notice" if demo_organization? %>
       <div class="app-shell relative min-h-screen pb-[calc(64px+env(safe-area-inset-bottom))] md:pb-0">
         <div class="app-bar-shell" data-controller="app-bar">
           <header class="app-bar">

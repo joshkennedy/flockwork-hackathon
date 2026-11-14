@@ -1,6 +1,13 @@
 require "zlib"
 
 module ApplicationHelper
+  def demo_reset_countdown(now = Time.current.utc)
+    return "less than a minute" if now.min == 59 && now.sec.positive?
+
+    minutes = 60 - now.min
+    minutes == 1 ? "1 minute" : "#{minutes} minutes"
+  end
+
   # Matches the avatar-hue-N classes and --color-avatar-N tokens in application.css.
   AVATAR_HUES = 10
   AVATAR_SIZES = { sm: "avatar-sm", md: nil, lg: "avatar-lg" }.freeze

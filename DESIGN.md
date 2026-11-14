@@ -166,6 +166,11 @@ components:
     textColor: "{colors.ink}"
     rounded: "{rounded.pill}"
     height: 24px
+  demo-notice:
+    backgroundColor: "{colors.sunlit-soft}"
+    textColor: "{colors.ink}"
+    fontSize: "{typography.meta.fontSize}"
+    lineHeight: "{typography.meta.lineHeight}"
 ---
 
 # Flockwork
@@ -304,6 +309,7 @@ The landing page and every public page built from it (feature, use-case and pric
 
 | Date | Decision | Rationale |
 |------|----------|-----------|
+| 2026-11-13 | Demo pages show a slim reset countdown above their header, and the role picker explains the hourly reset | Josh: a tester's Public link vanished at the hourly reset with no warning |
 | 2026-11-09 | Sticky public header, transparent at the top and blurred after scroll, with a desktop Features panel and visible phone links | Josh asked for a snazzier header once the marketing pages existed |
 | 2026-11-09 | Shorter interior hero fields share the home plate language, with breadcrumbs inside the feature hero and ink/amber dark mode | Josh asked for a snazzier header once the marketing pages existed |
 | 2026-11-09 | Marketing head tags and JSON-LD come from `marketing_head`, including expanded page types and breadcrumbs below the top level | One helper keeps visible page metadata, social tags and answer-engine structure consistent across every public page |

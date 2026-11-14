@@ -15,6 +15,7 @@
   </head>
   <%# Plain navigation keeps the #slot_ anchor on redirects, which a Turbo fetch would drop. JS is here for the toasts. %>
   <body style="<%= mark_color_style %>" class="min-h-screen bg-page" data-turbo="false" data-public-layout>
+    <%= render "layouts/demo_notice" if @organization&.demo? %>
     <%# The sign-in steps narrow the whole column, wordmark row included, to their 480px question from 640px up. %>
     <div class="mx-auto w-full <%= controller_name == "guest_sign_ins" ? "sm:max-w-[512px]" : "max-w-3xl" %> px-4 py-7 sm:py-10">
       <div class="mb-10 flex items-center justify-between gap-4">
