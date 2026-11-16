@@ -63,9 +63,10 @@
 /.amp/portals/
 
 # UI council: per-round captures and third-party reference shots stay local; annotated/, final/ and the ledger are committed.
-# Planning, decisions and review notes stay local, never in the repo
+# Planning and review notes stay local, never in the repo; only the ADRs in docs/adr are published
 /plans/
-/docs/
+/docs/*
+!/docs/adr/
 /ui-council/
 /.ai/
 
