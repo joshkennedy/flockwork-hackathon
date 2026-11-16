@@ -116,6 +116,20 @@ class MarketingPagesTest < ActionDispatch::IntegrationTest
     MarketingPage::ALL.reject(&:home?).each { |page| assert_includes response.body, "http://www.example.com#{page.path}" }
   end
 
+  test "pages link to a complete web app manifest" do
+    get root_path
+    assert_select "link[rel=manifest][href=?]", "/manifest.json"
+
+    get "/manifest.json"
+    assert_response :success
+    assert_equal "application/json", response.media_type
+    manifest = JSON.parse(response.body)
+    assert_equal "Flockwork", manifest.fetch("name")
+    assert_equal "standalone", manifest.fetch("display")
+    assert_equal "/", manifest.fetch("scope")
+    assert_equal [ "512x512" ], manifest.fetch("icons").map { |icon| icon.fetch("sizes") }.uniq
+  end
+
   test "every marketing page shares the header and footer, and app pages are noindex" do
     get terms_path
     [ features_path, pricing_path, new_demo_session_path, new_sign_in_request_path ].each { |path| assert_select ".public-header nav a[href=?]", path }
