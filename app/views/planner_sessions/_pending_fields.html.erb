@@ -25,7 +25,7 @@
         <% options = definition.fetch(:options).map { |option_value, label| [ label, option_value ] } %>
         <%= select_tag input_name, options_for_select(options, value), id: field_id, required:, class: field_class, aria: accessibility %>
       <% else %>
-        <%= tag.input type: definition.fetch(:input), name: input_name, id: field_id, value:, required:, min: definition[:min], step: definition[:step], class: field_class, aria: accessibility %>
+        <%= tag.input type: definition.fetch(:input), name: input_name, id: field_id, value:, required:, min: definition[:min], step: definition[:step], maxlength: definition[:maxlength], class: field_class, aria: accessibility %>
       <% end %>
       <% end %>
       <% if errors.any? %>

@@ -49,6 +49,16 @@ class PlannerProvidersLlmTest < ActiveSupport::TestCase
     assert_equal({ type: [ "string", "null" ] }, slot_run.dig(:properties, :fields, :properties, "schedule_item_source_key"))
   end
 
+  test "general prompt and schema support potluck claim questions" do
+    prompt = Planner::Providers::Llm::GENERAL_PROMPT
+    schema = Planner::Providers::Llm::GENERAL_SCHEMA
+    slot_run = schema.dig(:properties, :added, :items, :oneOf).find { |item| item.dig(:properties, :kind, :const) == "slot_run" }
+
+    assert_includes prompt, "For a potluck or picnic food-category slot_run"
+    assert_includes prompt, "Leave claim_prompt null for helper roles"
+    assert_equal({ type: [ "string", "null" ], maxLength: 120 }, slot_run.dig(:properties, :fields, :properties, "claim_prompt"))
+  end
+
   test "resolves provider and model from ENV with defaults" do
     with_planner_llm_env("PLANNER_LLM_PROVIDER" => nil, "PLANNER_LLM_MODEL" => nil) do
       llm = Planner::Providers::Llm.new

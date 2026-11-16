@@ -34,7 +34,7 @@
         <% options = definition.fetch(:options).map { |option_value, label| [ label, option_value ] } %>
         <%= select_tag field_input_name, options_for_select(options, value), id: field_id, required:, class: "mt-2 block w-full field" %>
       <% else %>
-        <%= tag.input type: definition.fetch(:input), name: field_input_name, id: field_id, value:, required:, min: definition[:min], step: definition[:step], class: "mt-2 block w-full field" %>
+        <%= tag.input type: definition.fetch(:input), name: field_input_name, id: field_id, value:, required:, min: definition[:min], step: definition[:step], maxlength: definition[:maxlength], class: "mt-2 block w-full field" %>
       <% end %>
     </div>
   <% end %>

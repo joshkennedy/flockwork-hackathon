@@ -11,7 +11,7 @@
           <details class="actions-menu relative">
             <summary class="btn btn-secondary btn-sm split-button-menu" aria-label="Actions for Sign-up sheet" title="Actions for Sign-up sheet"><%= icon(:more) %></summary>
             <div class="actions-menu-panel popover-in">
-              <%= link_to "Add Multiple Slots", new_project_slot_run_path(project), data: { action: "dialog#open" } %>
+              <%= link_to "Generate Multiple Slots", new_project_slot_run_path(project), data: { action: "dialog#open" } %>
             </div>
           </details>
         </div>
@@ -20,7 +20,7 @@
           <div class="modal-panel">
             <div class="flex items-start justify-between gap-5">
               <div>
-                <h2>Add multiple Slots</h2>
+                <h2>Generate multiple Slots</h2>
                 <p class="mt-2 text-meta text-ink-2">One Slot for every day in the range.</p>
               </div>
               <button type="button" class="btn btn-icon shrink-0" aria-label="Close" data-action="dialog#close"><%= icon(:close) %></button>
@@ -58,7 +58,7 @@
       <% if later.any? %>
         <%# Kept open when nothing nearer exists, so a far-off sheet is never hidden behind a click. %>
         <details data-signup-later <%= "open" if this_week.empty? && next_week.empty? %>>
-          <%= disclosure_summary "Later Slots", meta: later_slots_meta(later), class: "disclosure-bar" %>
+          <%= disclosure_summary later_slots_heading, meta: later_slots_meta(later), class: "disclosure-bar" %>
           <ul class="mt-2"><%= render partial: "projects/tools/signup_slot", collection: later, as: :slot, locals: { project: } %></ul>
         </details>
       <% end %>

@@ -12,6 +12,12 @@ module Planner
         description: "Organize meals for a meal train.",
         prompt: "Help organize a meal train. Build a Sign-up sheet of meals with open roles, without asking for names or private care details."
       },
+      "potluck" => {
+        name: "Potluck or Picnic",
+        date_label: "Gathering date",
+        description: "Plan a potluck or picnic together.",
+        prompt: "Help organize a potluck or picnic. Ask about expected headcount and the setting. Propose Sign-up slot runs for food categories such as main dishes, sides, desserts, and drinks, each with a practical capacity and claim_prompt \"What are you bringing?\". Also plan setup and cleanup helpers, supplies, and a schedule. Never ask for, infer, or include people's names or private details."
+      },
       "retreat" => {
         name: "Retreat",
         date_label: "Retreat date",

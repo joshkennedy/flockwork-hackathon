@@ -14,7 +14,7 @@ class SlotRunDialogSystemTest < ApplicationSystemTestCase
     assert_selector "[data-signed-in-as]", text: "Maria Lopez"
     visit project_path(@project)
     find("summary[aria-label='Actions for Sign-up sheet']").click
-    click_on "Add Multiple Slots"
+    click_on "Generate Multiple Slots"
 
     within "dialog.modal[open]" do
       fill_in "Start date", with: "2027-02-20"

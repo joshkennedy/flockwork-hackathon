@@ -56,7 +56,7 @@ class GuestSignInSystemTest < ApplicationSystemTestCase
     assert_equal [ "Nadia Novak" ], tapped.people.map(&:name)
     assert_landed_on tapped, below: "#public-slots"
 
-    find("summary", text: "Later Slots").click unless page.has_css?("[data-signup-later][open]", wait: 0)
+    find("[data-signup-later] summary").click unless page.has_css?("[data-signup-later][open]", wait: 0)
     within("#slot_#{later.id}") { click_on "Sign Up" }
     assert_selector "#slot_#{later.id}:focus", text: "You’re bringing dinner"
     assert_landed_on later, below: "[data-signup-later] summary"

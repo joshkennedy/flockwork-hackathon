@@ -21,7 +21,7 @@ class PlannerPendingItemsTest < ActiveSupport::TestCase
     original_ids = @project.slots.map(&:id)
     item = {
       "kind" => "slot",
-      "fields" => { "label" => "Bring dinner", "date" => "2027-03-01", "time" => "18:30", "capacity" => 2 }
+      "fields" => { "label" => "Bring dinner", "date" => "2027-03-01", "time" => "18:30", "capacity" => 2, "claim_prompt" => "What are you bringing?" }
     }
 
     created = Planner::PendingItems.create!(@project, item)
@@ -30,6 +30,19 @@ class PlannerPendingItemsTest < ActiveSupport::TestCase
     assert_equal "Bring dinner", @project.slots.last.label
     assert_equal 2, @project.slots.last.capacity
     assert_equal Date.new(2027, 3, 1), @project.slots.last.date
+    assert_equal "What are you bringing?", @project.slots.last.claim_prompt
+  end
+
+  test "a slot run carries a valid claim prompt into every pending Slot" do
+    pending = reconcile(added: [ slot_run(claim_prompt: "What are you bringing?") ])
+
+    assert_equal 3, pending.size
+    assert_equal [ "What are you bringing?" ], pending.map { |item| item.dig("fields", "claim_prompt") }.uniq
+
+    error = assert_raises(ArgumentError) do
+      reconcile(added: [ slot_run(claim_prompt: "x" * 121) ])
+    end
+    assert_equal "Question for people signing up is too long (maximum is 120 characters)", error.message
   end
 
   test "duplicate series identities are rejected" do
@@ -126,7 +139,7 @@ class PlannerPendingItemsTest < ActiveSupport::TestCase
       )
     end
 
-    def slot_run(source_key: "meal-slots", start_day_offset: 0, end_day_offset: 2, time: "17:30")
+    def slot_run(source_key: "meal-slots", start_day_offset: 0, end_day_offset: 2, time: "17:30", claim_prompt: nil)
       {
         "kind" => "slot_run",
         "source_key" => source_key,
@@ -135,7 +148,8 @@ class PlannerPendingItemsTest < ActiveSupport::TestCase
           "start_day_offset" => start_day_offset,
           "end_day_offset" => end_day_offset,
           "time" => time,
-          "capacity" => 1
+          "capacity" => 1,
+          "claim_prompt" => claim_prompt
         }
       }
     end

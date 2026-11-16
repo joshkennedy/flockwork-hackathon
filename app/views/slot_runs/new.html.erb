@@ -1,7 +1,7 @@
-<% content_for :title, "Add multiple Slots" %>
+<% content_for :title, "Generate multiple Slots" %>
 
 <div class="w-full max-w-2xl">
-  <%= page_header "Add multiple Slots", subtitle: "Add one Slot for every day in a date range, up to 60 days." %>
+  <%= page_header "Generate multiple Slots", subtitle: "Add one Slot for every day in a date range, up to 60 days." %>
   <%= turbo_frame_tag "slot-run-form" do %>
     <%= render "form", slot_run: @slot_run, project: @project %>
   <% end %>

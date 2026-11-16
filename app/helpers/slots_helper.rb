@@ -16,6 +16,12 @@ module SlotsHelper
     "#{pluralize(slots.size, "Slot")}, #{pluralize(slots.sum { |slot| [ slot.capacity - slot.claims_count, 0 ].max }, "spot")} left"
   end
 
+  def later_slots_heading(today: Date.current)
+    cutoff = today.next_week.end_of_week
+    format = cutoff.year == today.year ? "%b %-d" : "%b %-d, %Y"
+    "After #{cutoff.strftime(format)}"
+  end
+
   def slot_claims_summary(slot)
     "#{slot.claims_count} of #{slot.capacity} claimed · #{slot.capacity - slot.claims_count} open"
   end
