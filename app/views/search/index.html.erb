@@ -1,6 +1,7 @@
 <% content_for :title, "Search" %>
 <h1>Search</h1>
-<%= form_with url: search_path, method: :get, class: "mt-4 flex items-end gap-3", data: { turbo_frame: @results_frame } do |form| %>
+<%= form_with url: search_path, method: :get, class: "mt-4 flex items-end gap-3",
+      data: { controller: "live-search", action: "input->live-search#search", turbo_frame: @results_frame } do |form| %>
   <div class="grow"><%= form.label :query, "Name or title", for: "search_query", class: "text-meta" %>
   <%= form.search_field :query, id: "search_query", value: @query, class: "field w-full", maxlength: 100 %></div>
   <%= form.submit "Search", class: "btn btn-primary" %>
