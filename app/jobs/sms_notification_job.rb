@@ -25,7 +25,7 @@ class SmsNotificationJob < ApplicationJob
         return
       end
 
-      unless DemoOutboundLimit.allow?(recipient.organization)
+      unless DemoOutboundLimit.allow_for_person?(recipient)
         notification.update!(sms_status: "cancelled", sms_payload: {})
         return
       end

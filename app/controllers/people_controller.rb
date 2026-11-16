@@ -81,7 +81,7 @@ class PeopleController < ApplicationController
     send_confirmation = stage_email_change
 
     if @person.save
-      if send_confirmation && DemoOutboundLimit.allow?(@person.organization)
+      if send_confirmation && DemoOutboundLimit.allow_for_person?(@person)
         SignInMailer.email_change(@person).deliver_later
       end
       flash[:notice] = "Saved #{@person.name}."

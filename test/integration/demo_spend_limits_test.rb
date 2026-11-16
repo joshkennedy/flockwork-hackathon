@@ -470,6 +470,30 @@ class DemoSpendLimitsTest < ActionDispatch::IntegrationTest
     assert_empty notification.sms_payload
   end
 
+  test "a demo visitor inviting a new address from the Team page sends no email or text" do
+    post demo_session_path(role: "leader")
+    organization = organizations(:grace_fellowship)
+    project = organization.projects.joins(:memberships)
+      .where(memberships: { person_id: people(:grace_leader).id, role: "leader" }).first!
+    sms_request = stub_request(:post, Messaging::Sendly::ENDPOINT.to_s)
+
+    with_sendly_api_key do
+      with_rate_limit_store do
+        perform_enqueued_jobs do
+          post project_invitations_path(project), params: {
+            invitation: { name: "Stranger Danger", email: "stranger@real-inbox.test", role: "volunteer" }
+          }
+        end
+      end
+    end
+
+    assert_response :redirect
+    invitee = organization.people.find_by!(email: "stranger@real-inbox.test")
+    assert_equal 1, invitee.notifications.invitation.count
+    assert_empty ActionMailer::Base.deliveries
+    assert_not_requested sms_request
+  end
+
   test "a demo Invitation link sends no sign-in email after the Organization cap" do
     organization = organizations(:grace_fellowship)
     inviter = people(:grace_admin)

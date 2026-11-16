@@ -10,7 +10,7 @@ class InvitationsController < ApplicationController
   def show
     resume_session
     unless Current.person == @invitation.person
-      if invitation_sign_in_allowed? && DemoOutboundLimit.allow?(@invitation.person.organization)
+      if invitation_sign_in_allowed? && DemoOutboundLimit.allow_for_person?(@invitation.person)
         SignInMailer.sign_in_link(@invitation.person).deliver_later
       end
       return render :confirm

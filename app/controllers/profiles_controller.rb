@@ -24,7 +24,7 @@ class ProfilesController < ApplicationController
     if email_change == :invalid
       render_settings(tab, status: :unprocessable_entity)
     elsif @person.save
-      if email_change && DemoOutboundLimit.allow?(@person.organization)
+      if email_change && DemoOutboundLimit.allow_for_person?(@person)
         SignInMailer.email_change(@person).deliver_later
       end
       redirect_to settings_tab_path(tab), notice: "Settings saved."
