@@ -38,7 +38,7 @@ class ProjectsHelperTest < ActionView::TestCase
       .slot_claims.create!(person: people(:volunteer))
     @project.slots.create!(date: Date.new(2027, 2, 12), label: "Dinner", capacity: 1)
 
-    assert_equal [ [ "When", "Feb 10 – Feb 20" ], [ "Filled", "1 of 2 dinners" ], [ "Next open", "Fri, Feb 12" ] ],
+    assert_equal [ [ "When", "Feb 10 – Feb 20" ], [ "Spots", "1 of 2 dinners filled" ], [ "Next open", "Fri, Feb 12" ] ],
       project_status_items(@project)
   end
 
@@ -66,7 +66,7 @@ class ProjectsHelperTest < ActionView::TestCase
     slot = @project.slots.create!(date: Date.new(2027, 2, 12), label: "Check-in helper", capacity: 3)
     slot.claim(people(:volunteer))
 
-    assert_includes project_status_items(@project), [ "Filled", "1 of 3 spots" ]
+    assert_includes project_status_items(@project), [ "Spots", "1 of 3 spots filled" ]
     assert_equal "2 spots still open", project_guidance(@project, people(:leader))[:title]
   end
 

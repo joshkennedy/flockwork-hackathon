@@ -41,7 +41,7 @@ module ProjectsHelper
     items << [ "When", project_date_range(project.starts_on, project.ends_on) ] if project.starts_on || project.ends_on
 
     if project.enabled_tools.include?("signup_sheet") && (slots = project.slots.to_a).any?
-      items << [ "Filled", "#{slots.sum(&:claims_count)} of #{pluralize(slots.sum(&:capacity), SlotsHelper.count_noun(slots))}" ]
+      items << [ "Spots", "#{slots.sum(&:claims_count)} of #{pluralize(slots.sum(&:capacity), SlotsHelper.count_noun(slots))} filled" ]
       next_open = upcoming_open_slots(slots).first
       items << [ "Next open", next_open ? next_open.date.strftime("%a, %b %-d") : "All filled" ]
     elsif project.enabled_tools.include?("tasks") && (open_tasks = project.tasks.open.to_a).any?
