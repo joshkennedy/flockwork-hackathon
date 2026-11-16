@@ -15,4 +15,8 @@ module SlotsHelper
   def later_slots_meta(slots)
     "#{pluralize(slots.size, "Slot")}, #{pluralize(slots.sum { |slot| [ slot.capacity - slot.claims_count, 0 ].max }, "spot")} left"
   end
+
+  def slot_claims_summary(slot)
+    "#{slot.claims_count} of #{slot.capacity} claimed · #{slot.capacity - slot.claims_count} open"
+  end
 end

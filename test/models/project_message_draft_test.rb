@@ -30,6 +30,20 @@ class ProjectMessageDraftTest < ActiveSupport::TestCase
     assert_includes ProjectMessageDraft::INSTRUCTIONS, "For an announcement, never mention staffing or open spots."
   end
 
+  test "provider never sees Slot claim notes" do
+    project = projects(:community_meal)
+    sentinel = "PRIVATE-POTLUCK-NOTE-8426"
+    slot = project.slots.create!(date: Date.tomorrow, label: "Desserts", capacity: 4, claim_prompt: "What are you bringing?")
+    slot.claim(people(:volunteer), note: sentinel)
+    payload = nil
+    provider = ->(facts) { payload = facts; { "title" => "About {{project}}", "body" => "Please review {{project}}." } }
+
+    ProjectMessageDraft.new(project, provider:).call("announcement")
+
+    assert_not_nil payload
+    assert_not_includes payload.to_json, sentinel
+  end
+
   test "provider failures and invented numbers produce readable errors" do
     provider = ->(*) { raise "SECRET provider credentials" }
     error = assert_raises(ProjectMessageDraft::Unavailable) { ProjectMessageDraft.new(projects(:community_meal), provider: provider).call("announcement") }

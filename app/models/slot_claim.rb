@@ -6,4 +6,8 @@ class SlotClaim < ApplicationRecord
   after_commit -> { slot&.project&.broadcast_refresh_later }
 
   validates :person_id, uniqueness: { scope: :slot_id }
+  validates :note, length: { maximum: 80 }, allow_blank: true
+  validates :note, presence: true, if: -> { slot&.claim_prompt.present? }
+
+  normalizes :note, with: ->(note) { note.to_s.squish.presence }
 end

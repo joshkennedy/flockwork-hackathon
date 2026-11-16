@@ -1,6 +1,24 @@
 require "test_helper"
 
 class NotificationsTest < ActionDispatch::IntegrationTest
+  test "claiming a Public Slot notifies the Project Leaders" do
+    helper = people(:other_volunteer)
+    project = projects(:community_meal)
+    project.update!(enabled_tools: project.enabled_tools | [ "signup_sheet" ])
+    project.enable_public_link!
+    slot = project.slots.create!(date: Date.tomorrow, label: "Bring a side", capacity: 3)
+    sign_in_as helper
+
+    assert_difference -> { Notification.where(kind: "slot_claimed", notifiable: slot).count }, 2 do
+      post public_slot_claim_path(project.public_token, slot)
+    end
+
+    notifications = Notification.where(kind: "slot_claimed", notifiable: slot)
+    assert_equal [ people(:leader).id, people(:other_leader).id ].sort, notifications.pluck(:recipient_id).sort
+    assert notifications.all? { |notification| notification.actor == helper }
+    assert_not people(:admin).notifications.exists?(kind: "slot_claimed", notifiable: slot)
+  end
+
   test "posting a Project Message notifies and emails every other Team member" do
     author = sign_in_as_leader
     project = projects(:community_meal)

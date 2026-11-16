@@ -28,6 +28,7 @@ Rails.application.routes.draw do
   get "go/:link_token", to: "guest_sign_ins#link", as: :guest_sign_in_link, format: false
   post "go/:link_token", to: "guest_sign_ins#open_link", format: false
   post "p/:token/slots/:slot_id/claim", to: "public_slot_claims#create", as: :public_slot_claim
+  patch "p/:token/slots/:slot_id/claim", to: "public_slot_claims#update"
   delete "p/:token/slots/:slot_id/claim", to: "public_slot_claims#destroy"
 
   resources :organizations, only: :create
@@ -84,7 +85,7 @@ Rails.application.routes.draw do
     resources :comments, only: :create
     resources :follows, only: :destroy
     resources :slots, except: %i[ index show ] do
-      resource :claim, only: %i[ create destroy ], controller: "slot_claims"
+      resource :claim, only: %i[ create update destroy ], controller: "slot_claims"
       get :calendar, to: "calendar_downloads#slot"
     end
     resource :slot_run, only: %i[ new create ]

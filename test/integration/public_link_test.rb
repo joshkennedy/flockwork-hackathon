@@ -229,6 +229,55 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
     assert_no_match volunteer.name, response.body
   end
 
+  test "Public helpers answer a Slot prompt without exposing their names" do
+    helper = people(:other_volunteer)
+    project = projects(:community_meal)
+    project.update!(enabled_tools: project.enabled_tools | [ "signup_sheet" ])
+    slot = project.slots.create!(
+      date: Date.tomorrow,
+      label: "Desserts",
+      capacity: 8,
+      claim_prompt: "What are you bringing?"
+    )
+    project.enable_public_link!
+    sign_in_as helper
+
+    post public_slot_claim_path(project.public_token, slot), params: { slot_claim: { note: "Apple crisp" } }
+
+    assert_redirected_to public_project_path(project.public_token, anchor: "slot_#{slot.id}")
+    follow_redirect!
+    assert_select "#slot_#{slot.id}", text: /Apple crisp/
+    assert_select "#slot_#{slot.id}", text: /1 of 8 claimed.*7 open/m
+    assert_select "#slot_#{slot.id}", text: /#{Regexp.escape(helper.name)}/, count: 0
+    assert_select "form[action=?] input[name='slot_claim[note]'][value='Apple crisp']", public_slot_claim_path(project.public_token, slot)
+
+    patch public_slot_claim_path(project.public_token, slot), params: { slot_claim: { note: "Peach cobbler" } }
+    assert_equal "Peach cobbler", slot.slot_claims.find_by!(person: helper).note
+
+    delete guest_sign_out_path(project.public_token)
+    get public_project_path(project.public_token)
+    assert_select "#slot_#{slot.id}", text: /Peach cobbler/
+    assert_select "#slot_#{slot.id}", text: /#{Regexp.escape(helper.name)}/, count: 0
+  end
+
+  test "the public page hides Slots when the Sign-up sheet is off" do
+    project = projects(:community_meal)
+    project.update!(enabled_tools: project.enabled_tools - [ "signup_sheet" ])
+    slot = project.slots.create!(date: Date.tomorrow, label: "Hidden helper", capacity: 2)
+    project.enable_public_link!
+
+    get public_project_path(project.public_token)
+
+    assert_response :success
+    assert_select "section[aria-labelledby='public-slots']", count: 0
+
+    sign_in_as_volunteer
+    assert_no_difference "SlotClaim.count" do
+      post public_slot_claim_path(project.public_token, slot)
+    end
+    assert_response :not_found
+  end
+
   test "a Volunteer cannot toggle the Public link" do
     sign_in_as_leader
     project = projects(:community_meal)

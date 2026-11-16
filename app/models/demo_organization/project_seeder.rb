@@ -11,6 +11,7 @@ class DemoOrganization::ProjectSeeder
   def seed!
     seed_womens_retreat!
     seed_meal_train!
+    seed_fall_church_picnic!
     seed_vbs_projects!
     seed_workday!
     seed_mens_retreat!
@@ -113,6 +114,50 @@ class DemoOrganization::ProjectSeeder
       project.enable_public_link!
       add_public_helpers!(project)
       recipient.update_columns(created_at: 5.weeks.ago, updated_at: 5.weeks.ago)
+    end
+
+    def seed_fall_church_picnic!
+      project = create_project!(
+        name: "Fall Church Picnic",
+        creator: "Maria Lopez",
+        description: "Share lunch on the church lawn and bring enough for everyone to try something.",
+        starts_on: Date.current + 3.weeks,
+        ends_on: Date.current + 3.weeks,
+        created_at: 3.weeks.ago,
+        skills: [ "Cooking", "Hospitality", "Setup and teardown" ],
+        tools: %w[signup_sheet messages],
+        photo: "kitchen-crew.webp",
+        alt: "Volunteers preparing food together in a church kitchen.",
+        open_team: true
+      )
+      add_members!(project, { "Sam Chen" => :volunteer, "Grace Kim" => :volunteer }, joined_at: 2.weeks.ago)
+
+      prompt = "What are you bringing?"
+      categories = [
+        [ "Main dishes", 8, prompt, { "Maria Lopez" => "Baked ziti", "Sam Chen" => "Pulled pork", "Grace Kim" => "Lentil casserole" } ],
+        [ "Sides", 10, prompt, { "Sam Chen" => "Potato salad", "Grace Kim" => "Coleslaw" } ],
+        [ "Desserts", 8, prompt, { "Maria Lopez" => "Apple crisp", "Grace Kim" => "Brownies" } ],
+        [ "Drinks", 6, prompt, { "Sam Chen" => "Iced tea", "Maria Lopez" => "Lemonade" } ],
+        [ "Setup helpers", 4, nil, { "Maria Lopez" => nil, "Sam Chen" => nil } ]
+      ]
+      categories.each do |label, capacity, claim_prompt, claims|
+        slot = project.slots.create!(
+          date: project.starts_on,
+          starts_at_time: "11:30",
+          label:,
+          capacity:,
+          claim_prompt:,
+          created_at: project.created_at + 2.days,
+          updated_at: project.created_at + 2.days
+        )
+        claims.each do |name, note|
+          claim!(slot, name, note:, created_at: project.created_at + 1.week)
+        end
+      end
+
+      root = message!(project, "Maria Lopez", "The picnic sign-up is open. Add what you are bringing so we get a good mix.", 5.days.ago)
+      message!(project, "Sam Chen", "I can bring serving spoons and labels for the food tables.", 4.days.ago, parent: root)
+      project.enable_public_link!
     end
 
     def seed_vbs_projects!
@@ -689,11 +734,11 @@ class DemoOrganization::ProjectSeeder
       end
     end
 
-    def claim!(slot, name, created_at:)
+    def claim!(slot, name, created_at:, note: nil)
       claim = if slot.date < Date.current
-        slot.slot_claims.create(person: person(name))
+        slot.slot_claims.create(person: person(name), note:)
       else
-        slot.claim(person(name))
+        slot.claim(person(name), note:)
       end
       raise ActiveRecord::RecordInvalid, claim unless claim&.persisted?
 

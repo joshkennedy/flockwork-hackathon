@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_14_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_16_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -411,6 +411,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_120000) do
     t.bigint "person_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "note", limit: 80
     t.index ["person_id"], name: "index_slot_claims_on_person_id"
     t.index ["slot_id", "person_id"], name: "index_slot_claims_on_slot_id_and_person_id", unique: true
     t.index ["slot_id"], name: "index_slot_claims_on_slot_id"
@@ -426,6 +427,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_120000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "schedule_item_id"
+    t.string "claim_prompt", limit: 120
     t.index ["label"], name: "index_slots_search", opclass: :gin_trgm_ops, using: :gin
     t.index ["project_id"], name: "index_slots_on_project_id"
     t.index ["schedule_item_id"], name: "index_slots_on_schedule_item_id"

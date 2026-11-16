@@ -4,12 +4,21 @@ class SlotClaimsController < ApplicationController
   before_action :authorize_claim_slot
 
   def create
-    claim = @slot.claim(Current.person)
+    claim = @slot.claim(Current.person, **claim_params)
 
     if claim&.persisted?
       redirect_to return_path
     else
       redirect_to @project, alert: (@slot.errors.full_messages + Array(claim).flat_map { |record| record.errors.full_messages }).to_sentence
+    end
+  end
+
+  def update
+    claim = @slot.slot_claims.find_by!(person: Current.person)
+    if claim.update(claim_params)
+      redirect_to return_path
+    else
+      redirect_to @project, alert: claim.errors.full_messages.to_sentence
     end
   end
 
@@ -29,6 +38,10 @@ class SlotClaimsController < ApplicationController
 
     def authorize_claim_slot
       raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :claim_slot, @project)
+    end
+
+    def claim_params
+      params.fetch(:slot_claim, ActionController::Parameters.new).permit(:note).to_h.symbolize_keys
     end
 
     # Get involved claims from its own page; a failed claim still lands on the Project, where its alert shows.

@@ -24,22 +24,24 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
   test "the Public page sends helpers to its own sign-in, carrying the Slot they tapped" do
     get public_project_path(@token)
 
-    assert_select "section[aria-labelledby='public-slots'] a.btn-secondary.btn-claim[href=?]", guest_sign_in_path(@token, slot_id: @slot.id), text: "Help with This"
+    assert_select "section[aria-labelledby='public-slots'] a.btn-secondary.btn-claim[href=?]", guest_sign_in_path(@token, slot_id: @slot.id), text: "Sign Up"
     assert_select "a[href=?]", guest_sign_in_path(@token), text: "Already signed up? Sign in"
     assert_select "a[href=?]", new_sign_in_request_path, count: 0
   end
 
-  test "the need badge shows from two open spots up, signed in or out" do
+  test "plain claim and open counts show signed in or out" do
     roomy = @project.slots.create!(date: Date.current + 4, label: "Dinner", capacity: 3)
 
     get public_project_path(@token)
-    assert_select "#slot_#{@slot.id} .badge-need", count: 0
-    assert_select "#slot_#{roomy.id} .badge-need", "3 spots left"
+    assert_select "#slot_#{@slot.id}", text: /0 of 1 claimed.*1 open/m
+    assert_select "#slot_#{roomy.id}", text: /0 of 3 claimed.*3 open/m
+    assert_select ".badge-need", count: 0
 
     sign_in_as @vera
     get public_project_path(@token)
-    assert_select "#slot_#{@slot.id} .badge-need", count: 0
-    assert_select "#slot_#{roomy.id} .badge-need", "3 spots left"
+    assert_select "#slot_#{@slot.id}", text: /0 of 1 claimed.*1 open/m
+    assert_select "#slot_#{roomy.id}", text: /0 of 3 claimed.*3 open/m
+    assert_select ".badge-need", count: 0
   end
 
   test "the Public page groups Slots like the Sign-up sheet and opens Later when it holds the helper's spot" do
@@ -74,7 +76,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_select "body[style=?]", "--color-mark: #0F766E"
   end
 
-  test "a signed-in helper sees who they are on the Public page, and Not You? signs out back to it" do
+  test "a signed-in helper sees who they are on the Public page, and Sign Out returns to it" do
     get public_project_path(@token)
     assert_select "[data-public-account]", count: 0
     assert_select "a[href=?]", guest_sign_in_path(@token), text: "Already signed up? Sign in"
@@ -82,14 +84,24 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     sign_in_as @vera
     get public_project_path(@token)
     assert_select "[data-public-account]", /Signed in as #{@vera.name}/
-    assert_select "[data-public-account] form[action=?] button", guest_sign_out_path(@token), text: "Not You?"
+    assert_select "[data-public-account] form[action=?] button", guest_sign_out_path(@token), text: "Sign Out"
     assert_select "a[href=?]", guest_sign_in_path(@token), text: "Already signed up? Sign in", count: 0
 
     delete guest_sign_out_path(@token)
     assert_redirected_to public_project_path(@token)
     follow_redirect!
     assert_select "[data-public-account]", count: 0
-    assert_select "a", text: "Help with This"
+    assert_select "a", text: "Sign Up"
+  end
+
+  test "a signed-in helper opening guest sign-in gets a clear explanation" do
+    sign_in_as @vera
+
+    get guest_sign_in_path(@token, slot_id: @slot.id)
+
+    assert_redirected_to public_project_path(@token, anchor: "slot_#{@slot.id}")
+    follow_redirect!
+    assert_select "#flash [data-toast-kind=notice]", "You’re already signed in."
   end
 
   test "signing in without a chosen Slot returns to the Public page with existing claims shown" do
@@ -154,7 +166,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
 
     sign_in_as_volunteer
     get public_project_path(@token)
-    assert_select "section[aria-labelledby='public-tasks'] form[action=?] button", claim_project_task_path(@project, task), text: "I’ll Do It"
+    assert_select "section[aria-labelledby='public-tasks'] form[action=?] button", claim_project_task_path(@project, task), text: "Sign Up"
   end
 
   test "a Slot without a time is named by its day and label" do
@@ -195,6 +207,36 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_nil @vera.reload.joined_from_project
   end
 
+  test "a prompted Slot asks for the answer after guest sign-in" do
+    @slot.update!(claim_prompt: "What are you bringing?")
+    code = request_code(@vera.email, slot: @slot)
+
+    assert_no_difference "SlotClaim.count" do
+      post guest_sign_in_code_path(@token), params: { code: }
+    end
+
+    assert_redirected_to public_project_path(@token, anchor: "slot_#{@slot.id}")
+    follow_redirect!
+    assert_select "#flash [data-toast-entry]", count: 0
+    assert_select "#slot_#{@slot.id} form[action=?]", public_slot_claim_path(@token, @slot) do
+      assert_select "label", "What are you bringing?"
+      assert_select "input[name='slot_claim[note]'][maxlength='80'][required]"
+      assert_select "input[type='submit'][value='Sign Up']"
+    end
+  end
+
+  test "a challenge cannot claim its Slot after the Sign-up sheet is turned off" do
+    code = request_code(@vera.email, slot: @slot)
+    @project.update!(enabled_tools: @project.enabled_tools - [ "signup_sheet" ])
+
+    assert_no_difference "SlotClaim.count" do
+      post guest_sign_in_code_path(@token), params: { code: }
+    end
+
+    assert_redirected_to public_project_path(@token)
+    assert_empty @slot.reload.slot_claims
+  end
+
   test "the one-tap link holds the tapped Slot even when opened in another browser" do
     request_code(@vera.email, slot: @slot)
     link = ActionMailer::Base.deliveries.last.text_part.body.encoded[%r{/go/(\S+)}, 1]
@@ -212,7 +254,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_select "[data-chosen-slot]", "#{@slot.date.strftime("%A, %B %-d")} · 6:00 PM · Dinner"
     assert_select "p", "Last step. This saves your spot."
-    assert_select "input[type=submit][value=?]", "Confirm My Spot"
+    assert_select "input[type=submit][value=?]", "Sign Up"
     assert_select "label.sr-only[for=name]", "Name"
     assert_select "input[name=name][placeholder=?]", "First and last name"
     assert_select "a[href=?]", public_project_path(@token, anchor: "slot_#{@slot.id}"), text: "Back to #{@project.name}"
@@ -315,8 +357,9 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_select "p", text: "Last step. This saves your spot.", count: 0
     assert_select "input[type=submit][value=?]", "Continue"
 
-    post guest_sign_in_name_path(@token), params: { name: "" }
+    post guest_sign_in_name_path(@token), params: { name: "   " }
     assert_response :unprocessable_content
+    assert_select "#sign-in-error[role=alert]", "Name can't be blank"
 
     assert_difference -> { Person.count }, 1 do
       post guest_sign_in_name_path(@token), params: { name: " Nadia  Novak " }
@@ -328,7 +371,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_not nadia.admin?
     assert_redirected_to public_project_path(@token)
     follow_redirect!
-    assert_select "form[action=?] button", public_slot_claim_path(@token, @slot), text: "I Can Bring Dinner"
+    assert_select "form[action=?] button", public_slot_claim_path(@token, @slot), text: "Sign Up"
 
     post public_slot_claim_path(@token, @slot)
     assert_redirected_to public_project_path(@token, anchor: "slot_#{@slot.id}")
@@ -411,7 +454,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_signed_in_as @vera
   end
 
-  test "Not You? needs the page's form token, so another site cannot sign a helper out" do
+  test "Sign Out needs the page's form token, so another site cannot sign a helper out" do
     post guest_sign_in_code_path(@token), params: { code: request_code(@vera.email) }
     forgery_protection = ActionController::Base.allow_forgery_protection
     ActionController::Base.allow_forgery_protection = true

@@ -14,7 +14,8 @@ class GuestSignInsController < ApplicationController
 
   def new
     if authenticated? && Current.person.organization_id == @project.organization_id
-      redirect_to public_project_path(@project.public_token, anchor: (helpers.dom_id(@slot) if @slot))
+      redirect_to public_project_path(@project.public_token, anchor: (helpers.dom_id(@slot) if @slot)),
+        notice: "You’re already signed in."
     end
   end
 
@@ -66,7 +67,7 @@ class GuestSignInsController < ApplicationController
     end
   end
 
-  # "Not You?" on the Public page: sign out and stay on that page, rather than land on the marketing home.
+  # Sign out on the Public page and stay there, rather than land on the marketing home.
   def destroy
     terminate_session if authenticated?
     redirect_to public_project_path(@project.public_token), status: :see_other
@@ -95,6 +96,8 @@ class GuestSignInsController < ApplicationController
 
     # The slot_id comes from the page's link, so it only counts when it is one of this Project's Slots.
     def set_slot
+      return unless @project.enabled_tools.include?("signup_sheet")
+
       @slot = @project.slots.find_by(id: params[:slot_id])
     end
 
@@ -133,7 +136,7 @@ class GuestSignInsController < ApplicationController
     # Checked again here because the phone's Person can change between sending the code and using it.
     def sign_in(person, challenge, auth_method)
       project = challenge.project
-      slot = @slot = project.slots.find_by(id: challenge.slot_id)
+      slot = @slot = project.slots.find_by(id: challenge.slot_id) if project.enabled_tools.include?("signup_sheet")
       %i[ guest_challenge_id guest_verified_challenge_id guest_auth_method ].each { |key| session.delete(key) }
       return ask_again("Use your email to sign in.") if challenge.texts_an_admin?(person)
       start_new_session_for person, auth_method:, verified_email: (challenge.address if challenge.channel == "email")
@@ -144,6 +147,8 @@ class GuestSignInsController < ApplicationController
     # Takes the Slot the helper tapped before signing in, by the same rules as claiming on the public page.
     # The claimed row the page lands on is the confirmation, so only a lost spot needs a notice.
     def claim_tapped_slot(slot, person)
+      return if slot.claim_prompt.present?
+
       unless slot.slot_claims.exists?(person:) || slot.claim(person)&.persisted?
         { notice: "That spot filled up while you were signing in. Pick another one below." }
       end

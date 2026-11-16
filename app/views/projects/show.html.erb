@@ -51,7 +51,7 @@
         <% end %>
       <% end %>
       <% if can_join %>
-        <%= button_to "Join", join_project_path(@project), class: "btn btn-primary" %>
+        <%= button_to (@project.enabled_tools.include?("signup_sheet") ? "Join to Sign Up" : "Join"), join_project_path(@project), class: "btn btn-primary" %>
       <% end %>
       <% if can_update || can_duplicate || lifecycle_actions.any? %>
         <%= actions_menu("Actions for #{@project.name}") do %>
@@ -119,7 +119,7 @@
         <% elsif can_share %>
           <%= button_to "Turn On Public Link", enable_public_link_project_path(@project), class: button_class %>
         <% elsif claim_slot %>
-          <%= button_to (claim_slot.label.downcase == "dinner" ? "I Can Bring Dinner" : "I Can Help"), project_slot_claim_path(@project, claim_slot), class: button_class, aria: { label: "Claim: #{claim_slot.label}, #{claim_slot.date.strftime("%A, %B %-d")}" } %>
+          <%= button_to "Sign Up", project_slot_claim_path(@project, claim_slot), class: button_class, aria: { label: "Sign up for #{claim_slot.label}, #{claim_slot.date.strftime("%A, %B %-d")}" } %>
         <% end %>
       <% end %>
     </div>

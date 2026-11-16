@@ -31,5 +31,5 @@
     <%= form.collection_select :responsible_person_id, team_people, :id, :name, { include_blank: "None" }, class: "mt-2 block w-full field" %>
   </div>
 
-  <%= form.submit budget_line.persisted? ? "Save Budget Line" : "Add Budget Line", class: "btn btn-primary" %>
+  <%= form.submit budget_line.persisted? ? "Save Purchase" : "Add Purchase", class: "btn btn-primary" %>
 <% end %>

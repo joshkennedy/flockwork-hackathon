@@ -1,7 +1,6 @@
 <% own_claim = slot.slot_claims.find { |claim| claim.person_id == Current.person.id } %>
 <% open = !slot.full? && !own_claim %>
 <% manage = Policy.can?(Current.person, :manage_slots, project) %>
-<% dinner = slot.label.downcase == "dinner" %>
 <% comment_count = slot.comments.size %>
 <% can_comment = Policy.can?(Current.person, :comment, project) %>
 <% has_comment_thread = comment_count.positive? || can_comment || slot.follows.exists?(person: Current.person) %>
@@ -25,24 +24,32 @@
     </div>
     <div class="signup-actions flex min-w-0 flex-wrap items-center gap-2.5 <%= "max-sm:w-full" if open %>">
       <% if slot.slot_claims.any? %>
-        <p class="signup-people flex min-w-0 max-w-full items-center gap-1.5 text-meta text-ink-2"><%= icon(:check, class: "text-sunlit") %><%= people_pill(slot.slot_claims.map(&:person)) %></p>
+        <ul class="signup-people min-w-0 max-w-full space-y-1 text-meta text-ink-2">
+          <% slot.slot_claims.each do |claim| %>
+            <li class="flex min-w-0 items-center gap-1.5"><%= person_pill(claim.person) %><% if claim.note.present? %><span>· <%= claim.note %></span><% end %></li>
+          <% end %>
+        </ul>
       <% end %>
       <% if open %>
         <% can_claim = Policy.can?(Current.person, :claim_slot, project) %>
-        <% spots_left = slot.capacity - slot.claims_count %>
-        <%# A lone open spot is already said by the claim button; the count earns its place from two up. %>
-        <% if spots_left > 1 || !can_claim %>
-          <span class="badge-need"><%= pluralize(spots_left, "spot") %> left</span>
-        <% end %>
         <% if can_claim %>
-          <%= button_to (dinner ? "I Can Bring Dinner" : "I Can Help"), project_slot_claim_path(project, slot),
-                class: "btn btn-secondary btn-sm btn-claim",
-                form_class: "button_to max-sm:w-full",
-                aria: { label: "Claim: #{slot.label}" } %>
+          <% if slot.claim_prompt.present? %>
+            <%= form_with scope: :slot_claim, url: project_slot_claim_path(project, slot), class: "w-full space-y-2 sm:max-w-sm" do |form| %>
+              <%= form.label :note, slot.claim_prompt, class: "block text-label font-medium text-ink" %>
+              <div class="flex flex-col gap-2 sm:flex-row">
+                <%= form.text_field :note, maxlength: 80, required: true, class: "field min-w-0 flex-1" %>
+                <%= form.submit "Sign Up", class: "btn btn-secondary btn-sm btn-claim" %>
+              </div>
+            <% end %>
+          <% else %>
+            <%= button_to "Sign Up", project_slot_claim_path(project, slot),
+                  class: "btn btn-secondary btn-sm btn-claim",
+                  form_class: "button_to max-sm:w-full",
+                  aria: { label: "Sign up for #{slot.label}" } %>
+          <% end %>
         <% end %>
-      <% elsif own_claim && !slot.full? %>
-        <span class="text-meta text-ink-2"><%= "#{slot.claims_count} of #{slot.capacity} filled" %></span>
       <% end %>
+      <span class="text-meta text-ink-2"><%= slot_claims_summary(slot) %></span>
     </div>
     <% if manage || own_claim || has_comment_thread %>
       <%= actions_menu("Actions for #{slot.label} on #{slot.date.strftime("%B %-d")}") do %>
@@ -61,5 +68,15 @@
       <% end %>
     <% end %>
   </div>
+  <% if own_claim && (slot.claim_prompt.present? || own_claim.note.present?) %>
+    <details class="mt-3 max-w-sm">
+      <%= disclosure_summary "Edit Answer" %>
+      <%= form_with model: own_claim, scope: :slot_claim, url: project_slot_claim_path(project, slot), method: :patch, class: "mt-3 space-y-3" do |form| %>
+        <%= form.label :note, slot.claim_prompt.presence || "Your answer", class: "block text-label font-medium text-ink" %>
+        <%= form.text_field :note, maxlength: 80, required: slot.claim_prompt.present?, class: "field block w-full" %>
+        <%= form.submit "Save Answer", class: "btn btn-secondary btn-sm" %>
+      <% end %>
+    </details>
+  <% end %>
   <%= render "comments/thread", commentable: slot, external: true if has_comment_thread %>
 </li>

@@ -1,6 +1,38 @@
 require "application_system_test_case"
 
 class SignupSlotLayoutSystemTest < ApplicationSystemTestCase
+  test "a member answers and edits a prompted Slot" do
+    leader = people(:grace_leader)
+    project = Project.create_for(
+      creator: leader,
+      attributes: { name: "Picnic Sign-up", enabled_tools: [ "signup_sheet" ] }
+    )
+    slot = project.slots.create!(
+      date: Date.current + 3,
+      label: "Main dishes",
+      capacity: 8,
+      claim_prompt: "What are you bringing?"
+    )
+
+    visit new_demo_session_path
+    click_on "Explore as Leader"
+    assert_selector "[data-signed-in-as]", text: "Maria Lopez"
+    visit project_path(project)
+
+    within("#slot_#{slot.id}") do
+      fill_in "What are you bringing?", with: "Baked ziti"
+      click_on "Sign Up"
+    end
+    assert_selector "#slot_#{slot.id}", text: /Maria Lopez.*Baked ziti/m
+
+    within("#slot_#{slot.id}") do
+      find("summary", text: "Edit Answer").click
+      fill_in "What are you bringing?", with: "Vegetable lasagna"
+      click_on "Save Answer"
+    end
+    assert_selector "#slot_#{slot.id}", text: /Maria Lopez.*Vegetable lasagna/m
+  end
+
   test "assignee names stay inside a Slot card on a phone" do
     leader = people(:grace_leader)
     project = Project.create_for(
@@ -21,7 +53,7 @@ class SignupSlotLayoutSystemTest < ApplicationSystemTestCase
 
     row = find("li##{dom_id(slot)}")
     names = row.find(".signup-people")
-    pill = names.find(".person-pill")
+    pill = names.first(".person-pill")
     details = row.find(".signup-details > p", text: "Welcome doors · 8:30 AM")
     row_widths = row.evaluate_script("({ client: this.clientWidth, scroll: this.scrollWidth })")
     names_widths = names.evaluate_script("({ client: this.clientWidth, scroll: this.scrollWidth })")

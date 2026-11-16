@@ -41,7 +41,7 @@
                         <span class="schedule-role-label font-medium"><%= slot.label %></span>
                         <span class="schedule-role-count ml-auto text-meta text-ink-2"><%= slot.claims_count %> of <%= slot.capacity %> filled</span>
                         <% if slot.full? || Policy.can?(Current.person, :claim_slot, project) %>
-                          <%= link_to(slot.full? ? "View" : "Claim", "##{dom_id(slot)}", class: "btn btn-secondary btn-sm min-h-11") %>
+                          <%= link_to(slot.full? ? "View" : "Sign Up", "##{dom_id(slot)}", class: "btn btn-secondary btn-sm min-h-11") %>
                         <% end %>
                       </li>
                     <% end %>
