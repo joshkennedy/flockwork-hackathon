@@ -118,6 +118,17 @@ class SettingsTest < ActionDispatch::IntegrationTest
     assert_redirected_to "/settings#settings-directory"
   end
 
+  test "Directory Settings explain Planning Center credentials and separate CSV import" do
+    sign_in_as_admin
+
+    get settings_path(anchor: "settings-directory")
+
+    assert_response :success
+    assert_select "#settings-directory a[href='https://api.planningcenteronline.com/docs/overview/authentication']", text: "Planning Center developer account"
+    assert_select "label[for='organization_pco_skills_field_id']", "Skills text field ID (optional)"
+    assert_select "section[aria-labelledby='csv-import-heading'] a[href='#{new_people_csv_import_path}']", "Import CSV"
+  end
+
   test "the favicon draws the requested color and falls back to the default" do
     get icon_path(c: "C8502A")
     assert_equal "image/svg+xml", response.media_type
