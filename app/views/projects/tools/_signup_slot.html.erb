@@ -18,18 +18,25 @@
       <% if slot.schedule_item %>
         <p class="signup-session text-meta text-ink-2">Schedule item: <%= slot.schedule_item.title %></p>
       <% end %>
+      <% if slot.slot_claims.any? %>
+        <%# Faces only, so a big Slot stays one row tall; names and answers open on hover, tap or keyboard focus. %>
+        <% signed_up = slot.slot_claims.map { |claim| claim.note.present? ? "#{claim.person.name} (#{claim.note})" : claim.person.name } %>
+        <div class="signup-people mt-1">
+          <button type="button" class="signup-people-trigger" aria-label="Signed up: <%= signed_up.to_sentence %>">
+            <%= avatar_stack(slot.slot_claims.map(&:person), size: :sm) %>
+          </button>
+          <ul class="signup-people-popover" aria-hidden="true">
+            <% slot.slot_claims.each do |claim| %>
+              <li class="flex min-w-0 items-center gap-1.5"><%= person_pill(claim.person) %><% if claim.note.present? %><span class="min-w-0">· <%= claim.note %></span><% end %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
       <% if own_claim %>
         <p class="flex items-center gap-1.5 text-heading text-ink"><%= icon(:check, size: 18, view_box: "3 2 18 18", class: "stroke-2 text-sunlit-strong") %><%= claimed_slot_phrase(slot) %></p>
       <% end %>
     </div>
     <div class="signup-actions flex min-w-0 flex-wrap items-center gap-2.5 <%= "max-sm:w-full" if open %>">
-      <% if slot.slot_claims.any? %>
-        <ul class="signup-people min-w-0 max-w-full space-y-1 text-meta text-ink-2">
-          <% slot.slot_claims.each do |claim| %>
-            <li class="flex min-w-0 items-center gap-1.5"><%= person_pill(claim.person) %><% if claim.note.present? %><span>· <%= claim.note %></span><% end %></li>
-          <% end %>
-        </ul>
-      <% end %>
       <% if open %>
         <% can_claim = Policy.can?(Current.person, :claim_slot, project) %>
         <% if can_claim %>

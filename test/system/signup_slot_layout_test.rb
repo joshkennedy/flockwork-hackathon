@@ -23,6 +23,7 @@ class SignupSlotLayoutSystemTest < ApplicationSystemTestCase
       fill_in "What are you bringing?", with: "Baked ziti"
       click_on "Sign Up"
     end
+    find("#slot_#{slot.id} .signup-people").hover
     assert_selector "#slot_#{slot.id}", text: /Maria Lopez.*Baked ziti/m
 
     within("#slot_#{slot.id}") do
@@ -30,6 +31,7 @@ class SignupSlotLayoutSystemTest < ApplicationSystemTestCase
       fill_in "What are you bringing?", with: "Vegetable lasagna"
       click_on "Save Answer"
     end
+    find("#slot_#{slot.id} .signup-people").hover
     assert_selector "#slot_#{slot.id}", text: /Maria Lopez.*Vegetable lasagna/m
   end
 
@@ -53,19 +55,19 @@ class SignupSlotLayoutSystemTest < ApplicationSystemTestCase
 
     row = find("li##{dom_id(slot)}")
     names = row.find(".signup-people")
-    pill = names.first(".person-pill")
     details = row.find(".signup-details > p", text: "Welcome doors · 8:30 AM")
     row_widths = row.evaluate_script("({ client: this.clientWidth, scroll: this.scrollWidth })")
-    names_widths = names.evaluate_script("({ client: this.clientWidth, scroll: this.scrollWidth })")
-    pill_widths = pill.evaluate_script("({ client: this.clientWidth, scroll: this.scrollWidth })")
     details_size = details.evaluate_script("({ client: this.clientWidth, scroll: this.scrollWidth, height: this.getBoundingClientRect().height, lineHeight: parseFloat(getComputedStyle(this).lineHeight) })")
 
     assert_operator row_widths.fetch("scroll"), :<=, row_widths.fetch("client")
-    assert_operator names_widths.fetch("scroll"), :<=, names_widths.fetch("client")
-    assert_operator pill_widths.fetch("client"), :<=, names_widths.fetch("client")
     assert_operator details_size.fetch("scroll"), :<=, details_size.fetch("client")
     assert_operator details_size.fetch("height"), :<=, details_size.fetch("lineHeight") * 1.25
     assert_operator page.evaluate_script("document.documentElement.scrollWidth"), :<=,
+      page.evaluate_script("document.documentElement.clientWidth")
+
+    names.find(".signup-people-trigger").click
+    popover = names.find(".signup-people-popover", text: "Noah Alexander Davis")
+    assert_operator popover.evaluate_script("this.getBoundingClientRect().right"), :<=,
       page.evaluate_script("document.documentElement.clientWidth")
   end
 end
