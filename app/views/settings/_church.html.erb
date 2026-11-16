@@ -13,9 +13,9 @@
     <%= form.text_field :name, required: true, class: "mt-2 block w-full field" %>
   </div>
   <div>
-    <%= form.label :overextended_limit, "Serving load limit", class: "block text-label font-medium text-ink-2" %>
+    <%= form.label :overextended_limit, "Check-in threshold", class: "block text-label font-medium text-ink-2" %>
     <%= form.number_field :overextended_limit, min: 1, required: true, class: "mt-2 w-24 field", aria: { describedby: "overextended-limit-help" } %>
-    <p id="overextended-limit-help" class="mt-2 text-meta text-ink-2">Oversight asks you to check in with anyone serving on this many Projects or more.</p>
+    <p id="overextended-limit-help" class="mt-2 text-meta text-ink-2">Oversight asks you to check in when someone reaches this many Active Projects.</p>
   </div>
   <div>
     <%= form.label :time_zone, "Time zone", class: "block text-label font-medium text-ink-2" %>

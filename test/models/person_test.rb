@@ -62,4 +62,10 @@ class PersonTest < ActiveSupport::TestCase
     assert_equal [ maria ], org.people.matching("lop mar").to_a
     assert_includes org.people.matching("  MARIA ").to_a, maria
   end
+
+  test "normalizes the old Admin skill name to Administration" do
+    person = Person.create!(organization: organizations(:st_example), name: "Office Helper", skills: [ "Admin" ])
+
+    assert_equal [ "administration" ], person.skills
+  end
 end

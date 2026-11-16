@@ -24,25 +24,17 @@ class InvitationsController < ApplicationController
     raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :manage_team, project)
     raise ActiveRecord::RecordNotFound if project.archived_at?
 
-    person = Current.organization.people.find(invitation_params[:person_id])
-    invitation = Current.organization.invitations.build(
-      project: project,
-      person: person,
-      inviter: Current.person,
-      role: invitation_params[:role]
+    person, invitation = create_invitation!(project)
+    Notifier.notify(
+      recipient: person,
+      kind: "invitation",
+      notifiable: invitation,
+      actor: Current.person
     )
-
-    if invitation.save
-      Notifier.notify(
-        recipient: person,
-        kind: "invitation",
-        notifiable: invitation,
-        actor: Current.person
-      )
-      redirect_to team_project_path(project), notice: "Invited #{person.name}."
-    else
-      redirect_to team_project_path(project, query: person.name), alert: invitation.errors.full_messages.to_sentence
-    end
+    redirect_to team_project_path(project), notice: "Invited #{person.name}."
+  rescue ActiveRecord::RecordInvalid => error
+    query = Current.organization.people.find_by(id: invitation_params[:person_id])&.name
+    redirect_to team_project_path(project, query: query), alert: error.record.errors.full_messages.to_sentence
   end
 
   def accept
@@ -81,7 +73,32 @@ class InvitationsController < ApplicationController
       raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :respond, @invitation)
     end
 
+    def create_invitation!(project)
+      Invitation.transaction do
+        person = if invitation_params[:person_id].present?
+          Current.organization.people.find(invitation_params[:person_id])
+        else
+          create_invitee!
+        end
+        invitation = Current.organization.invitations.create!(
+          project: project,
+          person: person,
+          inviter: Current.person,
+          role: invitation_params[:role]
+        )
+        [ person, invitation ]
+      end
+    end
+
+    def create_invitee!
+      email = Person.normalize_value_for(:email, invitation_params[:email].to_s)
+      person = Current.organization.people.find_or_initialize_by(email: email)
+      person.assign_attributes(name: invitation_params[:name], added_by: Current.person) if person.new_record?
+      person.save!
+      person
+    end
+
     def invitation_params
-      params.expect(invitation: [ :person_id, :role ])
+      params.expect(invitation: [ :person_id, :name, :email, :role ])
     end
 end

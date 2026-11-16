@@ -42,6 +42,18 @@ class SettingsTest < ActionDispatch::IntegrationTest
     assert_select "[data-organization-name]", "St. Example Parish"
   end
 
+  test "Settings and validation call the serving limit the check-in threshold" do
+    sign_in_as_admin
+
+    get settings_path(anchor: "settings-church")
+    assert_select "label[for='organization_overextended_limit']", "Check-in threshold"
+
+    patch settings_path, params: { organization: { overextended_limit: 0 } }
+
+    assert_response :unprocessable_entity
+    assert_select "[role=alert]", text: /Check-in threshold must be greater than 0/
+  end
+
   test "Admin sets the church time zone used by calendars" do
     sign_in_as_admin
 
@@ -77,15 +89,44 @@ class SettingsTest < ActionDispatch::IntegrationTest
     assert_equal "St. Example", organizations(:st_example).reload.name
   end
 
+  test "a Person changes their sign-in email from Settings after confirmation" do
+    person = sign_in_as_leader
+
+    get settings_path
+    assert_select "input[name='person[email]'][value='#{person.email}']"
+
+    assert_enqueued_emails 1 do
+      patch profile_path, params: {
+        tab: "details",
+        person: { name: person.name, email: "new-leader@st-example.test", phone: person.phone, skills: person.skills }
+      }
+    end
+
+    assert_redirected_to settings_path(anchor: "settings-details")
+    assert_equal "new-leader@st-example.test", person.reload.pending_email
+    assert_equal "leo@st-example.test", person.email
+  end
+
   test "old Profile, weekly email and Planning Center links land on their Settings tab" do
     sign_in_as_admin
 
     get "/profile/edit"
-    assert_redirected_to "/settings#settings-notifications"
+    assert_redirected_to "/settings#settings-details"
     get digest_preferences_path
     assert_redirected_to "/settings#settings-notifications"
     get planning_center_directory_path
     assert_redirected_to "/settings#settings-directory"
+  end
+
+  test "Directory Settings explain Planning Center credentials and separate CSV import" do
+    sign_in_as_admin
+
+    get settings_path(anchor: "settings-directory")
+
+    assert_response :success
+    assert_select "#settings-directory a[href='https://api.planningcenteronline.com/docs/overview/authentication']", text: "Planning Center developer account"
+    assert_select "label[for='organization_pco_skills_field_id']", "Skills text field ID (optional)"
+    assert_select "section[aria-labelledby='csv-import-heading'] a[href='#{new_people_csv_import_path}']", "Import CSV"
   end
 
   test "the favicon draws the requested color and falls back to the default" do

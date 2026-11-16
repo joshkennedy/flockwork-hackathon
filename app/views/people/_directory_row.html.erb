@@ -1,0 +1,19 @@
+<li class="relative flex items-center gap-3 py-3">
+  <%= avatar(person) %>
+  <div class="min-w-0 flex-1">
+    <p class="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+      <%= link_to person.name, person_path(person), class: "font-semibold text-ink after:absolute after:inset-0" %>
+      <%= person_chips(person, leader: @leader_ids.include?(person.id), away_until: @away_until[person.id], never_asked: @never_asked_ids.include?(person.id)) %>
+    </p>
+    <% if (serving = serving_line(@serving_names.fetch(person.id, []))) %>
+      <p class="mt-0.5 truncate text-meta text-ink-2"><%= serving %></p>
+    <% end %>
+    <% if @sort == "recently_added" %>
+      <p class="mt-0.5 truncate text-label font-normal text-ink-3">Added <%= short_date(person.created_at.to_date) %><%= " by #{person.added_by.name}" if person.added_by %></p>
+    <% elsif @sort == "last_check_in" && @last_check_in_dates[person.id] %>
+      <p class="mt-0.5 truncate text-label font-normal text-ink-3">Last check-in <%= short_date(@last_check_in_dates.fetch(person.id)) %></p>
+    <% elsif person.added_by %>
+      <p class="mt-0.5 truncate text-label font-normal text-ink-3">Added by <%= person.added_by.name %></p>
+    <% end %>
+  </div>
+</li>

@@ -38,6 +38,22 @@ class PeopleDirectoryTest < ActionDispatch::IntegrationTest
     assert_select "nav a[aria-current='page']", text: /Serving now/
   end
 
+  test "Admin sorts People by name, recently added, or last check-in" do
+    people(:volunteer).update_column(:created_at, 2.days.ago)
+    people(:other_volunteer).update_column(:created_at, 1.day.ago)
+    CheckIn.create!(organization: @organization, person: people(:leader), checked_in_by: people(:admin), on: Date.current - 2)
+    CheckIn.create!(organization: @organization, person: people(:other_leader), checked_in_by: people(:admin), on: Date.current - 1)
+    sign_in_as_admin
+
+    get people_path, params: { sort: "recently_added" }
+    assert_select "select[name=sort] option[value=recently_added][selected]"
+    assert_operator @row_names.call.index("Vera Volunteer"), :<, @row_names.call.index("Vic Volunteer")
+
+    get people_path, params: { sort: "last_check_in" }
+    assert_equal [ "Lucy Leader", "Leo Leader" ], @row_names.call.first(2)
+    assert_select "nav[aria-label='Filter People'] a[href*='sort=last_check_in']", minimum: 1
+  end
+
   test "the Leaders, Not yet asked and No email filters list the right people" do
     sign_in_as_admin
 

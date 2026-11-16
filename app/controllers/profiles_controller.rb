@@ -18,8 +18,15 @@ class ProfilesController < ApplicationController
   def update
     @person = Current.person
     tab = params[:tab].presence_in(%w[ details notifications ]) || "details"
+    @person.assign_attributes(profile_params.except(:email))
+    email_change = stage_email_change
 
-    if @person.update(profile_params)
+    if email_change == :invalid
+      render_settings(tab, status: :unprocessable_entity)
+    elsif @person.save
+      if email_change && DemoOutboundLimit.allow?(@person.organization)
+        SignInMailer.email_change(@person).deliver_later
+      end
       redirect_to settings_tab_path(tab), notice: "Settings saved."
     else
       render_settings(tab, status: :unprocessable_entity)
@@ -65,6 +72,7 @@ class ProfilesController < ApplicationController
     def profile_params
       permitted = params.require(:person).permit(
         :name,
+        :email,
         :phone,
         skills: [],
         # The weekly Project email is an email preference without a Notification kind.
@@ -80,5 +88,19 @@ class ProfilesController < ApplicationController
         end)
       end
       permitted
+    end
+
+    def stage_email_change
+      return false unless params[:person]&.key?(:email)
+
+      address = Person.normalize_value_for(:email, params[:person][:email].to_s)
+      if address.nil?
+        @person.errors.add(:email, "can't be blank")
+        return :invalid
+      end
+      return false if address == @person.email
+
+      @person.pending_email = address
+      true
     end
 end

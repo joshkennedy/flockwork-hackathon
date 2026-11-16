@@ -1,11 +1,9 @@
 <%# Where the People directory comes from: Planning Center or a CSV file. %>
-<div>
-  <div class="flex flex-wrap items-start justify-between gap-3">
-    <div>
-      <h2 class="text-heading font-semibold text-ink">Planning Center</h2>
-      <p class="mt-1 text-meta text-ink-2">Connect a personal access token to pull names and contact details into People.</p>
-    </div>
-    <%= link_to "Import CSV", new_people_csv_import_path, class: "btn btn-secondary" %>
+<div class="space-y-10">
+  <section aria-labelledby="planning-center-heading">
+  <div>
+    <h2 id="planning-center-heading" class="text-heading font-semibold text-ink">Planning Center</h2>
+    <p class="mt-1 text-meta text-ink-2">Create a Personal Access Token in your <%= link_to "Planning Center developer account", "https://api.planningcenteronline.com/docs/overview/authentication", class: "link", target: "_blank", rel: "noreferrer" %>, then paste its App ID and Secret.</p>
   </div>
 
   <% if Current.organization.planning_center_connected? %>
@@ -42,9 +40,9 @@
 
   <%= form_with model: Current.organization, url: planning_center_directory_path, method: :patch, class: "mt-7 space-y-4" do |form| %>
     <div>
-      <%= form.label :pco_skills_field_id, "Skills custom field ID (optional)", class: "block text-label font-medium text-ink" %>
+      <%= form.label :pco_skills_field_id, "Skills text field ID (optional)", class: "block text-label font-medium text-ink" %>
       <%= form.text_field :pco_skills_field_id, inputmode: "numeric", class: "mt-2 block w-full field", aria: { describedby: "pco-skills-help" } %>
-      <p id="pco-skills-help" class="mt-2 text-meta text-ink-2">Enter the ID of the Planning Center text field that lists skills, separated by commas. Leave blank to keep local Skills unchanged. A missing value preserves Skills; an explicitly empty value clears them. Selection and checkbox fields are not supported.</p>
+      <p id="pco-skills-help" class="mt-2 text-meta text-ink-2">Use the numeric ID for the Planning Center People text field that lists skills, separated by commas. Leave blank to keep local Skills unchanged. Selection and checkbox fields are not supported.</p>
     </div>
     <%= form.submit "Save Skills Mapping", class: "btn btn-secondary" %>
   <% end %>
@@ -60,4 +58,11 @@
     </div>
     <%= form.submit Current.organization.planning_center_connected? ? "Replace Connection" : "Connect Planning Center", class: Current.organization.planning_center_connected? ? "btn btn-secondary" : "btn btn-primary" %>
   <% end %>
+  </section>
+
+  <section aria-labelledby="csv-import-heading">
+    <h2 id="csv-import-heading" class="text-heading font-semibold text-ink">CSV import</h2>
+    <p class="mt-1 text-meta text-ink-2">Bring in a spreadsheet when your directory is not in Planning Center.</p>
+    <%= link_to "Import CSV", new_people_csv_import_path, class: "mt-4 btn btn-secondary" %>
+  </section>
 </div>
