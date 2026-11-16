@@ -106,13 +106,13 @@
         <% if planner_session.reviewing? %>
           <% unless general_planner %><h3 id="meal-guide-heading" class="text-heading text-ink">Here’s your meal train</h3><% end %>
 
-          <% if needs_start_date %>
+          <% if needs_start_date || project.starts_on.present? %>
             <%= form_with url: planning_details_project_planner_session_path(project, planner_session), method: :patch, namespace: "review_date", class: "mt-5",
               data: { controller: "autosave" } do |form| %>
               <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
               <%= form.label :starts_on, date_label, class: "block text-label font-medium text-ink" %>
               <div class="mt-2 flex flex-col gap-3 sm:flex-row">
-                <%= form.date_field :starts_on, id: "starts_on", name: "project[starts_on]", required: true,
+                <%= form.date_field :starts_on, id: "starts_on", name: "project[starts_on]", value: project.starts_on, required: needs_start_date,
                   class: "block min-w-0 flex-1 field", data: { action: "change->autosave#save" } %>
                 <%= form.submit "Save Date", class: "btn btn-secondary", data: { autosave_target: "submit", turbo_submits_with: "Saving Date…" } %>
               </div>
@@ -212,9 +212,6 @@
           <% if planner_session.generation_busy? || pending_answer.present? %>
             <div class="mt-5 flex flex-wrap items-center gap-x-2 gap-y-3">
               <%= button_to planner_session.generation_busy? ? "Drafting…" : "Continue", continue_planning_project_planner_session_path(project, planner_session), params: { expected_revision: planner_session.generation_revision }, class: class_names("btn btn-primary", "meal-continue-drafting": planner_session.generation_busy?), disabled: !planner_session.ready_to_continue?, data: { turbo_submits_with: "Continuing…" } %>
-              <% if visible_items.any? && !planner_session.generation_busy? %>
-                <%= button_to "Finish with This", finish_planning_project_planner_session_path(project, planner_session), params: { expected_revision: planner_session.generation_revision }, class: "btn btn-text" %>
-              <% end %>
             </div>
           <% end %>
 
@@ -259,7 +256,7 @@
         <% end %>
 
         <% unless planner_session.accepted? || planner_session.reviewing? %>
-          <%# Back and Save and Leave share one quiet row, at either end; an open Back takes the full width so its answers read below. %>
+          <%# Planner exits share one quiet row; an open Back takes the full width so its answers read below. %>
           <div class="meal-builder-exits mt-6 -mx-3 flex-wrap items-center justify-between gap-x-1">
             <% if planner_session.asking? && (planner_session.pending_answer&.fetch("step_index", 0) || planner_session.steps.length).positive? %>
               <details class="open:basis-full">

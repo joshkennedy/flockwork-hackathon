@@ -196,7 +196,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     perform_enqueued_jobs(only: PlannerStepJob)
     get project_planner_session_path(project, planner_session)
     assert_select "button.btn-primary:not([disabled])", text: "Continue"
-    assert_select "button", text: "Finish with This"
+    assert_select "button", text: "Finish with This", count: 0
   end
 
   test "a full snapshot previews and atomically accepts every provider item kind with explicit dates" do
@@ -508,6 +508,31 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_empty items.find { |pending| pending["kind"] == "task" }.dig("fields", "due_on")
     assert_equal "2027-04-10", items.find { |pending| pending["kind"] == "schedule_item" }.dig("fields", "date")
     assert_equal %w[2027-04-10 2027-04-11], items.select { |pending| pending["kind"] == "slot" }.pluck("fields").pluck("date")
+  end
+
+  test "review keeps the saved Project start date editable after reload" do
+    sign_in_as_leader
+    project, planner_session = build_reviewing_session(
+      planning_kind: "workday",
+      items: [ item("task", "task-1", title: "Confirm crew", details: "", due_in_days: -1) ]
+    )
+
+    patch planning_details_project_planner_session_path(project, planner_session), params: {
+      expected_revision: planner_session.generation_revision,
+      project: { starts_on: "2027-04-10" }
+    }
+    assert_response :see_other
+
+    get project_planner_session_path(project, planner_session)
+    assert_select "label", text: "Workday date"
+    assert_select "input[name='project[starts_on]'][value='2027-04-10']"
+
+    patch planning_details_project_planner_session_path(project, planner_session), params: {
+      expected_revision: planner_session.reload.generation_revision,
+      project: { starts_on: "2027-04-12" }
+    }
+    assert_equal Date.new(2027, 4, 12), project.reload.starts_on
+    assert_equal "2027-04-11", planner_session.reload.visible_pending_items.sole.dig("fields", "due_on")
   end
 
   test "stale acceptance creates nothing and duplicate acceptance is idempotent" do
