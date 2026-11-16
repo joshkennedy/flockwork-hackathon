@@ -10,6 +10,16 @@ class HomeTest < ActionDispatch::IntegrationTest
     assert_select "title", "St. Example · Flockwork"
   end
 
+  test "Home greets the Person by their saved name without guessing a first name" do
+    person = sign_in_as_admin
+    person.update!(name: "[A] Invitee Sam")
+
+    get home_path
+
+    assert_response :success
+    assert_select "h1", "Hi [A] Invitee Sam"
+  end
+
   test "a Volunteer's Home shows their week, open spots on their Projects, and open Teams" do
     volunteer = sign_in_as_volunteer
     project = projects(:community_meal)
@@ -23,7 +33,7 @@ class HomeTest < ActionDispatch::IntegrationTest
 
     get home_path
 
-    assert_select "h1", "Hi Vic"
+    assert_select "h1", "Hi Vic Volunteer"
     assert_select "[data-home-section='coming-up']", text: /Bring salad/
     assert_select "[data-home-section='open-needs']", text: /Community Meal/
     # Bring salad has 1 open spot, Bring dessert 3; Full bread and Far off add none.

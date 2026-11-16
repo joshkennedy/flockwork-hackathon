@@ -120,7 +120,7 @@ class MealPlannerSystemTest < ApplicationSystemTestCase
     planner_path = page.current_path
     fill_in "Project name", with: "Saved from navigation"
     click_link "Home", exact: true
-    assert_selector "h1", text: "Hi Maria"
+    assert_selector "h1", text: "Hi Maria Lopez"
     visit planner_path
     assert_field "Project name", with: "Saved from navigation"
   end
