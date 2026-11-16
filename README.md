@@ -2,9 +2,13 @@
 
 Entry for **AI for Church Hackathon 2026** (Church Operations & Admin track). Flockwork is “Basecamp for churches”: each church gets an **Organization** with a **People** directory and **Projects** built from **Tools**. The Grace Fellowship demo shows all eight: Tasks, Schedule, Sign-up sheet, Budget, Recipients, Messages, Docs & Files, and List. Leaders run an **AI Planner** to shape a Project; **Oversight** helps Admins and Leaders see serving load and who still needs an invitation. The Planner is designed so it sees the work, not the people: it never receives directory data, names, or care details ([docs/adr/0002-the-ai-never-sees-people.md](docs/adr/0002-the-ai-never-sees-people.md)).
 
+**Live demo:** [getflockwork.com/demo](https://getflockwork.com/demo). No account needed.
+
+**Built in the hackathon window.** The first commit is the empty Rails app on 2026-10-30, the day the build window opened; everything in this repository was written between then and the 2026-11-27 deadline, with Claude and Codex as coding agents.
+
 ## Try it
 
-After setup, open [http://localhost:3000/demo](http://localhost:3000/demo). The demo Organization **Grace Fellowship** is seeded from `DemoOrganization` on `db:prepare` / `db:seed`.
+Open [getflockwork.com/demo](https://getflockwork.com/demo), or [localhost:3000/demo](http://localhost:3000/demo) after local setup. The demo church **Grace Fellowship** is synthetic, seeded from `DemoOrganization`, and resets every hour. Demo People never receive email or texts, and the demo's AI use is capped.
 
 Three buttons on `/demo` sign you in as fixed synthetic People (no email link needed):
 
@@ -14,9 +18,16 @@ Three buttons on `/demo` sign you in as fixed synthetic People (no email link ne
 | Explore as Leader | Maria Lopez | Projects Maria leads or belongs to, **Planner**, Team management, Project Tools, and read-only **Oversight** |
 | Explore as Volunteer | Sam Chen | Home, **My Tasks**, Projects Sam is on, **Get involved**, and open-team Projects; no People or Oversight |
 
+Things to try:
+
+- As Maria, choose **Start a Project**, pick **Potluck or Picnic** (or describe anything in one sentence), and answer the Planner's three questions. Nothing is added until you choose **Add to Project**.
+- Open **Fall Church Picnic**: a Sign-up sheet where each Slot is a food category and people say what they are bringing. Its Public link shows the dishes without names.
+- As Sam, open **Get involved** on a phone-sized window and sign up for an open spot.
+- As Daniel, open **Oversight** to see who is serving a lot and who has never been asked.
+
 Non-demo Organizations use email magic links only; the Explore buttons appear when `organization.demo?` is true.
 
-Admins and Leaders of at least one active Project can create Projects and view Oversight. Only Admins can change Oversight settings.
+Admins and anyone who has led a Project can create Projects. Admins and Leaders of an active Project can view Oversight. Only Admins can change Oversight settings.
 
 ## How the AI Planner works
 
