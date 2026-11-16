@@ -182,6 +182,8 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     end
     assert_response :success
     assert_select "h1", "Check your inbox"
+    assert_select "p", text: /This Invitation is for vera@st-example\.test/
+    assert_select "form[action^='/session'] button", "Sign Out and Continue"
     mail = ActionMailer::Base.deliveries.last
     assert_equal [ "vera@st-example.test" ], mail.to
     assert_equal "Your Flockwork sign-in link", mail.subject
@@ -192,6 +194,9 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "[data-signed-in-as]", "Leo Leader"
+
+    delete session_path, params: { return_to: invitation_path(token) }
+    assert_redirected_to invitation_path(token)
   end
 
 
