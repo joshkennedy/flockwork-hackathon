@@ -221,6 +221,10 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
 
     get edit_person_path(people(:leader))
 
+    assert_select "fieldset", text: /Skills/ do
+      assert_select "label", text: "Administration"
+      assert_select "label", text: /^Admin$/i, count: 0
+    end
     assert_select "p", text: "Admins can manage People and Settings."
   end
 end

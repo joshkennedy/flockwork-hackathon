@@ -3,8 +3,9 @@
 module Skills
   SUGGESTED = [
     "Cooking", "Driving", "Hospitality", "Childcare", "Teaching", "Music", "Sound and tech", "Photography",
-    "Setup and teardown", "Handyman", "Gardening", "Prayer", "Admin", "Design", "First aid", "Translation"
+    "Setup and teardown", "Handyman", "Gardening", "Prayer", "Administration", "Design", "First aid", "Translation"
   ].freeze
+  ALIASES = { "admin" => "administration" }.freeze
   MAX_COUNT = 20
   MAX_LENGTH = 40
 
@@ -13,6 +14,7 @@ module Skills
   def normalize(value)
     Array(value).flat_map { |entry| entry.to_s.split(",") }
       .map { |skill| skill.squish.downcase.first(MAX_LENGTH) }
+      .map { |skill| ALIASES.fetch(skill, skill) }
       .compact_blank.uniq.first(MAX_COUNT)
   end
 
