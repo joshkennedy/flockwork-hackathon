@@ -243,7 +243,6 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     assert_predicate person.reload, :active?
     assert_equal "Restored Name", person.name
     assert_equal "202-555-0142", person.phone
-
   end
 
   test "a Team invite cannot bring back someone an Admin removed" do
