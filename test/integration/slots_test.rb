@@ -134,7 +134,7 @@ class SlotsTest < ActionDispatch::IntegrationTest
     assert_select "section[aria-labelledby='tool-signup-sheet']", text: /1 of 2 claimed.*1 open/m
     assert_select "section[aria-labelledby='tool-signup-sheet']", text: /#{member.name}/
     assert_select "section[aria-labelledby='tool-signup-sheet'] .signup-people .person-pill", text: /#{member.name}/
-    assert_select "form[action='#{project_slot_claim_path(project, slot)}'] button", text: "Release"
+    assert_select "form[action='#{project_slot_claim_path(project, slot)}'] button", text: "Cancel Sign-Up"
 
     assert_difference "SlotClaim.count", -1 do
       delete project_slot_claim_path(project, slot)

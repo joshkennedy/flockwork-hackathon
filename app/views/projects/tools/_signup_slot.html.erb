@@ -34,7 +34,7 @@
         <% can_claim = Policy.can?(Current.person, :claim_slot, project) %>
         <% if can_claim %>
           <% if slot.claim_prompt.present? %>
-            <%= form_with scope: :slot_claim, url: project_slot_claim_path(project, slot), class: "w-full space-y-2 sm:max-w-sm" do |form| %>
+            <%= form_with scope: :slot_claim, namespace: dom_id(slot, :claim), url: project_slot_claim_path(project, slot), class: "w-full space-y-2 sm:max-w-sm" do |form| %>
               <%= form.label :note, slot.claim_prompt, class: "block text-label font-medium text-ink" %>
               <div class="flex flex-col gap-2 sm:flex-row">
                 <%= form.text_field :note, maxlength: 80, required: true, class: "field min-w-0 flex-1" %>
@@ -58,7 +58,7 @@
         <% end %>
         <% if own_claim %>
           <%= link_to "Add to Calendar", project_slot_calendar_path(project, slot), data: { turbo: false } %>
-          <%= button_to "Release", project_slot_claim_path(project, slot), method: :delete if Policy.can?(Current.person, :claim_slot, project) %>
+          <%= button_to "Cancel Sign-Up", project_slot_claim_path(project, slot), method: :delete if Policy.can?(Current.person, :claim_slot, project) %>
         <% end %>
         <% if manage %>
           <%= link_to "Edit Slot", edit_project_slot_path(project, slot), data: { action: "slideout#open", slideout_title_param: "Edit Slot" } %>
@@ -71,7 +71,7 @@
   <% if own_claim && (slot.claim_prompt.present? || own_claim.note.present?) %>
     <details class="mt-3 max-w-sm">
       <%= disclosure_summary "Edit Answer" %>
-      <%= form_with model: own_claim, scope: :slot_claim, url: project_slot_claim_path(project, slot), method: :patch, class: "mt-3 space-y-3" do |form| %>
+      <%= form_with model: own_claim, scope: :slot_claim, namespace: dom_id(slot, :edit_claim), url: project_slot_claim_path(project, slot), method: :patch, class: "mt-3 space-y-3" do |form| %>
         <%= form.label :note, slot.claim_prompt.presence || "Your answer", class: "block text-label font-medium text-ink" %>
         <%= form.text_field :note, maxlength: 80, required: slot.claim_prompt.present?, class: "field block w-full" %>
         <%= form.submit "Save Answer", class: "btn btn-secondary btn-sm" %>

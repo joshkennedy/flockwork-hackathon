@@ -113,7 +113,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_redirected_to public_project_path(@token)
     follow_redirect!
     assert_select "#slot_#{@slot.id}", /You’re bringing dinner/
-    assert_select "#slot_#{@slot.id} form[action=?] button", public_slot_claim_path(@token, @slot), text: "Unclaim"
+    assert_select "#slot_#{@slot.id} form[action=?] button", public_slot_claim_path(@token, @slot), text: "Cancel Sign-Up"
   end
 
   test "a signed-in helper opening the internal Project URL returns to its Public page" do
