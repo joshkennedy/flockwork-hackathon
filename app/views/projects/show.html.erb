@@ -117,7 +117,7 @@
         <% elsif can_share %>
           <%= button_to "Turn On Public Link", enable_public_link_project_path(@project), class: button_class %>
         <% elsif claim_slot %>
-          <%= button_to (claim_slot.label.downcase == "dinner" ? "I Can Bring Dinner" : "I Can Help"), project_slot_claim_path(@project, claim_slot), class: button_class, aria: { label: "Claim: #{claim_slot.label}, #{claim_slot.date.strftime("%A, %B %-d")}" } %>
+          <%= button_to "Sign Up", project_slot_claim_path(@project, claim_slot), class: button_class, aria: { label: "Sign up for #{claim_slot.label}, #{claim_slot.date.strftime("%A, %B %-d")}" } %>
         <% end %>
       <% end %>
     </div>

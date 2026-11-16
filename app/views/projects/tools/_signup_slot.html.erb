@@ -1,7 +1,6 @@
 <% own_claim = slot.slot_claims.find { |claim| claim.person_id == Current.person.id } %>
 <% open = !slot.full? && !own_claim %>
 <% manage = Policy.can?(Current.person, :manage_slots, project) %>
-<% dinner = slot.label.downcase == "dinner" %>
 <% comment_count = slot.comments.size %>
 <% can_comment = Policy.can?(Current.person, :comment, project) %>
 <% has_comment_thread = comment_count.positive? || can_comment || slot.follows.exists?(person: Current.person) %>
@@ -35,10 +34,10 @@
           <span class="badge-need"><%= pluralize(spots_left, "spot") %> left</span>
         <% end %>
         <% if can_claim %>
-          <%= button_to (dinner ? "I Can Bring Dinner" : "I Can Help"), project_slot_claim_path(project, slot),
+          <%= button_to "Sign Up", project_slot_claim_path(project, slot),
                 class: "btn btn-secondary btn-sm btn-claim",
                 form_class: "button_to max-sm:w-full",
-                aria: { label: "Claim: #{slot.label}" } %>
+                aria: { label: "Sign up for #{slot.label}" } %>
         <% end %>
       <% elsif own_claim && !slot.full? %>
         <span class="text-meta text-ink-2"><%= "#{slot.claims_count} of #{slot.capacity} filled" %></span>

@@ -70,7 +70,7 @@
               <p class="mt-1 text-meta text-ink-2">Due <%= task.due_on.to_fs(:long) %></p>
             <% end %>
           </div>
-          <%= button_to "I’ll Do It", claim_project_task_path(@project, task), class: "btn btn-primary" %>
+          <%= button_to "Sign Up", claim_project_task_path(@project, task), class: "btn btn-primary" %>
         </li>
       <% end %>
     </ul>

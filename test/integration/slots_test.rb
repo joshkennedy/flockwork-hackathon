@@ -1,6 +1,37 @@
 require "test_helper"
 
 class SlotsTest < ActionDispatch::IntegrationTest
+  test "claim actions use Sign Up consistently" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    project.update!(enabled_tools: project.enabled_tools | [ "signup_sheet", "tasks", "schedule" ])
+    session = project.schedule_items.create!(date: Date.tomorrow, title: "Picnic")
+    project.slots.create!(date: Date.tomorrow, label: "Bring a side", capacity: 2, schedule_item: session)
+    project.tasks.create!(title: "Set out tables")
+
+    get project_path(project)
+
+    assert_select "section[aria-labelledby='tool-signup-sheet'] button", text: "Sign Up"
+    assert_select "section[aria-labelledby='tool-schedule'] a", text: "Sign Up"
+    assert_select "section[aria-labelledby='tool-tasks'] button", text: "Sign Up"
+
+    get new_project_budget_line_path(project)
+    assert_select "form input[type='submit'][value='Add Purchase']"
+  end
+
+  test "an open Project tells a non-member to join before signing up" do
+    sign_in_as people(:other_volunteer)
+    project = projects(:community_meal)
+    project.update!(open_team: true, enabled_tools: project.enabled_tools | [ "signup_sheet" ])
+    project.slots.create!(date: Date.tomorrow, label: "Bring dessert", capacity: 2)
+
+    get project_path(project)
+
+    assert_response :success
+    assert_select "form[action=?] button", join_project_path(project), text: "Join to Sign Up"
+    assert_select "section[aria-labelledby='tool-signup-sheet']", text: /Join this Project to pick a spot\./
+  end
+
   test "a Leader creates, edits, and deletes Slots" do
     sign_in_as_leader
     project = projects(:community_meal)
@@ -273,7 +304,7 @@ class SlotsTest < ActionDispatch::IntegrationTest
     assert_select "li[data-schedule-item-id='#{session.id}']" do
       assert_select ".schedule-role-label", text: "Teacher"
       assert_select ".schedule-role-count", text: "1 of 2 filled"
-      assert_select "a[href='##{dom_id(slot)}']", text: "Claim"
+      assert_select "a[href='##{dom_id(slot)}']", text: "Sign Up"
     end
     assert_select "li##{dom_id(slot)}" do
       assert_select ".signup-session", text: /Schedule item: Opening Session/

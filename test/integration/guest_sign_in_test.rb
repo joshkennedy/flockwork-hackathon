@@ -24,7 +24,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
   test "the Public page sends helpers to its own sign-in, carrying the Slot they tapped" do
     get public_project_path(@token)
 
-    assert_select "section[aria-labelledby='public-slots'] a.btn-secondary.btn-claim[href=?]", guest_sign_in_path(@token, slot_id: @slot.id), text: "Help with This"
+    assert_select "section[aria-labelledby='public-slots'] a.btn-secondary.btn-claim[href=?]", guest_sign_in_path(@token, slot_id: @slot.id), text: "Sign Up"
     assert_select "a[href=?]", guest_sign_in_path(@token), text: "Already signed up? Sign in"
     assert_select "a[href=?]", new_sign_in_request_path, count: 0
   end
@@ -164,7 +164,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
 
     sign_in_as_volunteer
     get public_project_path(@token)
-    assert_select "section[aria-labelledby='public-tasks'] form[action=?] button", claim_project_task_path(@project, task), text: "I’ll Do It"
+    assert_select "section[aria-labelledby='public-tasks'] form[action=?] button", claim_project_task_path(@project, task), text: "Sign Up"
   end
 
   test "a Slot without a time is named by its day and label" do
@@ -222,7 +222,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_select "[data-chosen-slot]", "#{@slot.date.strftime("%A, %B %-d")} · 6:00 PM · Dinner"
     assert_select "p", "Last step. This saves your spot."
-    assert_select "input[type=submit][value=?]", "Confirm My Spot"
+    assert_select "input[type=submit][value=?]", "Sign Up"
     assert_select "label.sr-only[for=name]", "Name"
     assert_select "input[name=name][placeholder=?]", "First and last name"
     assert_select "a[href=?]", public_project_path(@token, anchor: "slot_#{@slot.id}"), text: "Back to #{@project.name}"
@@ -339,7 +339,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_not nadia.admin?
     assert_redirected_to public_project_path(@token)
     follow_redirect!
-    assert_select "form[action=?] button", public_slot_claim_path(@token, @slot), text: "I Can Bring Dinner"
+    assert_select "form[action=?] button", public_slot_claim_path(@token, @slot), text: "Sign Up"
 
     post public_slot_claim_path(@token, @slot)
     assert_redirected_to public_project_path(@token, anchor: "slot_#{@slot.id}")

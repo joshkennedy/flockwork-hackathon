@@ -25,7 +25,7 @@ module GetInvolvedHelper
   end
 
   def claim_label(slot)
-    slot.label.downcase == "dinner" ? "I Can Bring Dinner" : "I Can Help"
+    "Sign Up"
   end
 
   def unassigned_task_label(project)

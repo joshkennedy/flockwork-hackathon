@@ -21,7 +21,7 @@ class GuestSignInSystemTest < ApplicationSystemTestCase
     later = 5.times.map { |i| @project.slots.create!(date: Date.current + 30 + i, label: "Dinner", capacity: 1) }.first
     page.current_window.resize_to(390, 844)
     visit public_project_path(@project.public_token)
-    within("#slot_#{tapped.id}") { click_on "Help with This" }
+    within("#slot_#{tapped.id}") { click_on "Sign Up" }
 
     fill_in "Email or mobile number", with: "nadia@example.com"
     click_on "Send Me a Code"
@@ -39,7 +39,7 @@ class GuestSignInSystemTest < ApplicationSystemTestCase
     click_on "Verify Code"
 
     fill_in "First and last name", with: "Nadia Novak"
-    click_on "Confirm My Spot"
+    click_on "Sign Up"
 
     assert_selector "li[id^=slot_]:focus", text: "You’re bringing dinner"
     assert_match(/#slot_\d+\z/, page.current_url)
@@ -57,7 +57,7 @@ class GuestSignInSystemTest < ApplicationSystemTestCase
     assert_landed_on tapped, below: "#public-slots"
 
     find("summary", text: "Later Slots").click unless page.has_css?("[data-signup-later][open]", wait: 0)
-    within("#slot_#{later.id}") { click_on "I Can Bring Dinner" }
+    within("#slot_#{later.id}") { click_on "Sign Up" }
     assert_selector "#slot_#{later.id}:focus", text: "You’re bringing dinner"
     assert_landed_on later, below: "[data-signup-later] summary"
   end

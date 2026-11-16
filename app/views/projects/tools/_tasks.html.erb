@@ -38,7 +38,7 @@
               </div>
               <div class="flex shrink-0 items-center gap-1">
                 <% if can_claim %>
-                  <%= button_to "I’ll Do It", claim_project_task_path(project, task), class: "btn btn-secondary btn-sm" %>
+                  <%= button_to "Sign Up", claim_project_task_path(project, task), class: "btn btn-secondary btn-sm" %>
                 <% end %>
                 <% if can_manage || can_unclaim %>
                   <%= actions_menu("Actions for #{task.title}") do %>

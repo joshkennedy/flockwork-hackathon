@@ -19,9 +19,9 @@
   </div>
   <%# A held row's only action is on its confirmation line. %>
   <% if !claimed && @helper %>
-    <%= button_to (slot.label.downcase == "dinner" ? "I Can Bring Dinner" : "I Can Help"), public_slot_claim_path(@project.public_token, slot),
-          class: "btn btn-secondary btn-sm btn-claim", aria: { label: "Claim: #{slot.label}" } %>
+    <%= button_to "Sign Up", public_slot_claim_path(@project.public_token, slot),
+          class: "btn btn-secondary btn-sm btn-claim", aria: { label: "Sign up for #{slot.label}" } %>
   <% elsif !claimed %>
-    <%= link_to "Help with This", guest_sign_in_path(@project.public_token, slot_id: slot.id), class: "btn btn-secondary btn-sm btn-claim" %>
+    <%= link_to "Sign Up", guest_sign_in_path(@project.public_token, slot_id: slot.id), class: "btn btn-secondary btn-sm btn-claim" %>
   <% end %>
 </li>

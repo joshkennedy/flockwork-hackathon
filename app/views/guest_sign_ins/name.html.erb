@@ -18,7 +18,7 @@
             aria: ({ invalid: true, describedby: "sign-in-error" } if @person&.errors&.any?) %>
     </div>
 
-    <%= f.submit (@challenge.slot ? "Confirm My Spot" : "Continue"), class: "w-full btn btn-primary" %>
+    <%= f.submit (@challenge.slot && @challenge.slot.claim_prompt.blank? ? "Sign Up" : "Continue"), class: "w-full btn btn-primary" %>
   <% end %>
 
   <p class="mt-3 sm:mt-6"><%= link_to "Back to #{@project.name}", public_project_path(@project.public_token, anchor: (dom_id(@challenge.slot) if @challenge.slot)), class: "link inline-block py-3.5 text-meta font-medium text-ink-2 sm:py-0" %></p>

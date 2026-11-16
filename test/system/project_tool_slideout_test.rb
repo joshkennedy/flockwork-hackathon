@@ -76,10 +76,10 @@ class ProjectToolSlideoutSystemTest < ApplicationSystemTestCase
       assert_selector "input[name='budget_line[description]']:focus"
       fill_in "Description", with: "Serving trays"
       fill_in "Estimated cost", with: "not money"
-      click_on "Add Budget Line"
+      click_on "Add Purchase"
       assert_selector "[role=alert]", text: "Estimated cost must be a dollar amount"
       fill_in "Estimated cost", with: "85.00"
-      click_on "Add Budget Line"
+      click_on "Add Purchase"
     end
 
     assert_no_selector "dialog.slideout[open]"
