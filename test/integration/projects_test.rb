@@ -134,6 +134,7 @@ class ProjectsTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", "Community Meal"
+    assert_select "turbo-cable-stream-source", count: 2
     assert_select "a", text: "Edit Project", count: 0
     assert_select "a", text: "Rename", count: 0
 

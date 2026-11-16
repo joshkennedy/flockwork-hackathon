@@ -22,6 +22,7 @@ class Membership < ApplicationRecord
   after_destroy { person.slot_claims.joins(:slot).where(slots: { project_id: project_id }).destroy_all }
   after_destroy :revoke_project_notifications_and_follows
   after_destroy :notify_leaders_of_departure
+  after_destroy_commit :broadcast_removed_access
   # Open sockets keep their old stream subscriptions; reconnecting resubscribes through Policy.
   after_destroy_commit { person.sessions.each(&:disconnect_cable) }
 
@@ -52,5 +53,12 @@ class Membership < ApplicationRecord
           actor: Current.person
         )
       end
+    end
+
+    def broadcast_removed_access
+      broadcast_replace_to [ project, person ],
+        target: "project-membership-access",
+        partial: "projects/removed_access",
+        locals: { project: project }
     end
 end
