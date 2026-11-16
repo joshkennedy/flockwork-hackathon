@@ -1,0 +1,11 @@
+<% content_for :title, "Rename #{@list.name} · #{@project.name}" %>
+
+<div class="w-full max-w-2xl">
+  <%= page_header "Rename List" %>
+
+  <%= turbo_frame_tag "list-form" do %>
+    <div class="mt-7">
+      <%= render "form", project: @project, list: @list %>
+    </div>
+  <% end %>
+</div>

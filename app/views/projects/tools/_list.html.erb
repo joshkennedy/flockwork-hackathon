@@ -11,6 +11,7 @@
   <% if lists.any? %>
     <div class="mt-6 space-y-7">
       <% lists.each do |list| %>
+        <% manage_lists = Policy.can?(Current.person, :manage_lists, project) %>
         <section class="min-w-0" aria-labelledby="list-<%= list.id %>">
           <div class="flex items-center justify-between gap-4">
             <h3 id="list-<%= list.id %>" class="text-body-phone sm:text-body font-semibold text-ink"><%= list.name %></h3>
@@ -20,12 +21,16 @@
               <% end %>
               <% if Policy.can?(Current.person, :manage_lists, project) %>
                 <%= link_to new_project_list_list_column_path(project, list), class: "btn btn-secondary btn-sm", data: { action: "slideout#open", slideout_title_param: "Add Column" } do %>Add Column<% end %>
+                <%= actions_menu("Actions for #{list.name}") do %>
+                  <%= link_to "Rename List", edit_project_list_path(project, list), data: { action: "slideout#open", slideout_title_param: "Rename List" } %>
+                  <hr>
+                  <%= button_to "Delete List", project_list_path(project, list), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete “#{list.name}”? Its columns, rows, comments, and values go with it." } } %>
+                <% end %>
               <% end %>
             </div>
           </div>
 
           <div class="relative mt-3 max-w-full overflow-x-auto">
-            <% manage_lists = Policy.can?(Current.person, :manage_lists, project) %>
             <table class="list-table min-w-full border-collapse bg-panel text-left text-meta">
               <thead class="<%= "max-sm:hidden" unless manage_lists %>">
                 <tr>

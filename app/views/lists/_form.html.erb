@@ -16,5 +16,5 @@
     <%= form.text_field :name, required: true, autofocus: true, class: "mt-2 block w-full field" %>
   </div>
 
-  <%= form.submit "Add List", class: "btn btn-primary" %>
+  <%= form.submit list.persisted? ? "Save List" : "Add List", class: "btn btn-primary" %>
 <% end %>

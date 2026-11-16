@@ -234,6 +234,28 @@ class ListsTest < ActionDispatch::IntegrationTest
     assert_not row.reload.cells.key?(arrival.id.to_s)
   end
 
+  test "a Leader renames and deletes a List" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    project.update!(enabled_tools: project.enabled_tools | [ "list" ])
+    list = lists(:room_assignments)
+
+    get project_path(project)
+
+    assert_select "a[href='#{edit_project_list_path(project, list)}']", text: "Rename List"
+    assert_select "form[action='#{project_list_path(project, list)}'][data-turbo-confirm='Delete “Room assignments”? Its columns, rows, comments, and values go with it.'] button", text: "Delete List"
+
+    patch project_list_path(project, list), params: { list: { name: "Retreat rooms" } }
+
+    assert_redirected_to project_path(project)
+    assert_equal "Retreat rooms", list.reload.name
+
+    assert_difference "List.count", -1 do
+      delete project_list_path(project, list)
+    end
+    assert_redirected_to project_path(project)
+  end
+
   test "a Volunteer cannot add columns" do
     sign_in_as_volunteer
     project = projects(:community_meal)
