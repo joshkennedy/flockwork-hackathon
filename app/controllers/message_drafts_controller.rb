@@ -1,6 +1,6 @@
 class MessageDraftsController < ApplicationController
   before_action :set_project
-  rate_limit to: 5, within: 10.minutes, by: -> { Current.person.id }, only: :create, with: -> {
+  rate_limit to: 5, within: 10.minutes, by: -> { ai_rate_limit_key }, only: :create, with: -> {
     @purpose = params[:purpose].to_s
     @message = @project.messages.build
     @error = "Too many draft requests. Wait ten minutes, then try again."

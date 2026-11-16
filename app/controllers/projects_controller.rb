@@ -7,7 +7,7 @@ class ProjectsController < ApplicationController
   before_action :authorize_project_write, only: %i[ edit update ]
   before_action :authorize_deleted_list, only: :deleted
   before_action :authorize_project_team, only: :team
-  rate_limit to: 10, within: 1.hour, by: -> { Current.person.id }, name: "planner_spend", scope: :planner,
+  rate_limit to: 10, within: 1.hour, by: -> { ai_rate_limit_key }, name: "planner_spend", scope: :planner,
     only: %i[start_planner start_meal_planner], with: :start_planner_rate_limited
 
   def index

@@ -9,6 +9,14 @@ class ApplicationController < ActionController::Base
   helper_method :demo_organization?, :unread_notification_count
 
   private
+    def ai_rate_limit_key
+      if demo_organization?
+        "session:#{Current.session.id}"
+      else
+        "person:#{Current.person.id}"
+      end
+    end
+
     def demo_organization?
       Current.organization&.demo?
     end

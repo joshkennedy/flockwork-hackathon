@@ -43,7 +43,7 @@ class DemoSpendLimitsTest < ActionDispatch::IntegrationTest
     Rails.configuration.x.voice_client_secret_minter = @original_minter
   end
 
-  test "planner create is bounded per person" do
+  test "planner create is bounded per demo browser session" do
     post demo_session_path(role: "leader")
     maria = people(:grace_leader)
     project = maria.memberships.leader.first!.project
@@ -62,6 +62,15 @@ class DemoSpendLimitsTest < ActionDispatch::IntegrationTest
       assert_redirected_to new_project_planner_session_path(project)
       assert_equal "Too many planning requests. Try again in an hour.", flash[:alert]
       assert_equal 10, provider.calls
+
+      another_browser = open_session
+      another_browser.post demo_session_path(role: "leader")
+      assert_difference "PlannerSession.count", 1 do
+        another_browser.post project_planner_sessions_path(project),
+          params: { planner_session: { description: "Plan from another browser." } }
+      end
+      another_browser.assert_response :redirect
+      assert_equal 11, provider.calls
     end
   end
 
@@ -207,7 +216,7 @@ class DemoSpendLimitsTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "voice session mint is bounded per person" do
+  test "voice session mint is bounded per demo browser session" do
     post demo_session_path(role: "leader")
     maria = people(:grace_leader)
     project = maria.memberships.leader.first!.project
@@ -226,6 +235,12 @@ class DemoSpendLimitsTest < ActionDispatch::IntegrationTest
       post voice_session_project_planner_session_path(project, planner_session), as: :json
       assert_response :too_many_requests
       assert_equal 10, minter.calls
+
+      another_browser = open_session
+      another_browser.post demo_session_path(role: "leader")
+      another_browser.post voice_session_project_planner_session_path(project, planner_session), as: :json
+      another_browser.assert_response :success
+      assert_equal 11, minter.calls
     end
   end
 
