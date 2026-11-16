@@ -423,7 +423,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "button[disabled][aria-describedby=?]", note_id, text: "Add to Project"
-    assert_select "p##{note_id}", text: "Fix the highlighted item to add"
+    assert_select "p##{note_id}", text: "Fix the highlighted item to add."
     assert_select "p##{note_id} a", count: 0
     assert_select "article##{budget_item_id} details:not([open])"
     assert_select "article##{budget_item_id} .badge-need", text: "Estimate later"
@@ -436,7 +436,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_select "p##{schedule_error_id}", text: "Date can't be blank"
   end
 
-  test "review explains the missing start date without marking it invalid" do
+  test "review names the missing start date beside Add without marking each item invalid" do
     sign_in_as_leader
     project, planner_session = build_reviewing_session(
       planning_kind: "workday",
@@ -448,13 +448,13 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     get project_planner_session_path(project, planner_session)
 
     assert_response :success
-    assert_select "button[disabled][aria-describedby]", text: "Add to Project", count: 0
-    assert_select "button[disabled]", text: "Add to Project"
+    assert_select "button[disabled][aria-describedby=?]", note_id, text: "Add to Project"
     assert_select "label[for='#{field_id}']", text: "Workday date"
     assert_select "input##{field_id}"
     assert_select "input##{field_id}[data-action='change->autosave#save']"
     assert_select "input##{field_id}.field-error, input##{field_id}[aria-invalid]", count: 0
-    assert_select "p##{note_id}", count: 0
+    assert_select "p##{note_id}", text: "Set the Workday date above to add these items."
+    assert_select "button.badge-need", text: "Needs details", count: 0
     assert_select "h3", text: "Here’s what will be added", count: 0
     assert_select "p", text: "Items are dated from this day.", count: 0
     assert_select "form[data-controller='autosave'] input[data-autosave-target='submit'][value='Save Date']"
@@ -464,7 +464,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "review explains the missing start date when an estimate is unknown" do
+  test "review names the missing start date when an estimate is unknown" do
     sign_in_as_leader
     project, planner_session = build_reviewing_session(
       planning_kind: "workday",
@@ -477,8 +477,10 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
 
     get project_planner_session_path(project, planner_session)
 
-    assert_select "p##{note_id} a", count: 0
-    assert_select "p##{note_id}", count: 0
+    assert_select "button[disabled][aria-describedby=?]", note_id, text: "Add to Project"
+    assert_select "p##{note_id}", text: "Set the Workday date above to add these items."
+    assert_select "button.badge-need", text: "Needs details", count: 0
+    assert_select ".badge-need", text: "Estimate later"
   end
 
   test "setting the first Project start date preserves explicit item dates and a cleared due date" do
