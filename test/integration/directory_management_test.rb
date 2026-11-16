@@ -137,32 +137,52 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "Admin removes a Person while preserving church work and clearing participation" do
+  test "Admin soft-removes a Person while preserving authorship and clearing participation" do
     sign_in_as_admin
     admin = people(:admin)
     person = organizations(:st_example).people.create!(name: "Remove Me", email: "remove@st-example.test")
     project = projects(:community_meal)
-    project.memberships.create!(person:, role: :volunteer)
+    membership = project.memberships.create!(person:, role: :leader)
     slot = project.slots.create!(date: Date.current + 3, label: "Removed claim")
     claim = slot.slot_claims.create!(person:)
     task = project.tasks.create!(title: "Removed assignment", assignee: person)
     notification = Notification.create!(recipient: person, kind: :task_assigned, notifiable: task, actor: admin)
     owned_project = organizations(:st_example).projects.create!(name: "Preserved Project", owner: person)
     message = project.messages.create!(author: person, body: "Keep this update")
+    comment = message.comments.create!(author: person, body: "Keep this reply")
     note = project.notes.create!(organization: organizations(:st_example), author: person, visibility: :team, body: "Keep this note")
+    doc_item = project.doc_items.create!(author: person, kind: :link, title: "Keep this link", url: "https://example.com")
     budget_line = project.budget_lines.create!(kind: :purchase, description: "Keep this cost", responsible_person: person)
+    recurrence = project.create_project_recurrence!(creator: person, frequency: :weekly, anchor_on: Date.current, enabled: false)
+    planner_session = project.planner_sessions.create!(started_by: person, description: "Keep planning", flow_version: 3, planning_kind: "other")
+    session = person.sessions.create!(auth_method: "magic_link")
+    follow = message.follows.find_by!(person:)
+    recipient = projects(:building_cleanup).recipients.create!(person:)
+    invitation = organizations(:st_example).invitations.create!(project: projects(:building_cleanup), person:, inviter: admin, role: :volunteer)
+    unavailable = person.unavailabilities.create!(organization: organizations(:st_example), starts_on: Date.current, ends_on: Date.current + 2)
 
     delete person_path(person)
 
     assert_redirected_to people_path
-    assert_not Person.exists?(person.id)
-    assert_not Membership.exists?(person_id: person.id)
+    assert Person.exists?(person.id)
+    assert_predicate person.reload.removed_at, :present?
+    assert_not Membership.exists?(membership.id)
     assert_not SlotClaim.exists?(claim.id)
     assert_nil task.reload.assignee
     assert_not Notification.exists?(notification.id)
+    assert_not Session.exists?(session.id)
+    assert_not Follow.exists?(follow.id)
+    assert_not Recipient.exists?(recipient.id)
+    assert_not Invitation.exists?(invitation.id)
+    assert_not Unavailability.exists?(unavailable.id)
     assert_equal admin, owned_project.reload.owner
-    assert_equal admin, message.reload.author
-    assert_equal admin, note.reload.author
+    assert_equal admin, recurrence.reload.creator
+    assert_equal admin, planner_session.reload.started_by
+    assert_equal person, message.reload.author
+    assert_equal person, comment.reload.author
+    assert_equal person, note.reload.author
+    assert_equal person, doc_item.reload.author
+    assert_equal "Remove Me", message.author.name
     assert_nil budget_line.reload.responsible_person
   end
 
@@ -175,6 +195,64 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to person_path(people(:admin))
     assert_equal "You can’t remove yourself from the directory.", flash[:alert]
+  end
+
+  test "removed People stay out of every people finder and notification delivery" do
+    organization = organizations(:st_example)
+    person = organization.people.create!(name: "Hidden Former Member", email: "hidden-former@example.test")
+    project = projects(:community_meal)
+    project.memberships.create!(person:, role: :volunteer)
+    person.update!(removed_at: Time.current)
+    sign_in_as_admin
+
+    get people_path, params: { query: "Hidden Former" }
+    assert_no_match person.name, response.body
+
+    get search_path, params: { query: "Hidden Former" }
+    assert_select "section[aria-label=People]", count: 0
+
+    get team_project_path(projects(:building_cleanup)), params: { query: "Hidden Former" }
+    assert_no_match person.name, response.body
+
+    get mentionable_people_project_path(project), params: { q: "Hidden Former" }, as: :json
+    assert_empty response.parsed_body.fetch("people")
+
+    assert_not_includes Oversight.involvement_list(organization, Time.current.year).map { |entry| entry.fetch(:person) }, person
+
+    task = project.tasks.create!(title: "Do not notify")
+    assert_no_difference "Notification.count" do
+      assert_nil Notifier.notify(recipient: person, kind: "task_assigned", notifiable: task, actor: people(:admin))
+    end
+  end
+
+  test "adding the same email restores a removed Person" do
+    person = organizations(:st_example).people.create!(
+      name: "Former Name",
+      email: "restore-me@st-example.test",
+      removed_at: Time.current
+    )
+    sign_in_as_admin
+
+    assert_no_difference "Person.count" do
+      post people_path, params: {
+        person: { name: "Restored Name", email: "restore-me@st-example.test", phone: "202-555-0142" }
+      }
+    end
+
+    assert_redirected_to people_path
+    assert_predicate person.reload, :active?
+    assert_equal "Restored Name", person.name
+    assert_equal "202-555-0142", person.phone
+
+    person.update!(removed_at: Time.current)
+    assert_no_difference "Person.count" do
+      assert_difference "Invitation.count", 1 do
+        post project_invitations_path(projects(:building_cleanup)), params: {
+          invitation: { name: "Ignored Replacement Name", email: person.email, role: "volunteer" }
+        }
+      end
+    end
+    assert_predicate person.reload, :active?
   end
 
   test "a Person edits their own name and phone" do

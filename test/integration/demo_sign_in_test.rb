@@ -40,6 +40,16 @@ class DemoSignInTest < ActionDispatch::IntegrationTest
     assert_select "[data-signed-in-as]", "Sam Chen"
   end
 
+  test "a removed demo Person cannot sign in" do
+    people(:grace_leader).update!(removed_at: Time.current)
+
+    post demo_session_path(role: "leader")
+
+    assert_response :not_found
+    get home_path
+    assert_redirected_to root_path
+  end
+
   test "the demo endpoint 404s when the demo Organization is not flagged demo, and starts no session" do
     organizations(:grace_fellowship).update!(demo: false)
 

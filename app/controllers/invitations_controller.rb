@@ -33,7 +33,7 @@ class InvitationsController < ApplicationController
     )
     redirect_to team_project_path(project), notice: "Invited #{person.name}."
   rescue ActiveRecord::RecordInvalid => error
-    query = Current.organization.people.find_by(id: invitation_params[:person_id])&.name
+    query = Current.organization.people.active.find_by(id: invitation_params[:person_id])&.name
     redirect_to team_project_path(project, query: query), alert: error.record.errors.full_messages.to_sentence
   end
 
@@ -76,7 +76,7 @@ class InvitationsController < ApplicationController
     def create_invitation!(project)
       Invitation.transaction do
         person = if invitation_params[:person_id].present?
-          Current.organization.people.find(invitation_params[:person_id])
+          Current.organization.people.active.find(invitation_params[:person_id])
         else
           create_invitee!
         end
@@ -92,7 +92,7 @@ class InvitationsController < ApplicationController
 
     def create_invitee!
       email = Person.normalize_value_for(:email, invitation_params[:email].to_s)
-      person = Current.organization.people.find_or_initialize_by(email: email)
+      person = Person.restore_or_initialize_by_email(organization: Current.organization, email: email)
       person.assign_attributes(name: invitation_params[:name], added_by: Current.person) if person.new_record?
       person.save!
       person

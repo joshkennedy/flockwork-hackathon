@@ -17,6 +17,6 @@ class OrganizationChoicesController < ApplicationController
     def choosable_people
       raise ActiveRecord::RecordNotFound unless Current.session.organization_choice_eligible?
 
-      Person.where(email: Current.session.verified_email)
+      Person.active.where(email: Current.session.verified_email)
     end
 end

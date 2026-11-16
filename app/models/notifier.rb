@@ -10,7 +10,7 @@ class Notifier
   end
 
   def self.notify(recipient:, kind:, notifiable:, actor: nil, email: true)
-    return if actor == recipient
+    return if actor == recipient || !recipient.active?
 
     delivery_enabled = !ActiveSupport::IsolatedExecutionState[DELIVERY_SUPPRESSION_KEY]
     notification = recipient.notifications.build(kind: kind, notifiable: notifiable, actor: actor,

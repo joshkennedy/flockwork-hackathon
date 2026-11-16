@@ -78,6 +78,7 @@ class CsvImport
       skills = row.headers.include?("skills") && row["skills"].present? ? { skills: Skills.normalize(row["skills"]) } : {}
 
       if person
+        person.removed_at = nil
         person.assign_attributes(name:, **skills)
         person.phone = phone if phone
         return [ :updated ] if person.save

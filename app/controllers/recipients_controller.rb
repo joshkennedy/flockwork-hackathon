@@ -50,7 +50,7 @@ class RecipientsController < ApplicationController
 
     def find_or_create_person
       if params[:person_id].present?
-        return Current.organization.people.find(params[:person_id])
+        return Current.organization.people.active.find(params[:person_id])
       end
 
       person = Current.organization.people.build(new_person_params.merge(added_by: Current.person))
@@ -61,7 +61,7 @@ class RecipientsController < ApplicationController
       recipient_ids = @project.recipients.select(:person_id)
       member_ids = @project.memberships.select(:person_id)
 
-      @directory_people = Current.organization.people
+      @directory_people = Current.organization.people.active
         .matching(params[:query])
         .where.not(id: recipient_ids)
         .where.not(id: member_ids)
