@@ -135,6 +135,17 @@ class ProjectsTest < ActionDispatch::IntegrationTest
     assert_equal "Community Meal", project.reload.name
   end
 
+  test "a Volunteer sees who will add work when a Project has no Tools" do
+    sign_in_as_volunteer
+    project = projects(:community_meal)
+    project.update!(enabled_tools: [])
+
+    get project_path(project)
+
+    assert_response :success
+    assert_select "[data-empty-project]", text: "Nothing planned yet. Leaders add Tools here."
+  end
+
   test "a Volunteer cannot open or submit any Project creation entry point" do
     sign_in_as_volunteer
 

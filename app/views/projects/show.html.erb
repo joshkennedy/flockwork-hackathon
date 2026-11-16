@@ -123,6 +123,12 @@
     </div>
   <% end %>
 
+  <% if @project.enabled_tools.empty? && !can_update %>
+    <div class="mt-7 rounded-tile bg-page px-4 py-3" data-empty-project>
+      <p class="text-meta text-ink-2">Nothing planned yet. Leaders add Tools here.</p>
+    </div>
+  <% end %>
+
   <div>
     <% if tabs.any? %>
       <%= render "projects/section_tabs", project: @project, tabs: tabs, current: default_tab %>
