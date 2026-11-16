@@ -93,6 +93,7 @@ module Planner
         Use actual ISO dates only when supplied by the Leader or resolved from their explicit Project start date. Never invent calendar dates.
         Unknown dates stay null. When useful, due_in_days and day_offset express days relative to the Project start; the application resolves them after a date is chosen.
         For a slot_run use start_day_offset/end_day_offset (0..59, inclusive) until exact dates are known. Each occurrence becomes an editable sign-up slot.
+        For a potluck or picnic food-category slot_run, set claim_prompt to a short question such as "What are you bringing?". Leave claim_prompt null for helper roles such as setup and cleanup.
         Link a session role to its Schedule item with fields.schedule_item_source_key. Use the planned schedule_item's stable source_key, or an existing Schedule item's source_key from existing_artifacts.schedule_items. Leave it null when the role is not session-specific.
         Ask one short question with 3 to 5 choices. Before any answers return an empty added list. After answers show useful draft work immediately.
         The application collects missing dates and estimates inline. Do not spend all three questions on fields or repeat answered questions. Finish with finished:true and card:null.

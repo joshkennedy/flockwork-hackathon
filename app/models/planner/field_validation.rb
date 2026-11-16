@@ -31,6 +31,11 @@ module Planner
       if kind == "enable_tool"
         errors << "Tool must be one from the list" unless fields["tool"].is_a?(String) && Project::TOOLS.include?(fields["tool"])
       end
+      if %w[slot slot_run].include?(kind) && fields["claim_prompt"].present?
+        prompt = fields["claim_prompt"]
+        errors << "Question for people signing up must be text" unless prompt.is_a?(String)
+        errors << "Question for people signing up is too long (maximum is 120 characters)" if prompt.is_a?(String) && prompt.length > 120
+      end
       errors
     end
 

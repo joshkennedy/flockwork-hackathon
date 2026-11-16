@@ -7,9 +7,11 @@ class SlotRun
   attribute :starts_at_time, :time
   attribute :label, :string
   attribute :capacity, :integer, default: 1
+  attribute :claim_prompt, :string
 
   validates :start_date, :end_date, :label, presence: true
   validates :capacity, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
+  validates :claim_prompt, length: { maximum: 120 }, allow_blank: true
   validate :end_date_is_not_before_start_date
   validate :date_range_is_not_more_than_sixty_days
 
@@ -23,7 +25,7 @@ class SlotRun
 
     @project.transaction do
       (start_date..end_date).each do |date|
-        @project.slots.create!(date:, starts_at_time:, label:, capacity:)
+        @project.slots.create!(date:, starts_at_time:, label:, capacity:, claim_prompt:)
       end
     end
 

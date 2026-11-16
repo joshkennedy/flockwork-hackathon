@@ -116,6 +116,12 @@ module Planner
             min: 1,
             schema: { type: "integer", minimum: 1 }
           },
+          "claim_prompt" => {
+            label: "Question for people signing up",
+            input: :text,
+            maxlength: 120,
+            schema: { type: [ "string", "null" ], maxLength: 120 }
+          },
           "schedule_item_source_key" => {
             label: "Schedule item",
             input: :text,
@@ -129,7 +135,8 @@ module Planner
             start_date: base_date(project) + fields.fetch("start_day_offset").to_i,
             end_date: base_date(project) + fields.fetch("end_day_offset").to_i,
             starts_at_time: fields["time"].presence,
-            capacity: fields.fetch("capacity").to_i
+            capacity: fields.fetch("capacity").to_i,
+            claim_prompt: fields["claim_prompt"].presence
           )
           raise ActiveRecord::RecordInvalid, run unless run.save
         end

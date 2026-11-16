@@ -3,14 +3,15 @@ module Planner
     class Fake
       attr_reader :contexts
 
-      def initialize(responses)
+      def initialize(responses = [], &response_for_context)
         @responses = responses.dup
+        @response_for_context = response_for_context
         @contexts = []
       end
 
       def call(context, &on_partial)
         contexts << context.deep_dup
-        response = @responses.shift
+        response = @responses.shift || @response_for_context&.call(context.deep_dup)
         raise "No scripted Planner response remains" unless response
         raise response if response.is_a?(Exception)
 

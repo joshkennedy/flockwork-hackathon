@@ -41,6 +41,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     original = existing.attributes
 
     expected_names = {
+      "potluck" => "Potluck or Picnic",
       "retreat" => "Retreat",
       "workday" => "Workday",
       "children_program" => "Children’s program",
@@ -124,11 +125,101 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_no_match(/cannot yet link/, class_kind.fetch(:prompt))
     assert_equal({
       "class" => "First class date",
+      "potluck" => "Gathering date",
       "retreat" => "Retreat date",
       "workday" => "Workday date",
       "children_program" => "Program start date",
       "other" => "Start date"
     }, Planner::ProjectKinds::CHOICES.transform_values { |choice| choice.fetch(:date_label) }.except("meal_train"))
+  end
+
+  test "Potluck or Picnic appears in the chooser with food and helper planning guidance" do
+    sign_in_as_leader
+
+    get new_project_path
+
+    assert_response :success
+    assert_select ".project-kind-list > details.project-kind-other:first-child", text: /Something Else/
+    assert_select "form[action='#{start_planner_projects_path}']" do
+      assert_select "input[name='planning_kind'][value='potluck']"
+      assert_select "button", text: /Potluck or Picnic/
+    end
+
+    potluck = Planner::ProjectKinds::CHOICES.fetch("potluck")
+    assert_equal "Potluck or Picnic", potluck.fetch(:name)
+    assert_equal "Plan a potluck or picnic together.", potluck.fetch(:description)
+    assert_match(/expected headcount/, potluck.fetch(:prompt))
+    assert_match(/setting/, potluck.fetch(:prompt))
+    assert_match(/main dishes, sides, desserts, and drinks/, potluck.fetch(:prompt))
+    assert_match(/practical capacity/, potluck.fetch(:prompt))
+    assert_match(/claim_prompt "What are you bringing\?"/, potluck.fetch(:prompt))
+    assert_match(/setup and cleanup helpers/, potluck.fetch(:prompt))
+    assert_match(/supplies, and a schedule/, potluck.fetch(:prompt))
+    assert_match(/Never ask for, infer, or include people's names/, potluck.fetch(:prompt))
+  end
+
+  test "a Fake potluck plan reviews, edits, and creates prompted food Slots without People data" do
+    fake = Planner::Providers::Fake.new do |_context|
+      response(card: nil, finished: true, added: potluck_provider_items)
+    end
+    Rails.configuration.x.planner_provider = fake
+    private_person = organizations(:st_example).people.create!(
+      name: "Private Potluck Person",
+      email: "private-potluck@example.test",
+      phone: "+1-555-234-9876"
+    )
+    sign_in_as_leader
+
+    perform_enqueued_jobs(only: PlannerStepJob) do
+      post start_planner_projects_path, params: { planning_kind: "potluck" }
+    end
+
+    planner_session = PlannerSession.order(:id).last!
+    project = planner_session.project
+    assert_predicate planner_session, :reviewing?
+    assert_equal "Potluck or Picnic", project.name
+    assert_equal "potluck", planner_session.planning_kind
+    prompt = Planner::ProjectKinds::CHOICES.fetch("potluck").fetch(:prompt)
+    assert_equal Planner::NameRedactor.new(organizations(:st_example)).call(prompt), fake.contexts.sole.fetch("project_intent")
+    assert_not_includes fake.contexts.to_json, private_person.name
+    assert_not_includes fake.contexts.to_json, private_person.email
+    assert_not_includes fake.contexts.to_json, private_person.phone
+
+    get project_planner_session_path(project, planner_session)
+    assert_response :success
+    assert_select ".setup-step-detail", text: "Potluck or Picnic"
+    assert_select "article.planner-pending-row", text: /Main dishes.*6 spots.*Question: What are you bringing\?/m
+    assert_select "input[name='item[fields][claim_prompt]'][value='What are you bringing?'][maxlength='120']", count: 4
+
+    main_dishes = planner_session.visible_pending_items.find { |item| item.dig("fields", "label") == "Main dishes" }
+    patch pending_item_project_planner_session_path(project, planner_session), params: {
+      expected_revision: planner_session.generation_revision,
+      item: {
+        id: main_dishes.fetch("id"),
+        decision: "edit",
+        fields: { claim_prompt: "Which main dish are you bringing?" }
+      }
+    }
+    assert_response :see_other
+
+    patch planning_details_project_planner_session_path(project, planner_session), params: {
+      expected_revision: planner_session.reload.generation_revision,
+      project: { starts_on: "2027-06-06" }
+    }
+    assert_response :see_other
+
+    planner_session.reload
+    assert_difference({ "Slot.count" => 6, "ScheduleItem.count" => 1, "BudgetLine.count" => 1 }) do
+      post accept_project_planner_session_path(project, planner_session), params: {
+        expected_revision: planner_session.generation_revision
+      }
+    end
+
+    assert_redirected_to project_path(project, added_plan: planner_session.id, anchor: "tool-signup-sheet")
+    assert_equal "Which main dish are you bringing?", project.slots.find_by!(label: "Main dishes").claim_prompt
+    assert_equal "What are you bringing?", project.slots.find_by!(label: "Desserts").claim_prompt
+    assert_nil project.slots.find_by!(label: "Setup helpers").claim_prompt
+    assert_includes project.reload.enabled_tools, "signup_sheet"
   end
 
   test "Something Else collects a description and redacts names before the first Planner card" do
@@ -755,6 +846,18 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
         item("purchase", "paint", description: "Paint and brushes", estimated_dollars: 125.50),
         item("list", "supplies", name: "Supply checklist", columns: [ { name: "Item", type: "text" }, { name: "Packed", type: "checkbox" } ]),
         item("enable_tool", "docs", tool: "docs")
+      ]
+    end
+
+    def potluck_provider_items
+      food = [ [ "main-dishes", "Main dishes", 6 ], [ "sides", "Sides", 8 ], [ "desserts", "Desserts", 8 ], [ "drinks", "Drinks", 5 ] ].map do |key, label, capacity|
+        item("slot_run", key, label:, start_day_offset: 0, end_day_offset: 0, time: "12:00", capacity:, claim_prompt: "What are you bringing?")
+      end
+      food + [
+        item("slot_run", "setup", label: "Setup helpers", start_day_offset: 0, end_day_offset: 0, time: "10:30", capacity: 3, claim_prompt: nil),
+        item("slot_run", "cleanup", label: "Cleanup helpers", start_day_offset: 0, end_day_offset: 0, time: "14:00", capacity: 3, claim_prompt: nil),
+        item("schedule_item", "meal", title: "Potluck meal", day_offset: 0, starts_at: "12:00", ends_at: "14:00", location: "To be chosen"),
+        item("purchase", "supplies", description: "Plates, cups, napkins, and serving utensils", estimated_dollars: nil)
       ]
     end
 

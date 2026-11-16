@@ -175,7 +175,7 @@ class PlannerSessionsController < ApplicationController
 
   def pending_item
     require_build_as_you_go
-    item = params.expect(item: [ :id, :decision, :resolution, { fields: [ :label, :date, :time, :capacity, :title, :details, :due_on, :starts_at, :ends_at, :location, :description, :estimated_dollars, :name, :tool, { columns: [ %i[name type] ] } ] } ])
+    item = params.expect(item: [ :id, :decision, :resolution, { fields: [ :label, :date, :time, :capacity, :claim_prompt, :title, :details, :due_on, :starts_at, :ends_at, :location, :description, :estimated_dollars, :name, :tool, { columns: [ %i[name type] ] } ] } ])
     args = { id: item.fetch(:id), expected_revision: expected_revision }
     case item[:decision]
     when "edit" then @planner_session.edit_pending_item!(**args, fields: item.fetch(:fields).to_h)
