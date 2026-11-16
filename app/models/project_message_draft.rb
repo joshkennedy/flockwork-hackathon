@@ -10,6 +10,8 @@ class ProjectMessageDraft
     Return JSON with plain text title and body strings. Use {{project}} for the Project name.
     Never invent people, names, dates, numbers, reasons, promises, or completed work.
     Do not mention private care information. Do not include HTML or Markdown formatting.
+    Do not repeat the title in the body.
+    For an announcement, never mention staffing or open spots.
     Ask readers to review the Project and choose a spot when asking for help. Do not claim any action was sent.
   PROMPT
 
@@ -33,9 +35,9 @@ class ProjectMessageDraft
       "request" => Planner::NameRedactor.new(@project.organization).call(PURPOSES.fetch(purpose)),
       "project_name" => "{{project}}",
       "starts_on" => @project.starts_on&.strftime("%B %-d, %Y"),
-      "ends_on" => @project.ends_on&.strftime("%B %-d, %Y"),
-      "open_spots_next_7_days" => risk.open_spots
+      "ends_on" => @project.ends_on&.strftime("%B %-d, %Y")
     }
+    facts["open_spots_next_7_days"] = risk.open_spots if purpose == "open_spots"
     response = @provider.call(facts)
     title = response.fetch("title")
     body = response.fetch("body")
