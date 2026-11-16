@@ -35,6 +35,18 @@ class MessageDraftsTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "the draft form disables an open-spots request when no spots are open" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    project.update!(enabled_tools: project.enabled_tools | [ "messages" ])
+    project.slots.destroy_all
+
+    get new_project_message_draft_path(project)
+
+    assert_response :success
+    assert_select "option[value=open_spots][disabled]", text: "Ask for help with open spots (none in the next 7 days)"
+  end
+
   test "volunteers and other churches cannot generate drafts" do
     sign_in_as_volunteer
     project = projects(:community_meal)
