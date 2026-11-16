@@ -3,6 +3,8 @@ require "aws-sdk-s3"
 
 class OffsiteBackupTest < ActiveSupport::TestCase
   Status = Data.define(:success?)
+  # Object ages are measured from the same fixed clock the backup prunes against.
+  NOW = Time.utc(2026, 11, 10, 4)
 
   setup do
     @created_blobs = []
@@ -113,7 +115,7 @@ class OffsiteBackupTest < ActiveSupport::TestCase
 
   test "keeps the seven newest database dumps even when all dumps are old" do
     client = pruning_client((20..29).map do |days_old|
-      s3_object("db/#{days_old}.dump", days_old.days.ago)
+      s3_object("db/#{days_old}.dump", days_old.days.before(NOW))
     end)
 
     build_backup(client:, dump_runner: successful_dump_runner).call
@@ -122,10 +124,10 @@ class OffsiteBackupTest < ActiveSupport::TestCase
   end
 
   test "never deletes recent dumps or objects outside the database dump prefix" do
-    objects = (1..8).map { |days_old| s3_object("db/recent-#{days_old}.dump", days_old.days.ago) }
-    objects << s3_object("db/old.dump", 20.days.ago)
-    objects << s3_object("db/notes.txt", 30.days.ago)
-    objects << s3_object("storage/never-delete", 30.days.ago)
+    objects = (1..8).map { |days_old| s3_object("db/recent-#{days_old}.dump", days_old.days.before(NOW)) }
+    objects << s3_object("db/old.dump", 20.days.before(NOW))
+    objects << s3_object("db/notes.txt", 30.days.before(NOW))
+    objects << s3_object("storage/never-delete", 30.days.before(NOW))
     client = pruning_client(objects)
 
     build_backup(client:, dump_runner: successful_dump_runner).call
@@ -140,7 +142,7 @@ class OffsiteBackupTest < ActiveSupport::TestCase
         client_builder:,
         dump_runner:,
         logger:,
-        now: Time.utc(2026, 11, 10, 4),
+        now: NOW,
         connection_config: {
           host: "db.internal",
           port: 5432,
