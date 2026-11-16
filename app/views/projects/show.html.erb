@@ -50,7 +50,7 @@
         <% end %>
       <% end %>
       <% if can_join %>
-        <%= button_to "Join", join_project_path(@project), class: "btn btn-primary" %>
+        <%= button_to (@project.enabled_tools.include?("signup_sheet") ? "Join to Sign Up" : "Join"), join_project_path(@project), class: "btn btn-primary" %>
       <% end %>
       <% if can_update || can_duplicate || lifecycle_actions.any? %>
         <%= actions_menu("Actions for #{@project.name}") do %>
