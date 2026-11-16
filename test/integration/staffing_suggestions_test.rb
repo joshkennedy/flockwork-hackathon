@@ -30,4 +30,16 @@ class StaffingSuggestionsFlowTest < ActionDispatch::IntegrationTest
     get team_project_path(project)
     assert_select "#suggested-heading", count: 0
   end
+
+  test "the empty suggestion state explains who availability leaves out" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    project.update!(skills_needed: [ "setup and teardown" ])
+
+    get team_project_path(project)
+
+    assert_select "section[aria-labelledby=suggested-heading] p", text: /No one available to invite lists Setup and teardown yet\./
+    assert_select "section[aria-labelledby=suggested-heading] p", text: /already connected to this Project, away during it, or at the serving limit/
+    assert_no_match "No one free", response.body
+  end
 end
