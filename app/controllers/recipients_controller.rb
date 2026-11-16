@@ -20,6 +20,7 @@ class RecipientsController < ApplicationController
     recipient = @project.recipients.build(person: person)
 
     if recipient.save
+      @project.update!(enabled_tools: @project.enabled_tools | [ "recipients" ])
       redirect_to @project
     else
       @person = person

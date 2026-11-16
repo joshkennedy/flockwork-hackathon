@@ -21,6 +21,18 @@ class RecipientsTest < ActionDispatch::IntegrationTest
     assert_select "section[aria-labelledby='tool-recipients'] li", text: /Rowan Recipient/
   end
 
+  test "adding a Recipient turns on the Recipients Tool so the saved person stays visible" do
+    sign_in_as_leader
+    @project.update!(enabled_tools: @project.enabled_tools - [ "recipients" ])
+
+    post project_recipients_path(@project), params: { person_id: people(:recipient).id }
+
+    assert_redirected_to project_path(@project)
+    assert_includes @project.reload.enabled_tools, "recipients"
+    follow_redirect!
+    assert_select "section[aria-labelledby='tool-recipients'] li", text: /Rowan Recipient/
+  end
+
   test "a Person created through the recipients flow records the Leader and the directory says so" do
     sign_in_as_leader
     post project_recipients_path(@project), params: { person: { name: "Taylor Care", phone: "555-0100" } }
