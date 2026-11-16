@@ -108,6 +108,11 @@ class PeopleController < ApplicationController
       redirect_to person_path(@person), alert: "You can’t remove yourself from the directory."
       return
     end
+    # Every demo visitor shares these People, so one visitor's removal would lock the rest out until the reset.
+    if Current.organization.demo?
+      redirect_to person_path(@person), alert: "People in the demo church can’t be removed."
+      return
+    end
 
     name = @person.name
     @person.remove_from_directory!(replacement: Current.person)

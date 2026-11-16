@@ -10,8 +10,10 @@ class DirectorySync
     organization.transaction do
       source.each_person do |attributes|
         person = find_person(attributes)
+        # An Admin removed this person on purpose; a sync must not quietly bring them back.
+        next counts[:unchanged] += 1 unless person.active?
+
         new_record = person.new_record?
-        person.removed_at = nil
         if (skipped_email_change = skipped_email_change_for(person, attributes.fetch(:email)))
           counts[:skipped_email_changes] << skipped_email_change
         end

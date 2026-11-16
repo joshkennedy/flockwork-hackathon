@@ -103,6 +103,25 @@ class PlanningCenterDirectoryTest < ActionDispatch::IntegrationTest
     assert_equal "202-555-0104", existing.phone
   end
 
+  test "sync leaves a removed Person removed" do
+    sign_in_as_admin
+    connect
+    organization = organizations(:st_example)
+    removed = organization.people.create!(
+      name: "Ruth Before",
+      email: "old-ruth@grace.example",
+      external_source: "planning_center",
+      external_id: "204576403",
+      removed_at: Time.current
+    )
+
+    sync_with_recording
+
+    removed.reload
+    assert_not_predicate removed, :active?
+    assert_equal "Ruth Before", removed.name
+  end
+
   test "sync protects a signed-in Person email while updating their other details" do
     leader = sign_in_as_leader
     organization = organizations(:st_example)

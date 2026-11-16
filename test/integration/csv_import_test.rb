@@ -43,6 +43,17 @@ class CsvImportTest < ActionDispatch::IntegrationTest
     assert_equal "555-2002", people(:leader).phone
   end
 
+  test "a CSV row for a removed Person is rejected instead of bringing them back" do
+    sign_in_as_admin
+    people(:leader).update!(removed_at: Time.current)
+
+    upload_csv "people_import.csv"
+
+    assert_not_predicate people(:leader).reload, :active?
+    assert_not_equal "Updated Leader", people(:leader).name
+    assert_match "An Admin can add them back from People", response.body
+  end
+
   test "re-import preserves an existing phone when the CSV omits or blanks it" do
     sign_in_as_admin
     person = organizations(:st_example).people.create!(name: "Phone Person", email: "phone-person@st-example.test", phone: "555-4004")

@@ -244,15 +244,39 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     assert_equal "Restored Name", person.name
     assert_equal "202-555-0142", person.phone
 
-    person.update!(removed_at: Time.current)
-    assert_no_difference "Person.count" do
-      assert_difference "Invitation.count", 1 do
-        post project_invitations_path(projects(:building_cleanup)), params: {
-          invitation: { name: "Ignored Replacement Name", email: person.email, role: "volunteer" }
-        }
-      end
+  end
+
+  test "a Team invite cannot bring back someone an Admin removed" do
+    person = organizations(:st_example).people.create!(
+      name: "Former Name",
+      email: "restore-me@st-example.test",
+      removed_at: Time.current
+    )
+    sign_in_as_admin
+
+    assert_no_difference [ "Person.count", "Invitation.count" ] do
+      post project_invitations_path(projects(:building_cleanup)), params: {
+        invitation: { name: "Ignored Replacement Name", email: person.email, role: "volunteer" }
+      }
     end
-    assert_predicate person.reload, :active?
+
+    assert_redirected_to team_project_path(projects(:building_cleanup))
+    assert_match "An Admin can add them back from People", flash[:alert]
+    assert_not_predicate person.reload, :active?
+  end
+
+  test "People in the demo church cannot be removed" do
+    DemoOrganization.seed!
+    post demo_session_path(role: "admin")
+    sam = organizations(:grace_fellowship).people.find_by!(name: "Sam Chen")
+
+    get person_path(sam)
+    assert_select "button", text: "Remove Person", count: 0
+
+    delete person_path(sam)
+
+    assert_redirected_to person_path(sam)
+    assert_predicate sam.reload, :active?
   end
 
   test "a Person edits their own name and phone" do

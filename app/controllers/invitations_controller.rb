@@ -93,6 +93,11 @@ class InvitationsController < ApplicationController
     def create_invitee!
       email = Person.normalize_value_for(:email, invitation_params[:email].to_s)
       person = Person.restore_or_initialize_by_email(organization: Current.organization, email: email)
+      # Only an Admin, from People, can bring back someone an Admin removed.
+      if person.persisted? && person.removed_at_was.present?
+        person.errors.add(:base, "That person was removed from the directory. An Admin can add them back from People.")
+        raise ActiveRecord::RecordInvalid, person
+      end
       person.assign_attributes(name: invitation_params[:name], added_by: Current.person) if person.new_record?
       person.save!
       person

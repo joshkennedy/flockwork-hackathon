@@ -77,8 +77,9 @@ class CsvImport
 
       skills = row.headers.include?("skills") && row["skills"].present? ? { skills: Skills.normalize(row["skills"]) } : {}
 
+      return [ :rejected, "That person was removed from the directory. An Admin can add them back from People." ] if person && !person.active?
+
       if person
-        person.removed_at = nil
         person.assign_attributes(name:, **skills)
         person.phone = phone if phone
         return [ :updated ] if person.save
