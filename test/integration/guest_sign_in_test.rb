@@ -315,8 +315,9 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_select "p", text: "Last step. This saves your spot.", count: 0
     assert_select "input[type=submit][value=?]", "Continue"
 
-    post guest_sign_in_name_path(@token), params: { name: "" }
+    post guest_sign_in_name_path(@token), params: { name: "   " }
     assert_response :unprocessable_content
+    assert_select "#sign-in-error[role=alert]", "Name can't be blank"
 
     assert_difference -> { Person.count }, 1 do
       post guest_sign_in_name_path(@token), params: { name: " Nadia  Novak " }
