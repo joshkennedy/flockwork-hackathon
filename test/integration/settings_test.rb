@@ -77,6 +77,24 @@ class SettingsTest < ActionDispatch::IntegrationTest
     assert_equal "St. Example", organizations(:st_example).reload.name
   end
 
+  test "a Person changes their sign-in email from Settings after confirmation" do
+    person = sign_in_as_leader
+
+    get settings_path
+    assert_select "input[name='person[email]'][value='#{person.email}']"
+
+    assert_enqueued_emails 1 do
+      patch profile_path, params: {
+        tab: "details",
+        person: { name: person.name, email: "new-leader@st-example.test", phone: person.phone, skills: person.skills }
+      }
+    end
+
+    assert_redirected_to settings_path(anchor: "settings-details")
+    assert_equal "new-leader@st-example.test", person.reload.pending_email
+    assert_equal "leo@st-example.test", person.email
+  end
+
   test "old Profile, weekly email and Planning Center links land on their Settings tab" do
     sign_in_as_admin
 

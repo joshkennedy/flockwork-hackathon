@@ -34,8 +34,13 @@
           </div>
 
           <div>
-            <p class="block text-meta font-medium text-ink-2">Email</p>
-            <p class="mt-1 text-meta text-ink-2"><%= @person.email.presence || "Can't sign in (no email)" %></p>
+            <%= form.label :email, class: "block text-label font-medium text-ink-2" %>
+            <%= form.email_field :email, required: true, class: "mt-2 block w-full field" %>
+            <% if @person.pending_email.present? %>
+              <p class="mt-2 text-meta text-ink-2">Waiting for <span class="break-all text-ink"><%= @person.pending_email %></span> to be confirmed.</p>
+            <% else %>
+              <p class="mt-2 text-meta text-ink-2">A new address takes effect after you confirm it from that inbox.</p>
+            <% end %>
           </div>
 
           <div>
