@@ -76,7 +76,9 @@
                           <%= actions_menu("Actions for this row") do %>
                             <%= link_to "Edit Row", edit_project_list_list_row_path(project, list, row), data: { action: "slideout#open", slideout_title_param: "Edit Row" } %>
                             <hr>
-                            <%= button_to "Delete Row", project_list_list_row_path(project, list, row), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "Delete this row? Its comments are deleted too." } } %>
+                            <% row_label = list_row_label(list, row) %>
+                            <% delete_question = row_label ? "Delete “#{row_label}”?" : "Delete this row?" %>
+                            <%= button_to "Delete Row", project_list_list_row_path(project, list, row), method: :delete, class: "menu-danger", form: { data: { turbo_confirm: "#{delete_question} Its comments are deleted too." } } %>
                           <% end %>
                         </div>
                       <% end %>

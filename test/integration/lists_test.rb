@@ -102,6 +102,19 @@ class ListsTest < ActionDispatch::IntegrationTest
     assert_redirected_to project_path(project)
   end
 
+  test "a row delete confirmation names its first value" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    project.update!(enabled_tools: project.enabled_tools | [ "list" ])
+    list = lists(:room_assignments)
+    room = list_columns(:room)
+    row = list.rows.create!(cells: { room.id.to_s => "Cedar" })
+
+    get project_path(project)
+
+    assert_select "form[action='#{project_list_list_row_path(project, list, row)}'][data-turbo-confirm='Delete “Cedar”? Its comments are deleted too.'] button", text: "Delete Row"
+  end
+
   test "a Team member toggles a checkbox cell inline" do
     sign_in_as_volunteer
     project = projects(:community_meal)
