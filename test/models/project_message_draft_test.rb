@@ -18,6 +18,18 @@ class ProjectMessageDraftTest < ActiveSupport::TestCase
     assert_no_match(/private|care details|volunteer@example|#{Regexp.escape(people(:volunteer).name)}/, payload.to_json)
   end
 
+  test "announcement drafts receive no staffing data" do
+    project = projects(:community_meal)
+    payload = nil
+    provider = ->(facts) { payload = facts; { "title" => "About {{project}}", "body" => "Please review the Project." } }
+
+    ProjectMessageDraft.new(project, provider: provider).call("announcement")
+
+    assert_not payload.key?("open_spots_next_7_days")
+    assert_includes ProjectMessageDraft::INSTRUCTIONS, "Do not repeat the title in the body."
+    assert_includes ProjectMessageDraft::INSTRUCTIONS, "For an announcement, never mention staffing or open spots."
+  end
+
   test "provider failures and invented numbers produce readable errors" do
     provider = ->(*) { raise "SECRET provider credentials" }
     error = assert_raises(ProjectMessageDraft::Unavailable) { ProjectMessageDraft.new(projects(:community_meal), provider: provider).call("announcement") }

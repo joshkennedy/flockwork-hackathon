@@ -107,6 +107,20 @@ class ProjectsTest < ActionDispatch::IntegrationTest
     assert_equal [ "schedule" ], project.reload.enabled_tools
   end
 
+  test "a Leader can reach Tool settings from the Project page" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+
+    get project_path(project)
+
+    assert_response :success
+    assert_select "details.actions-menu a[href='#{edit_project_path(project, anchor: "project-tools")}']", text: "Manage Tools"
+
+    get edit_project_path(project, anchor: "project-tools")
+
+    assert_select "fieldset#project-tools legend", text: "Tools"
+  end
+
   test "a Volunteer views a Project but cannot edit it" do
     sign_in_as_volunteer
     project = projects(:community_meal)
@@ -120,6 +134,7 @@ class ProjectsTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", "Community Meal"
+    assert_select "turbo-cable-stream-source", count: 2
     assert_select "a", text: "Edit Project", count: 0
     assert_select "a", text: "Rename", count: 0
 
@@ -133,6 +148,17 @@ class ProjectsTest < ActionDispatch::IntegrationTest
 
     assert_response :not_found
     assert_equal "Community Meal", project.reload.name
+  end
+
+  test "a Volunteer sees who will add work when a Project has no Tools" do
+    sign_in_as_volunteer
+    project = projects(:community_meal)
+    project.update!(enabled_tools: [])
+
+    get project_path(project)
+
+    assert_response :success
+    assert_select "[data-empty-project]", text: "Nothing planned yet. Leaders add Tools here."
   end
 
   test "a Volunteer cannot open or submit any Project creation entry point" do

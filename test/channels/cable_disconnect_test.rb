@@ -36,6 +36,21 @@ class CableDisconnectTest < ActionDispatch::IntegrationTest
     assert Session.exists?(volunteer_session.id)
   end
 
+  test "removing a member replaces their open Project page with an access message" do
+    project = projects(:community_meal)
+    volunteer = people(:volunteer)
+    stream = Turbo::StreamsChannel.send(:stream_name_from, [ project, volunteer ])
+    sign_in_as_leader
+
+    messages = capture_broadcasts(stream) do
+      delete project_membership_path(project, memberships(:community_meal_volunteer))
+    end
+
+    assert_equal 1, messages.size
+    assert_includes messages.first, %(action="replace" target="project-membership-access")
+    assert_includes messages.first, "You no longer have access to Community Meal."
+  end
+
   test "signing in again from the same browser invalidates that browser's previous Session" do
     leader = sign_in_as_leader
     old_session = leader.sessions.order(:id).last

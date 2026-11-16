@@ -112,6 +112,7 @@ class MessagesTest < ActionDispatch::IntegrationTest
 
     assert_match "Updated text", response.body
     assert_no_match "Original text", response.body
+    assert_select "article##{ActionView::RecordIdentifier.dom_id(message)} [data-message-edited]", text: "Edited"
   end
 
   test "another Team member cannot edit someone else's message" do

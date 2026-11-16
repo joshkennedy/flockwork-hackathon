@@ -5,7 +5,10 @@
 <% unless @message.body.present? %>
 <%= form_with url: project_message_draft_path(@project), class: "mt-5 space-y-3", data: { turbo: false } do |form| %>
   <%= form.label :purpose, "Draft type", for: "draft_purpose", class: "text-meta font-semibold" %>
-  <%= form.select :purpose, ProjectMessageDraft::PURPOSES.map { |value, label| [ label, value ] }, { selected: @purpose }, id: "draft_purpose", class: "field w-full" %>
+  <% draft_purposes = ProjectMessageDraft::PURPOSES.map do |value, label| %>
+    <% [ value == "open_spots" && !@open_spots_available ? "#{label} (none in the next 7 days)" : label, value ] %>
+  <% end %>
+  <%= form.select :purpose, draft_purposes, { selected: @purpose, disabled: ("open_spots" unless @open_spots_available) }, id: "draft_purpose", class: "field w-full" %>
   <%= form.submit "Generate Draft", class: "btn btn-secondary" %>
 <% end %>
 <% end %>

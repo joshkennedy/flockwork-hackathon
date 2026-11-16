@@ -61,6 +61,7 @@ export default class extends Controller {
     const name = event.currentTarget.dataset.tabsName
     this.show(name)
     this.remembered = name
+    this.rememberInUrl(name)
   }
 
   show(name) {
@@ -78,6 +79,12 @@ export default class extends Controller {
     if (left < bar.scrollLeft) bar.scrollLeft = left
     else if (right > bar.scrollLeft + bar.clientWidth - 40) bar.scrollLeft = right - bar.clientWidth + 40
     requestAnimationFrame(this.updateTabOverflow)
+  }
+
+  rememberInUrl(name) {
+    const url = new URL(window.location.href)
+    url.hash = `tab-${name}`
+    history.replaceState(history.state, "", url)
   }
 
   updateTabOverflow = () => {

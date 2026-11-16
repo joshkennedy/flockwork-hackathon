@@ -27,5 +27,7 @@ class MessageDraftsController < ApplicationController
     def set_project
       @project = Policy.visible_projects(Current.person).find(params[:project_id])
       raise ActiveRecord::RecordNotFound unless @project.enabled_tools.include?("messages") && Policy.can?(Current.person, :plan, @project)
+
+      @open_spots_available = @project.active? && ProjectRisk.new(@project).open_spots.positive?
     end
 end

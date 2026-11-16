@@ -112,7 +112,7 @@ Rails.application.routes.draw do
         get :download
       end
     end
-    resources :lists, only: %i[ new create ] do
+    resources :lists, only: %i[ new create edit update destroy ] do
       resources :list_columns, except: %i[ index show ] do
         member do
           patch :move_up
