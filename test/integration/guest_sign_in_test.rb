@@ -74,7 +74,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_select "body[style=?]", "--color-mark: #0F766E"
   end
 
-  test "a signed-in helper sees who they are on the Public page, and Not You? signs out back to it" do
+  test "a signed-in helper sees who they are on the Public page, and Sign Out returns to it" do
     get public_project_path(@token)
     assert_select "[data-public-account]", count: 0
     assert_select "a[href=?]", guest_sign_in_path(@token), text: "Already signed up? Sign in"
@@ -82,14 +82,14 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     sign_in_as @vera
     get public_project_path(@token)
     assert_select "[data-public-account]", /Signed in as #{@vera.name}/
-    assert_select "[data-public-account] form[action=?] button", guest_sign_out_path(@token), text: "Not You?"
+    assert_select "[data-public-account] form[action=?] button", guest_sign_out_path(@token), text: "Sign Out"
     assert_select "a[href=?]", guest_sign_in_path(@token), text: "Already signed up? Sign in", count: 0
 
     delete guest_sign_out_path(@token)
     assert_redirected_to public_project_path(@token)
     follow_redirect!
     assert_select "[data-public-account]", count: 0
-    assert_select "a", text: "Help with This"
+    assert_select "a", text: "Sign Up"
   end
 
   test "a signed-in helper opening guest sign-in gets a clear explanation" do
@@ -422,7 +422,7 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_signed_in_as @vera
   end
 
-  test "Not You? needs the page's form token, so another site cannot sign a helper out" do
+  test "Sign Out needs the page's form token, so another site cannot sign a helper out" do
     post guest_sign_in_code_path(@token), params: { code: request_code(@vera.email) }
     forgery_protection = ActionController::Base.allow_forgery_protection
     ActionController::Base.allow_forgery_protection = true
