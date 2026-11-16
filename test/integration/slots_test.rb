@@ -32,6 +32,18 @@ class SlotsTest < ActionDispatch::IntegrationTest
     assert_select "section[aria-labelledby='tool-signup-sheet']", text: /Join this Project to pick a spot\./
   end
 
+  test "an open Project does not ask its own members to join" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+    project.update!(open_team: true, enabled_tools: project.enabled_tools | [ "signup_sheet" ])
+    project.slots.create!(date: Date.tomorrow, label: "Bring dessert", capacity: 2)
+
+    get project_path(project)
+
+    assert_response :success
+    assert_select "section[aria-labelledby='tool-signup-sheet']", text: /Join this Project to pick a spot\./, count: 0
+  end
+
   test "a Leader creates, edits, and deletes Slots" do
     sign_in_as_leader
     project = projects(:community_meal)

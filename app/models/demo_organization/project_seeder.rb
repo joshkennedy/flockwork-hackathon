@@ -130,15 +130,19 @@ class DemoOrganization::ProjectSeeder
         alt: "Volunteers preparing food together in a church kitchen.",
         open_team: true
       )
-      add_members!(project, { "Sam Chen" => :volunteer, "Grace Kim" => :volunteer }, joined_at: 2.weeks.ago)
+      add_members!(project, {
+        "Sam Chen" => :volunteer, "Grace Kim" => :volunteer, "Elena Torres" => :volunteer, "Caleb Foster" => :volunteer,
+        "Keisha Moore" => :volunteer, "Jonah Lee" => :volunteer, "Aisha Johnson" => :volunteer, "Sofia Nguyen" => :volunteer
+      }, joined_at: 2.weeks.ago)
 
+      # Each demo persona holds at most one spot, so Maria and Sam both still have something to sign up for.
       prompt = "What are you bringing?"
       categories = [
-        [ "Main dishes", 8, prompt, { "Maria Lopez" => "Baked ziti", "Sam Chen" => "Pulled pork", "Grace Kim" => "Lentil casserole" } ],
-        [ "Sides", 10, prompt, { "Sam Chen" => "Potato salad", "Grace Kim" => "Coleslaw" } ],
-        [ "Desserts", 8, prompt, { "Maria Lopez" => "Apple crisp", "Grace Kim" => "Brownies" } ],
-        [ "Drinks", 6, prompt, { "Sam Chen" => "Iced tea", "Maria Lopez" => "Lemonade" } ],
-        [ "Setup helpers", 4, nil, { "Maria Lopez" => nil, "Sam Chen" => nil } ]
+        [ "Main dishes", 8, prompt, { "Maria Lopez" => "Baked ziti", "Elena Torres" => "Chicken curry", "Caleb Foster" => "Pulled pork" } ],
+        [ "Sides", 10, prompt, { "Grace Kim" => "Coleslaw", "Keisha Moore" => "Potato salad" } ],
+        [ "Desserts", 8, prompt, { "Aisha Johnson" => "Apple crisp", "Jonah Lee" => "Brownies", "Sofia Nguyen" => "Lemon bars" } ],
+        [ "Drinks", 6, prompt, { "Sam Chen" => "Iced tea" } ],
+        [ "Setup helpers", 4, nil, { "Caleb Foster" => nil, "Keisha Moore" => nil } ]
       ]
       categories.each do |label, capacity, claim_prompt, claims|
         slot = project.slots.create!(
