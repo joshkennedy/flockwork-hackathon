@@ -671,7 +671,7 @@ class PlannerTest < ActionDispatch::IntegrationTest
     sign_in_as(:other_leader)
 
     get project_path(project)
-    assert_select "a", text: "Plan More"
+    assert_select "a", text: "Plan with AI"
     post project_planner_sessions_path(project), params: {
       planner_session: { description: "Add the final cleanup assignments." }
     }

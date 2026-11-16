@@ -13,7 +13,7 @@
 <%# An archived Project is read-only, so it has no open need to point at. %>
 <% guidance = project_guidance(@project, Current.person) unless @project.archived_at? %>
 <% claim_slot = guidance&.dig(:slot) if Policy.can?(Current.person, :claim_slot, @project) %>
-<%# Exactly one ink button per view: a header action that must come first (resume, join) wins; then the guidance action; else Plan More. %>
+<%# Exactly one ink button per view: a header action that must come first (resume, join) wins; then the guidance action; else Plan with AI. %>
 <% header_primary = @resumable_planner_session.present? || can_join %>
 <% guidance_action = guidance && ((guidance[:kind] == :spots && (can_share || claim_slot)) || guidance[:kind] == :tasks) %>
 <% guidance_primary = guidance_action && !header_primary && guidance[:kind] == :spots %>
@@ -46,7 +46,7 @@
         <% if @resumable_planner_session.present? %>
           <%= link_to @resumable_planner_session.meal_setup? ? "Finish Meal Setup" : "Continue Planning", project_planner_session_path(@project, @resumable_planner_session), class: "btn btn-primary" %>
         <% else %>
-          <%= link_to "Plan More", new_project_planner_session_path(@project), class: "btn #{guidance_primary || can_join ? 'btn-secondary' : 'btn-primary'}" %>
+          <%= link_to "Plan with AI", new_project_planner_session_path(@project), class: "btn #{guidance_primary || can_join ? 'btn-secondary' : 'btn-primary'}" %>
         <% end %>
       <% end %>
       <% if can_join %>

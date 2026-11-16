@@ -91,7 +91,7 @@ class PlannerSystemTest < ApplicationSystemTestCase
 
     sign_in_as_leader_in_browser
     visit project_path(project)
-    click_on "Plan More"
+    click_on "Plan with AI"
     fill_in "Describe this plan in one sentence", with: "Finish the neighborhood meal plan."
     click_on "Start Planning"
 
