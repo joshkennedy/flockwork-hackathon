@@ -37,6 +37,8 @@ en:
       budget_line:
         actual_cents: "Actual cost"
         estimated_cents: "Estimated cost"
+      organization:
+        overextended_limit: "Check-in threshold"
       doc_item:
         url: "URL"
       project:

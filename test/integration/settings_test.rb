@@ -42,6 +42,18 @@ class SettingsTest < ActionDispatch::IntegrationTest
     assert_select "[data-organization-name]", "St. Example Parish"
   end
 
+  test "Settings and validation call the serving limit the check-in threshold" do
+    sign_in_as_admin
+
+    get settings_path(anchor: "settings-church")
+    assert_select "label[for='organization_overextended_limit']", "Check-in threshold"
+
+    patch settings_path, params: { organization: { overextended_limit: 0 } }
+
+    assert_response :unprocessable_entity
+    assert_select "[role=alert]", text: /Check-in threshold must be greater than 0/
+  end
+
   test "Admin sets the church time zone used by calendars" do
     sign_in_as_admin
 

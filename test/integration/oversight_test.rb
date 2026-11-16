@@ -25,6 +25,7 @@ class OversightTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "a[href=?]", settings_path(anchor: "settings-church"), text: "Change in Settings"
+    assert_includes response.body, "Check-in threshold: 3 Projects."
     assert_select "[data-overextended-person]", 1
     assert_select "[data-overextended-person='Lucy Leader'][data-serving-load='3']"
     assert_select "[data-overextended-person='Vic Volunteer']", 0
