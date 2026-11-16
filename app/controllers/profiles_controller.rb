@@ -36,8 +36,8 @@ class ProfilesController < ApplicationController
       begin
         @away_drafts = AwayDateParser.call(params[:away_text]).map { |range| Unavailability.new(range) }
         @away_notice = "Check these dates, then save them."
-      rescue AwayDateParser::Unavailable
-        @away_alert = "Couldn't turn that into dates. Enter them below."
+      rescue AwayDateParser::Unavailable => error
+        @away_alert = error.message == DemoAiLimit::MESSAGE ? error.message : "Couldn't turn that into dates. Enter them below."
       end
     end
 

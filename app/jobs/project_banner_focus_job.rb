@@ -12,6 +12,8 @@ class ProjectBannerFocusJob < ApplicationJob
     def suggest_focus(project, blob_id)
       blob = ActiveStorage::Blob.find_by(id: blob_id)
       return unless blob
+      return if ENV["OPENROUTER_API_KEY"].blank?
+      return unless DemoAiLimit.allow?(project.organization)
 
       suggestion = ProjectBannerVision.call(blob)
       return unless suggestion

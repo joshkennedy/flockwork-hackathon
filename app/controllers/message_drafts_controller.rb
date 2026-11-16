@@ -18,6 +18,9 @@ class MessageDraftsController < ApplicationController
     draft = ProjectMessageDraft.new(@project).call(@purpose)
     @message.body = "#{draft.title}\n\n#{draft.body}"
     render :new
+  rescue ProjectMessageDraft::LimitReached => error
+    @error = error.message
+    render :new, status: :too_many_requests
   rescue ProjectMessageDraft::Unavailable => error
     @error = error.message
     render :new, status: :unprocessable_entity

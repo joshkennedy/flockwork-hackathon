@@ -55,6 +55,8 @@ class PlannerSessionsController < ApplicationController
   rescue Planner::VoiceClientSecretMinter::Error => error
     Rails.error.report(error, handled: true, severity: :warning)
     render json: { error: "Voice planning is unavailable right now. You can keep typing." }, status: :bad_gateway
+  rescue DemoAiLimit::Exceeded => error
+    render json: { error: error.message }, status: :too_many_requests
   end
 
   def voice_instructions

@@ -25,6 +25,7 @@ module Planner
     end
 
     def payload
+      DemoAiLimit.consume!(planner_session.project.organization)
       refresh_payload.merge(
         client_secret: Rails.configuration.x.voice_client_secret_minter.call,
         model: MODEL
