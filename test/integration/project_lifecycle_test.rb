@@ -7,7 +7,8 @@ class ProjectLifecycleTest < ActionDispatch::IntegrationTest
 
     post mark_done_project_path(project)
 
-    assert_redirected_to edit_project_debrief_path(project)
+    assert_redirected_to project_path(project)
+    assert_equal "Marked Community Meal done. Add a debrief whenever you're ready.", flash[:notice]
     assert_not_nil project.reload.done_at
 
     get projects_path

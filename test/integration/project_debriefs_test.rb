@@ -5,10 +5,10 @@ class ProjectDebriefsTest < ActionDispatch::IntegrationTest
     sign_in_as_leader
     project = projects(:community_meal)
     post mark_done_project_path(project)
-    assert_redirected_to edit_project_debrief_path(project)
+    assert_redirected_to project_path(project)
     follow_redirect!
     assert_response :success
-    assert_select "a[href='#{project_path(project)}']", text: "Skip for Now"
+    assert_select "details.actions-menu a[href='#{edit_project_debrief_path(project)}']", text: "Project Debrief"
     get project_path(project)
     assert_nil project.reload.project_debrief
 
