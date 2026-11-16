@@ -24,6 +24,29 @@
       "warning_type": "SQL Injection",
       "fingerprint": "f4509a1abc506fb985a91dd5ef7a222ec26557b77011a6815ab42c7ac2f9a809",
       "note": "StaffingSuggestions#people interpolates only the fixed active_sql literal; order_sql is built with sanitize_sql_array, and skills, the serving limit and the row limit are bound."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "579c855f96eb30e63f66a85c6e7a8d422a41caa5dfc02b523cd2642f403d5450",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/models/staffing_suggestions.rb",
+      "line": 38,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "organization.people.active.where(\"people.skills && ARRAY[?]::varchar[]\", needed).where.not(:email => ([nil, \"\"])).where.not(:id => project.memberships.select(:person_id)).where.not(:id => project.invitations.select(:person_id)).where.not(:id => project.recipients.select(:person_id)).left_joins(:memberships => :project).select(\"people.*, COUNT(DISTINCT projects.id) FILTER (WHERE #{active_sql}) AS serving_load\").group(\"people.id\").order(Arel.sql(order_sql)).limit(5).having(\"COUNT(DISTINCT projects.id) FILTER (WHERE #{active_sql}) < ?\", organization.overextended_limit)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "StaffingSuggestions",
+        "method": "candidates"
+      },
+      "user_input": "active_sql",
+      "confidence": "Weak",
+      "cwe_id": [
+        89
+      ],
+      "note": "active_sql and order_sql are built from Project.active and constants; no user input reaches the interpolated SQL."
     }
   ],
   "brakeman_version": "8.1.0"
