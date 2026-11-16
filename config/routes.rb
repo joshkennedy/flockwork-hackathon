@@ -1,5 +1,10 @@
 Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
+  constraints(host: /.+\.up\.railway\.app/) do
+    match "(*path)", via: :all, to: redirect(status: 301) { |_params, request|
+      "https://getflockwork.com#{request.fullpath}"
+    }
+  end
   mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
 
   root "landing#show"

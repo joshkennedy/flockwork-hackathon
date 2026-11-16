@@ -1,6 +1,17 @@
 require "test_helper"
 
 class MarketingPagesTest < ActionDispatch::IntegrationTest
+  test "Railway hosts redirect to the canonical site except for the healthcheck" do
+    host! "web-production-dd06b.up.railway.app"
+
+    get rails_health_check_path
+    assert_response :success
+
+    get features_tasks_path, params: { source: "railway" }
+    assert_response :moved_permanently
+    assert_redirected_to "https://getflockwork.com/features/tasks?source=railway"
+  end
+
   test "public navigation marks the current page and exposes every feature" do
     [ features_path, pricing_path ].each do |path|
       get path
