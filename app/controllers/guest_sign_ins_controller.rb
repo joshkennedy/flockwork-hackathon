@@ -13,7 +13,8 @@ class GuestSignInsController < ApplicationController
 
   def new
     if authenticated? && Current.person.organization_id == @project.organization_id
-      redirect_to public_project_path(@project.public_token, anchor: (helpers.dom_id(@slot) if @slot))
+      redirect_to public_project_path(@project.public_token, anchor: (helpers.dom_id(@slot) if @slot)),
+        notice: "You’re already signed in."
     end
   end
 

@@ -92,6 +92,16 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_select "a", text: "Help with This"
   end
 
+  test "a signed-in helper opening guest sign-in gets a clear explanation" do
+    sign_in_as @vera
+
+    get guest_sign_in_path(@token, slot_id: @slot.id)
+
+    assert_redirected_to public_project_path(@token, anchor: "slot_#{@slot.id}")
+    follow_redirect!
+    assert_select "#flash [data-toast-kind=notice]", "You’re already signed in."
+  end
+
   test "signing in without a chosen Slot returns to the Public page with existing claims shown" do
     @slot.claim(@vera)
     code = request_code(@vera.email)
