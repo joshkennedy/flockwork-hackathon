@@ -40,7 +40,7 @@ module Planner
         name: "Project",
         date_label: "Start date",
         description: "Shape a new Project together.",
-        prompt: "Help organize a new Project. First learn what kind of work the Leader wants to organize. Ask about the work, never people's names or private care details."
+        prompt: "Help organize the Project described in project_intent. Do not ask what kind of work it is again. Ask for the next useful detail about the work, never people's names or private care details."
       }
     }.freeze
 
