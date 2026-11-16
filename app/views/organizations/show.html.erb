@@ -1,5 +1,5 @@
 <%= turbo_stream_from Current.organization, :dashboard %>
-<% content_for :title, @organization.name %>
+<% content_for :title, "#{@organization.name} · Flockwork" %>
 
 <div class="w-full <%= @any_projects && @home_role != :volunteer ? "" : "mx-auto max-w-2xl" %>">
   <%= page_header "Hi #{@person.name.split.first}" do %>

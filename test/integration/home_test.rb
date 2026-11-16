@@ -1,6 +1,15 @@
 require "test_helper"
 
 class HomeTest < ActionDispatch::IntegrationTest
+  test "Home title names the church and Flockwork" do
+    sign_in_as_admin
+
+    get home_path
+
+    assert_response :success
+    assert_select "title", "St. Example · Flockwork"
+  end
+
   test "a Volunteer's Home shows their week, open spots on their Projects, and open Teams" do
     volunteer = sign_in_as_volunteer
     project = projects(:community_meal)
