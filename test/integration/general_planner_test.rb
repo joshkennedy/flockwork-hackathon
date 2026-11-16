@@ -66,7 +66,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
       assert_equal planning_kind, planner_session.planning_kind
       assert_equal expected_names.fetch(planning_kind), planner_session.project.name
       assert_equal "queued", planner_session.generation_state
-      assert_empty planner_session.project.enabled_tools
+      assert_equal [ "messages" ], planner_session.project.enabled_tools
 
       get project_planner_session_path(planner_session.project, planner_session)
       assert_select "[data-meal-planner-target='status']", count: 1, text: "Drafting your plan…"
@@ -245,7 +245,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_equal %w[booking purchase], project.budget_lines.order(:id).pluck(:kind)
     assert_equal [ [ "Item", "text" ], [ "Packed", "checkbox" ] ],
       project.lists.find_by!(name: "Supply checklist").columns.order(:id).pluck(:name, :column_type)
-    assert_equal %w[budget docs list schedule signup_sheet tasks], project.reload.enabled_tools.sort
+    assert_equal %w[budget docs list messages schedule signup_sheet tasks], project.reload.enabled_tools.sort
   end
 
   test "acceptance preserves a Project name the Leader already saved" do

@@ -191,8 +191,7 @@ class ProjectsController < ApplicationController
       starter = Planner::ProjectKinds::CHOICES.fetch(kind)
       Project.transaction do
         project_attributes = starter.slice(:description).merge(
-          name: Planner::ProjectKinds.provisional_name(kind, description:),
-          enabled_tools: []
+          name: Planner::ProjectKinds.provisional_name(kind, description:)
         )
         @project = Project.create_for(creator: Current.person, attributes: project_attributes)
         @project.save!

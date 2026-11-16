@@ -19,6 +19,23 @@ class ProjectsTest < ActionDispatch::IntegrationTest
     assert_redirected_to project_path(project)
     assert_equal creator, project.owner
     assert_predicate project.memberships.find_by!(person: creator), :leader?
+    assert_equal [ "messages" ], project.enabled_tools
+  end
+
+  test "a Leader who unchecks every Tool gets a Project with none" do
+    creator = sign_in_as_leader
+
+    post projects_path, params: { project: { name: "Quiet Project", enabled_tools: [ "" ] } }
+
+    assert_empty creator.organization.projects.find_by!(name: "Quiet Project").enabled_tools
+  end
+
+  test "a Planner Project starts with Messages on" do
+    sign_in_as_leader
+
+    post start_planner_projects_path, params: { planning_kind: "retreat" }
+
+    assert_includes Project.order(:id).last.enabled_tools, "messages"
   end
 
   test "an invalid manual Project ties its error to the name field" do

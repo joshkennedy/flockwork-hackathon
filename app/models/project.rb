@@ -16,6 +16,8 @@ class Project < ApplicationRecord
     "list" => "List"
   }.freeze
   TOOLS = TOOL_LABELS.keys.freeze
+  # New Projects start with Messages on so the Team can post right away. Unchecking it on the form still wins.
+  attribute :enabled_tools, default: -> { [ "messages" ] }
 
   belongs_to :owner, class_name: "Person"
   broadcasts_refreshes_to ->(project) { project }
