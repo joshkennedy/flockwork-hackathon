@@ -46,9 +46,38 @@ export default class extends Controller {
   consumeEntries() {
     document.querySelectorAll("[data-toast-entry]").forEach((entry) => {
       const message = entry.textContent.trim()
-      if (message) toast[entry.dataset.toastKind === "alert" ? "error" : "success"](message)
+      const action = entry.dataset.toastActionPath ? {
+        label: entry.dataset.toastActionLabel,
+        onClick: () => this.submitAction(entry.dataset.toastActionPath, entry.dataset.toastActionMethod)
+      } : undefined
+      if (message) toast[entry.dataset.toastKind === "alert" ? "error" : "success"](message, { action })
       entry.remove()
     })
+  }
+
+  submitAction(path, method) {
+    const form = document.createElement("form")
+    form.method = "post"
+    form.action = path
+    form.hidden = true
+
+    const methodField = document.createElement("input")
+    methodField.type = "hidden"
+    methodField.name = "_method"
+    methodField.value = method
+    form.append(methodField)
+
+    const token = document.querySelector("meta[name=csrf-token]")?.content
+    if (token) {
+      const tokenField = document.createElement("input")
+      tokenField.type = "hidden"
+      tokenField.name = "authenticity_token"
+      tokenField.value = token
+      form.append(tokenField)
+    }
+
+    document.body.append(form)
+    form.requestSubmit()
   }
 
   get configuration() {

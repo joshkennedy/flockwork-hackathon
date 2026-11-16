@@ -1,7 +1,16 @@
 <% if notes.any? %>
   <ul class="mt-3 space-y-3">
     <% notes.each do |note| %>
-      <li class="text-meta leading-normal text-ink" data-note-body><%= note.body %></li>
+      <li class="flex items-start gap-3 text-meta leading-normal text-ink">
+        <p class="min-w-0 flex-1 whitespace-pre-wrap" data-note-body><%= note.body %></p>
+        <% if local_assigns[:person] && Policy.can?(Current.person, :manage_person_note, note) %>
+          <%= actions_menu("Actions for this note") do %>
+            <%= link_to "Edit Note", edit_person_note_path(person, note), data: { action: "slideout#open", slideout_title_param: "Edit Note" } %>
+            <%= button_to "Delete Note", person_note_path(person, note), method: :delete, class: "menu-danger",
+                  form: { data: { turbo_confirm: "Delete this note?" } } %>
+          <% end %>
+        <% end %>
+      </li>
     <% end %>
   </ul>
 <% else %>

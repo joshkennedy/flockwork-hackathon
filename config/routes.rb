@@ -171,9 +171,9 @@ Rails.application.routes.draw do
   get "directory/planning_center", to: redirect("/settings#settings-directory"), as: :planning_center_directory
   patch "directory/planning_center", to: "directory/planning_center#update"
   post "directory/planning_center/sync", to: "directory/planning_center#sync", as: :sync_planning_center_directory
-  resources :people, only: %i[index new create show edit update] do
-    resources :notes, only: :create
-    resources :check_ins, only: :create
+  resources :people, only: %i[index new create show edit update destroy] do
+    resources :notes, only: %i[create edit update destroy]
+    resources :check_ins, only: %i[create destroy]
   end
   resource :profile, only: %i[show update] do
     post :suggest_away

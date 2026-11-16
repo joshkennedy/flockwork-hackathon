@@ -16,6 +16,21 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     assert_no_match "pat@st-example.test", response.body
   end
 
+  test "Add Person opens in the directory slideout and direct URLs remain full-page fallbacks" do
+    sign_in_as_admin
+
+    get people_path
+    assert_select "a[href=?][data-action='slideout#open'][data-slideout-title-param='Add Person']", new_person_path
+    assert_select "dialog.slideout turbo-frame#person-form[data-slideout-target='frame']"
+
+    get new_person_path
+    assert_select "turbo-frame#person-form form[data-turbo-frame='_top']"
+
+    get new_person_path, headers: { "Turbo-Frame" => "person-form" }
+    assert_select "turbo-frame#person-form form"
+    assert_select "turbo-frame#person-form form[data-turbo-frame='_top']", count: 0
+  end
+
   test "Admin adds a Person without email; they show as unable to sign in and cannot receive a link" do
     sign_in_as_admin
 
@@ -35,6 +50,18 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
         post sign_in_requests_path, params: { email: "pat@st-example.test" }
       end
     end
+  end
+
+  test "a blank Person name returns an in-page error instead of relying on browser validation" do
+    sign_in_as_admin
+
+    assert_no_difference "Person.count" do
+      post people_path, params: { person: { name: "", email: "blank-name@example.test" } }
+    end
+
+    assert_response :unprocessable_content
+    assert_select "[role=alert]", text: "Name can't be blank"
+    assert_select "input[name='person[name]'][required]", count: 0
   end
 
   test "saving from the Edit details slideout refreshes the person page" do
@@ -105,6 +132,49 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
 
     get edit_person_path(people(:leader))
     assert_response :not_found
+
+    delete person_path(people(:leader))
+    assert_response :not_found
+  end
+
+  test "Admin removes a Person while preserving church work and clearing participation" do
+    sign_in_as_admin
+    admin = people(:admin)
+    person = organizations(:st_example).people.create!(name: "Remove Me", email: "remove@st-example.test")
+    project = projects(:community_meal)
+    project.memberships.create!(person:, role: :volunteer)
+    slot = project.slots.create!(date: Date.current + 3, label: "Removed claim")
+    claim = slot.slot_claims.create!(person:)
+    task = project.tasks.create!(title: "Removed assignment", assignee: person)
+    notification = Notification.create!(recipient: person, kind: :task_assigned, notifiable: task, actor: admin)
+    owned_project = organizations(:st_example).projects.create!(name: "Preserved Project", owner: person)
+    message = project.messages.create!(author: person, body: "Keep this update")
+    note = project.notes.create!(organization: organizations(:st_example), author: person, visibility: :team, body: "Keep this note")
+    budget_line = project.budget_lines.create!(kind: :purchase, description: "Keep this cost", responsible_person: person)
+
+    delete person_path(person)
+
+    assert_redirected_to people_path
+    assert_not Person.exists?(person.id)
+    assert_not Membership.exists?(person_id: person.id)
+    assert_not SlotClaim.exists?(claim.id)
+    assert_nil task.reload.assignee
+    assert_not Notification.exists?(notification.id)
+    assert_equal admin, owned_project.reload.owner
+    assert_equal admin, message.reload.author
+    assert_equal admin, note.reload.author
+    assert_nil budget_line.reload.responsible_person
+  end
+
+  test "Admin cannot remove themselves" do
+    sign_in_as_admin
+
+    assert_no_difference "Person.count" do
+      delete person_path(people(:admin))
+    end
+
+    assert_redirected_to person_path(people(:admin))
+    assert_equal "You can’t remove yourself from the directory.", flash[:alert]
   end
 
   test "a Person edits their own name and phone" do

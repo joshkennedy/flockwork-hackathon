@@ -25,8 +25,14 @@
         <% end %>
       </div>
     </div>
-    <div data-controller="slideout" class="shrink-0 self-start sm:self-auto">
+    <div data-controller="slideout" class="flex shrink-0 items-center gap-2 self-start sm:self-auto">
       <%= link_to "Edit Details", edit_person_path(@person), class: "btn btn-secondary", data: { action: "slideout#open" } %>
+      <% unless @person == Current.person %>
+        <%= actions_menu("Person actions") do %>
+          <%= button_to "Remove Person", person_path(@person), method: :delete, class: "menu-danger",
+                form: { data: { turbo_confirm: "Remove “#{@person.name}”? Their Team memberships and sign-ups will be removed. Assigned tasks will become unassigned." } } %>
+        <% end %>
+      <% end %>
       <dialog class="slideout" aria-labelledby="edit-person-heading" data-slideout-target="dialog" data-action="click->slideout#backdrop">
         <div class="slideout-panel">
           <div class="flex items-center justify-between gap-4">
@@ -85,18 +91,16 @@
     <% end %>
 
     <% if Policy.can?(Current.person, :log_check_in, @person) %>
-      <%= form_with url: person_check_ins_path(@person), class: "mt-4 flex flex-wrap items-center gap-2" do %>
+      <%= form_with url: person_check_ins_path(@person), class: "mt-4 grid gap-3" do %>
         <%= hidden_field_tag :return_to, "person", id: nil %>
-        <%= submit_tag "Log a Check-In", class: "btn btn-secondary" %>
-        <details>
-          <%= disclosure_summary "Date or note", class: "text-meta text-ink-2" %>
-          <div class="mt-2 flex flex-wrap gap-2">
-            <%= date_field_tag "check_in[on]", Date.current, max: Date.current, aria: { label: "Date of check-in" }, class: "field" %>
-            <% if Policy.can?(Current.person, :view_note, CheckIn.new(organization: Current.organization, person: @person)) %>
-              <%= text_field_tag "check_in[note]", nil, maxlength: CheckIn::NOTE_LIMIT, placeholder: "Private note, Admins only", aria: { label: "Note" }, class: "field" %>
-            <% end %>
-          </div>
-        </details>
+        <div class="flex flex-wrap gap-2">
+          <%= date_field_tag "check_in[on]", Date.current, max: Date.current, aria: { label: "Date of check-in" }, class: "field" %>
+          <% if Policy.can?(Current.person, :view_note, CheckIn.new(organization: Current.organization, person: @person)) %>
+            <%= text_field_tag "check_in[note]", nil, maxlength: CheckIn::NOTE_LIMIT, placeholder: "Private note, Admins only", aria: { label: "Note" }, class: "field min-w-0 flex-1" %>
+          <% end %>
+        </div>
+        <p class="text-meta text-ink-2">Logging this removes <%= @person.name %> from May need a check-in for <%= CheckIn::RECENT_DAYS %> days.</p>
+        <div><%= submit_tag "Log a Check-In", class: "btn btn-secondary" %></div>
       <% end %>
     <% end %>
   </section>
@@ -115,12 +119,23 @@
     <% end %>
   </section>
 
-  <section class="tool-section mt-7" aria-labelledby="person-notes-heading">
+  <section class="tool-section mt-7" aria-labelledby="person-notes-heading" data-controller="slideout">
     <h2 id="person-notes-heading" class="text-ink">Notes</h2>
-    <%= render "notes/list", notes: @person_notes %>
+    <%= render "notes/list", notes: @person_notes, person: @person %>
     <%= render "notes/form",
       notable: @person,
       visibilities: @note_visibilities,
       form_url: person_notes_path(@person) %>
+    <dialog class="slideout" aria-labelledby="edit-note-heading" data-slideout-target="dialog" data-action="click->slideout#backdrop">
+      <div class="slideout-panel">
+        <div class="flex items-center justify-between gap-4">
+          <h2 id="edit-note-heading" class="text-ink">Edit note</h2>
+          <button type="button" class="btn btn-icon" aria-label="Close dialog" data-action="slideout#close"><%= icon(:close) %></button>
+        </div>
+        <%= turbo_frame_tag "note-form", data: { slideout_target: "frame", action: "turbo:submit-end->slideout#submitted" } do %>
+          <p class="mt-6 text-meta text-ink-2">Loading…</p>
+        <% end %>
+      </div>
+    </dialog>
   </section>
 </div>

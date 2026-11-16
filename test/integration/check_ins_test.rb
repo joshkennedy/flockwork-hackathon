@@ -22,9 +22,43 @@ class CheckInsTest < ActionDispatch::IntegrationTest
     assert_equal people(:leader), check_in.checked_in_by
     assert_equal "Asked about Saturdays", check_in.note
     assert_equal @organization, check_in.organization
+    assert_equal "Undo", flash[:toast_action]["label"]
+    assert_equal person_check_in_path(@volunteer, check_in), flash[:toast_action]["path"]
 
     get oversight_path
     assert_select "[data-overextended-person='Vic Volunteer']", 0
+  end
+
+  test "the Leader who logged a check-in can undo it" do
+    leader = sign_in_as_leader
+    check_in = CheckIn.create!(organization: @organization, person: @volunteer, checked_in_by: leader, on: Date.current)
+
+    assert_difference "CheckIn.count", -1 do
+      delete person_check_in_path(@volunteer, check_in)
+    end
+
+    assert_redirected_to oversight_path
+    assert_equal "Undid the check-in with Vic Volunteer.", flash[:notice]
+  end
+
+  test "a different Leader cannot undo a check-in" do
+    check_in = CheckIn.create!(organization: @organization, person: @volunteer, checked_in_by: people(:other_leader), on: Date.current)
+    sign_in_as_leader
+
+    assert_no_difference "CheckIn.count" do
+      delete person_check_in_path(@volunteer, check_in)
+    end
+
+    assert_response :not_found
+  end
+
+  test "the check-in form explains the thirty-day effect before submission" do
+    sign_in_as_admin
+
+    get person_path(@volunteer)
+
+    assert_select "form[action=?]", person_check_ins_path(@volunteer), text: "Logging this removes Vic Volunteer from May need a check-in for 30 days."
+    assert_select "details", text: "Date or note", count: 0
   end
 
   test "a Leader cannot log a check-in for someone on none of the Projects they lead, and nothing is saved" do

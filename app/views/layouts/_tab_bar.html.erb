@@ -1,19 +1,21 @@
 <%# Phone destinations. The bell in the top bar carries Notifications, so it is left out here. %>
 <% manage = manage_navigation %>
+<% people, phone_manage = manage.partition { |label, _path, _symbol| label == "People" } %>
+<% destinations = primary_navigation + people + (phone_manage.one? ? phone_manage : []) %>
 <nav aria-label="Main navigation" class="fixed inset-x-0 bottom-0 z-30 grid grid-flow-col auto-cols-fr border-t border-hairline bg-frame px-1 pt-1 md:hidden" style="padding-bottom: max(4px, env(safe-area-inset-bottom))">
-  <% (manage.one? ? primary_navigation + manage : primary_navigation).each do |label, path, symbol| %>
+  <% destinations.each do |label, path, symbol| %>
     <%= link_to path, class: "app-tab", aria: { current: ("page" if navigation_current?(path)) } do %>
       <%= icon(symbol, class: "size-5") %>
       <span><%= label %></span>
     <% end %>
   <% end %>
-  <% if manage.many? %>
+  <% if phone_manage.many? %>
     <details class="manage-menu" name="app-bar">
-      <summary class="app-tab" <%= "aria-current=page" if manage.any? { |_label, path, _symbol| navigation_current?(path) } %>>
+      <summary class="app-tab" <%= "aria-current=page" if phone_manage.any? { |_label, path, _symbol| navigation_current?(path) } %>>
         <%= icon(:more, class: "size-5") %>
         <span>Manage</span>
       </summary>
-      <%= render "layouts/manage_panel", manage: manage %>
+      <%= render "layouts/manage_panel", manage: phone_manage %>
     </details>
   <% end %>
 </nav>

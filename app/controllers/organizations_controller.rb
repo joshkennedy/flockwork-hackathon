@@ -4,6 +4,7 @@ class OrganizationsController < ApplicationController
 
   def new
     redirect_to home_path if authenticated?
+    @organization = Organization.new
   end
 
   def show
@@ -39,7 +40,10 @@ class OrganizationsController < ApplicationController
   end
 
   def create
-    @organization = Organization.new(name: organization_params[:church_name])
+    @organization = Organization.new(
+      name: organization_params[:church_name],
+      time_zone: organization_params[:time_zone].presence || Organization::DEFAULT_TIME_ZONE
+    )
     @admin = @organization.people.build(name: organization_params[:your_name], email: organization_params[:email], admin: true)
 
     if @admin.valid?(:organization_creation) && @organization.save
@@ -60,6 +64,6 @@ class OrganizationsController < ApplicationController
     end
 
     def organization_params
-      params.permit(:church_name, :your_name, :email)
+      params.permit(:church_name, :your_name, :email, :time_zone)
     end
 end

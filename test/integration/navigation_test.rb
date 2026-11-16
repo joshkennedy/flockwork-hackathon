@@ -14,13 +14,15 @@ class NavigationTest < ActionDispatch::IntegrationTest
     assert_select "details.manage-menu", count: 0
   end
 
-  test "an Admin finds People, Oversight and Settings under Manage, on desktop and on phones" do
+  test "an Admin gets People on the phone tab bar while desktop keeps it under Manage" do
     sign_in_as_admin
     get home_path
 
-    [ people_path, oversight_path, settings_path(anchor: "settings-church") ].each do |path|
-      assert_select "nav[aria-label='Main navigation'] details.manage-menu a[href='#{path}']", count: 2
-    end
+    assert_select "nav.fixed[aria-label='Main navigation'] > a.app-tab[href='#{people_path}']", count: 1
+    assert_select "nav.fixed[aria-label='Main navigation'] > details.manage-menu a[href='#{people_path}']", count: 0
+    assert_select "nav.fixed[aria-label='Main navigation'] > details.manage-menu a[href='#{oversight_path}']", count: 1
+    assert_select "nav.fixed[aria-label='Main navigation'] > details.manage-menu a[href='#{settings_path(anchor: "settings-church")}']", count: 1
+    assert_select "nav.hidden[aria-label='Main navigation'] details.manage-menu a[href='#{people_path}']", count: 1
     assert_select "details.account-menu a[href='#{settings_path}']", count: 1
   end
 

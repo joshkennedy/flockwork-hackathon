@@ -6,10 +6,12 @@ class OrganizationCreationTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "p", text: "No password to remember. We’ll sign you in now and email you a sign-in link next time."
+    assert_select "form[data-controller='time-zone'][data-time-zone-detect-value='true'] select[name=time_zone][data-time-zone-target=select]"
+    assert_select "select[name=time_zone] option[value='America/Chicago'][selected]"
   end
 
   test "creating an Organization makes the creator its Admin, signs them in, and lands on New Project" do
-    post organizations_path, params: { church_name: "Hope Church", your_name: "Casey Creator", email: "Casey@Hope.test" }
+    post organizations_path, params: { church_name: "Hope Church", your_name: "Casey Creator", email: "Casey@Hope.test", time_zone: "America/New_York" }
 
     assert_redirected_to new_project_path
     follow_redirect!
@@ -19,6 +21,7 @@ class OrganizationCreationTest < ActionDispatch::IntegrationTest
     creator = Person.find_by!(email: "casey@hope.test")
     assert creator.admin
     assert_equal "hope-church", creator.organization.slug
+    assert_equal "America/New_York", creator.organization.time_zone
   end
 
   test "creating an Organization emails the creator a welcome" do

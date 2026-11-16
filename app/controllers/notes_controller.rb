@@ -1,4 +1,7 @@
 class NotesController < ApplicationController
+  before_action :set_person_note, only: %i[edit update destroy]
+  before_action :authorize_person_note_management, only: %i[edit update destroy]
+
   def create
     if params[:project_id]
       create_project_note
@@ -7,7 +10,32 @@ class NotesController < ApplicationController
     end
   end
 
+  def edit
+  end
+
+  def update
+    if @note.update(note_params.slice(:body))
+      redirect_to person_path(@person), notice: "Saved note."
+    else
+      render :edit, status: :unprocessable_content
+    end
+  end
+
+  def destroy
+    @note.destroy!
+    redirect_to person_path(@person), notice: "Deleted note."
+  end
+
   private
+    def set_person_note
+      @person = Current.organization.people.find(params[:person_id])
+      @note = @person.notes.find(params[:id])
+    end
+
+    def authorize_person_note_management
+      raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :manage_person_note, @note)
+    end
+
     def create_project_note
       project = Policy.visible_projects(Current.person).find(params[:project_id])
       notable = find_project_notable(project)
