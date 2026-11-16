@@ -1,6 +1,17 @@
 require "test_helper"
 
 class MarketingPagesTest < ActionDispatch::IntegrationTest
+  test "Railway hosts redirect to the canonical site except for the healthcheck" do
+    host! "web-production-dd06b.up.railway.app"
+
+    get rails_health_check_path
+    assert_response :success
+
+    get features_tasks_path, params: { source: "railway" }
+    assert_response :moved_permanently
+    assert_redirected_to "https://getflockwork.com/features/tasks?source=railway"
+  end
+
   test "public navigation marks the current page and exposes every feature" do
     [ features_path, pricing_path ].each do |path|
       get path
@@ -24,6 +35,16 @@ class MarketingPagesTest < ActionDispatch::IntegrationTest
     MarketingPage.in_section(:feature).each do |page|
       assert_select ".marketing a[href=?]", page.path, text: "More about #{page.label.downcase}"
     end
+  end
+
+  test "marketing pages load only the marketing JavaScript entry point" do
+    get root_path
+
+    assert_select "script[type=module]", text: /import "marketing"/
+    assert_select "script[type=module]", text: /import "application"/, count: 0
+    assert_select "link[rel=modulepreload]", count: 3
+    assert_select "link[rel=modulepreload][href*='pdf']", count: 0
+    assert_select "link[rel=modulepreload][href*='trix']", count: 0
   end
 
   test "feature questions and closing titles fit the feature" do
@@ -95,6 +116,20 @@ class MarketingPagesTest < ActionDispatch::IntegrationTest
     MarketingPage::ALL.reject(&:home?).each { |page| assert_includes response.body, "http://www.example.com#{page.path}" }
   end
 
+  test "pages link to a complete web app manifest" do
+    get root_path
+    assert_select "link[rel=manifest][href=?]", "/manifest.json"
+
+    get "/manifest.json"
+    assert_response :success
+    assert_equal "application/json", response.media_type
+    manifest = JSON.parse(response.body)
+    assert_equal "Flockwork", manifest.fetch("name")
+    assert_equal "standalone", manifest.fetch("display")
+    assert_equal "/", manifest.fetch("scope")
+    assert_equal [ "512x512" ], manifest.fetch("icons").map { |icon| icon.fetch("sizes") }.uniq
+  end
+
   test "every marketing page shares the header and footer, and app pages are noindex" do
     get terms_path
     [ features_path, pricing_path, new_demo_session_path, new_sign_in_request_path ].each { |path| assert_select ".public-header nav a[href=?]", path }
@@ -104,6 +139,12 @@ class MarketingPagesTest < ActionDispatch::IntegrationTest
     assert_select "meta[name=robots]", count: 0
     get new_sign_in_request_path
     assert_select "meta[name=robots][content=noindex]"
+  end
+
+  test "sign in guides invited people without revealing account existence" do
+    get new_sign_in_request_path
+
+    assert_select "p", "Use the email your church leader added. For privacy, the next screen looks the same even when an email isn’t found."
   end
 
   test "pricing says free during beta and offers nothing it can't back" do

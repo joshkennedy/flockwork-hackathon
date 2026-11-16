@@ -80,4 +80,28 @@ class MessageDraftsTest < ActionDispatch::IntegrationTest
       end
     end
   end
+
+  test "generation rate limit is isolated per demo browser session" do
+    post demo_session_path(role: "leader")
+    project = Project.create_for(
+      creator: people(:grace_leader),
+      attributes: { name: "Demo message draft", enabled_tools: [ "messages" ] }
+    )
+    provider = ->(*) { { "title" => "Welcome", "body" => "Review the Project." } }
+    store = ActiveSupport::Cache::MemoryStore.new
+
+    stub_method(MessageDraftsController.cache_store, :increment, ->(*args, **kwargs) { store.increment(*args, **kwargs) }) do
+      stub_method(ProjectMessageDraft, :provider, -> { provider }) do
+        5.times do
+          post project_message_draft_path(project), params: { purpose: "announcement" }
+          assert_response :success
+        end
+
+        another_browser = open_session
+        another_browser.post demo_session_path(role: "leader")
+        another_browser.post project_message_draft_path(project), params: { purpose: "announcement" }
+        another_browser.assert_response :success
+      end
+    end
+  end
 end

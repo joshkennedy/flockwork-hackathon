@@ -1,7 +1,7 @@
 class ProfilesController < ApplicationController
   include SettingsPage
 
-  rate_limit to: 20, within: 1.hour, by: -> { Current.person.id }, only: :suggest_away, with: :suggest_away_rate_limited
+  rate_limit to: 20, within: 1.hour, by: -> { ai_rate_limit_key }, only: :suggest_away, with: :suggest_away_rate_limited
   rate_limit to: 5, within: 10.minutes, by: -> { Current.session.id }, name: "demo_session",
     scope: "demo_outbound_actions", only: :update, if: :demo_phone_change?
   rate_limit to: 20, within: 10.minutes, by: -> { request.remote_ip }, name: "demo_ip",
@@ -43,8 +43,8 @@ class ProfilesController < ApplicationController
       begin
         @away_drafts = AwayDateParser.call(params[:away_text]).map { |range| Unavailability.new(range) }
         @away_notice = "Check these dates, then save them."
-      rescue AwayDateParser::Unavailable
-        @away_alert = "Couldn't turn that into dates. Enter them below."
+      rescue AwayDateParser::Unavailable => error
+        @away_alert = error.message == DemoAiLimit::MESSAGE ? error.message : "Couldn't turn that into dates. Enter them below."
       end
     end
 

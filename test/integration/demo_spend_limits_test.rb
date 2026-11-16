@@ -43,7 +43,7 @@ class DemoSpendLimitsTest < ActionDispatch::IntegrationTest
     Rails.configuration.x.voice_client_secret_minter = @original_minter
   end
 
-  test "planner create is bounded per person" do
+  test "planner create is bounded per demo browser session" do
     post demo_session_path(role: "leader")
     maria = people(:grace_leader)
     project = maria.memberships.leader.first!.project
@@ -62,6 +62,15 @@ class DemoSpendLimitsTest < ActionDispatch::IntegrationTest
       assert_redirected_to new_project_planner_session_path(project)
       assert_equal "Too many planning requests. Try again in an hour.", flash[:alert]
       assert_equal 10, provider.calls
+
+      another_browser = open_session
+      another_browser.post demo_session_path(role: "leader")
+      assert_difference "PlannerSession.count", 1 do
+        another_browser.post project_planner_sessions_path(project),
+          params: { planner_session: { description: "Plan from another browser." } }
+      end
+      another_browser.assert_response :redirect
+      assert_equal 11, provider.calls
     end
   end
 
@@ -207,7 +216,7 @@ class DemoSpendLimitsTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "voice session mint is bounded per person" do
+  test "voice session mint is bounded per demo browser session" do
     post demo_session_path(role: "leader")
     maria = people(:grace_leader)
     project = maria.memberships.leader.first!.project
@@ -226,6 +235,71 @@ class DemoSpendLimitsTest < ActionDispatch::IntegrationTest
       post voice_session_project_planner_session_path(project, planner_session), as: :json
       assert_response :too_many_requests
       assert_equal 10, minter.calls
+
+      another_browser = open_session
+      another_browser.post demo_session_path(role: "leader")
+      another_browser.post voice_session_project_planner_session_path(project, planner_session), as: :json
+      another_browser.assert_response :success
+      assert_equal 11, minter.calls
+    end
+  end
+
+  test "the demo AI cap is shared by voice and message drafts" do
+    post demo_session_path(role: "leader")
+    organization = organizations(:grace_fellowship)
+    project = organization.projects.find_by!(name: "Church Workday")
+    project.update!(enabled_tools: project.enabled_tools | [ "messages" ])
+    planner_session = project.planner_sessions.create!(
+      started_by: people(:grace_leader),
+      description: "Prepare the workday.",
+      current_card: { "question" => "What first?", "options" => [ "Cook", "Set up" ] }
+    )
+    minter = CountingVoiceMinter.new
+    draft_calls = 0
+    draft_provider = lambda do |*|
+      draft_calls += 1
+      { "title" => "Welcome", "body" => "Review the Project." }
+    end
+    Rails.configuration.x.voice_client_secret_minter = minter
+
+    with_rate_limit_store do
+      assert Array.new(DemoAiLimit::HOURLY_LIMIT - 1) { DemoAiLimit.allow?(organization) }.all?
+
+      post voice_session_project_planner_session_path(project, planner_session), as: :json
+      assert_response :success
+      assert_equal 1, minter.calls
+
+      stub_method(ProjectMessageDraft, :provider, -> { draft_provider }) do
+        post project_message_draft_path(project), params: { purpose: "announcement" }
+      end
+      assert_response :too_many_requests
+      assert_select "[data-toast-entry][data-toast-kind=alert]", text: DemoAiLimit::MESSAGE
+      assert_equal 0, draft_calls
+    end
+  end
+
+  test "the demo AI cap stops Planner generation and keeps the manual path" do
+    post demo_session_path(role: "leader")
+    organization = organizations(:grace_fellowship)
+    provider = CountingPlannerProvider.new(
+      planner_response(card: { "question" => "What matters most?", "options" => [ "Food", "Setup" ] })
+    )
+    Rails.configuration.x.planner_provider = provider
+
+    with_rate_limit_store do
+      assert Array.new(DemoAiLimit::HOURLY_LIMIT) { DemoAiLimit.allow?(organization) }.all?
+
+      perform_enqueued_jobs(only: PlannerStepJob) do
+        post start_planner_projects_path, params: { planning_kind: "workday" }
+      end
+      assert_response :see_other
+      assert_equal 0, provider.calls
+
+      planner_session = PlannerSession.order(:id).last!
+      get project_planner_session_path(planner_session.project, planner_session)
+      assert_response :success
+      assert_select "[role=alert]", text: /The Planner is paused\. You can keep going by hand\./
+      assert_select "form[action='#{save_and_leave_project_planner_session_path(planner_session.project, planner_session)}']", text: "Keep Going by Hand"
     end
   end
 

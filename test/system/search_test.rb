@@ -1,6 +1,21 @@
 require "application_system_test_case"
 
 class SearchSystemTest < ApplicationSystemTestCase
+  test "the full Search page updates while typing" do
+    project = Project.create_for(
+      creator: people(:grace_leader),
+      attributes: { name: "Live search page Project", enabled_tools: [] }
+    )
+    visit new_demo_session_path
+    click_on "Explore as Leader"
+    assert_selector "[data-signed-in-as]", text: "Maria Lopez"
+    visit search_path
+
+    fill_in "Name or title", with: "Live search page"
+
+    assert_link project.name, href: project_path(project)
+  end
+
   test "keyboard search finds current work and closes when a result is selected" do
     project = Project.create_for(creator: people(:grace_leader), attributes: { name: "Search keyboard project", enabled_tools: [ "signup_sheet", "tasks" ] })
     project.tasks.create!(title: "Prepare search keyboard welcome")

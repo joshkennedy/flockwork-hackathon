@@ -1,5 +1,10 @@
 Rails.application.routes.draw do
   get "up" => "rails/health#show", as: :rails_health_check
+  constraints(host: /.+\.up\.railway\.app/) do
+    match "(*path)", via: :all, to: redirect(status: 301) { |_params, request|
+      "https://getflockwork.com#{request.fullpath}"
+    }
+  end
   mount LetterOpenerWeb::Engine, at: "/letter_opener" if Rails.env.development?
 
   root "landing#show"
@@ -9,6 +14,7 @@ Rails.application.routes.draw do
   get "robots.txt", to: "landing#robots", format: false
   get "sitemap.xml", to: "landing#sitemap", format: false, defaults: { format: :xml }, as: :sitemap
   get "llms.txt", to: "landing#llms", format: false
+  get "manifest.json", to: "pwa#manifest", defaults: { format: :json }, as: :web_app_manifest
   get "sign_up", to: "organizations#new", as: :sign_up
 
   get "p/:token", to: "public_projects#show", as: :public_project

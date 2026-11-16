@@ -1,7 +1,7 @@
 class ProjectBannersController < ApplicationController
   before_action :set_project
   before_action :authorize_banner
-  rate_limit to: 10, within: 1.hour, by: -> { Current.person.id }, name: "banner_upload",
+  rate_limit to: 10, within: 1.hour, by: -> { ai_rate_limit_key }, name: "banner_upload",
     only: :update, if: :banner_upload?, with: :banner_upload_rate_limited
 
   def update

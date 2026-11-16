@@ -20,6 +20,11 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1", "Community Meal"
     assert_select "meta[name=robots][content=noindex]", count: 1
+    assert_select "script[type=module]", text: /import "public"/
+    assert_select "script[type=module]", text: /import "application"/, count: 0
+    assert_select "link[rel=modulepreload]", count: 4
+    assert_select "link[rel=modulepreload][href*='pdf']", count: 0
+    assert_select "link[rel=modulepreload][href*='trix']", count: 0
   end
 
   test "the project keeps sharing and ownership visible" do

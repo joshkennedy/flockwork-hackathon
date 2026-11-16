@@ -4,6 +4,7 @@ class GuestSignInsController < ApplicationController
   layout "public"
 
   allow_unauthenticated_access
+  rescue_from ActiveRecord::RecordNotFound, with: :recover_demo_public_reset
   before_action :set_project, except: %i[ link open_link ]
   before_action :set_slot, only: %i[ new create ]
   rate_limit to: 10, within: 3.minutes, only: :create, with: -> { too_many_requests }
@@ -89,6 +90,7 @@ class GuestSignInsController < ApplicationController
     def set_project
       @project = Project.publicly_linked.find_by!(public_token: params[:token])
       @organization = @project.organization
+      remember_demo_public_visit(@organization)
     end
 
     # The slot_id comes from the page's link, so it only counts when it is one of this Project's Slots.

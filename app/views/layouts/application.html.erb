@@ -16,9 +16,10 @@
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="<%= icon_path(c: mark_color.delete("#")) %>" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="manifest" href="<%= web_app_manifest_path %>">
     <%= render "layouts/fonts" %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
-    <%= javascript_importmap_tags %>
+    <%= javascript_importmap_tags(authenticated? && !marketing_page? ? "application" : "marketing") %>
   </head>
   <body data-controller="global-search" data-action="keydown@window->global-search#shortcut turbo:before-morph-element->global-search#keepOpen" style="<%= mark_color_style %>" class="min-h-screen <%="bg-frame" if authenticated? && !marketing_page? %>">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-panel focus:p-3">Skip to content</a>
@@ -67,7 +68,8 @@
         <%= render "landing/footer" %>
       <% else %>
         <%# Sign-in, sign-up and invitation pages: the form beside the recorded sign-up scene. %>
-        <main id="main-content" class="auth-split">
+        <%# Crossing the signed-out boundary needs the authenticated JavaScript entrypoint. %>
+        <main id="main-content" class="auth-split" data-turbo="false">
           <div class="auth-form">
             <% if flash[:alert] %><p class="auth-error" role="alert"><%= flash[:alert] %></p><% end %>
             <%= yield %>

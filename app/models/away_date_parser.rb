@@ -39,6 +39,7 @@ class AwayDateParser
   def call
     raise Unavailable, "No OpenRouter key is configured" if ENV["OPENROUTER_API_KEY"].blank?
 
+    DemoAiLimit.consume!(Current.organization)
     message = RubyLLM.context { |config| config.request_timeout = 20 }
       .chat(model: model, provider: :openrouter, assume_model_exists: true)
       .with_instructions(format(PROMPT, today: @today.iso8601))
@@ -46,6 +47,8 @@ class AwayDateParser
       .with_max_output_tokens(4_000)
       .ask(@text.to_s.squish.first(500))
     self.class.from_reply(message.content)
+  rescue DemoAiLimit::Exceeded => error
+    raise Unavailable, error.message
   rescue Unavailable
     raise
   rescue StandardError => error

@@ -9,6 +9,7 @@ module Planner
     end
 
     def ask(&on_partial)
+      DemoAiLimit.consume!(session.project.organization)
       Rails.configuration.x.planner_provider.call(context, &on_partial)
     end
 

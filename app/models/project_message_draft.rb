@@ -2,6 +2,7 @@ require "timeout"
 
 class ProjectMessageDraft
   class Unavailable < StandardError; end
+  class LimitReached < Unavailable; end
   Draft = Data.define(:title, :body)
   PURPOSES = { "announcement" => "Announce this Project", "open_spots" => "Ask for help with open spots" }.freeze
 
@@ -38,6 +39,7 @@ class ProjectMessageDraft
       "ends_on" => @project.ends_on&.strftime("%B %-d, %Y")
     }
     facts["open_spots_next_7_days"] = risk.open_spots if purpose == "open_spots"
+    DemoAiLimit.consume!(@project.organization)
     response = @provider.call(facts)
     title = response.fetch("title")
     body = response.fetch("body")
@@ -49,6 +51,8 @@ class ProjectMessageDraft
       raise Unavailable, "The draft included numbers that could not be verified. Try again or write a message in the Project."
     end
     Draft.new(title: title.gsub("{{project}}", @project.name), body: body.gsub("{{project}}", @project.name))
+  rescue DemoAiLimit::Exceeded => error
+    raise LimitReached, error.message
   rescue Unavailable
     raise
   rescue StandardError => error

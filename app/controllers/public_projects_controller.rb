@@ -2,10 +2,12 @@ class PublicProjectsController < ApplicationController
   layout "public"
 
   allow_unauthenticated_access only: :show
+  rescue_from ActiveRecord::RecordNotFound, with: :recover_demo_public_reset
 
   def show
     @project = Project.publicly_linked.find_by!(public_token: params[:token])
     @organization = @project.organization
+    remember_demo_public_visit(@organization)
     @schedule_items_by_day = @project.schedule_items.grouped_by_day
     # Someone signed in to this Organization claims here; everyone else is sent to sign in first.
     @helper = Current.person if authenticated? && Policy.can?(Current.person, :claim_public_slot, @project)

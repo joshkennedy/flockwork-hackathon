@@ -9,9 +9,10 @@
     <%= csp_meta_tag %>
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="<%= icon_path(c: mark_color.delete("#")) %>" type="image/svg+xml">
+    <link rel="manifest" href="<%= web_app_manifest_path %>">
     <%= render "layouts/fonts" %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
-    <%= javascript_importmap_tags %>
+    <%= javascript_importmap_tags "public" %>
   </head>
   <%# Plain navigation keeps the #slot_ anchor on redirects, which a Turbo fetch would drop. JS is here for the toasts. %>
   <body style="<%= mark_color_style %>" class="min-h-screen bg-page" data-turbo="false" data-public-layout>
