@@ -318,6 +318,37 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_includes planner_session.reload.visible_pending_items.pluck("id"), schedule.fetch("id")
   end
 
+  test "a build-as-you-go plan can be discarded while answering or reviewing" do
+    sign_in_as_leader
+    project, planner_session = build_reviewing_session(
+      planning_kind: "workday",
+      items: [ item("task", "task-1", title: "Set out tools", details: "", due_on: nil) ]
+    )
+    confirm = "Discard this plan? Nothing will be added to the Project."
+
+    planner_session.update!(status: :asking, current_card: card("What matters next?"))
+    get project_planner_session_path(project, planner_session)
+    assert_select "form[action='#{abandon_project_planner_session_path(project, planner_session)}'][data-turbo-confirm=?]", confirm do
+      assert_select "button", text: "Discard Plan"
+    end
+
+    planner_session.update!(status: :reviewing, current_card: nil)
+    get project_planner_session_path(project, planner_session)
+    assert_select "form[action='#{abandon_project_planner_session_path(project, planner_session)}'][data-turbo-confirm=?]", confirm do
+      assert_select "button", text: "Discard Plan"
+    end
+
+    assert_no_difference [ -> { project.tasks.count }, -> { project.planner_sessions.count } ] do
+      post abandon_project_planner_session_path(project, planner_session)
+    end
+    assert_response :see_other
+    assert_redirected_to project_path(project)
+    assert_predicate planner_session.reload, :abandoned?
+
+    follow_redirect!
+    assert_select "a", text: "Continue Planning", count: 0
+  end
+
   test "missing dates block the whole acceptance transaction but an unknown budget does not" do
     sign_in_as_leader
     project, planner_session = build_reviewing_session(

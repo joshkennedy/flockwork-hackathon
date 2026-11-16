@@ -123,6 +123,8 @@
             <% end %>
             <%= button_to "Save and Leave", save_and_leave_project_planner_session_path(project, planner_session), class: "btn btn-secondary",
               form: { data: { turbo_frame: "_top" } } %>
+            <%= button_to "Discard Plan", abandon_project_planner_session_path(project, planner_session), class: "btn btn-danger",
+              form: { data: { turbo_frame: "_top", turbo_confirm: "Discard this plan? Nothing will be added to the Project." } } %>
           </div>
 
           <% if show_add_note %>
@@ -261,6 +263,8 @@
             <% end %>
             <%= button_to "Save and Leave", save_and_leave_project_planner_session_path(project, planner_session), class: "btn btn-text",
               form: { data: { turbo_frame: "_top" } } %>
+            <%= button_to "Discard Plan", abandon_project_planner_session_path(project, planner_session), class: "btn btn-danger",
+              form: { data: { turbo_frame: "_top", turbo_confirm: "Discard this plan? Nothing will be added to the Project." } } %>
           </div>
         <% end %>
       </section>
