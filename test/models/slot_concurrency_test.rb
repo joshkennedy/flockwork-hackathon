@@ -4,6 +4,7 @@ class SlotConcurrencyTest < ActiveSupport::TestCase
   self.use_transactional_tests = false
 
   teardown do
+    @slot&.notifications&.delete_all
     @slot&.slot_claims&.delete_all
     @slot&.delete
     @membership&.delete

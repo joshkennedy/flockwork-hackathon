@@ -62,6 +62,32 @@ class GuestSignInSystemTest < ApplicationSystemTestCase
     assert_landed_on later, below: "[data-signup-later] summary"
   end
 
+  test "a Public helper answers and edits a prompted Slot" do
+    slot = @project.slots.last
+    slot.update!(label: "Desserts", capacity: 8, claim_prompt: "What are you bringing?")
+    visit public_project_path(@project.public_token)
+    within("#slot_#{slot.id}") { click_on "Sign Up" }
+
+    fill_in "Email or mobile number", with: people(:other_volunteer).email
+    click_on "Send Me a Code"
+    fill_in "6-digit code", with: ActionMailer::Base.deliveries.last.subject[/\A\d{6}/]
+    click_on "Verify Code"
+
+    within("#slot_#{slot.id}") do
+      fill_in "What are you bringing?", with: "Apple crisp"
+      click_on "Sign Up"
+    end
+    assert_selector "#slot_#{slot.id}", text: /Apple crisp.*1 of 8 claimed.*7 open/m
+
+    within("#slot_#{slot.id}") do
+      find("summary", text: "Edit Answer").click
+      fill_in "What are you bringing?", with: "Peach cobbler"
+      click_on "Save Answer"
+    end
+    assert_selector "#slot_#{slot.id}", text: /Peach cobbler/
+    assert_no_selector "#slot_#{slot.id}", text: people(:other_volunteer).name
+  end
+
   private
     # The heading or group label above a just-claimed row sits 24px from the top, and the whole row stays on screen.
     def assert_landed_on(slot, below:)

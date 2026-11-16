@@ -47,6 +47,6 @@ class SlotsController < ApplicationController
     end
 
     def slot_params
-      params.expect(slot: [ :date, :starts_at_time, :label, :capacity, :schedule_item_id ])
+      params.expect(slot: [ :date, :starts_at_time, :label, :capacity, :claim_prompt, :schedule_item_id ])
     end
 end

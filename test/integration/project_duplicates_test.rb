@@ -39,9 +39,10 @@ class ProjectDuplicatesTest < ActionDispatch::IntegrationTest
       date: "2027-02-14",
       starts_at_time: "17:30",
       label: "Serve dinner",
-      capacity: 4
+      capacity: 4,
+      claim_prompt: "What are you bringing?"
     )
-    source_slot.slot_claims.create!(person: people(:volunteer))
+    source_slot.claim(people(:volunteer), note: "Baked ziti")
     source_session = source.schedule_items.create!(date: "2027-02-18", title: "Session 3")
     linked_slot = source.slots.create!(label: "Teacher", capacity: 1, schedule_item: source_session)
     source.recipients.create!(person: people(:recipient))
@@ -113,7 +114,9 @@ class ProjectDuplicatesTest < ActionDispatch::IntegrationTest
     assert_equal Date.new(2028, 3, 17), copied_slot.date
     assert_equal "17:30:00", copied_slot.starts_at_time.strftime("%H:%M:%S")
     assert_equal 4, copied_slot.capacity
+    assert_equal "What are you bringing?", copied_slot.claim_prompt
     assert_equal 0, copied_slot.claims_count
+    assert_empty copied_slot.slot_claims
 
     copied_linked_slot = copy.slots.find_by!(label: "Teacher")
     assert_equal "Session 3", copied_linked_slot.schedule_item.title

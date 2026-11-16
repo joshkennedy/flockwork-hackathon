@@ -44,5 +44,10 @@
     <%= form.number_field :capacity, min: 1, required: true, class: "mt-2 block w-full field" %>
   </div>
 
+  <div>
+    <%= form.label :claim_prompt, "Question for people signing up", class: "block text-label font-medium text-ink" %>
+    <%= form.text_field :claim_prompt, maxlength: 120, placeholder: "What are you bringing?", class: "mt-2 block w-full field" %>
+  </div>
+
   <%= form.submit slot.persisted? ? "Save Slot" : "Add Slot", class: "btn btn-primary" %>
 <% end %>

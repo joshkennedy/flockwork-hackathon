@@ -59,7 +59,7 @@ class MealPlannerSystemTest < ApplicationSystemTestCase
     within "section[aria-labelledby='tool-signup-sheet']" do
       assert_text "3 meals added to your Sign-up sheet."
       assert_text "Bring soup"
-      assert_text "2 spots left"
+      assert_text "2 open"
     end
     assert_selector "#tool-signup-sheet", focused: true
     assert_empty @provider.contexts

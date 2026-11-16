@@ -1,6 +1,37 @@
 require "test_helper"
 
 class SlotTest < ActiveSupport::TestCase
+  test "claim stores a note when the Slot asks a question" do
+    slot = projects(:community_meal).slots.create!(
+      date: Date.tomorrow,
+      label: "Main dishes",
+      capacity: 8,
+      claim_prompt: "What are you bringing?"
+    )
+
+    claim = slot.claim(people(:volunteer), note: "Baked ziti")
+
+    assert_predicate claim, :persisted?
+    assert_equal "Baked ziti", claim.note
+  end
+
+  test "a prompted Slot requires a short claim note" do
+    slot = projects(:community_meal).slots.create!(
+      date: Date.tomorrow,
+      label: "Desserts",
+      capacity: 8,
+      claim_prompt: "What are you bringing?"
+    )
+
+    missing = slot.claim(people(:volunteer))
+    too_long = slot.claim(people(:other_volunteer), note: "x" * 81)
+
+    assert_not_predicate missing, :persisted?
+    assert_equal [ "can't be blank" ], missing.errors[:note]
+    assert_not_predicate too_long, :persisted?
+    assert_equal [ "is too long (maximum is 80 characters)" ], too_long.errors[:note]
+  end
+
   test "linked Schedule item must belong to the same Project" do
     project = projects(:community_meal)
     other_item = projects(:building_cleanup).schedule_items.create!(title: "Session 3", date: "2027-04-18")

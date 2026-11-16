@@ -43,7 +43,8 @@ class SlotsTest < ActionDispatch::IntegrationTest
           date: "2027-02-15",
           starts_at_time: "18:30",
           label: "Serve dinner",
-          capacity: 3
+          capacity: 3,
+          claim_prompt: "What are you bringing?"
         }
       }
     end
@@ -52,15 +53,17 @@ class SlotsTest < ActionDispatch::IntegrationTest
     assert_redirected_to project_path(project)
     follow_redirect!
     assert_select "section[aria-labelledby='tool-signup-sheet']", text: /Serve dinner/
-    assert_select "section[aria-labelledby='tool-signup-sheet'] .badge-need", text: "3 spots left"
+    assert_select "section[aria-labelledby='tool-signup-sheet']", text: /0 of 3 claimed.*3 open/m
     assert_select "section[aria-labelledby='tool-signup-sheet'] .signup-row", text: /Mon, Feb 15, 2027/
+    assert_equal "What are you bringing?", slot.claim_prompt
 
     patch project_slot_path(project, slot), params: {
       slot: {
         date: "2027-02-16",
         starts_at_time: "19:00",
         label: "Clean up after dinner",
-        capacity: 2
+        capacity: 2,
+        claim_prompt: "What will you handle?"
       }
     }
 
@@ -70,6 +73,7 @@ class SlotsTest < ActionDispatch::IntegrationTest
     assert_equal "19:00", slot.starts_at_time.strftime("%H:%M")
     assert_equal "Clean up after dinner", slot.label
     assert_equal 2, slot.capacity
+    assert_equal "What will you handle?", slot.claim_prompt
 
     assert_difference "Slot.count", -1 do
       delete project_slot_path(project, slot)
@@ -115,7 +119,7 @@ class SlotsTest < ActionDispatch::IntegrationTest
     assert_redirected_to project_path(project)
     assert_equal 1, slot.reload.claims_count
     follow_redirect!
-    assert_select "section[aria-labelledby='tool-signup-sheet']", text: /1 of 2 filled/
+    assert_select "section[aria-labelledby='tool-signup-sheet']", text: /1 of 2 claimed.*1 open/m
     assert_select "section[aria-labelledby='tool-signup-sheet']", text: /#{member.name}/
     assert_select "section[aria-labelledby='tool-signup-sheet'] .signup-people .person-pill", text: /#{member.name}/
     assert_select "form[action='#{project_slot_claim_path(project, slot)}'] button", text: "Release"
@@ -126,6 +130,34 @@ class SlotsTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to project_path(project)
     assert_equal 0, slot.reload.claims_count
+  end
+
+  test "a Team member answers a Slot prompt and edits their answer" do
+    member = sign_in_as_volunteer
+    project = projects(:community_meal)
+    project.update!(enabled_tools: project.enabled_tools | [ "signup_sheet" ])
+    slot = project.slots.create!(
+      date: Date.tomorrow,
+      label: "Main dishes",
+      capacity: 8,
+      claim_prompt: "What are you bringing?"
+    )
+
+    assert_difference "SlotClaim.count", 1 do
+      post project_slot_claim_path(project, slot), params: { slot_claim: { note: "Baked ziti" } }
+    end
+
+    claim = slot.slot_claims.find_by!(person: member)
+    assert_equal "Baked ziti", claim.note
+    follow_redirect!
+    assert_select "#slot_#{slot.id}", text: /#{Regexp.escape(member.name)}.*Baked ziti/m
+    assert_select "#slot_#{slot.id}", text: /1 of 8 claimed.*7 open/m
+    assert_select "form[action=?] input[name='slot_claim[note]'][value='Baked ziti']", project_slot_claim_path(project, slot)
+
+    patch project_slot_claim_path(project, slot), params: { slot_claim: { note: "Vegetable lasagna" } }
+
+    assert_redirected_to project_path(project)
+    assert_equal "Vegetable lasagna", claim.reload.note
   end
 
   test "a full Slot refuses another claim" do

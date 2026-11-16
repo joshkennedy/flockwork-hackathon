@@ -87,6 +87,7 @@ class ProjectDuplicate
           starts_at_time: slot.starts_at_time,
           label: slot.label,
           capacity: slot.capacity,
+          claim_prompt: slot.claim_prompt,
           schedule_item: copied_schedule_items[slot.schedule_item_id]
         )
       end

@@ -85,6 +85,29 @@ class PlannerContextBuilderTest < ActiveSupport::TestCase
     assert_equal "Ask [name] to coordinate.", fake.contexts.first.fetch("project_intent")
   end
 
+  test "Slot claim notes never enter Planner payloads" do
+    leader = people(:leader)
+    project = projects(:community_meal)
+    slot = project.slots.create!(date: Date.tomorrow, label: "Main dishes", capacity: 4, claim_prompt: "What are you bringing?")
+    sentinel = "PRIVATE-POTLUCK-NOTE-7319"
+    slot.claim(people(:volunteer), note: sentinel)
+    planner_session = project.planner_sessions.create!(started_by: leader, description: "Plan the picnic.", flow_version: 3)
+    fake = Planner::Providers::Fake.new([
+      Planner::Response.new(card: nil, finished: false, added: [], removed_ids: [])
+    ])
+    Rails.configuration.x.planner_provider = fake
+    current_session = leader.sessions.create!(ip_address: "127.0.0.1", user_agent: "test")
+
+    instructions = Current.set(session: current_session) do
+      builder = Planner::ContextBuilder.new(planner_session)
+      builder.ask
+      builder.voice_instructions
+    end
+
+    assert_not_includes fake.contexts.to_json, sentinel
+    assert_not_includes instructions, sentinel
+  end
+
   test "voice instructions distinguish a waiting builder from review" do
     leader = people(:leader)
     project = projects(:community_meal)

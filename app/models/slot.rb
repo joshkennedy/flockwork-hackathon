@@ -12,6 +12,7 @@ class Slot < ApplicationRecord
   validates :date, presence: true
   validates :label, presence: true
   validates :capacity, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
+  validates :claim_prompt, length: { maximum: 120 }, allow_blank: true
   validate :schedule_item_belongs_to_project
   validate :capacity_is_not_below_current_claims
   before_validation :follow_schedule_item_date
@@ -27,7 +28,7 @@ class Slot < ApplicationRecord
     where(project_id: project_ids).this_week.with_open_spots.includes(:project).chronological.group_by(&:project)
   end
 
-  def claim(person)
+  def claim(person, note: nil)
     claim = nil
 
     self.class.transaction do
@@ -38,7 +39,7 @@ class Slot < ApplicationRecord
       elsif slot_claims.count >= capacity
         errors.add(:base, "This Slot is full. Pick another one.")
       else
-        claim = slot_claims.create(person:)
+        claim = slot_claims.create(person:, note:)
         notify_leaders(claim) if claim.persisted?
       end
     end

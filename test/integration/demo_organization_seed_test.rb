@@ -6,6 +6,7 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
     "Church Workday",
     "Community Food Pantry Serve Day",
     "Christmas Outreach #{Date.current.year - 1}",
+    "Fall Church Picnic",
     "Kids' Night",
     "Meal Train for the Alvarez Family",
     "Meal Train for the Hernandez Family",
@@ -28,7 +29,7 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
       assert_equal 64, organization.people.count
       assert_equal 3, organization.overextended_limit
       assert_equal PROJECT_NAMES.sort, organization.projects.order(:name).pluck(:name)
-      assert_equal 10, organization.projects.active.count
+      assert_equal 11, organization.projects.active.count
       assert_equal 6, organization.projects.where.not(done_at: nil).count
       assert_equal [ "Parking & Arrival Team" ], organization.projects.select { |project| !project.banner.attached? }.map(&:name)
       assert organization.projects.select { |project| project.banner.attached? }.all? { |project| project.banner.blob.metadata["organization_id"].to_s == organization.id.to_s }
@@ -43,6 +44,15 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
       assert_includes meal_train.enabled_tools, "recipients"
       assert meal_train.slots.where("claims_count > 0").exists?
       assert meal_train.slots.where(claims_count: 0).exists?
+
+      picnic = organization.projects.find_by!(name: "Fall Church Picnic")
+      assert_equal %w[messages signup_sheet], picnic.enabled_tools.sort
+      assert picnic.public_token.present?
+      assert_equal [ "Desserts", "Drinks", "Main dishes", "Setup helpers", "Sides" ], picnic.slots.order(:label).pluck(:label)
+      assert_equal [ "Desserts", "Drinks", "Main dishes", "Sides" ], picnic.slots.where.not(claim_prompt: nil).order(:label).pluck(:label)
+      assert picnic.slots.all? { |slot| slot.claims_count.positive? && !slot.full? }
+      assert_equal 9, SlotClaim.joins(:slot).where(slots: { project_id: picnic.id }).where.not(note: nil).count
+      assert_equal 2, picnic.messages.count
 
       recipient = meal_train.recipients.includes(:person).find_by!(people: { name: "The Alvarez Family" })
       assert_match(/\A202-555-01\d\d\z/, recipient.person.phone)
@@ -94,7 +104,7 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
 
     replacement = Organization.find_by!(slug: DemoOrganization::SLUG)
     assert_equal 64, replacement.people.count
-    assert_equal 16, replacement.projects.count
+    assert_equal 17, replacement.projects.count
     assert_equal other_counts, [ other_organization.reload.people.count, other_organization.projects.count ]
     assert_not Session.where(id: old_session_ids).exists?
     assert_not ActionText::RichText.where(id: old_rich_text_ids).exists?
@@ -321,7 +331,7 @@ class DemoOrganizationSeedTest < ActionDispatch::IntegrationTest
 
     replacement = Organization.find_by!(slug: DemoOrganization::SLUG)
     assert_equal 64, replacement.people.count
-    assert_equal 16, replacement.projects.count
+    assert_equal 17, replacement.projects.count
     assert_not replacement.people.exists?(name: "Temporary Judge")
 
     recurring = YAML.load_file(Rails.root.join("config/recurring.yml"))

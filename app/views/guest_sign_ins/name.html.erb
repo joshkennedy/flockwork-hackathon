@@ -4,7 +4,7 @@
   <h1 class="text-ink">What’s your name?</h1>
   <% if @challenge.slot %>
     <p class="mt-2 text-meta text-ink-2 sm:mt-3" data-chosen-slot><%= slot_summary(@challenge.slot) %></p>
-    <p class="mt-1 text-meta text-ink-2">Last step. This saves your spot.</p>
+    <p class="mt-1 text-meta text-ink-2"><%= @challenge.slot.claim_prompt.present? ? "Sign in, then answer one question to save your spot." : "Last step. This saves your spot." %></p>
   <% else %>
     <p class="mt-2 text-ink-2">So <%= @project.organization.name %> knows who’s helping.</p>
   <% end %>

@@ -29,17 +29,19 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", new_sign_in_request_path, count: 0
   end
 
-  test "the need badge shows from two open spots up, signed in or out" do
+  test "plain claim and open counts show signed in or out" do
     roomy = @project.slots.create!(date: Date.current + 4, label: "Dinner", capacity: 3)
 
     get public_project_path(@token)
-    assert_select "#slot_#{@slot.id} .badge-need", count: 0
-    assert_select "#slot_#{roomy.id} .badge-need", "3 spots left"
+    assert_select "#slot_#{@slot.id}", text: /0 of 1 claimed.*1 open/m
+    assert_select "#slot_#{roomy.id}", text: /0 of 3 claimed.*3 open/m
+    assert_select ".badge-need", count: 0
 
     sign_in_as @vera
     get public_project_path(@token)
-    assert_select "#slot_#{@slot.id} .badge-need", count: 0
-    assert_select "#slot_#{roomy.id} .badge-need", "3 spots left"
+    assert_select "#slot_#{@slot.id}", text: /0 of 1 claimed.*1 open/m
+    assert_select "#slot_#{roomy.id}", text: /0 of 3 claimed.*3 open/m
+    assert_select ".badge-need", count: 0
   end
 
   test "the Public page groups Slots like the Sign-up sheet and opens Later when it holds the helper's spot" do
@@ -203,6 +205,36 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_signed_in_as @vera
     assert_equal "email_code", @vera.sessions.last.auth_method
     assert_nil @vera.reload.joined_from_project
+  end
+
+  test "a prompted Slot asks for the answer after guest sign-in" do
+    @slot.update!(claim_prompt: "What are you bringing?")
+    code = request_code(@vera.email, slot: @slot)
+
+    assert_no_difference "SlotClaim.count" do
+      post guest_sign_in_code_path(@token), params: { code: }
+    end
+
+    assert_redirected_to public_project_path(@token, anchor: "slot_#{@slot.id}")
+    follow_redirect!
+    assert_select "#flash [data-toast-entry]", count: 0
+    assert_select "#slot_#{@slot.id} form[action=?]", public_slot_claim_path(@token, @slot) do
+      assert_select "label", "What are you bringing?"
+      assert_select "input[name='slot_claim[note]'][maxlength='80'][required]"
+      assert_select "input[type='submit'][value='Sign Up']"
+    end
+  end
+
+  test "a challenge cannot claim its Slot after the Sign-up sheet is turned off" do
+    code = request_code(@vera.email, slot: @slot)
+    @project.update!(enabled_tools: @project.enabled_tools - [ "signup_sheet" ])
+
+    assert_no_difference "SlotClaim.count" do
+      post guest_sign_in_code_path(@token), params: { code: }
+    end
+
+    assert_redirected_to public_project_path(@token)
+    assert_empty @slot.reload.slot_claims
   end
 
   test "the one-tap link holds the tapped Slot even when opened in another browser" do

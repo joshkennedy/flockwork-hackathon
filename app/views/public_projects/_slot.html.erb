@@ -1,26 +1,49 @@
-<% spots_left = slot.capacity - slot.claims_count %>
-<% claimed = @claimed_slot_ids.include?(slot.id) %>
+<% own_claim = @helper && slot.slot_claims.find { |claim| claim.person_id == @helper.id } %>
+<% claimed = own_claim.present? %>
 <%# A held spot is done, so it lies flat; only open Slots stay raised to be pressed. A claimed row is the claim's confirmation: landing on it focuses it so screen readers hear it, and keeps the heading or group label above it in view. %>
 <li id="<%= dom_id(slot) %>" <%= tag.attributes(tabindex: (-1 if claimed), data: ({ controller: "slot-landing" } if claimed)) %> class="flex scroll-mt-10 flex-wrap items-start justify-between gap-3 p-4 <%= claimed ? "slot-held" : "tile-raised" %>">
   <div class="min-w-0 <%= "w-full" if claimed %>">
     <%# The day is what helpers choose by, so it leads; the label is the same on most rows. %>
     <p class="font-semibold text-ink"><%= slot.date.strftime("%A, %B %-d") %><% if slot.starts_at_time.present? %> · <%= slot.starts_at_time.strftime("%-l:%M %p") %><% end %></p>
     <p class="text-meta text-ink-2"><%= slot.label %></p>
+    <% if slot.slot_claims.any?(&:note?) %>
+      <ul class="mt-2 space-y-1 text-meta text-ink-2">
+        <% slot.slot_claims.filter_map(&:note).each do |note| %><li><%= note %></li><% end %>
+      </ul>
+    <% end %>
+    <p class="mt-2 text-meta text-ink-2"><%= slot_claims_summary(slot) %></p>
     <% if claimed %>
       <%# Unclaim rides the confirmation line as a quiet link, so the claim reads first; its padding gives phones a 44px target without growing the row. %>
       <div class="mt-2 flex flex-wrap items-center justify-between gap-x-4">
         <p class="flex items-center gap-1.5 text-heading text-ink"><%= icon(:check, size: 18, view_box: "3 2 18 18", class: "kept-check stroke-2 text-sunlit-strong") %><%= claimed_slot_phrase(slot) %></p>
         <%= button_to "Unclaim", public_slot_claim_path(@project.public_token, slot), method: :delete, class: "link -my-3.5 cursor-pointer py-3.5 text-meta font-medium text-ink-2 sm:my-0 sm:py-0" %>
       </div>
-    <% elsif spots_left > 1 %>
-      <%# A lone open spot is already said by the row's button. %>
-      <p class="badge-need mt-2"><%= spots_left %> <%= "spot".pluralize(spots_left) %> left</p>
+      <% if slot.claim_prompt.present? || own_claim.note.present? %>
+        <details class="mt-3">
+          <%= disclosure_summary "Edit Answer" %>
+          <%= form_with model: own_claim, scope: :slot_claim, url: public_slot_claim_path(@project.public_token, slot), method: :patch, class: "mt-3 space-y-3" do |form| %>
+            <%= form.label :note, slot.claim_prompt.presence || "Your answer", class: "block text-label font-medium text-ink" %>
+            <%= form.text_field :note, maxlength: 80, required: slot.claim_prompt.present?, class: "field block w-full" %>
+            <%= form.submit "Save Answer", class: "btn btn-secondary btn-sm" %>
+          <% end %>
+        </details>
+      <% end %>
     <% end %>
   </div>
   <%# A held row's only action is on its confirmation line. %>
   <% if !claimed && @helper %>
-    <%= button_to "Sign Up", public_slot_claim_path(@project.public_token, slot),
-          class: "btn btn-secondary btn-sm btn-claim", aria: { label: "Sign up for #{slot.label}" } %>
+    <% if slot.claim_prompt.present? %>
+      <%= form_with scope: :slot_claim, url: public_slot_claim_path(@project.public_token, slot), class: "w-full space-y-2 sm:max-w-sm" do |form| %>
+        <%= form.label :note, slot.claim_prompt, class: "block text-label font-medium text-ink" %>
+        <div class="flex flex-col gap-2 sm:flex-row">
+          <%= form.text_field :note, maxlength: 80, required: true, class: "field min-w-0 flex-1" %>
+          <%= form.submit "Sign Up", class: "btn btn-secondary btn-sm btn-claim" %>
+        </div>
+      <% end %>
+    <% else %>
+      <%= button_to "Sign Up", public_slot_claim_path(@project.public_token, slot),
+            class: "btn btn-secondary btn-sm btn-claim", aria: { label: "Sign up for #{slot.label}" } %>
+    <% end %>
   <% elsif !claimed %>
     <%= link_to "Sign Up", guest_sign_in_path(@project.public_token, slot_id: slot.id), class: "btn btn-secondary btn-sm btn-claim" %>
   <% end %>
