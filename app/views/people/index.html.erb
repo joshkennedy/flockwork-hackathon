@@ -10,55 +10,47 @@
   <%# Plain links, so a filter is a URL that can be shared and still works with the live search. %>
   <nav class="tab-bar mt-7" aria-label="Filter People">
     <% @filter_tabs.each do |key, label, count| %>
-      <%= link_to people_path(filter: (key unless key == "everyone"), query: params[:query].presence, skill: @skill),
+      <%= link_to people_path(filter: (key unless key == "everyone"), query: params[:query].presence, skill: @skill, sort: (@sort unless @sort == "name")),
         class: "tab-link", aria: { current: ("page" if key == @filter) } do %>
         <%= label %> <span class="ml-1 text-ink-2"><%= count %></span>
       <% end %>
     <% end %>
   </nav>
 
-  <%= form_with url: people_path, method: :get, class: "mt-5 flex max-w-2xl flex-col gap-3 sm:flex-row", data: { controller: "live-search", turbo_frame: "people-results", turbo_action: "replace" } do |form| %>
+  <%= form_with url: people_path, method: :get, class: "mt-5 flex max-w-4xl flex-col gap-3 sm:flex-row", data: { controller: "live-search", turbo_frame: "people-results", turbo_action: "replace" } do |form| %>
     <%= form.label :query, "Search by name", class: "sr-only" %>
     <%= form.search_field :query, value: params[:query], placeholder: "Search by name", autocomplete: "off", class: "min-w-0 flex-1 field", data: { action: "input->live-search#search" } %>
     <%= hidden_field_tag :filter, params[:filter], id: nil if params[:filter].present? %>
     <%= form.label :skill, "Skill", class: "sr-only" %>
     <%= form.select :skill, @skill_options.map { |skill| [ Skills.label(skill), skill ] }, { selected: @skill, include_blank: "All skills" }, class: "field sm:w-52", data: { action: "change->live-search#submitPage" } %>
+    <%= form.label :sort, "Sort People", class: "sr-only" %>
+    <%= form.select :sort, PeopleController::SORTS.map { |value, label| [ label, value ] }, { selected: @sort }, class: "field sm:w-48", data: { action: "change->live-search#submitPage" } %>
   <% end %>
 
   <%# target _top so the name links and Clear search leave the frame for the person's page. %>
   <%= turbo_frame_tag "people-results", target: "_top" do %>
     <% if @people.any? %>
-      <%# Letter groups give a long alphabetical list landmarks to scan by. %>
       <div class="mt-5 space-y-6">
+      <% if @sort == "name" %>
+      <%# Letter groups give a long alphabetical list landmarks to scan by. %>
       <% @people.group_by { |person| person.name.first.upcase }.each do |letter, group| %>
       <section aria-label="<%= letter %>">
       <h2 class="text-meta font-semibold text-ink-2" aria-hidden="true"><%= letter %></h2>
       <ul class="mt-1 divide-y divide-hairline border-b border-hairline">
-        <% group.each do |person| %>
-          <li class="relative flex items-center gap-3 py-3">
-            <%= avatar(person) %>
-            <div class="min-w-0 flex-1">
-              <p class="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-                <%= link_to person.name, person_path(person), class: "font-semibold text-ink after:absolute after:inset-0" %>
-                <%= person_chips(person, leader: @leader_ids.include?(person.id), away_until: @away_until[person.id], never_asked: @never_asked_ids.include?(person.id)) %>
-              </p>
-              <% if (serving = serving_line(@serving_names.fetch(person.id, []))) %>
-                <p class="mt-0.5 truncate text-meta text-ink-2"><%= serving %></p>
-              <% end %>
-              <% if person.added_by %>
-                <p class="mt-0.5 truncate text-label font-normal text-ink-3">Added by <%= person.added_by.name %></p>
-              <% end %>
-            </div>
-          </li>
-        <% end %>
+        <%= render partial: "directory_row", collection: group, as: :person %>
       </ul>
       </section>
       <% end %>
+      <% else %>
+        <ul class="divide-y divide-hairline border-y border-hairline">
+          <%= render partial: "directory_row", collection: @people, as: :person %>
+        </ul>
+      <% end %>
       </div>
     <% elsif params[:query].present? %>
-      <p class="mt-7 text-ink-2">No people match "<%= params[:query] %>". <%= link_to "Clear search", people_path(filter: params[:filter].presence, skill: @skill), class: "link font-medium" %></p>
+      <p class="mt-7 text-ink-2">No people match "<%= params[:query] %>". <%= link_to "Clear search", people_path(filter: params[:filter].presence, skill: @skill, sort: (@sort unless @sort == "name")), class: "link font-medium" %></p>
     <% elsif @filter != "everyone" || @skill %>
-      <p class="mt-7 text-ink-2">Nobody is in this list right now. <%= link_to "Show everyone", people_path, class: "link font-medium" %></p>
+      <p class="mt-7 text-ink-2">Nobody is in this list right now. <%= link_to "Show everyone", people_path(sort: (@sort unless @sort == "name")), class: "link font-medium" %></p>
     <% else %>
       <p class="mt-7 text-ink-2">No people yet. Add one, or import a CSV to bring in a whole list.</p>
     <% end %>

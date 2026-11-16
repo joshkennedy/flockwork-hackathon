@@ -14,6 +14,11 @@ class PeopleController < ApplicationController
     "away" => [ "Away", :away_on ],
     "no_email" => [ "No email", :without_email ]
   }.freeze
+  SORTS = {
+    "name" => "Name",
+    "recently_added" => "Recently added",
+    "last_check_in" => "Last check-in"
+  }.freeze
 
   def index
     people = Current.organization.people
@@ -22,12 +27,25 @@ class PeopleController < ApplicationController
     @filter_tabs = FILTERS.map { |key, (label, _scope)| [ key, label, @filter_counts.fetch(key) ] }
 
     @skill = Skills.normalize(params[:skill]).first
+    @sort = SORTS.key?(params[:sort]) ? params[:sort] : "name"
     @skill_options = (people.pluck(:skills).flatten + Array(@skill)).uniq.sort
     matches = people.matching(params[:query])
     matches = matches.where("? = ANY(people.skills)", @skill) if @skill
     scope = FILTERS.fetch(@filter).last
     matches = matches.public_send(scope) if scope
-    @people = matches.includes(:added_by).order(:name).to_a
+    @people = matches.includes(:added_by).to_a
+    @last_check_in_dates = if @sort == "last_check_in"
+      CheckIn.where(organization: Current.organization, person_id: @people.map(&:id)).group(:person_id).maximum(:on)
+    else
+      {}
+    end
+    @people.sort_by! do |person|
+      case @sort
+      when "recently_added" then [ -person.created_at.to_i, person.name.downcase ]
+      when "last_check_in" then [ @last_check_in_dates[person.id] ? -@last_check_in_dates[person.id].jd : Float::INFINITY, person.name.downcase ]
+      else [ person.name.downcase ]
+      end
+    end
     load_directory_rows(@people.map(&:id))
   end
 
