@@ -2,6 +2,8 @@
 <div id="toasts" data-turbo-permanent data-controller="toasts"></div>
 <div id="flash" hidden>
   <% { notice: flash[:notice], alert: flash[:alert] }.compact_blank.each do |kind, message| %>
-    <span data-toast-entry data-toast-kind="<%= kind %>"><%= message %></span>
+    <% action = flash[:toast_action] if kind == :notice %>
+    <span data-toast-entry data-toast-kind="<%= kind %>"
+      <% if action %>data-toast-action-label="<%= action["label"] %>" data-toast-action-path="<%= action["path"] %>" data-toast-action-method="<%= action["method"] %>"<% end %>><%= message %></span>
   <% end %>
 </div>

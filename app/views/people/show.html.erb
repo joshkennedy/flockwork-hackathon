@@ -91,18 +91,16 @@
     <% end %>
 
     <% if Policy.can?(Current.person, :log_check_in, @person) %>
-      <%= form_with url: person_check_ins_path(@person), class: "mt-4 flex flex-wrap items-center gap-2" do %>
+      <%= form_with url: person_check_ins_path(@person), class: "mt-4 grid gap-3" do %>
         <%= hidden_field_tag :return_to, "person", id: nil %>
-        <%= submit_tag "Log a Check-In", class: "btn btn-secondary" %>
-        <details>
-          <%= disclosure_summary "Date or note", class: "text-meta text-ink-2" %>
-          <div class="mt-2 flex flex-wrap gap-2">
-            <%= date_field_tag "check_in[on]", Date.current, max: Date.current, aria: { label: "Date of check-in" }, class: "field" %>
-            <% if Policy.can?(Current.person, :view_note, CheckIn.new(organization: Current.organization, person: @person)) %>
-              <%= text_field_tag "check_in[note]", nil, maxlength: CheckIn::NOTE_LIMIT, placeholder: "Private note, Admins only", aria: { label: "Note" }, class: "field" %>
-            <% end %>
-          </div>
-        </details>
+        <div class="flex flex-wrap gap-2">
+          <%= date_field_tag "check_in[on]", Date.current, max: Date.current, aria: { label: "Date of check-in" }, class: "field" %>
+          <% if Policy.can?(Current.person, :view_note, CheckIn.new(organization: Current.organization, person: @person)) %>
+            <%= text_field_tag "check_in[note]", nil, maxlength: CheckIn::NOTE_LIMIT, placeholder: "Private note, Admins only", aria: { label: "Note" }, class: "field min-w-0 flex-1" %>
+          <% end %>
+        </div>
+        <p class="text-meta text-ink-2">Logging this removes <%= @person.name %> from May need a check-in for <%= CheckIn::RECENT_DAYS %> days.</p>
+        <div><%= submit_tag "Log a Check-In", class: "btn btn-secondary" %></div>
       <% end %>
     <% end %>
   </section>
