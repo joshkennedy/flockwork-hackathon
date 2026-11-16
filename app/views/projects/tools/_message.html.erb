@@ -2,6 +2,9 @@
   <header class="flex min-w-0 items-center gap-2">
     <p class="min-w-0 text-meta font-semibold text-ink"><%= person_pill(message.author) %></p>
     <p class="shrink-0 text-meta text-ink-2"><%= time_ago_in_words(message.created_at) %> ago</p>
+    <% if message.updated_at > message.created_at %>
+      <span class="shrink-0 text-label text-ink-2" data-message-edited>Edited</span>
+    <% end %>
     <% if Policy.can?(Current.person, :edit_message, message) || Policy.can?(Current.person, :delete_message, message) %>
       <div class="ml-auto shrink-0">
         <%= actions_menu("Actions for this message") do %>
