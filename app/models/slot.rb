@@ -39,6 +39,7 @@ class Slot < ApplicationRecord
         errors.add(:base, "This Slot is full. Pick another one.")
       else
         claim = slot_claims.create(person:)
+        notify_leaders(claim) if claim.persisted?
       end
     end
 
@@ -67,5 +68,16 @@ class Slot < ApplicationRecord
       return if capacity >= current_claims
 
       errors.add(:capacity, "can't go below #{current_claims} #{"person".pluralize(current_claims)} already signed up")
+    end
+
+    def notify_leaders(claim)
+      project.memberships.leader.includes(:person).find_each do |membership|
+        Notifier.notify(
+          recipient: membership.person,
+          kind: "slot_claimed",
+          notifiable: self,
+          actor: claim.person
+        )
+      end
     end
 end
