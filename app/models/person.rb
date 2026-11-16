@@ -53,6 +53,7 @@ class Person < ApplicationRecord
   end
 
   # Every typed word must appear somewhere in the name, so "ma lo" finds Maria Lopez.
+  scope :active, -> { where(removed_at: nil) }
   scope :matching, ->(query) {
     query.to_s.split.first(5).reduce(all) { |people, word| people.where("people.name ILIKE ?", "%#{sanitize_sql_like(word)}%") }
   }
@@ -88,13 +89,23 @@ class Person < ApplicationRecord
   validate :cannot_remove_last_admin, if: :admin_changed?
   validate :sms_requires_international_phone
 
+  def self.restore_or_initialize_by_email(organization:, email:, reuse_active: true)
+    normalized_email = normalize_value_for(:email, email.to_s)
+    existing = organization.people.find_by(email: normalized_email) if normalized_email
+    person = existing if existing && (reuse_active || !existing.active?)
+    person ||= organization.people.build
+    person.email = normalized_email if person.new_record?
+    person.removed_at = nil
+    person
+  end
+
   # Signing in consumes a link by stamping last_signed_in_at, which invalidates every link issued before it.
   # The conditional update means two simultaneous uses of one link cannot both succeed.
   def self.sign_in_with_token(token)
     person = find_by_token_for(:sign_in, token)
-    return unless person
+    return unless person&.active?
 
-    updated = where(id: person.id, last_signed_in_at: person.last_signed_in_at)
+    updated = active.where(id: person.id, last_signed_in_at: person.last_signed_in_at)
       .update_all(last_signed_in_at: Time.current)
     person if updated == 1
   end
@@ -103,7 +114,7 @@ class Person < ApplicationRecord
   # Uniqueness is checked again here, because someone else may have taken the address while the link sat unread.
   def self.confirm_email_change(token)
     person = find_by_token_for(:email_change, token)
-    return unless person
+    return unless person&.active?
 
     # Re-check under the row lock, so an Admin clearing or replacing the pending address cannot race the confirmation.
     person.with_lock do
@@ -117,13 +128,17 @@ class Person < ApplicationRecord
   end
 
   def can_sign_in?
-    email.present?
+    active? && email.present?
   end
 
   # A Public link texts a code to a North American mobile, but never to an Admin (see SignInChallenge#texts_an_admin?).
   def can_sign_in_by_text?
     channel, phone = SignInChallenge.parse(self.phone)
-    !admin? && channel == "sms" && SignInChallenge::TEXTABLE_PHONE.match?(phone)
+    active? && !admin? && channel == "sms" && SignInChallenge::TEXTABLE_PHONE.match?(phone)
+  end
+
+  def active?
+    removed_at.nil?
   end
 
   def email_for?(kind)
@@ -146,18 +161,23 @@ class Person < ApplicationRecord
   # Keep church-owned work when an Admin removes someone, while removing the person's access and participation.
   def remove_from_directory!(replacement:)
     raise ArgumentError, "replacement must be another Admin in the same church" unless
-      replacement != self && replacement.admin? && replacement.organization_id == organization_id
+      replacement != self && replacement.active? && replacement.admin? && replacement.organization_id == organization_id
 
-    transaction do
+    with_lock do
+      update!(removed_at: Time.current)
       owned_projects.update_all(owner_id: replacement.id)
       started_planner_sessions.update_all(started_by_id: replacement.id)
       ProjectRecurrence.where(creator_id: id).update_all(creator_id: replacement.id)
-      sent_invitations.update_all(inviter_id: replacement.id)
-      authored_notes.update_all(author_id: replacement.id)
-      Message.where(author_id: id).update_all(author_id: replacement.id)
-      DocItem.where(author_id: id).update_all(author_id: replacement.id)
+      sessions.destroy_all
+      memberships.destroy_all
+      slot_claims.destroy_all
+      follows.destroy_all
+      recipients.destroy_all
+      invitations.pending.destroy_all
+      unavailabilities.destroy_all
+      notifications.destroy_all
+      assigned_tasks.update_all(assignee_id: nil)
       BudgetLine.where(responsible_person_id: id).update_all(responsible_person_id: nil)
-      destroy!
     end
   end
 
@@ -177,7 +197,7 @@ class Person < ApplicationRecord
 
     def cannot_remove_last_admin
       return if admin?
-      return if organization.people.where(admin: true).where.not(id:).exists?
+      return if organization.people.active.where(admin: true).where.not(id:).exists?
 
       errors.add(:admin, "can’t be removed until another person is an Admin")
     end

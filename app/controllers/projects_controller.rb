@@ -131,7 +131,7 @@ class ProjectsController < ApplicationController
 
   def transfer_ownership
     authorize_lifecycle(:transfer_ownership)
-    new_owner = Current.organization.people.find(params[:new_owner_id])
+    new_owner = Current.organization.people.active.find(params[:new_owner_id])
     raise ActiveRecord::RecordNotFound unless @project.memberships.leader.exists?(person: new_owner)
 
     @project.update!(owner: new_owner)
@@ -180,7 +180,7 @@ class ProjectsController < ApplicationController
       return unless params[:query].present?
 
       member_ids = @project.memberships.select(:person_id)
-      @directory_people = Current.organization.people
+      @directory_people = Current.organization.people.active
         .matching(params[:query])
         .where.not(id: member_ids)
         .order(:name)

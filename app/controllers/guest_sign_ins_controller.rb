@@ -122,7 +122,10 @@ class GuestSignInsController < ApplicationController
     end
 
     def sign_in_or_ask_name(challenge, auth_method)
-      if (person = challenge.person)
+      if challenge.removed_person?
+        challenge.mark_signed_in
+        ask_again("Ask a church Admin to add you again before signing in.")
+      elsif (person = challenge.person)
         challenge.mark_signed_in
         sign_in(person, challenge, auth_method)
       else

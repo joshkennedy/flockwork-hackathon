@@ -15,7 +15,7 @@ class SignInRequestsController < ApplicationController
   # One email can belong to a Person in several Organizations; the link signs in as one and OrganizationChoices offers the rest.
   def create
     email = params[:email].to_s
-    person = Person.where(email:).order(:id).first if email.present?
+    person = Person.active.where(email:).order(:id).first if email.present?
     if person&.can_sign_in? && DemoOutboundLimit.allow?(person.organization)
       SignInMailer.sign_in_link(person).deliver_later
     end

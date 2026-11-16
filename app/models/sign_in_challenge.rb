@@ -126,12 +126,20 @@ class SignInChallenge < ApplicationRecord
   # by accident. Most stored phones are as typed ("(202) 555-0123"), so the match is on digits, and a +1 number
   # also matches its ten-digit form, the same reading parse gives a bare ten-digit number.
   def person
+    matching_people.active.order(:admin, :id).first
+  end
+
+  def removed_person?
+    person.nil? && matching_people.where.not(removed_at: nil).exists?
+  end
+
+  def matching_people
     people = organization.people
-    return people.find_by(email: address) if channel == "email"
+    return people.where(email: address) if channel == "email"
 
     digits = address.delete("+")
     national = digits.delete_prefix("1") if digits.length == 11 && digits.start_with?("1")
-    people.where("regexp_replace(phone, '\\D', '', 'g') IN (?)", [ digits, national ].compact).order(:admin, :id).first
+    people.where("regexp_replace(phone, '\\D', '', 'g') IN (?)", [ digits, national ].compact)
   end
 
   # Nobody confirms a phone typed onto an Admin, so a wrong or recycled number must never hand over the Admin.

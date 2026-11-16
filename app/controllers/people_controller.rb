@@ -21,7 +21,7 @@ class PeopleController < ApplicationController
   }.freeze
 
   def index
-    people = Current.organization.people
+    people = Current.organization.people.active
     @filter = FILTERS.key?(params[:filter]) ? params[:filter] : "everyone"
     @filter_counts = FILTERS.to_h { |key, (_label, scope)| [ key, scope ? people.public_send(scope).count : people.count ] }
     @filter_tabs = FILTERS.map { |key, (label, _scope)| [ key, label, @filter_counts.fetch(key) ] }
@@ -50,7 +50,7 @@ class PeopleController < ApplicationController
   end
 
   def show
-    @person = Current.organization.people.find(params[:id])
+    @person = Current.organization.people.active.find(params[:id])
     load_involvement
     load_person_page
     load_notes
@@ -61,7 +61,12 @@ class PeopleController < ApplicationController
   end
 
   def create
-    @person = Current.organization.people.build(person_params)
+    @person = Person.restore_or_initialize_by_email(
+      organization: Current.organization,
+      email: person_params[:email],
+      reuse_active: false
+    )
+    @person.assign_attributes(person_params)
 
     if @person.save
       redirect_to people_path, notice: "Added #{@person.name}."
@@ -71,11 +76,11 @@ class PeopleController < ApplicationController
   end
 
   def edit
-    @person = Current.organization.people.find(params[:id])
+    @person = Current.organization.people.active.find(params[:id])
   end
 
   def update
-    @person = Current.organization.people.find(params[:id])
+    @person = Current.organization.people.active.find(params[:id])
 
     @person.assign_attributes(person_params.except(:email))
     send_confirmation = stage_email_change
@@ -98,7 +103,7 @@ class PeopleController < ApplicationController
   end
 
   def destroy
-    @person = Current.organization.people.find(params[:id])
+    @person = Current.organization.people.active.find(params[:id])
     if @person == Current.person
       redirect_to person_path(@person), alert: "You can’t remove yourself from the directory."
       return
@@ -136,7 +141,7 @@ class PeopleController < ApplicationController
       @serving_names = serving.transform_values { |rows| rows.map(&:last) }
       @leader_ids = serving.filter_map { |person_id, rows| person_id if rows.any? { |row| row[1] == "leader" } }.to_set
 
-      @never_asked_ids = Current.organization.people.never_asked.where(id: ids).ids.to_set
+      @never_asked_ids = Current.organization.people.active.never_asked.where(id: ids).ids.to_set
       @away_until = Oversight.away_until(Current.organization)
     end
 
@@ -146,7 +151,7 @@ class PeopleController < ApplicationController
       @serving_memberships, past = memberships.partition { |membership| membership.project.active? }
       @past_memberships = past.reject { |membership| membership.project.deleted_at }
       @leads_active_project = @serving_memberships.any?(&:leader?)
-      @never_asked = Current.organization.people.never_asked.exists?(@person.id)
+      @never_asked = Current.organization.people.active.never_asked.exists?(@person.id)
       @away_until = @person.unavailabilities.covering(Date.current).maximum(:ends_on)
       @away_dates = @person.unavailabilities.upcoming.to_a
       @last_check_in = CheckIn.latest_by_person([ @person.id ])[@person.id]

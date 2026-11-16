@@ -7,7 +7,7 @@ module Oversight
 
   # Someone away on the date is not overextended; they appear under away_until instead.
   def overextended(organization, on: Date.current)
-    organization.people
+    organization.people.active
       .where.not(id: Unavailability.where(organization: organization).covering(on).select(:person_id))
       .joins(memberships: :project)
       .merge(Project.active)
@@ -32,7 +32,7 @@ module Oversight
   end
 
   def never_asked(organization)
-    organization.people.never_asked.order(:name)
+    organization.people.active.never_asked.order(:name)
   end
 
   def involvement(person)
@@ -51,7 +51,7 @@ module Oversight
   end
 
   def involvement_list(organization, year)
-    people = organization.people.order(:name).to_a
+    people = organization.people.active.order(:name).to_a
     person_ids = people.map(&:id)
     period = Time.zone.local(year, 1, 1).all_year
 

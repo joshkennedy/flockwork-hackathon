@@ -24,7 +24,7 @@ class StaffingSuggestions
     def organization = project.organization
 
     def candidates
-      people = organization.people
+      people = organization.people.active
         .where("people.skills && ARRAY[?]::varchar[]", needed)
         .where.not(email: [ nil, "" ])
         .where.not(id: project.memberships.select(:person_id))

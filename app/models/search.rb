@@ -19,7 +19,7 @@ class Search
       projects = Policy.visible_projects(@person)
       groups = { "Projects" => matching(Project.where(id: projects.select(:id)), "name") }
       if Policy.can?(@person, :view_oversight, Current.organization)
-        groups["People"] = matching(Current.organization.people, "name")
+        groups["People"] = matching(Current.organization.people.active, "name")
       end
       WORK.each do |label, (model, column, tool)|
         enabled = projects.where("? = ANY(projects.enabled_tools)", tool)

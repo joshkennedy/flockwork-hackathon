@@ -72,6 +72,27 @@ class SignInTest < ActionDispatch::IntegrationTest
     assert_select "h1", "Check your email"
   end
 
+  test "a removed Person cannot request or use a magic link" do
+    person = people(:leader)
+    token = person.generate_token_for(:sign_in)
+    person.update!(removed_at: Time.current)
+
+    assert_no_emails do
+      perform_enqueued_jobs do
+        post sign_in_requests_path, params: { email: person.email }
+      end
+    end
+    assert_redirected_to check_email_path
+
+    get sign_in_link_path(token)
+    assert_response :unprocessable_content
+    post sign_in_link_path(token)
+    assert_response :unprocessable_content
+
+    get home_path
+    assert_redirected_to root_path
+  end
+
   test "one email in two Organizations gets a single link, then chooses which organization to enter" do
     leo_elsewhere = organizations(:outsider_church).people.create!(name: "Leo Elsewhere", email: "leo@st-example.test")
 

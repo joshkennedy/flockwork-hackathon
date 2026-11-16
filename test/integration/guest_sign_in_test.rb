@@ -207,6 +207,18 @@ class GuestSignInTest < ActionDispatch::IntegrationTest
     assert_nil @vera.reload.joined_from_project
   end
 
+  test "a removed Person cannot sign in through a Public link" do
+    @vera.update!(removed_at: Time.current)
+    code = request_code(@vera.email)
+
+    post guest_sign_in_code_path(@token), params: { code: }
+
+    assert_response :unprocessable_content
+    assert_select "[role=alert]", "Ask a church Admin to add you again before signing in."
+    get home_path
+    assert_redirected_to root_path
+  end
+
   test "a prompted Slot asks for the answer after guest sign-in" do
     @slot.update!(claim_prompt: "What are you bringing?")
     code = request_code(@vera.email, slot: @slot)
