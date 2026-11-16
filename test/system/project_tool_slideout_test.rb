@@ -88,6 +88,16 @@ class ProjectToolSlideoutSystemTest < ApplicationSystemTestCase
     assert_text "$85.00"
   end
 
+  test "the Budget tab stays in the URL through a reload" do
+    visit project_path(@project)
+
+    click_link "Budget", exact: true
+
+    assert_equal "tab-budget", URI.parse(page.current_url).fragment
+    page.refresh
+    assert_selector "#tab-budget:not([hidden])"
+  end
+
   test "Task primary action stays reachable when its long form opens on a phone" do
     page.current_window.resize_to(390, 844)
     visit project_path(@project)
