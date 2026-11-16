@@ -52,6 +52,18 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "a blank Person name returns an in-page error instead of relying on browser validation" do
+    sign_in_as_admin
+
+    assert_no_difference "Person.count" do
+      post people_path, params: { person: { name: "", email: "blank-name@example.test" } }
+    end
+
+    assert_response :unprocessable_content
+    assert_select "[role=alert]", text: "Name can't be blank"
+    assert_select "input[name='person[name]'][required]", count: 0
+  end
+
   test "saving from the Edit details slideout refreshes the person page" do
     sign_in_as_admin
 

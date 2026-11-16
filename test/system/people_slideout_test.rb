@@ -21,6 +21,8 @@ class PeopleSlideoutSystemTest < ApplicationSystemTestCase
 
     trigger.click
     within "dialog.slideout[open]" do
+      click_on "Add Person"
+      assert_selector "[role=alert]", text: "Name can't be blank"
       fill_in "Name", with: "Phone Slideout Person"
       fill_in "Email", with: "phone-slideout@example.test"
       click_on "Add Person"
