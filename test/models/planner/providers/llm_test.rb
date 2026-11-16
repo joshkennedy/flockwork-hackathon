@@ -29,6 +29,16 @@ class PlannerProvidersLlmTest < ActiveSupport::TestCase
     end
   end
 
+  test "general planning treats the chosen kind and custom description as known context" do
+    prompt = Planner::Providers::Llm::GENERAL_PROMPT
+    custom_prompt = Planner::ProjectKinds::CHOICES.fetch("other").fetch(:prompt)
+
+    assert_includes prompt, "Do not ask what kind of work this is again."
+    assert_includes prompt, "For planning_kind other, project_intent is the Leader's description"
+    assert_includes custom_prompt, "Do not ask what kind of work it is again."
+    assert_no_match(/First learn what kind/i, custom_prompt)
+  end
+
   test "general prompt and schema let a Slot reference a planned or existing Schedule item" do
     prompt = Planner::Providers::Llm::GENERAL_PROMPT
     schema = Planner::Providers::Llm::GENERAL_SCHEMA

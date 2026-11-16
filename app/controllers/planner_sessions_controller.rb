@@ -76,10 +76,10 @@ class PlannerSessionsController < ApplicationController
   end
 
   def abandon
-    raise ActiveRecord::RecordNotFound unless @planner_session.asking?
+    raise ActiveRecord::RecordNotFound unless @planner_session.asking? || @planner_session.reviewing?
 
     @planner_session.abandon!
-    redirect_to @project
+    redirect_to @project, status: :see_other, notice: "Plan discarded. Nothing was added to the Project."
   end
 
   def suggestion

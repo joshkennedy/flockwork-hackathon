@@ -21,17 +21,6 @@
     <div class="mt-7">
       <%= render layout: "shared/setup_steps", locals: { steps: } do %>
         <div class="project-kind-list">
-          <% [
-            [ "Meal Train", :heart, "text-tool-signup", start_meal_planner_projects_path, {} ],
-            [ "Retreat", :schedule, "text-tool-schedule", start_planner_projects_path, { planning_kind: "retreat" } ],
-            [ "Workday", :tasks, "text-tool-tasks", start_planner_projects_path, { planning_kind: "workday" } ],
-            [ "Children’s Program", :people, "text-tool-list", start_planner_projects_path, { planning_kind: "children_program" } ],
-            [ "Class", :docs, "text-tool-docs", start_planner_projects_path, { planning_kind: "class" } ]
-          ].each do |title, glyph, color, path, parameters| %>
-            <%= button_to path, method: :post, params: parameters, class: "project-kind-row", data: { turbo_submits_with: "Creating Project…" } do %>
-              <span><%= title %></span>
-            <% end %>
-          <% end %>
           <details class="project-kind-other" <%= "open" if @custom_planning || @description_error %>>
             <summary class="project-kind-row"><span>Something Else</span></summary>
             <%= form_with url: start_planner_projects_path, method: :post, class: "project-kind-other-form" do |form| %>
@@ -48,6 +37,17 @@
               <% end %>
             <% end %>
           </details>
+          <% [
+            [ "Meal Train", :heart, "text-tool-signup", start_meal_planner_projects_path, {} ],
+            [ "Retreat", :schedule, "text-tool-schedule", start_planner_projects_path, { planning_kind: "retreat" } ],
+            [ "Workday", :tasks, "text-tool-tasks", start_planner_projects_path, { planning_kind: "workday" } ],
+            [ "Children’s Program", :people, "text-tool-list", start_planner_projects_path, { planning_kind: "children_program" } ],
+            [ "Class", :docs, "text-tool-docs", start_planner_projects_path, { planning_kind: "class" } ]
+          ].each do |title, glyph, color, path, parameters| %>
+            <%= button_to path, method: :post, params: parameters, class: "project-kind-row", data: { turbo_submits_with: "Creating Project…" } do %>
+              <span><%= title %></span>
+            <% end %>
+          <% end %>
         </div>
         <%= link_to "Build it yourself", new_project_path(manual: true), class: "mt-5 inline-flex min-h-11 items-center link text-meta text-ink-2" %>
       <% end %>

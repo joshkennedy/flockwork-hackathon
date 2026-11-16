@@ -20,14 +20,14 @@ Admins and Leaders of at least one active Project can create Projects and view O
 
 ## How the AI Planner works
 
-1. A Leader opens **Planner** on a Project, writes **one sentence** (`PlannerSession#description`), and submits **Start planning**.
-2. Each turn, `Planner::ContextBuilder` is the only code that calls the model (via `Rails.configuration.x.planner_provider`). The model returns one question card (3–5 options) or `finished: true`.
-3. Answers enqueue `PlannerStepJob` (Solid Queue). New items arrive as **Suggestions** with status `proposed`—shown as ghost tiles in the live summary until the Leader taps **Keep** or **Drop** right there (or **Edit** on the review screen). Kept Suggestions turn solid.
-4. **Accept** writes kept/edited (and optionally remaining proposed) Suggestions into real Project records through `Planner::SuggestionKinds`.
+1. A Leader chooses the kind of Project, or describes something else in one sentence. Flockwork creates a quiet Project shell and opens its Planner.
+2. Each turn, `Planner::ContextBuilder` is the only code that calls the model (via `Rails.configuration.x.planner_provider`). The model returns one question card with 3–5 options and an updated Project preview.
+3. Answers enqueue `PlannerStepJob` (Solid Queue). Suggested Tasks, Schedule items, Slots, Budget lines, Lists, Tools and Skills stay visible as **Suggestions · not added yet**. A Leader can edit or remove each item from its ⋯ menu and undo a removal.
+4. One final **Add to Project** action writes every visible Suggestion into real Project records atomically. Nothing reaches the Project before that action.
 
 **Provider:** `Planner::Providers::Llm` uses RubyLLM with provider `PLANNER_LLM_PROVIDER` (default `openrouter`) and model `PLANNER_LLM_MODEL` (default `anthropic/claude-sonnet-5.5`). Set `OPENROUTER_API_KEY` in `.env.development.local` (see setup).
 
-**Delta contract:** each response includes `added` (new Suggestions only) and `removed_ids` (ids to drop from `current_suggestions`). `PlannerSession#apply_response!` skips removals for Suggestions already **kept** or **edited**—Leader decisions win over the model.
+**Preview contract:** build-as-you-go responses include the model's current snapshot in `added`. Stable `source_key` values keep edits attached across answers, omitted items stay in the preview, and `removed_ids` is the only way the model can ask to remove prior work. A Leader's edits and removals remain authoritative.
 
 Tests stub the provider with `Planner::Providers::Fake` and assert no Person name, email, or phone appears in the JSON sent to the provider.
 
