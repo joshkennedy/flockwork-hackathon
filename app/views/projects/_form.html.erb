@@ -61,7 +61,7 @@
       aria: { labelledby: form.field_id(:open_team, :title), describedby: form.field_id(:open_team, :hint) } %>
   <% end %>
 
-  <fieldset>
+  <fieldset id="project-tools" class="scroll-mt-24">
     <legend class="text-body-phone sm:text-body font-semibold text-ink">Tools</legend>
     <% tools_error_id = form.field_id(:enabled_tools, :error) if project.errors.include?(:enabled_tools) %>
     <div class="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-2">

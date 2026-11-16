@@ -107,6 +107,20 @@ class ProjectsTest < ActionDispatch::IntegrationTest
     assert_equal [ "schedule" ], project.reload.enabled_tools
   end
 
+  test "a Leader can reach Tool settings from the Project page" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+
+    get project_path(project)
+
+    assert_response :success
+    assert_select "details.actions-menu a[href='#{edit_project_path(project, anchor: "project-tools")}']", text: "Manage Tools"
+
+    get edit_project_path(project, anchor: "project-tools")
+
+    assert_select "fieldset#project-tools legend", text: "Tools"
+  end
+
   test "a Volunteer views a Project but cannot edit it" do
     sign_in_as_volunteer
     project = projects(:community_meal)
