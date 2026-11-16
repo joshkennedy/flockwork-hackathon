@@ -93,6 +93,8 @@ class GuestSignInsController < ApplicationController
 
     # The slot_id comes from the page's link, so it only counts when it is one of this Project's Slots.
     def set_slot
+      return unless @project.enabled_tools.include?("signup_sheet")
+
       @slot = @project.slots.find_by(id: params[:slot_id])
     end
 
@@ -131,7 +133,7 @@ class GuestSignInsController < ApplicationController
     # Checked again here because the phone's Person can change between sending the code and using it.
     def sign_in(person, challenge, auth_method)
       project = challenge.project
-      slot = @slot = project.slots.find_by(id: challenge.slot_id)
+      slot = @slot = project.slots.find_by(id: challenge.slot_id) if project.enabled_tools.include?("signup_sheet")
       %i[ guest_challenge_id guest_verified_challenge_id guest_auth_method ].each { |key| session.delete(key) }
       return ask_again("Use your email to sign in.") if challenge.texts_an_admin?(person)
       start_new_session_for person, auth_method:, verified_email: (challenge.address if challenge.channel == "email")

@@ -17,6 +17,7 @@ class PublicSlotClaimsController < ApplicationController
     def set_slot
       @project = Project.publicly_linked.find_by!(public_token: params[:token])
       raise ActiveRecord::RecordNotFound unless Policy.can?(Current.person, :claim_public_slot, @project)
+      raise ActiveRecord::RecordNotFound unless @project.enabled_tools.include?("signup_sheet")
 
       @slot = @project.slots.find(params[:slot_id])
     end
