@@ -471,10 +471,9 @@ class DemoSpendLimitsTest < ActionDispatch::IntegrationTest
   end
 
   test "a demo visitor inviting a new address from the Team page sends no email or text" do
-    post demo_session_path(role: "leader")
+    post demo_session_path(role: "admin")
     organization = organizations(:grace_fellowship)
-    project = organization.projects.joins(:memberships)
-      .where(memberships: { person_id: people(:grace_leader).id, role: "leader" }).first!
+    project = organization.projects.find_by!(name: "Church Workday")
     sms_request = stub_request(:post, Messaging::Sendly::ENDPOINT.to_s)
 
     with_sendly_api_key do

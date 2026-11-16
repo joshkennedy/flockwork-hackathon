@@ -103,8 +103,8 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     assert_equal invitation, Invitation.find_by_token_for(:access, invitation_token)
   end
 
-  test "a Leader invites someone who is not in the directory" do
-    inviter = sign_in_as_leader
+  test "an Admin invites someone who is not in the directory" do
+    inviter = sign_in_as_admin
     project = projects(:community_meal)
 
     get team_project_path(project)
@@ -132,6 +132,21 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     assert_equal "Nora Newcomer", person.name
     assert_equal inviter, person.added_by
     assert_predicate invitation, :volunteer?
+  end
+
+  test "a Leader can only invite People already in the directory" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+
+    get team_project_path(project)
+    assert_select "input[name='invitation[email]']", count: 0
+
+    assert_no_difference [ "Person.count", "Invitation.count" ] do
+      post project_invitations_path(project), params: {
+        invitation: { name: "Nora Newcomer", email: "nora@example.test", role: "volunteer" }
+      }
+    end
+    assert_response :not_found
   end
 
 

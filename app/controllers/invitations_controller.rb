@@ -78,6 +78,9 @@ class InvitationsController < ApplicationController
         person = if invitation_params[:person_id].present?
           Current.organization.people.active.find(invitation_params[:person_id])
         else
+          # Inviting someone new adds them to the church directory, which only an Admin may do.
+          raise ActiveRecord::RecordNotFound unless Current.person.admin?
+
           create_invitee!
         end
         invitation = Current.organization.invitations.create!(
