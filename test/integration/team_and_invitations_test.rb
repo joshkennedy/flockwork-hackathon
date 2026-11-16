@@ -103,6 +103,37 @@ class TeamAndInvitationsTest < ActionDispatch::IntegrationTest
     assert_equal invitation, Invitation.find_by_token_for(:access, invitation_token)
   end
 
+  test "a Leader invites someone who is not in the directory" do
+    inviter = sign_in_as_leader
+    project = projects(:community_meal)
+
+    get team_project_path(project)
+
+    assert_response :success
+    assert_select "form[action='#{project_invitations_path(project)}']" do
+      assert_select "input[name='invitation[name]']"
+      assert_select "input[name='invitation[email]']"
+      assert_select "select[name='invitation[role]']"
+    end
+
+    assert_difference [ "Person.count", "Invitation.count" ], 1 do
+      assert_emails 1 do
+        perform_enqueued_jobs do
+          post project_invitations_path(project), params: {
+            invitation: { name: "Nora Newcomer", email: "nora@example.test", role: "volunteer" }
+          }
+        end
+      end
+    end
+
+    person = inviter.organization.people.find_by!(email: "nora@example.test")
+    invitation = inviter.organization.invitations.find_by!(project:, person:)
+    assert_redirected_to team_project_path(project)
+    assert_equal "Nora Newcomer", person.name
+    assert_equal inviter, person.added_by
+    assert_predicate invitation, :volunteer?
+  end
+
 
   test "a signed-in invitee sees Accept and Decline actions" do
     sign_in_as_leader
