@@ -141,6 +141,12 @@ class MarketingPagesTest < ActionDispatch::IntegrationTest
     assert_select "meta[name=robots][content=noindex]"
   end
 
+  test "sign in guides invited people without revealing account existence" do
+    get new_sign_in_request_path
+
+    assert_select "p", "Use the email your church leader added. For privacy, the next screen looks the same even when an email isn’t found."
+  end
+
   test "pricing says free during beta and offers nothing it can't back" do
     get pricing_path
     assert_select "h1", "Free during beta."
