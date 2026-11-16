@@ -55,4 +55,32 @@ class DemoSignInTest < ActionDispatch::IntegrationTest
 
     assert_response :not_found
   end
+
+  test "a signed-in demo visitor returns to the role picker after the hourly reset" do
+    post demo_session_path(role: "leader")
+    assert_redirected_to home_path
+
+    DemoOrganization.reset!
+    get home_path
+
+    assert_redirected_to new_demo_session_path
+    follow_redirect!
+    assert_select "[data-demo-reset-notice]", "The demo reset. Choose a role to keep exploring."
+  end
+
+  test "an open demo Public link returns to the role picker after the hourly reset" do
+    organization = DemoOrganization.seed!
+    project = organization.projects.find_by!(name: "Meal Train for the Alvarez Family")
+    project.enable_public_link!
+    old_path = public_project_path(project.public_token)
+    get old_path
+    assert_response :success
+
+    DemoOrganization.reset!
+    get old_path
+
+    assert_redirected_to new_demo_session_path
+    follow_redirect!
+    assert_select "[data-demo-reset-notice]", "The demo reset. Choose a role to keep exploring."
+  end
 end

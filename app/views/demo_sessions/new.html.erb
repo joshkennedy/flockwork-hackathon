@@ -2,6 +2,9 @@
 
 <div class="w-full max-w-xl mx-auto">
   <h1 class="text-ink">Explore the demo</h1>
+  <% if flash[:notice] %>
+    <p class="mt-4 rounded-control bg-sunlit-soft px-4 py-3 text-meta text-ink" role="status" data-demo-reset-notice><%= flash[:notice] %></p>
+  <% end %>
   <p class="mt-2 text-ink-2">No email needed. Pick a role to look around Grace Fellowship, a sample church.</p>
   <p class="mt-2 text-meta text-ink-2">This demo resets every hour, on the hour. Anything you add is cleared then.</p>
 
