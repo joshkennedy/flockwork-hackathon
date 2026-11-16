@@ -37,6 +37,16 @@ class MarketingPagesTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "marketing pages load only the marketing JavaScript entry point" do
+    get root_path
+
+    assert_select "script[type=module]", text: /import "marketing"/
+    assert_select "script[type=module]", text: /import "application"/, count: 0
+    assert_select "link[rel=modulepreload]", count: 3
+    assert_select "link[rel=modulepreload][href*='pdf']", count: 0
+    assert_select "link[rel=modulepreload][href*='trix']", count: 0
+  end
+
   test "feature questions and closing titles fit the feature" do
     MarketingPage.in_section(:feature).each do |page|
       get page.path
