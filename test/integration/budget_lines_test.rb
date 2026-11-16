@@ -134,6 +134,17 @@ class BudgetLinesTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "budget status actions use Title Case" do
+    sign_in_as_leader
+    project = projects(:community_meal)
+
+    get project_path(project)
+
+    assert_response :success
+    assert_select "a", text: "Update Status"
+    assert_select "a", text: "Update status", count: 0
+  end
+
   test "cancelled lines leave every estimated total but keep money already spent" do
     sign_in_as_leader
     project = projects(:community_meal)

@@ -32,7 +32,7 @@
                     <%= link_to "Edit", edit_project_budget_line_path(project, line), data: { action: "slideout#open", slideout_title_param: "Edit Budget Line" } %>
                   <% end %>
                   <% if can_update_status %>
-                    <%= link_to "Update status", edit_project_budget_line_status_path(project, line), data: { action: "slideout#open", slideout_title_param: "Update Budget Status" } %>
+                    <%= link_to "Update Status", edit_project_budget_line_status_path(project, line), data: { action: "slideout#open", slideout_title_param: "Update Budget Status" } %>
                   <% end %>
                   <% if can_manage %>
                     <hr>
