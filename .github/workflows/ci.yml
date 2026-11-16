@@ -54,5 +54,9 @@ jobs:
       - name: Scan for known security vulnerabilities in gems used
         run: bin/bundler-audit
 
+      # importmap audit boots the app, and ruby-vips needs libvips to load.
+      - name: Install libvips
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libvips
+
       - name: Scan for security vulnerabilities in JavaScript dependencies
         run: bin/importmap audit
