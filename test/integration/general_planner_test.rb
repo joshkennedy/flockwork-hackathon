@@ -94,6 +94,9 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
       assert_select "li[data-step-state='upcoming'] h2", text: "Answer a few questions"
       assert_select "li[data-step-state='upcoming'] h2", text: "Review and add"
     end
+    assert_select ".project-kind-list > details.project-kind-other:first-child" do
+      assert_select "summary", text: "Something Else"
+    end
     assert_select "details.project-kind-other[open]", count: 0
   end
 
@@ -159,6 +162,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
 
     planner_session = PlannerSession.order(:id).last!
     assert_equal "Leo Leader is organizing a neighborhood cleanup.", planner_session.description
+    assert_equal "Leo Leader is organizing a neighborhood cleanup.", planner_session.project.description
     assert_equal "[name] is organizing a neighborhood cleanup.", provider.contexts.sole.fetch("project_intent")
     assert_equal "What should the plan include?", planner_session.reload.current_card.fetch("question")
   end

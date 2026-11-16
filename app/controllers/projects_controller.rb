@@ -190,9 +190,10 @@ class ProjectsController < ApplicationController
     def start_planning(kind, description: nil)
       starter = Planner::ProjectKinds::CHOICES.fetch(kind)
       Project.transaction do
-        project_attributes = starter.slice(:description).merge(
-          name: Planner::ProjectKinds.provisional_name(kind, description:)
-        )
+        project_attributes = {
+          name: Planner::ProjectKinds.provisional_name(kind, description:),
+          description: description.presence || starter.fetch(:description)
+        }
         @project = Project.create_for(creator: Current.person, attributes: project_attributes)
         @project.save!
         @planner_session = @project.planner_sessions.create!(
