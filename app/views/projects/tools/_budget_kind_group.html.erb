@@ -3,7 +3,7 @@
     <h3 class="text-ink-2"><%= kind_label %></h3>
     <p class="text-meta text-ink-2">
       Estimated <%= BudgetLine.format_cents(totals[:estimated_cents]) %>
-      · Actual <%= BudgetLine.format_cents(totals[:actual_cents]) %>
+      · Actual <%= lines.any? { |line| !line.actual_cents.nil? } ? BudgetLine.format_cents(totals[:actual_cents]) : "not recorded" %>
     </p>
   </div>
 
