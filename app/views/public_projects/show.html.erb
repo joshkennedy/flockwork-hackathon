@@ -93,7 +93,7 @@
       <% if later.any? %>
         <%# Open when nothing nearer exists, or when it holds the helper's own spot, so a claim is never hidden behind a click. %>
         <details data-signup-later <%= "open" if (this_week + next_week).empty? || later.any? { |slot| @claimed_slot_ids.include?(slot.id) } %>>
-          <%= disclosure_summary "Later Slots", meta: later_slots_meta(later), class: "disclosure-bar" %>
+          <%= disclosure_summary later_slots_heading, meta: later_slots_meta(later), class: "disclosure-bar" %>
           <ul class="mt-2 space-y-3 sm:space-y-4"><%= render partial: "public_projects/slot", collection: later %></ul>
         </details>
       <% end %>

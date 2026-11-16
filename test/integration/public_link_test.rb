@@ -203,6 +203,7 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
     assert_select "#slot_#{slot.id} p.font-semibold:first-child", "Monday, February 15 · 6:30 PM"
     assert_select "#slot_#{slot.id} p.text-meta", "Serve dinner"
     assert_select "section[aria-labelledby='public-slots']", text: /3 spots left/
+    assert_select "details[data-signup-later] summary.disclosure-bar", text: /After #{Date.current.next_week.end_of_week.strftime('%b %-d')}/
     assert_select "section[aria-labelledby='public-slots']", text: /Full slot/, count: 0
 
     FIXTURE_PEOPLE_NAMES.each do |name|

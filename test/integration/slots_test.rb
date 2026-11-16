@@ -200,6 +200,7 @@ class SlotsTest < ActionDispatch::IntegrationTest
     project.update!(enabled_tools: project.enabled_tools + [ "signup_sheet" ])
     project.slots.create!(date: Date.current - 1, label: "Yesterday dinner", capacity: 1)
     today = project.slots.create!(date: Date.current, label: "Tonight dinner", capacity: 1)
+    project.slots.create!(date: Date.current.next_week.end_of_week + 1, label: "Later dinner", capacity: 1)
 
     get project_path(project)
 
@@ -208,6 +209,7 @@ class SlotsTest < ActionDispatch::IntegrationTest
     assert_select "details[data-signup-past]", text: /Yesterday dinner/
     assert_select "details[data-signup-past]", text: /Tonight dinner/, count: 0
     assert_select "section[aria-labelledby='tool-signup-sheet']", text: /Tonight dinner/
+    assert_select "details[data-signup-later] summary.disclosure-bar", text: "After #{Date.current.next_week.end_of_week.strftime('%b %-d')}1 Slot, 1 spot left"
     assert_select "form[action=?] .btn-primary", project_slot_claim_path(project, today), count: 0
   end
 
