@@ -93,6 +93,7 @@ class PersonPageTest < ActionDispatch::IntegrationTest
 
     assert_select "form[data-note-form][action=?]", person_notes_path(@volunteer)
     assert_select "form[data-note-form] select[name='note[visibility]'] option", count: 1
+    assert_select "form[data-note-form] p", text: "Only Admins can see person notes."
   end
 
   test "an Admin can edit and delete a Person note from its actions menu" do

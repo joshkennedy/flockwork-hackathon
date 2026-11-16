@@ -7,11 +7,18 @@
   <%= form.label :body, "New note", for: "#{field_prefix}_body", class: "sr-only" %>
   <%= form.text_area :body, id: "#{field_prefix}_body", required: true, rows: 2, placeholder: "Add a note…", class: "block w-full field" %>
 
-  <div class="flex flex-wrap items-center justify-end gap-2">
-    <%= form.label :visibility, "Visible to", for: "#{field_prefix}_visibility", class: "text-meta text-ink-2" %>
-    <%= form.select :visibility,
-      visibilities.map { |visibility| [ Note::VISIBILITY_LABELS.fetch(visibility), visibility ] },
-      {}, id: "#{field_prefix}_visibility", class: "field" %>
+  <div class="flex flex-wrap items-start justify-end gap-2">
+    <div>
+      <div class="flex items-center gap-2">
+        <%= form.label :visibility, "Visible to", for: "#{field_prefix}_visibility", class: "text-meta text-ink-2" %>
+        <%= form.select :visibility,
+          visibilities.map { |visibility| [ Note::VISIBILITY_LABELS.fetch(visibility), visibility ] },
+          {}, id: "#{field_prefix}_visibility", class: "field" %>
+      </div>
+      <% if notable.is_a?(Person) %>
+        <p class="mt-1 text-meta text-ink-2">Only Admins can see person notes.</p>
+      <% end %>
+    </div>
     <%= form.submit "Save Note", class: "btn btn-secondary" %>
   </div>
 <% end %>
