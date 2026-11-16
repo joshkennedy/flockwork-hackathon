@@ -335,6 +335,10 @@ module Policy
   end
 
   def note_can?(person, action, note)
+    if action == :manage_person_note
+      return person.admin? && note.organization_id == person.organization_id && note.notable.is_a?(Person)
+    end
+
     return false unless action == :write_note
     return false unless note.organization_id == person.organization_id
     return person.admin? if note.notable.is_a?(Person)

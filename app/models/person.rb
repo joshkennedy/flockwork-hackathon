@@ -36,7 +36,7 @@ class Person < ApplicationRecord
     dependent: :nullify
   has_many :started_planner_sessions, class_name: "PlannerSession", foreign_key: :started_by_id,
     inverse_of: :started_by, dependent: :restrict_with_exception
-  has_many :invitations, dependent: :restrict_with_exception
+  has_many :invitations, dependent: :destroy
   has_many :sent_invitations, class_name: "Invitation", foreign_key: :inviter_id, inverse_of: :inviter,
     dependent: :restrict_with_exception
   has_many :notifications, foreign_key: :recipient_id, inverse_of: :recipient, dependent: :destroy
@@ -141,6 +141,24 @@ class Person < ApplicationRecord
 
   def sms_phone?
     /\A\+[1-9]\d{6,14}\z/.match?(phone.to_s)
+  end
+
+  # Keep church-owned work when an Admin removes someone, while removing the person's access and participation.
+  def remove_from_directory!(replacement:)
+    raise ArgumentError, "replacement must be another Admin in the same church" unless
+      replacement != self && replacement.admin? && replacement.organization_id == organization_id
+
+    transaction do
+      owned_projects.update_all(owner_id: replacement.id)
+      started_planner_sessions.update_all(started_by_id: replacement.id)
+      ProjectRecurrence.where(creator_id: id).update_all(creator_id: replacement.id)
+      sent_invitations.update_all(inviter_id: replacement.id)
+      authored_notes.update_all(author_id: replacement.id)
+      Message.where(author_id: id).update_all(author_id: replacement.id)
+      DocItem.where(author_id: id).update_all(author_id: replacement.id)
+      BudgetLine.where(responsible_person_id: id).update_all(responsible_person_id: nil)
+      destroy!
+    end
   end
 
   private

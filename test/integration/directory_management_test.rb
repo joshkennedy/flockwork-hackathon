@@ -105,6 +105,49 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
 
     get edit_person_path(people(:leader))
     assert_response :not_found
+
+    delete person_path(people(:leader))
+    assert_response :not_found
+  end
+
+  test "Admin removes a Person while preserving church work and clearing participation" do
+    sign_in_as_admin
+    admin = people(:admin)
+    person = organizations(:st_example).people.create!(name: "Remove Me", email: "remove@st-example.test")
+    project = projects(:community_meal)
+    project.memberships.create!(person:, role: :volunteer)
+    slot = project.slots.create!(date: Date.current + 3, label: "Removed claim")
+    claim = slot.slot_claims.create!(person:)
+    task = project.tasks.create!(title: "Removed assignment", assignee: person)
+    notification = Notification.create!(recipient: person, kind: :task_assigned, notifiable: task, actor: admin)
+    owned_project = organizations(:st_example).projects.create!(name: "Preserved Project", owner: person)
+    message = project.messages.create!(author: person, body: "Keep this update")
+    note = project.notes.create!(organization: organizations(:st_example), author: person, visibility: :team, body: "Keep this note")
+    budget_line = project.budget_lines.create!(kind: :purchase, description: "Keep this cost", responsible_person: person)
+
+    delete person_path(person)
+
+    assert_redirected_to people_path
+    assert_not Person.exists?(person.id)
+    assert_not Membership.exists?(person_id: person.id)
+    assert_not SlotClaim.exists?(claim.id)
+    assert_nil task.reload.assignee
+    assert_not Notification.exists?(notification.id)
+    assert_equal admin, owned_project.reload.owner
+    assert_equal admin, message.reload.author
+    assert_equal admin, note.reload.author
+    assert_nil budget_line.reload.responsible_person
+  end
+
+  test "Admin cannot remove themselves" do
+    sign_in_as_admin
+
+    assert_no_difference "Person.count" do
+      delete person_path(people(:admin))
+    end
+
+    assert_redirected_to person_path(people(:admin))
+    assert_equal "You can’t remove yourself from the directory.", flash[:alert]
   end
 
   test "a Person edits their own name and phone" do

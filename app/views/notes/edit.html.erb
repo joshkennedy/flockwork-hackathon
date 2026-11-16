@@ -1,0 +1,23 @@
+<% content_for :title, "Edit Note" %>
+
+<div class="w-full max-w-2xl">
+  <%= page_header "Edit Note" %>
+
+  <%= turbo_frame_tag "note-form" do %>
+    <%= form_with model: [ @person, @note ], class: "mt-7 space-y-5",
+          data: { turbo_frame: ("_top" unless request.headers["Turbo-Frame"] == "note-form") } do |form| %>
+      <% if @note.errors.any? %>
+        <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-ink">
+          <%= @note.errors.full_messages.to_sentence %>
+        </div>
+      <% end %>
+
+      <div>
+        <%= form.label :body, "Note", class: "block text-label font-medium text-ink" %>
+        <%= form.text_area :body, rows: 5, autofocus: true, class: "mt-2 block w-full field" %>
+      </div>
+
+      <%= form.submit "Save Note", class: "btn btn-primary" %>
+    <% end %>
+  <% end %>
+</div>

@@ -97,6 +97,18 @@ class PeopleController < ApplicationController
     end
   end
 
+  def destroy
+    @person = Current.organization.people.find(params[:id])
+    if @person == Current.person
+      redirect_to person_path(@person), alert: "You can’t remove yourself from the directory."
+      return
+    end
+
+    name = @person.name
+    @person.remove_from_directory!(replacement: Current.person)
+    redirect_to people_path, notice: "Removed #{name} from the directory."
+  end
+
   private
     def person_create_rate_limited
       @person = Current.organization.people.build(person_params)

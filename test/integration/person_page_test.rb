@@ -95,6 +95,35 @@ class PersonPageTest < ActionDispatch::IntegrationTest
     assert_select "form[data-note-form] select[name='note[visibility]'] option", count: 1
   end
 
+  test "an Admin can edit and delete a Person note from its actions menu" do
+    note = @volunteer.notes.create!(organization: @organization, author: people(:admin), body: "Old note", visibility: :admins)
+    sign_in_as_admin
+
+    get person_path(@volunteer)
+    assert_select "a[href=?][data-action='slideout#open']", edit_person_note_path(@volunteer, note), text: "Edit Note"
+    assert_select "form[action=?][data-turbo-confirm='Delete this note?']", person_note_path(@volunteer, note)
+
+    patch person_note_path(@volunteer, note), params: { note: { body: "Updated note" } }
+    assert_redirected_to person_path(@volunteer)
+    assert_equal "Updated note", note.reload.body
+
+    assert_difference "Note.count", -1 do
+      delete person_note_path(@volunteer, note)
+    end
+    assert_redirected_to person_path(@volunteer)
+  end
+
+  test "a non-Admin cannot edit or delete a Person note" do
+    note = @volunteer.notes.create!(organization: @organization, author: people(:admin), body: "Private note", visibility: :admins)
+    sign_in_as_volunteer
+
+    get edit_person_note_path(@volunteer, note)
+    assert_response :not_found
+    delete person_note_path(@volunteer, note)
+    assert_response :not_found
+    assert Note.exists?(note.id)
+  end
+
   test "Edit details shows the form under the name, without the notes or History" do
     sign_in_as_admin
 
