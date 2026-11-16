@@ -1,6 +1,7 @@
 class Organization < ApplicationRecord
   # Slugs that would shadow top-level routes
   RESERVED_SLUGS = %w[oversight projects up organizations settings].freeze
+  DEFAULT_TIME_ZONE = "America/Chicago"
   DEFAULT_MARK_COLOR = "#D69000"
   # Every preset clears 2.5:1 on the page background, so the lead bird stays visible.
   MARK_PRESETS = {

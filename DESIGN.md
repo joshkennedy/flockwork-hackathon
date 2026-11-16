@@ -215,6 +215,8 @@ App shell, 768px and up: a `frame` canvas holding one white `panel` sheet (28px 
 
 **Contextual interaction update:** Past and Later Slots use a full-width tonal disclosure bar with a plain title, a count/status line and the house plus-to-close mark. Add Slot remains an attached split control: its main action opens a right slideout over the Project, while its menu opens Generate Multiple Slots in the explained modal. Edit Slot uses the same slideout from each row's ⋯ menu; direct form URLs remain usable as fallbacks. Small forms that edit something visible on the current Project use this right-slideout pattern. Multi-item creation that needs explanation uses a centered modal.
 
+Church time zone is chosen at sign-up and remains editable by Admins in Settings, Church, with the name, serving load limit and theme.
+
 ## Elevation & Depth
 
 Three levels only. Flat: panels, lists, team notes (border or tint, no shadow). Raised: the top bar (with a hairline edge, like the sheet), answer tiles, open Slots, kept Suggestions, highlight tiles (`0 1px 2px rgba(20,20,19,.05), 0 4px 12px rgba(20,20,19,.04)`). Floating: popovers, menus, dialogs, toasts (`0 8px 24px rgba(20,20,19,.12), 0 2px 6px rgba(20,20,19,.06)`). Buttons carry their own inner highlight and press shadow (see components). Never a zero-offset glow, never a card inside a card.
