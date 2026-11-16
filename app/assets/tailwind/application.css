@@ -378,6 +378,7 @@ body {
   .guidance-strip { @apply flex flex-col gap-3 rounded-tile bg-sunlit-soft px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between; }
   .status-strip { @apply grid grid-cols-2 rounded-tile border border-border bg-page sm:grid-cols-4; }
   .status-strip > div { @apply border-hairline px-4 py-3 max-sm:odd:border-r sm:not-last:border-r; }
+  .status-strip > div:last-child:nth-child(odd) { @apply max-sm:col-span-2 max-sm:rounded-b-tile max-sm:border-r-0; }
   /* A linked cell is wholly clickable (the label's link stretches over it); a chevron, not an underline, says it goes somewhere. */
   .status-strip-linked { @apply relative first:rounded-l-tile last:rounded-r-tile; transition: background var(--duration-hover); }
   .status-strip-link { @apply absolute inset-0 rounded-[inherit]; }
