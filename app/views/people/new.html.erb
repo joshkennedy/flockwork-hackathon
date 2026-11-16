@@ -8,5 +8,7 @@
 <div class="w-full max-w-2xl">
   <%= page_header "Add person" %>
 
-  <%= render "form", person: @person, submit_label: "Add Person" %>
+  <%= turbo_frame_tag "person-form" do %>
+    <%= render "form", person: @person, submit_label: "Add Person" %>
+  <% end %>
 </div>

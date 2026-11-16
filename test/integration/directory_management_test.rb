@@ -16,6 +16,21 @@ class DirectoryManagementTest < ActionDispatch::IntegrationTest
     assert_no_match "pat@st-example.test", response.body
   end
 
+  test "Add Person opens in the directory slideout and direct URLs remain full-page fallbacks" do
+    sign_in_as_admin
+
+    get people_path
+    assert_select "a[href=?][data-action='slideout#open'][data-slideout-title-param='Add Person']", new_person_path
+    assert_select "dialog.slideout turbo-frame#person-form[data-slideout-target='frame']"
+
+    get new_person_path
+    assert_select "turbo-frame#person-form form[data-turbo-frame='_top']"
+
+    get new_person_path, headers: { "Turbo-Frame" => "person-form" }
+    assert_select "turbo-frame#person-form form"
+    assert_select "turbo-frame#person-form form[data-turbo-frame='_top']", count: 0
+  end
+
   test "Admin adds a Person without email; they show as unable to sign in and cannot receive a link" do
     sign_in_as_admin
 

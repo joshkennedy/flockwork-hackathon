@@ -1,4 +1,5 @@
-<%= form_with model: person, url: person.persisted? ? person_path(person) : people_path, class: "mt-7 space-y-4" do |form| %>
+<%= form_with model: person, url: person.persisted? ? person_path(person) : people_path, class: "mt-7 space-y-4",
+      data: { turbo_frame: ("_top" unless request.headers["Turbo-Frame"] == "person-form") } do |form| %>
   <% if person.errors.any? %>
     <div role="alert" class="rounded-control bg-danger-soft px-4 py-3 text-meta text-ink">
       <%= person.errors.full_messages.to_sentence %>
@@ -7,7 +8,7 @@
 
   <div>
     <%= form.label :name, class: "block text-label font-medium text-ink-2" %>
-    <%= form.text_field :name, required: true, class: "mt-2 block w-full field" %>
+    <%= form.text_field :name, required: true, autofocus: true, class: "mt-2 block w-full field" %>
   </div>
 
   <div>
