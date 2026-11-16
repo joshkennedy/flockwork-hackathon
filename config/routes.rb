@@ -31,7 +31,7 @@ Rails.application.routes.draw do
   resource :settings, only: %i[ show update ]
   # Old homes of what now lives on Settings; links in sent emails still land on the right tab.
   get "digest_preferences", to: redirect("/settings#settings-notifications"), as: :digest_preferences
-  get "profile/edit", to: redirect("/settings#settings-notifications")
+  get "profile/edit", to: redirect("/settings#settings-details")
   get "icon.svg", to: "icons#show", as: :icon
   resources :notifications, only: :index do
     member do

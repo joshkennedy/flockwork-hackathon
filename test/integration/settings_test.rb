@@ -99,7 +99,7 @@ class SettingsTest < ActionDispatch::IntegrationTest
     sign_in_as_admin
 
     get "/profile/edit"
-    assert_redirected_to "/settings#settings-notifications"
+    assert_redirected_to "/settings#settings-details"
     get digest_preferences_path
     assert_redirected_to "/settings#settings-notifications"
     get planning_center_directory_path
