@@ -188,7 +188,7 @@ class PublicLinkTest < ActionDispatch::IntegrationTest
 
     assert_select "h1", "Community Meal"
     assert_match "Prepare and serve a neighborhood dinner.", response.body
-    assert_match "February 12, 2027", response.body
+    assert_match "Feb 12, 2027", response.body
 
     assert_select "section[aria-labelledby='public-schedule']", text: /Arrival/
     assert_select "section[aria-labelledby='public-schedule']", text: /Opening Session/

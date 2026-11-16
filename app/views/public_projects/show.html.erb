@@ -22,7 +22,7 @@
   <% end %>
   <% if @project.starts_on.present? || @project.ends_on.present? %>
     <p class="mt-4 text-meta font-medium text-ink-2">
-      <%= [ @project.starts_on&.to_fs(:long), @project.ends_on&.to_fs(:long) ].compact.join(" to ") %>
+      <%= project_date_range(@project.starts_on, @project.ends_on) %>
     </p>
   <% end %>
 </header>
