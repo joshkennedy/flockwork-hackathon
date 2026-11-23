@@ -160,7 +160,7 @@ module Planner
           project.budget_lines.create!(
             kind: :booking,
             description: fields.fetch("description"),
-            estimated: fields.fetch("estimated_dollars")
+            estimated: fields["estimated_dollars"]
           )
         end
       },
@@ -183,7 +183,7 @@ module Planner
           project.budget_lines.create!(
             kind: :purchase,
             description: fields.fetch("description"),
-            estimated: fields.fetch("estimated_dollars")
+            estimated: fields["estimated_dollars"]
           )
         end
       },

@@ -44,4 +44,14 @@ class PlannerSuggestionKindsTest < ActiveSupport::TestCase
     assert_equal [ "What are you bringing?" ], slots.pluck(:claim_prompt).uniq
     assert_includes Planner::SuggestionKinds.permitted_fields, :claim_prompt
   end
+
+  test "budget suggestions without an estimate create lines to estimate later" do
+    project = projects(:community_meal)
+
+    %w[booking purchase].each do |kind|
+      line = Planner::SuggestionKinds.create!(project, { "kind" => kind, "fields" => { "description" => "Retreat #{kind}" } })
+
+      assert_nil line.estimated_cents
+    end
+  end
 end
