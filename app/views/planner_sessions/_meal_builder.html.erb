@@ -43,8 +43,6 @@
     "waiting"
   elsif planner_session.generation_busy?
     "busy"
-  elsif planner_session.ready_to_continue?
-    "ready"
   else
     "choose"
   end %>
@@ -145,7 +143,7 @@
           <% custom_answer = pending_answer.present? && options.exclude?(pending_answer) %>
           <h3 id="meal-guide-heading" class="text-heading text-ink"><%= planner_session.current_card.fetch("question") %></h3>
 
-          <div class="mt-5 grid gap-2" data-controller="planner-answers" data-action="keydown@window->planner-answers#choose">
+          <div class="mt-5 grid grid-cols-1 gap-2" data-controller="planner-answers" data-action="keydown@window->planner-answers#choose">
             <% options.each_with_index do |option, index| %>
               <% selected = option == pending_answer %>
               <%= button_to select_answer_project_planner_session_path(project, planner_session), params: { answer: option, expected_revision: planner_session.generation_revision }, class: "answer-tile meal-answer-tile", aria: { pressed: selected }, disabled: planner_session.generation_busy?, data: { turbo_submits_with: "Preparing…", planner_answers_target: "answer" } do %>
@@ -169,21 +167,20 @@
               </summary>
               <%= form_with url: select_answer_project_planner_session_path(project, planner_session), class: "meal-own-answer-form" do |form| %>
                 <%= form.hidden_field :expected_revision, value: planner_session.generation_revision %>
-                <%= form.label :answer, "Your answer", class: "block text-label font-medium text-ink" %>
-                <div class="mt-2 flex flex-col gap-3 sm:flex-row">
-                  <%= form.text_field :answer, required: true, value: pending_answer, disabled: planner_session.generation_busy?, class: "block min-w-0 flex-1 field" %>
+                <%= form.label :answer, "Your answer", class: "sr-only" %>
+                <div class="flex flex-col items-start gap-3">
+                  <%= form.text_field :answer, required: true, value: pending_answer, disabled: planner_session.generation_busy?, class: "block w-full field" %>
                   <%= form.submit "Answer", disabled: planner_session.generation_busy?, class: "btn btn-secondary", data: { turbo_submits_with: "Preparing…" } %>
                 </div>
               <% end %>
             </details>
           </div>
 
-          <% unless planner_session.generation_busy? %>
-          <div class="mt-5 empty:hidden"><% if planner_session.last_error.present? %>
-              <%= render "planner_sessions/break", project:, planner_session: %>
-            <% elsif planner_session.ready_to_continue? %>
-              <p class="meal-builder-status" data-meal-planner-target="status">Preview updated. Continue when ready.</p>
-            <% end %></div>
+          <%# The chosen answer advances on its own once its preview is ready; this line says why the tiles are paused. %>
+          <% if planner_session.generation_busy? %>
+            <p class="mt-5 meal-builder-status"><span class="meal-pulse-dot" aria-hidden="true"></span>Updating your plan…</p>
+          <% elsif planner_session.last_error.present? %>
+            <div class="mt-5"><%= render "planner_sessions/break", project:, planner_session: %></div>
           <% end %>
 
           <% if visible_items.any? %>
@@ -205,13 +202,6 @@
                 end
               %><% end %></p>
               <a href="#meal-preview" class="mt-2 inline-flex min-h-11 items-center text-meta font-semibold text-ink" aria-label="View all meal slots">View all</a>
-            </div>
-          <% end %>
-
-          <%# Continue appears once an answer is chosen; until then the answer tiles are the next step. %>
-          <% if planner_session.generation_busy? || pending_answer.present? %>
-            <div class="mt-5 flex flex-wrap items-center gap-x-2 gap-y-3">
-              <%= button_to planner_session.generation_busy? ? "Drafting…" : "Continue", continue_planning_project_planner_session_path(project, planner_session), params: { expected_revision: planner_session.generation_revision }, class: class_names("btn btn-primary", "meal-continue-drafting": planner_session.generation_busy?), disabled: !planner_session.ready_to_continue?, data: { turbo_submits_with: "Continuing…" } %>
             </div>
           <% end %>
 

@@ -1,7 +1,7 @@
 class PlannerSession < ApplicationRecord
   ERROR_MESSAGE = "The Planner is paused. You can keep going by hand."
   MAX_GENERATED_QUESTIONS = 3
-  GENERATION_STATES = %w[idle queued running ready failed].freeze
+  GENERATION_STATES = %w[idle queued running failed].freeze
 
   belongs_to :project
   belongs_to :started_by, class_name: "Person"
@@ -71,10 +71,6 @@ class PlannerSession < ApplicationRecord
 
   def generation_stalled?
     generation_busy? && updated_at < 90.seconds.ago
-  end
-
-  def ready_to_continue?
-    build_as_you_go? && generation_state == "ready" && pending_answer.present?
   end
 
   def visible_pending_items
@@ -246,29 +242,6 @@ class PlannerSession < ApplicationRecord
       self.last_error = nil
       save!
       generation_revision
-    end
-  end
-
-  def continue!(expected_revision:)
-    with_lock do
-      ensure_mutable_build_as_you_go!
-      raise Planner::StaleRevision unless generation_revision == expected_revision
-      raise ArgumentError, "The preview isn’t ready yet. Wait a moment and try again." unless ready_to_continue?
-      self.generation_revision += 1
-
-      if prepared_card.present? && steps.length < MAX_GENERATED_QUESTIONS
-        self.current_card = prepared_card
-        self.prepared_card = nil
-        self.pending_answer = nil
-        self.generation_state = "idle"
-      else
-        self.status = :reviewing
-        self.current_card = nil
-        self.prepared_card = nil
-        self.pending_answer = nil
-        self.generation_state = "idle"
-      end
-      save!
     end
   end
 
@@ -520,18 +493,15 @@ class PlannerSession < ApplicationRecord
           revision: generation_revision
         )
         next_card = response.finished || steps.length >= MAX_GENERATED_QUESTIONS ? nil : response.card&.deep_stringify_keys
-        if pending_answer.present?
-          self.prepared_card = next_card
-          self.generation_state = "ready"
-        elsif next_card.present?
+        # The chosen answer advances as soon as its preview is ready; Back to Earlier Choices revisits it.
+        self.pending_answer = nil
+        self.prepared_card = nil
+        self.generation_state = "idle"
+        if next_card.present?
           self.current_card = next_card
-          self.prepared_card = nil
-          self.generation_state = "idle"
         else
           self.status = :reviewing
           self.current_card = nil
-          self.prepared_card = nil
-          self.generation_state = "idle"
         end
         self.last_error = nil
         save!

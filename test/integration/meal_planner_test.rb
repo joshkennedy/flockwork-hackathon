@@ -219,7 +219,7 @@ class MealPlannerTest < ActionDispatch::IntegrationTest
 
   test "structured setup rejects generated-answer endpoints" do
     project, session = start_setup
-    %i[select_answer continue_planning finish_planning retry_generation].each do |action|
+    %i[select_answer finish_planning retry_generation].each do |action|
       assert_no_enqueued_jobs only: PlannerStepJob do
         post public_send("#{action}_project_planner_session_path", project, session), params: { answer: "Lunch", expected_revision: session.generation_revision }
       end

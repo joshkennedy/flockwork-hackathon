@@ -37,7 +37,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     capture_setup("builder-asking-1440")
 
     click_button "Repair the playground"
-    assert_text "Preview updated. Continue when ready."
+    assert_selector "li[aria-current='step']", text: "Review and add"
     within ".meal-preview-heading" do
       assert_text "6 items"
     end
@@ -63,7 +63,6 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
       assert_text "Supply checklist"
     end
 
-    click_button "Continue"
     assert_no_text "Here’s what will be added"
     assert_selector "li[aria-current='step']", text: "Review and add"
     assert_selector "li[data-step-state='done']", text: "1 answer"
@@ -103,9 +102,8 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     visit new_project_path
     click_button "Workday"
     click_button "Preparation"
-    assert_text "Preview updated. Continue when ready."
+    assert_selector "li[aria-current='step']", text: "Review and add"
     assert_no_text "Choose a Project start date or a due date"
-    click_button "Continue"
     fill_in "Workday date", with: "2027-04-10"
     assert_text "Due April 9, 2027"
     click_button "Add to Project"
@@ -134,8 +132,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     assert_field "Project name", with: "Spring workday"
 
     click_button "Preparation"
-    assert_text "Preview updated. Continue when ready."
-    click_button "Continue"
+    assert_selector "li[aria-current='step']", text: "Review and add"
     assert_selector "li[aria-current='step']", text: "Review and add"
     assert_no_text "Here’s what will be added"
     fill_in "Project name", with: "Saturday workday"
@@ -155,8 +152,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     visit new_project_path
     click_button "Class"
     click_button "Prepare the first lesson"
-    assert_text "Preview updated. Continue when ready."
-    click_button "Continue"
+    assert_selector "li[aria-current='step']", text: "Review and add"
 
     assert_field "First class date"
     assert_button "Add to Project", disabled: true
@@ -185,8 +181,7 @@ class GeneralPlannerSystemTest < ApplicationSystemTestCase
     visit new_project_path
     click_button "Class"
     click_button "Set the schedule"
-    assert_text "Preview updated. Continue when ready."
-    click_button "Continue"
+    assert_selector "li[aria-current='step']", text: "Review and add"
 
     assert_no_field "First class date"
     assert_text "Fix the highlighted item to add"

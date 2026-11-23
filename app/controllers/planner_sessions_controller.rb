@@ -141,15 +141,6 @@ class PlannerSessionsController < ApplicationController
     planning_error(error)
   end
 
-  def continue_planning
-    require_build_as_you_go
-    raise ActiveRecord::RecordNotFound if @planner_session.meal_setup?
-    @planner_session.continue!(expected_revision: expected_revision)
-    planning_redirect
-  rescue ArgumentError => error
-    planning_error(error)
-  end
-
   def finish_planning
     require_build_as_you_go
     raise ActiveRecord::RecordNotFound if @planner_session.meal_setup?

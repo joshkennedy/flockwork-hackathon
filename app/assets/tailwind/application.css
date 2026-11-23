@@ -628,7 +628,6 @@ body {
   .voice-orb.is-thinking .voice-orb-ring-outer, .voice-orb.is-thinking .voice-orb-ring-middle { opacity: .2; }
   .voice-orb-status { @apply text-xl font-semibold leading-7 text-ink; }
   .voice-captions { @apply grid w-full gap-2 text-left text-base leading-6 text-ink; overflow-wrap: anywhere; }
-  :root .btn.meal-continue-drafting:disabled { background: transparent; border: 1px solid var(--color-ghost-border); color: var(--color-ink-2); box-shadow: none; }
   .meal-builder-status { @apply flex items-center gap-2 text-meta text-ink-2; }
   .meal-pulse-dot { @apply size-2 shrink-0 rounded-full bg-ink; }
   .meal-mobile-update { @apply mt-5 rounded-nav border border-dashed border-ghost-border bg-ghost-fill px-3 py-3; }
@@ -645,16 +644,22 @@ body {
   .meal-own-answer > summary { list-style: none; }
   .meal-own-answer > summary::-webkit-details-marker { display: none; }
   .meal-own-answer > summary[aria-disabled="true"] { @apply cursor-wait text-ink-2 shadow-none; transform: none; }
-  .meal-own-answer-form { @apply mt-3 ps-11; }
+  /* Open, Something Else grows into one tile holding its field, so the answer reads as a single choice, not a tile plus a loose form. */
+  .meal-own-answer[open] { @apply rounded-tile border border-border-strong bg-panel shadow-raised; }
+  .meal-own-answer[open]:has(> summary[aria-pressed="true"]) { @apply border-ink bg-ghost-fill; }
+  .meal-own-answer[open] > summary { border-width: 0; background: transparent; box-shadow: none; }
+  .meal-own-answer-form { @apply px-3.5 pb-3.5; }
   .meal-preview { @apply min-w-0; }
   .meal-preview-heading { @apply flex items-start justify-between gap-4; }
   .meal-preview-view-all { @apply min-h-11 items-center; display: inline-flex; }
   .meal-preview-list { @apply overflow-hidden rounded-tile border border-dashed border-ghost-border bg-ghost-fill; }
   /* One ghost surface for the whole preview; tool groups are compact rows inside it, not a card per item. */
   .planner-tool-groups { @apply divide-y divide-dashed divide-ghost-border overflow-hidden rounded-tile border border-dashed border-ghost-border bg-ghost-fill; }
-  .planner-tool-group { @apply min-w-0 pt-3; }
-  .planner-tool-heading { @apply flex items-center gap-2 px-4 text-label font-medium text-ink-2; }
+  /* Two levels only: dashed rules between Tools, space between rows inside one, so each Tool reads as a group. */
+  .planner-tool-group { @apply min-w-0 pb-2 pt-4; }
+  .planner-tool-heading { @apply flex items-center gap-2 px-4 pb-1 text-meta font-medium text-ink-2; }
   .planner-tool-group .meal-preview-list { @apply rounded-none border-0 bg-transparent; }
+  .planner-tool-group .meal-slot { @apply border-0 py-2.5; }
   .meal-slot { @apply min-w-0 border-b border-ghost-border px-4 py-3; }
   .meal-slot:last-child { border-bottom: 0; }
   .meal-slot-changed { animation: slot-changed var(--duration-keep) var(--ease-enter); }

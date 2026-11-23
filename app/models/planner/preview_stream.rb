@@ -25,7 +25,7 @@ module Planner
     private
       def send_card(card)
         @card_sent = true
-        # A question prepared while an answer is pending waits for Continue, so it is not shown early.
+        # While an answer is pending, its next question lands with the final render, not mid-stream.
         return if @planner_session.pending_answer.present?
 
         @planner_session.current_card = card.slice("question", "options")

@@ -258,7 +258,7 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
     assert_equal "What should the plan include?", planner_session.reload.current_card.fetch("question")
   end
 
-  test "Continue appears while drafting and becomes ready after the answer is prepared" do
+  test "an answer shows its drafting state, then advances to the next question on its own" do
     use_provider(
       response(card: card("What should this day accomplish?")),
       response(card: card("Who is helping?"), added: all_provider_items)
@@ -282,12 +282,12 @@ class GeneralPlannerTest < ActionDispatch::IntegrationTest
       answer: "Repair the playground", expected_revision: planner_session.generation_revision
     }
     get project_planner_session_path(project, planner_session)
-    assert_select "button.meal-continue-drafting[disabled]", text: "Drafting…"
+    assert_select ".meal-builder-status", text: "Updating your plan…"
 
     perform_enqueued_jobs(only: PlannerStepJob)
     get project_planner_session_path(project, planner_session)
-    assert_select "button.btn-primary:not([disabled])", text: "Continue"
-    assert_select "button", text: "Finish with This", count: 0
+    assert_select "#meal-guide-heading", text: "Who is helping?"
+    assert_select "button", text: "Continue", count: 0
   end
 
   test "a full snapshot previews and atomically accepts every provider item kind with explicit dates" do

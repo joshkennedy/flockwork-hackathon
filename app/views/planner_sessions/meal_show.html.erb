@@ -6,8 +6,7 @@
   data-action="submit->project-name#waitForSave:capture turbo:submit-end->project-name#submitted"
   data-voice-planner-voice-session-url-value="<%= voice_session_project_planner_session_path(@project, @planner_session) %>"
   data-voice-planner-voice-instructions-url-value="<%= voice_instructions_project_planner_session_path(@project, @planner_session) %>"
-  data-voice-planner-select-answer-url-value="<%= select_answer_project_planner_session_path(@project, @planner_session) %>"
-  data-voice-planner-continue-url-value="<%= continue_planning_project_planner_session_path(@project, @planner_session) %>">
+  data-voice-planner-select-answer-url-value="<%= select_answer_project_planner_session_path(@project, @planner_session) %>">
   <%= turbo_stream_from @planner_session, channel: PlannerStreamChannel,
     data: { planner_session_id: @planner_session.id } %>
   <%= render "meal_builder", project: @project, planner_session: @planner_session %>

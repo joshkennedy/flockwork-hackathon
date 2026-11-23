@@ -28,8 +28,8 @@ class PlannerMealSessionTest < ActiveSupport::TestCase
     assert_predicate @planner_session.reload.visible_pending_items, :any?
   end
 
-  test "initial generation publishes the first card and answer generation waits for Continue" do
-    provider = use_provider(
+  test "initial generation publishes the first card and an answer advances once its preview is ready" do
+    use_provider(
       response(card: card("Which meals?")),
       response(card: card("For how long?"), added: [ slot_run ])
     )
@@ -42,15 +42,10 @@ class PlannerMealSessionTest < ActiveSupport::TestCase
     revision = current { @planner_session.select_answer!("Dinner", expected_revision: revision) }
     assert current { @planner_session.generate!(revision:) }
     @planner_session.reload
-    assert_equal "Which meals?", @planner_session.current_card.fetch("question")
-    assert_equal "For how long?", @planner_session.prepared_card.fetch("question")
-    assert_predicate @planner_session, :ready_to_continue?
+    assert_equal "For how long?", @planner_session.current_card.fetch("question")
+    assert_nil @planner_session.pending_answer
+    assert_equal "idle", @planner_session.generation_state
     assert_equal 2, @planner_session.pending_item_count
-
-    assert_no_changes -> { provider.contexts.size } do
-      @planner_session.continue!(expected_revision: revision)
-    end
-    assert_equal "For how long?", @planner_session.reload.current_card.fetch("question")
   end
 
   test "a stale generation never calls the provider or changes state" do
@@ -63,7 +58,7 @@ class PlannerMealSessionTest < ActiveSupport::TestCase
     assert_nil @planner_session.reload.current_card
   end
 
-  test "reselecting a pending answer replaces the same step" do
+  test "re-answering an advanced step replaces it instead of answering the next one" do
     use_provider(
       response(card: card("Which meals?")),
       response(card: card("For how long?"))
@@ -71,7 +66,8 @@ class PlannerMealSessionTest < ActiveSupport::TestCase
     revision = generate_initial
     revision = current { @planner_session.select_answer!("Dinner", expected_revision: revision) }
     assert current { @planner_session.generate!(revision:) }
-    revision = current { @planner_session.select_answer!("Lunch", expected_revision: revision) }
+    assert_equal "For how long?", @planner_session.reload.current_card.fetch("question")
+    revision = current { @planner_session.select_answer!("Lunch", expected_revision: @planner_session.generation_revision, step_index: 0) }
 
     assert_equal 1, @planner_session.reload.steps.size
     assert_equal "Lunch", @planner_session.steps.first.fetch("answer")

@@ -18,7 +18,6 @@ export default class extends Controller {
 
   static values = {
     answerUrl: String,
-    continueUrl: String,
     selectAnswerUrl: String,
     voiceInstructionsUrl: String,
     voiceSessionUrl: String
@@ -29,12 +28,10 @@ export default class extends Controller {
     this.active = false
     this.intentionalClose = false
     this.answerInFlight = false
-    this.continueInFlight = false
     this.responseActive = false
     this.responseDraining = false
     this.pendingIntro = false
     this.ackPending = false
-    this.lastContinuedRevision = null
     this.currentStatus = "Listening…"
     this.assistantText = ""
     this.userText = ""
@@ -90,12 +87,10 @@ export default class extends Controller {
     this.requestWakeLock()
     this.intentionalClose = false
     this.answerInFlight = false
-    this.continueInFlight = false
     this.responseActive = false
     this.responseDraining = false
     this.pendingIntro = false
     this.ackPending = false
-    this.lastContinuedRevision = null
     this.assistantText = ""
     this.userText = ""
     this.voiceLevel = 0
@@ -148,10 +143,6 @@ export default class extends Controller {
       this.fail("The Planner could not update your plan. You can keep typing.")
       return
     }
-    if (phase === "ready") {
-      await this.continueBuilder()
-      return
-    }
     if (phase === "busy") this.setStatus("Adding to your plan…")
 
     const nextKey = this.cardKey()
@@ -178,25 +169,6 @@ export default class extends Controller {
       }
     } catch (error) {
       this.fail(this.messageFor(error))
-    }
-  }
-
-  async continueBuilder() {
-    if (!this.hasContinueUrlValue || this.continueInFlight || !this.hasCardStateTarget) return
-
-    const revision = this.cardStateTarget.dataset.voiceRevision
-    if (!revision || revision === this.lastContinuedRevision) return
-
-    this.continueInFlight = true
-    this.lastContinuedRevision = revision
-    try {
-      const response = await this.postForm(this.continueUrlValue, { expected_revision: revision })
-      await this.replaceBuilder(response)
-    } catch (error) {
-      this.lastContinuedRevision = null
-      this.fail(this.messageFor(error))
-    } finally {
-      this.continueInFlight = false
     }
   }
 
@@ -341,7 +313,7 @@ export default class extends Controller {
     const builderPhase = this.hasSelectAnswerUrlValue && this.hasCardStateTarget
       ? this.cardStateTarget.dataset.voicePhase
       : null
-    if (this.answerInFlight || [ "busy", "ready" ].includes(builderPhase)) {
+    if (this.answerInFlight || builderPhase === "busy") {
       this.sendFunctionOutput(event.call_id)
       return
     }
@@ -413,7 +385,7 @@ export default class extends Controller {
         this.stopConversation()
       } else if (!this.answerInFlight) {
         const phase = this.hasCardStateTarget ? this.cardStateTarget.dataset.voicePhase : null
-        this.setStatus([ "busy", "ready" ].includes(phase) ? "Adding to your plan…" : "Listening…")
+        this.setStatus(phase === "busy" ? "Adding to your plan…" : "Listening…")
       }
     }, delay)
   }

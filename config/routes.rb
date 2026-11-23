@@ -100,7 +100,6 @@ Rails.application.routes.draw do
         patch :suggestion
         post :accept
         post :select_answer
-        post :continue_planning
         post :finish_planning
         post :retry_generation
         post :save_and_leave
