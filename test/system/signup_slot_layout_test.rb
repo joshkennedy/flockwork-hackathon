@@ -17,7 +17,12 @@ class SignupSlotLayoutSystemTest < ApplicationSystemTestCase
     visit new_demo_session_path
     click_on "Explore as Leader"
     assert_selector "[data-signed-in-as]", text: "Maria Lopez"
+    page.current_window.resize_to(1280, 900)
     visit project_path(project)
+
+    # The answer field must not squeeze the Slot name into a one-letter column on wide screens.
+    name = find("#slot_#{slot.id} .signup-details > p", text: "Main dishes")
+    assert_operator name.evaluate_script("this.getBoundingClientRect().width"), :>=, 200
 
     within("#slot_#{slot.id}") do
       fill_in "What are you bringing?", with: "Baked ziti"
