@@ -3,7 +3,7 @@ require "application_system_test_case"
 class NotificationsFlyoutTest < ApplicationSystemTestCase
   test "the bell opens Notifications in place and marking read keeps the flyout open on the same page" do
     person = people(:grace_leader)
-    project = Project.create_for(creator: person, attributes: { name: "Flyout Project", enabled_tools: [] })
+    project = Project.create_for(creator: person, attributes: { name: "Community Food Pantry Serve Day and Family Box Packing", enabled_tools: [] })
     slot = project.slots.create!(date: "2027-02-11", label: "Bring dessert")
     slot.slot_claims.create!(person: person)
     Notifier.notify(recipient: person, kind: "slot_reminder", notifiable: slot, email: false)
@@ -17,6 +17,9 @@ class NotificationsFlyoutTest < ApplicationSystemTestCase
     find(".notifications-menu summary[aria-label='Notifications, 1 unread']").click
     within ".notifications-menu" do
       assert_selector "li[data-notification-id]", count: 1
+      # A long Project name truncates in its row instead of making the sheet scroll sideways.
+      sheet = find(".account-sheet")
+      assert_operator sheet.evaluate_script("this.scrollWidth"), :<=, sheet.evaluate_script("this.clientWidth")
       click_on "Mark All Read"
       assert_no_button "Mark All Read"
       assert_selector "li[data-notification-id]", count: 1

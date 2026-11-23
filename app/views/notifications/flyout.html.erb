@@ -7,7 +7,7 @@
     <% end %>
   </div>
   <% if @notifications.any? %>
-    <ol class="mt-1 grid gap-0.5">
+    <ol class="mt-1 grid grid-cols-1 gap-0.5">
       <% @notifications.each do |notification| %>
         <% path = notification.invitation? ? invitation_path(notification.notifiable.generate_token_for(:access)) : project_path(notification.project, anchor: notification.anchor) %>
         <li data-notification-id="<%= notification.id %>">
