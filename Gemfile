@@ -67,7 +67,7 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "vcr", "6.4.1"
-  gem "webmock", "3.34.0"
+  gem "webmock", "3.36.0"
 end
 
 gem "testcontainers-postgres", group: :test
