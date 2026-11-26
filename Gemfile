@@ -76,7 +76,7 @@ gem "capybara-playwright-driver", group: :test
 
 gem "postmark-rails"
 gem "csv"
-gem "ruby_llm", "2.1.1"
+gem "ruby_llm", "2.2.3"
 
 gem "ruby-vips", "~> 2.3"
 
