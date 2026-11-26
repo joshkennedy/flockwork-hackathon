@@ -11,3 +11,6 @@ pin "trix", preload: "application"
 pin "@rails/actiontext", to: "actiontext.esm.js", preload: "application"
 pin "pdfjs-dist", to: "pdf.min.js", preload: "application"
 pin "ding", to: "ding.js", preload: %w[application public]
+# Loaded only when POSTHOG_API_KEY is set (layouts/_analytics); never preloaded, the SDK is about 380KB.
+pin "analytics", preload: false
+pin "posthog-js", preload: false # @1.455.2

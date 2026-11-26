@@ -46,6 +46,8 @@ module Authentication
         person.update_column(:last_signed_in_at, Time.current)
         person.sessions.create!(auth_method:, verified_email:, user_agent: request.user_agent, ip_address: request.remote_ip).tap do |session|
           Current.session = session
+          Analytics.identify(person)
+          Analytics.capture(person, "Signed in", auth_method:)
           cookies.signed.permanent[:session_id] = { value: session.id, httponly: true, same_site: :lax, secure: Rails.env.production? }
           if person.organization.demo?
             cookies.signed[:demo_session] = demo_cookie

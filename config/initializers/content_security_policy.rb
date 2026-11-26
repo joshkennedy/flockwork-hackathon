@@ -8,13 +8,13 @@ Rails.application.configure do
     policy.base_uri    :self
     policy.object_src  :none
     # 'wasm-unsafe-eval' lets pdf.js instantiate its JPEG2000/JBIG2 decoders; it does not allow eval().
-    policy.script_src  :self, :wasm_unsafe_eval
+    policy.script_src  :self, :wasm_unsafe_eval, "https://us-assets.i.posthog.com"
     policy.style_src   :self, :unsafe_inline, "https://fonts.googleapis.com"
     policy.font_src    :self, :data, "https://fonts.gstatic.com"
     policy.img_src     :self, :data, :blob
     policy.media_src   :self, :data, :blob
-    # Action Cable is same-origin; wss://api.x.ai is the voice planner realtime socket.
-    policy.connect_src :self, "wss://api.x.ai"
+    # Action Cable is same-origin; wss://api.x.ai is the voice planner realtime socket; PostHog is product analytics.
+    policy.connect_src :self, "wss://api.x.ai", "https://us.i.posthog.com", "https://us-assets.i.posthog.com"
   end
 
   # No session on public pages, so the nonce is random per request.

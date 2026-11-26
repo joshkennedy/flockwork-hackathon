@@ -48,6 +48,7 @@ class OrganizationsController < ApplicationController
 
     if @admin.valid?(:organization_creation) && @organization.save
       start_new_session_for @admin, auth_method: "signup"
+      Analytics.capture(@admin, "Signed up")
       WelcomeMailer.welcome(@admin).deliver_later
       # A new church starts at its first Project, which is what the landing page's CTA promises.
       redirect_to new_project_path

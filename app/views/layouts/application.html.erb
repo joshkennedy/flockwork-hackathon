@@ -20,6 +20,7 @@
     <%= render "layouts/fonts" %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags(authenticated? && !marketing_page? ? "application" : "marketing") %>
+    <%= render "layouts/analytics" %>
   </head>
   <body data-controller="global-search" data-action="keydown@window->global-search#shortcut turbo:before-morph-element->global-search#keepOpen" style="<%= mark_color_style %>" class="min-h-screen <%="bg-frame" if authenticated? && !marketing_page? %>">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-panel focus:p-3">Skip to content</a>

@@ -13,6 +13,7 @@
     <%= render "layouts/fonts" %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags "public" %>
+    <%= render "layouts/analytics" %>
   </head>
   <%# Plain navigation keeps the #slot_ anchor on redirects, which a Turbo fetch would drop. JS is here for the toasts. %>
   <body style="<%= mark_color_style %>" class="min-h-screen bg-page" data-turbo="false" data-public-layout>

@@ -108,6 +108,7 @@ Create `.env.development.local`:
 | `OPENROUTER_API_KEY` | Planner in development (required for live AI) |
 | `PCO_APP_ID`, `PCO_SECRET` | Optional Planning Center People import (`DirectorySources::PlanningCenter`) |
 | `SENDLY_SANDBOX_API_KEY` | Optional Sendly SMS sandbox client. |
+| `POSTHOG_API_KEY` | Optional PostHog (US cloud) product analytics. Unset sends nothing; set it in production. |
 
 For production SMS notifications, set `SENDLY_API_KEY` and run the Solid Queue
 worker. People choose their notification channels in **My profile > Notifications**;
