@@ -13,15 +13,20 @@ posthog.init(meta("posthog-key"), {
   disable_surveys: true,
   bootstrap: person ? { distinctID: person, isIdentifiedID: true } : {}
 })
-if (person) posthog.group("organization", meta("posthog-organization"))
 
 // Signing in or out swaps the page through Turbo without reloading this module.
-document.addEventListener("turbo:load", () => {
+// Demo visitors have no posthog-person tag and keep their anonymous id, which the server reuses.
+function syncIdentity() {
   const current = meta("posthog-person")
   if (current && current !== posthog.get_distinct_id()) {
     posthog.identify(current)
-    posthog.group("organization", meta("posthog-organization"))
   } else if (!current && posthog.get_distinct_id()?.startsWith("person_")) {
     posthog.reset()
   }
-})
+
+  const organization = meta("posthog-organization")
+  if (organization && organization !== posthog.getGroups().organization) posthog.group("organization", organization)
+}
+
+syncIdentity()
+document.addEventListener("turbo:load", syncIdentity)

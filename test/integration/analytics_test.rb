@@ -35,6 +35,25 @@ class AnalyticsTest < ActionDispatch::IntegrationTest
     assert_not claim[:properties]["$set"].key?(:email)
   end
 
+  test "demo visitors are tracked by their browser's PostHog id, not the shared seeded Person" do
+    cookies["ph__posthog"] = { distinct_id: "browser-visitor-1" }.to_json
+    post demo_session_path(role: "admin")
+
+    sign_in = messages.find { it[:event] == "Signed in" }
+    assert_equal "browser-visitor-1", sign_in[:distinct_id]
+    assert_not sign_in[:properties]["$set"].key?(:email)
+    assert_not messages.any? { it[:type] == "identify" }, "demo visitors stay anonymous so a real sign-up can merge them"
+  end
+
+  test "a demo visitor without a PostHog cookie keeps one id across role switches" do
+    post demo_session_path(role: "admin")
+    post demo_session_path(role: "volunteer")
+
+    ids = messages.select { it[:event] == "Signed in" }.map { it[:distinct_id] }.uniq
+    assert_equal 1, ids.size
+    assert_not ids.first.start_with?("person_")
+  end
+
   test "sends nothing without an API key" do
     Rails.configuration.x.posthog = nil
 

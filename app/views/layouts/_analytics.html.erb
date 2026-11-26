@@ -1,7 +1,7 @@
 <% if ENV["POSTHOG_API_KEY"].present? %>
   <meta name="posthog-key" content="<%= ENV["POSTHOG_API_KEY"] %>">
   <% if authenticated? %>
-    <meta name="posthog-person" content="<%= Analytics.distinct_id(Current.person) %>">
+    <% unless demo_organization? %><meta name="posthog-person" content="<%= Analytics.distinct_id(Current.person) %>"><% end %>
     <meta name="posthog-organization" content="<%= Current.person.organization_id %>">
   <% end %>
   <%= javascript_import_module_tag "analytics" %>
